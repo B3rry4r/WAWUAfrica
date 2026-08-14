@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sync-agent-rules": "bash scripts/sync-agent-rules.sh"
   },
   "dependencies": {
     "next": "14.2.5",
