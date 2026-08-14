@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #08070A; }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+  @keyframes wawuShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:44px;padding:56px 56px 96px;background:#08070A;min-height:100vh">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:860px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Batch 6 · Home</span>
+    <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">The content feed, replacing the post feed</h1>
+    <p style="margin:0;font-size:15.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">One card does the work everywhere — feed, creator profile, search, purchases. It is the design system's ContentCard carrying the media, title, type pill and price, with an author row above it for the creator, their name and their verification badge.</p>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">1 · For You</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:11px;padding:16px 16px 12px;background:rgba(19,19,22,.86);backdrop-filter:blur(20px)">
+              <img src="assets/wawu-icon-white.png" alt="WAWU" style="width:26px;height:26px;object-fit:contain">
+              <div style="flex:1;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+                <span style="font-size:13.5px;color:var(--text-muted)">Search creators and content</span>
+              </div>
+              <span style="position:relative;display:grid;place-items:center;width:36px;height:36px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Bell" size="17" color="var(--text-secondary)" hint-size="17px,17px"></x-import>
+                <span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:999px;background:var(--accent)"></span>
+              </span>
+              <span style="display:grid;place-items:center;width:36px;height:36px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="LayoutGrid" size="17" color="var(--accent)" stroke="2.2" hint-size="17px,17px"></x-import>
+              </span>
+            </div>
+
+            <div style="display:flex;gap:26px;padding:2px 18px 0;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-hairline)">
+              <span style="position:relative;padding-bottom:12px;font-size:14.5px;font-weight:600;color:var(--text-primary)">For you
+                <span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)"></span>
+              </span>
+              <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Following</span>
+              <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Trending</span>
+            </div>
+
+            <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:flex;flex-direction:column;gap:16px">
+
+              <article style="display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="A" style="width:36px;height:36px;font-size:14px" hint-size="36px,36px"></x-import>
+                  <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+                    <span style="font-size:14.5px;font-weight:600">Adaeze Okonkwo</span>
+                    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.VerificationBadge" tier="certified_professional" hint-size="16px,16px"></x-import>
+                    <span style="font-size:12.5px;color:var(--text-muted)">· 2h</span>
+                  </div>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ellipsis" size="18" color="var(--text-muted)" hint-size="18px,18px"></x-import>
+                </div>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="CAC in 7 days, start to certificate" subtitle="6 lessons · 48 minutes" price="2500" content-type="course" count="Course" ratio="2 / 1" hint-size="100%,350px"></x-import>
+              </article>
+
+              <article style="display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="Z" style="width:36px;height:36px;font-size:14px" hint-size="36px,36px"></x-import>
+                  <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+                    <span style="font-size:14.5px;font-weight:600">Zainab Bello</span>
+                    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.VerificationBadge" tier="verified_business" hint-size="16px,16px"></x-import>
+                    <span style="font-size:12.5px;color:var(--text-muted)">· 5h</span>
+                  </div>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ellipsis" size="18" color="var(--text-muted)" hint-size="18px,18px"></x-import>
+                </div>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="The trader's playbook" subtitle="34 pages · free to download" content-type="post" count="PDF" ratio="2 / 1" hint-size="100%,350px"></x-import>
+              </article>
+
+            </div>
+          </div>
+
+          <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Home</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Explore</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+          </nav>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Feed — locked and free, one after the other</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="width:900px;display:flex;flex-direction:column;gap:18px;padding:26px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">One card, six treatments</span>
+        <span style="font-size:20px;font-weight:600;letter-spacing:-0.015em">Every content type</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:18px;align-items:stretch;grid-auto-rows:1fr">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="Welding rebar the right way" subtitle="Musa Danladi" price="1500" content-type="video" count="Video" ratio="4 / 3" hint-size="100%,280px"></x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="CAC in 7 days" subtitle="Adaeze Okonkwo" price="2500" content-type="course" count="Course" ratio="4 / 3" hint-size="100%,280px"></x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="Highlife horn stems" subtitle="Tolu Balogun" price="1000" content-type="audio" count="Audio" ratio="4 / 3" hint-size="100%,280px"></x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="The trader's playbook" subtitle="Zainab Bello" content-type="post" count="PDF" ratio="4 / 3" hint-size="100%,280px"></x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="Nsukka market, in oils" subtitle="Chidi Umeh" price="3000" content-type="photos" count="Art" ratio="4 / 3" hint-size="100%,280px"></x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="unlocked" title="Invoice pack for tailors" subtitle="Ifeanyi Nwosu" content-type="post" count="Template" ratio="4 / 3" hint-size="100%,280px"></x-import>
+      </div>
+      <span style="font-size:12.5px;line-height:1.5;color:var(--text-muted)">Shown wide so each treatment is legible. In the feed the same card runs full width; in grids it sits two across.</span>
+    </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">3–5 · Loading, empty, browsing</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:11px;padding:16px 16px 12px;border-bottom:1px solid var(--border-hairline)">
+              <img src="assets/wawu-icon-white.png" alt="WAWU" style="width:26px;height:26px;object-fit:contain">
+              <div style="flex:1;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+                <span style="font-size:13.5px;color:var(--text-muted)">Search creators and content</span>
+              </div>
+            </div>
+            <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Skeleton" variant="row" style="padding:0" hint-size="100%,44px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Skeleton" variant="card" hint-size="100%,560px"></x-import>
+              </div>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Skeleton" variant="row" style="padding:0" hint-size="100%,44px"></x-import>
+            </div>
+          </div>
+          <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Home</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Explore</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+          </nav>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">3 · Loading — shimmer at 1.4s</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:11px;padding:16px 16px 12px;border-bottom:1px solid var(--border-hairline)">
+              <img src="assets/wawu-icon-white.png" alt="WAWU" style="width:26px;height:26px;object-fit:contain">
+              <div style="flex:1;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+                <span style="font-size:13.5px;color:var(--text-muted)">Search creators and content</span>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:26px;padding:2px 18px 0;border-bottom:1px solid var(--border-hairline)">
+              <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">For you</span>
+              <span style="position:relative;padding-bottom:12px;font-size:14.5px;font-weight:600;color:var(--text-primary)">Following
+                <span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)"></span>
+              </span>
+              <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Trending</span>
+            </div>
+
+            <div style="flex:1;overflow:hidden;padding:20px 16px 96px;display:flex;flex-direction:column;gap:18px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.EmptyState" icon="UserRoundPlus" title="You are not following anyone yet" caption="Follow a creator and their new work shows up here first." action="Find creators" on-action="{{ noop }}" hint-size="100%,300px"></x-import>
+
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px">Worth following</span>
+                <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Adaeze Okonkwo" subtitle="Business Strategist · Enugu" icon="GraduationCap" meta="Follow" trailing="none" hint-size="100%,66px"></x-import>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Musa Danladi" subtitle="Welder and trainer · Kaduna" icon="Wrench" meta="Follow" trailing="none" hint-size="100%,66px"></x-import>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Tolu Balogun" subtitle="Producer · Lagos" icon="Headphones" meta="Follow" trailing="none" hint-size="100%,66px"></x-import>
+                </div>
+              </div>
+            </div>
+          </div>
+          <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Home</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Explore</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+          </nav>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">4 · Empty — following nobody, with a way out</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+              <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+              </span>
+              <span style="flex:1;font-size:16px;font-weight:600">Browse</span>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="SlidersHorizontal" size="19" color="var(--text-secondary)" hint-size="19px,19px"></x-import>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+              <div style="display:flex;gap:8px;overflow:hidden">
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--accent);color:var(--text-on-accent);font-size:13px;font-weight:600">Business</span>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13px;font-weight:500">Agriculture</span>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13px;font-weight:500">Finance</span>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13px;font-weight:500">Trade</span>
+              </div>
+              <div style="display:flex;gap:8px;overflow:hidden">
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent);color:var(--text-primary);font-size:12.5px;font-weight:600">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="13" color="var(--accent)" stroke="2.6" hint-size="13px,13px"></x-import>Free
+                </span>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:500">Under ₦1,000</span>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:500">Course</span>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:500">Video</span>
+              </div>
+            </div>
+
+            <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px;padding:0 2px">
+                <span style="flex:1;font-size:13px;color:var(--text-secondary)">Business · Free · <span style="color:var(--text-primary);font-weight:600">38 pieces</span></span>
+                <a href="#clear" style="font-size:13px;font-weight:600">Clear</a>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;align-content:start;align-items:stretch;grid-auto-rows:1fr">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Playbook" subtitle="Zainab Bello" content-type="post" count="PDF" ratio="4 / 3" hint-size="100%,240px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Pricing" subtitle="Adaeze Okonkwo" content-type="video" count="Video" ratio="4 / 3" hint-size="100%,240px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Invoices" subtitle="Ifeanyi Nwosu" content-type="post" count="Template" ratio="4 / 3" hint-size="100%,240px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Bookkeeping" subtitle="Musa Danladi" content-type="course" count="Course" ratio="4 / 3" hint-size="100%,240px"></x-import>
+              </div>
+            </div>
+          </div>
+          <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Home</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Explore</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+          </nav>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">5 · Browse — category, price and type filters</span>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:1100}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { noop: () => {} };
+  }
+}
+</script>
+</body>
+</html>

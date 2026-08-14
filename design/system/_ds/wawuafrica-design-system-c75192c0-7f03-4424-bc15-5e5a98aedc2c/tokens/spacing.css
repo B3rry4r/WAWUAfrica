@@ -1,0 +1,17 @@
+:root {
+  /* 8pt scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Layout constants observed in the product */
+  --mobile-column: 430px;  /* max width of the phone column on desktop */
+  --gutter: 16px;
+  --card-pad: 16px;        /* PostCard / OpportunityCard padding */
+  --stack-gap: 12px;       /* gap between cards in a feed */
+  --control-h: 52px;       /* input + md button height */
+  --tap-min: 44px;
+}

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: var(--surface-page); }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+  .wawu-rail { scrollbar-width: none; }
+  .wawu-rail::-webkit-scrollbar { display: none; }
+</style>
+</helmet>
+
+<div style="max-width:430px;margin:0 auto;background:var(--surface-page);min-height:100vh;overflow-x:hidden">
+
+  <header style="position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:4px;padding:12px 14px;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-hairline)">
+    <img src="assets/wawu-logo-white.png" alt="WAWU" style="height:22px;width:auto;object-fit:contain;margin-right:auto">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" variant="ghost" size="sm" style="padding:0 10px" hint-size="auto,38px">Sign in</x-import>
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" variant="secondary" size="sm" style="padding:0 12px" hint-size="auto,38px">Sign up</x-import>
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" size="sm" style="padding:0 13px;font-size:12.5px" hint-size="auto,38px">Become a creator</x-import>
+  </header>
+
+  <section style="display:flex;flex-direction:column;align-items:flex-start;gap:18px;padding:40px 20px 36px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.AccessBadge" icon="TrendingUp" style="height:30px;padding:0 13px;font-size:12px" hint-size="auto,30px">Keep up to 90% of what you earn</x-import>
+
+    <h1 style="margin:0;font-size:42px;line-height:1.05;font-weight:700;letter-spacing:-0.035em;text-wrap:balance">African expertise,<br>finally paid for.</h1>
+
+    <p style="margin:0;font-size:16.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">You already know something people will pay to learn. Publish it, price it, and let your audience unlock it — in naira, on your terms.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;margin-top:4px">
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" icon-right="ArrowRight" hint-size="100%,56px">Start earning today</x-import>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" variant="ghost" size="md" hint-size="100%,48px">Browse creators first</x-import>
+    </div>
+  </section>
+
+  <section style="padding:8px 0 44px">
+    <div style="padding:0 20px">
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Earning on WAWU now" title="Creators to watch" action="See all" on-action="{{ noop }}" style="margin-bottom:0" hint-size="100%,48px"></x-import>
+    </div>
+
+    <div class="wawu-rail" style="display:flex;gap:14px;padding:16px 20px 8px;overflow-x:auto;scroll-snap-type:x mandatory">
+
+      <div style="position:relative;flex:0 0 306px;scroll-snap-align:center">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="CAC in 7 days" subtitle="Adaeze Okonkwo" content-type="course" count="Business Strategist" ratio="4 / 5" hint-size="100%,470px"></x-import>
+        <sc-if value="{{ showActivity }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:14px;right:14px;bottom:150px;pointer-events:none;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:rgba(19,19,22,.86);border:1px solid var(--border-strong);backdrop-filter:blur(20px)">
+          <span style="display:grid;place-items:center;width:32px;height:32px;border-radius:11px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="LockOpen" size="15" color="var(--accent)" stroke="2.2" hint-size="15px,15px"></x-import>
+          </span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:12.5px;font-weight:600">Content unlocked</span>
+            <span style="font-size:11.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Emeka unlocked “CAC in 7 days”</span>
+            </span>
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.PriceChip" amount="{{ unlockAmount }}" label="PPV" size="sm" tone="glass" hint-size="auto,24px"></x-import>
+        </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:0 0 306px;scroll-snap-align:center">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Ankara pattern drafting" subtitle="Ifeanyi Nwosu" content-type="video" count="Fashion Designer" ratio="4 / 5" hint-size="100%,470px"></x-import>
+      </div>
+
+      <div style="flex:0 0 306px;scroll-snap-align:center">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Dry-season poultry" subtitle="Zainab Bello" content-type="course" count="Agribusiness Trainer" ratio="4 / 5" hint-size="100%,470px"></x-import>
+      </div>
+
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:7px;margin-top:16px">
+      <span style="width:22px;height:5px;border-radius:999px;background:var(--accent)"></span>
+      <span style="width:5px;height:5px;border-radius:999px;background:var(--surface-tag)"></span>
+      <span style="width:5px;height:5px;border-radius:999px;background:var(--surface-tag)"></span>
+    </div>
+  </section>
+
+  <section style="padding:0 20px 48px">
+    <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);overflow:hidden">
+      <div style="padding:22px 20px;border-bottom:1px solid var(--border-hairline)">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatBlock" value="10,000+" label="Creators on WAWU" align="start" size="lg" hint-size="100%,52px"></x-import>
+      </div>
+      <div style="padding:22px 20px;border-bottom:1px solid var(--border-hairline)">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatBlock" value="₦900M+" label="Paid to creators" align="start" size="lg" hint-size="100%,52px"></x-import>
+      </div>
+      <div style="padding:22px 20px">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatBlock" value="1.5M+" label="Fans on the platform" align="start" size="lg" hint-size="100%,52px"></x-import>
+      </div>
+    </div>
+    <sc-if value="{{ statsAreDraft }}" hint-placeholder-val="{{ true }}">
+    <p style="display:flex;align-items:center;gap:7px;margin:12px 2px 0;font-size:12px;color:var(--text-muted)">
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Info" size="13" color="var(--text-muted)" hint-size="13px,13px"></x-import>
+      Placeholder figures — real numbers to be confirmed before launch.
+    </p>
+    </sc-if>
+  </section>
+
+  <section style="padding:0 20px 56px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Every field" title="One platform" hint-size="100%,48px"></x-import>
+    <p style="margin:-6px 0 18px;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">From agriculture to fintech, Nigerians are monetising what they already know.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Business</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Trade</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Finance</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Entertainment</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Career</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Education</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Agriculture</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Health</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Technology</span>
+      </div>
+
+      <div style="position:relative;aspect-ratio:1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Creative Arts</span>
+      </div>
+
+      <div style="grid-column:1 / -1;position:relative;aspect-ratio:2.1 / 1;border-radius:var(--radius-media);overflow:hidden;border:1px solid var(--border-hairline);background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(11,10,13,0.88) 0%, rgba(11,10,13,0.32) 42%, transparent 68%)"></div>
+        <span style="position:absolute;left:13px;bottom:12px;font-size:15px;font-weight:600">Culture</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="padding:0 20px 52px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Five ways" title="How you earn" hint-size="100%,48px"></x-import>
+    <p style="margin:-6px 0 18px;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">Free to discover. People pay to connect, and pay for value.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <div style="display:flex;gap:14px;padding:16px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Play" size="19" color="var(--accent)" stroke="2" hint-size="19px,19px"></x-import>
+        </span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600">Sell content</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:11px;font-weight:700;white-space:nowrap">You keep 85%</span>
+          </div>
+          <p style="margin:0;font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Video, courses, audio, books, art and templates. Set a price from ₦100 to ₦5,000 — buyers pay once and keep it forever.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px;padding:16px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="19" color="var(--accent)" stroke="2" hint-size="19px,19px"></x-import>
+        </span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600">Paid DMs</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:11px;font-weight:700;white-space:nowrap">You keep 85%</span>
+          </div>
+          <p style="margin:0;font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Charge ₦50 to ₦500 a message. Reply within 24 hours and it pays — miss it and the sender is refunded in full.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px;padding:16px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="19" color="var(--accent)" stroke="2" hint-size="19px,19px"></x-import>
+        </span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600">Community access</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent);color:var(--text-primary);font-size:11px;font-weight:700;white-space:nowrap">You keep 90%</span>
+          </div>
+          <p style="margin:0;font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Host a community and earn on every message sent in it. One credit per message — the best split on the platform.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px;padding:16px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="HandCoins" size="19" color="var(--accent)" stroke="2" hint-size="19px,19px"></x-import>
+        </span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600">Tips</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:11px;font-weight:700;white-space:nowrap">You keep 85%</span>
+          </div>
+          <p style="margin:0;font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Any amount, any time, nothing locked behind it. People support the work because they want to.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px;padding:16px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Store" size="19" color="var(--accent)" stroke="2" hint-size="19px,19px"></x-import>
+        </span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600">Storefront</span>
+            <span style="display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:11px;font-weight:700;white-space:nowrap">You keep 85%</span>
+          </div>
+          <p style="margin:0;font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Sell physical goods and services through WAWUBasket and WAWUBeauty, right from your profile.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="padding:0 20px 52px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Earnings calculator" title="What could you make?" hint-size="100%,48px"></x-import>
+
+    <div style="display:flex;flex-direction:column;gap:22px;padding:20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+
+      <div style="display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+        <button type="button" onClick="{{ setStandard }}" style="{{ standardStyle }}">Standard</button>
+        <button type="button" onClick="{{ setPro }}" style="{{ proStyle }}">Pro creator</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">How many followers do you have?</span>
+          <span style="font-size:17px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">{{ fansLabel }}</span>
+        </div>
+        <input type="range" min="100" max="50000" step="100" value="{{ fans }}" onChange="{{ onFans }}" style="width:100%;accent-color:var(--accent);height:24px;cursor:pointer">
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">
+          <span>100</span>
+          <span>50,000</span>
+        </div>
+      </div>
+
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.NairaInput" label="Average price per piece" value="{{ price }}" on-change="{{ onPrice }}" presets="{{ pricePresets }}" hint="Content prices run from ₦100 to ₦5,000." hint-size="100%,150px"></x-import>
+
+      <div style="display:flex;gap:12px;padding-top:18px;border-top:1px solid var(--border-hairline)">
+        <div style="flex:1;padding:16px;border-radius:var(--radius-input);background:var(--surface-elevated);border:1px solid var(--border-hairline)">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatBlock" value="{{ monthlyText }}" label="A month" align="start" size="md" hint-size="100%,44px"></x-import>
+        </div>
+        <div style="flex:1;padding:16px;border-radius:var(--radius-input);background:var(--accent-tint);border:1px solid var(--border-accent)">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatBlock" value="{{ yearlyText }}" label="A year" align="start" size="md" hint-size="100%,44px"></x-import>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>
+          You keep {{ keepPct }} of every naira
+        </span>
+        <span style="font-size:12px;line-height:1.5;color:var(--text-muted)">Estimate only. Assumes 5 in every 100 followers unlock one piece a month. Standard split is 85/15; Pro-tier creators keep 90%.</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="padding:0 20px 52px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Only on WAWU" title="More than content" hint-size="100%,48px"></x-import>
+    <p style="margin:-6px 0 18px;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">Other platforms sell your content. WAWU also gets your business registered, trained and covered.</p>
+
+    <div style="border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:6px">
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="CAC registration" subtitle="Register your business properly, in app" icon="Stamp" hint-size="100%,66px"></x-import>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="NEPC registration" subtitle="Get certified to export" icon="Ship" hint-size="100%,66px"></x-import>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Mentors" subtitle="Book time with people who have done it" icon="UserRoundSearch" hint-size="100%,66px"></x-import>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Courses" subtitle="Partner-delivered training, free on a tier" icon="GraduationCap" hint-size="100%,66px"></x-import>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Business playbook" subtitle="The full guide, free to download" icon="BookOpen" hint-size="100%,66px"></x-import>
+    </div>
+
+    <div style="margin-top:18px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">On the way</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ComingSoonPill" hint-size="auto,26px">Health insurance</x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ComingSoonPill" hint-size="auto,26px">Pension</x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ComingSoonPill" hint-size="auto,26px">Banking</x-import>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ComingSoonPill" hint-size="auto,26px">Grants and funding</x-import>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 20px 52px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Creator tiers" title="Go further, keep more" hint-size="100%,48px"></x-import>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <div style="display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.TierBadge" tier="basic" hint-size="auto,26px"></x-import></div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span style="font-size:32px;font-weight:700;letter-spacing:-0.03em;font-feature-settings:var(--font-feature-tabular)">₦5,999</span>
+          <span style="font-size:14px;color:var(--text-muted)">a year</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>3 uploads — 1 free, 2 paid</span>
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>Host open communities</span>
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>1 free course and the business playbook</span>
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>Purple badge</span>
+        </div>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" variant="secondary" hint-size="100%,48px">Choose Basic</x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:var(--radius-card);background:var(--surface-elevated);border:1px solid var(--border-accent)">
+        <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.TierBadge" tier="pro" hint-size="auto,26px"></x-import></div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span style="font-size:32px;font-weight:700;letter-spacing:-0.03em;font-feature-settings:var(--font-feature-tabular)">₦18,999</span>
+          <span style="font-size:14px;color:var(--text-muted)">a year</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--text-primary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>Keep 90% instead of 85%</span>
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>7 uploads — 2 free, 5 paid</span>
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>Private communities and up to 3 free courses</span>
+          <span style="display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" hint-size="15px,15px"></x-import>Priority support, gold badge, recommended deals</span>
+        </div>
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" hint-size="100%,48px">Go Pro</x-import>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="padding:0 0 52px">
+    <div style="padding:0 20px">
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="In their words" title="Creators on WAWU" hint-size="100%,48px"></x-import>
+    </div>
+
+    <div class="wawu-rail" style="display:flex;gap:12px;padding:2px 20px 8px;overflow-x:auto;scroll-snap-type:x mandatory">
+      <div style="flex:0 0 292px;scroll-snap-align:center;display:flex;flex-direction:column;gap:16px;padding:20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <p style="margin:0;font-size:15px;line-height:1.55;color:var(--text-primary);text-wrap:pretty">“I was answering the same business questions free on WhatsApp for years. Now the answers are a course and they pay for my rent.”</p>
+        <div style="display:flex;align-items:center;gap:11px;margin-top:auto">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="A" style="width:38px;height:38px;font-size:15px" hint-size="38px,38px"></x-import>
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:14px;font-weight:600">Adaeze Okonkwo</span>
+            <span style="font-size:12.5px;color:var(--text-muted)">Business Strategist, Enugu</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="flex:0 0 292px;scroll-snap-align:center;display:flex;flex-direction:column;gap:16px;padding:20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <p style="margin:0;font-size:15px;line-height:1.55;color:var(--text-primary);text-wrap:pretty">“The paid DM changed everything. People are serious when they pay ₦300 to ask, and I reply the same day.”</p>
+        <div style="display:flex;align-items:center;gap:11px;margin-top:auto">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="I" style="width:38px;height:38px;font-size:15px" hint-size="38px,38px"></x-import>
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:14px;font-weight:600">Ifeanyi Nwosu</span>
+            <span style="font-size:12.5px;color:var(--text-muted)">Fashion Designer, Aba</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="flex:0 0 292px;scroll-snap-align:center;display:flex;flex-direction:column;gap:16px;padding:20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <p style="margin:0;font-size:15px;line-height:1.55;color:var(--text-primary);text-wrap:pretty">“I got my CAC certificate and sold my first training pack in the same week, on the same app. That is the difference.”</p>
+        <div style="display:flex;align-items:center;gap:11px;margin-top:auto">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="Z" style="width:38px;height:38px;font-size:15px" hint-size="38px,38px"></x-import>
+          <span style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:14px;font-weight:600">Zainab Bello</span>
+            <span style="font-size:12.5px;color:var(--text-muted)">Agribusiness Trainer, Kano</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <p style="display:flex;align-items:center;gap:7px;margin:14px 20px 0;font-size:12px;color:var(--text-muted)">
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Info" size="13" color="var(--text-muted)" hint-size="13px,13px"></x-import>
+      Placeholder quotes — to be replaced with real creator interviews.
+    </p>
+  </section>
+
+  <section style="padding:0 20px 52px">
+    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.SectionHeader" caption="Before you ask" title="Questions" hint-size="100%,48px"></x-import>
+
+    <div style="border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);overflow:hidden">
+      <sc-for list="{{ faq }}" as="item" hint-placeholder-count="5">
+        <div style="border-bottom:1px solid var(--border-hairline)">
+          <button type="button" onClick="{{ item.toggle }}" style="display:flex;align-items:center;gap:14px;width:100%;padding:17px 18px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:var(--font-sans)">
+            <span style="flex:1;font-size:14.5px;font-weight:600;color:var(--text-primary);line-height:1.4">{{ item.q }}</span>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="{{ item.icon }}" size="17" color="var(--text-muted)" stroke="2.2" hint-size="17px,17px"></x-import>
+          </button>
+          <sc-if value="{{ item.open }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;padding:0 18px 18px;font-size:13.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">{{ item.a }}</p>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin:0 20px 40px;padding:28px 22px;border-radius:var(--radius-card);background:linear-gradient(150deg, var(--accent-deep) 0%, var(--accent) 100%);display:flex;flex-direction:column;gap:14px">
+    <h2 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-0.025em;line-height:1.2;color:var(--text-on-accent)">Ready to get paid for what you know?</h2>
+    <p style="margin:0;font-size:14.5px;line-height:1.5;color:rgba(255,255,255,.82)">No entry fee. Publish your first piece free, price the next one yourself.</p>
+    <a href="#creator" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;background:#fff;color:var(--text-on-light);font-size:15px;font-weight:600;margin-top:2px">
+      Become a creator
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ArrowRight" size="17" color="var(--text-on-light)" stroke="2.2" hint-size="17px,17px"></x-import>
+    </a>
+  </section>
+
+  <section style="padding:0 20px 48px">
+    <div style="display:flex;flex-direction:column;gap:14px;padding:22px 20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Stay in the loop</span>
+      <p style="margin:0;font-size:15px;line-height:1.5;color:var(--text-secondary);text-wrap:pretty">Monthly notes on what is selling on WAWU and how creators are pricing it.</p>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" type="email" icon="Mail" placeholder="you@email.com" hint-size="100%,52px"></x-import>
+      <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" variant="secondary" hint-size="100%,48px">Subscribe</x-import>
+      <span style="font-size:12px;color:var(--text-muted)">No spam. Leave whenever you like.</span>
+    </div>
+  </section>
+
+  <footer style="display:flex;flex-direction:column;gap:26px;padding:30px 20px 46px;border-top:1px solid var(--border-hairline)">
+    <img src="assets/wawu-logo-white.png" alt="WAWU" style="height:20px;width:auto;object-fit:contain;align-self:flex-start;opacity:.8">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 20px">
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Creators</span>
+        <a href="#signin" style="font-size:13.5px;color:var(--text-secondary)">Sign in</a>
+        <a href="#signup" style="font-size:13.5px;color:var(--text-secondary)">Sign up</a>
+        <a href="#creator" style="font-size:13.5px;color:var(--text-secondary)">Become a creator</a>
+        <a href="#tiers" style="font-size:13.5px;color:var(--text-secondary)">Creator tiers</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Services</span>
+        <a href="#cac" style="font-size:13.5px;color:var(--text-secondary)">CAC registration</a>
+        <a href="#nepc" style="font-size:13.5px;color:var(--text-secondary)">NEPC registration</a>
+        <a href="#mentors" style="font-size:13.5px;color:var(--text-secondary)">Mentors</a>
+        <a href="#learn" style="font-size:13.5px;color:var(--text-secondary)">Learn</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Marketplace</span>
+        <a href="#basket" style="font-size:13.5px;color:var(--text-secondary)">WAWUBasket</a>
+        <a href="#beauty" style="font-size:13.5px;color:var(--text-secondary)">WAWUBeauty</a>
+        <a href="#partners" style="font-size:13.5px;color:var(--text-secondary)">Partners</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Company</span>
+        <a href="#about" style="font-size:13.5px;color:var(--text-secondary)">About</a>
+        <a href="#help" style="font-size:13.5px;color:var(--text-secondary)">Help</a>
+        <a href="#terms" style="font-size:13.5px;color:var(--text-secondary)">Terms</a>
+        <a href="#privacy" style="font-size:13.5px;color:var(--text-secondary)">Privacy</a>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;padding-top:20px;border-top:1px solid var(--border-hairline)">
+      <span style="flex:1;font-size:12px;color:var(--text-muted)">© 2026 WAWUAfrica</span>
+      <a href="#whatsapp" aria-label="WhatsApp" style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="whatsapp" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+      </a>
+      <a href="#instagram" aria-label="Instagram" style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+        <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="instagram" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+      </a>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:932},&quot;showActivity&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Landing&quot;},&quot;statsAreDraft&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Landing&quot;}}">
+const FAQ = [
+  { q: 'What does WAWU take?', a: 'You keep 85% of everything you earn — content unlocks, paid DMs, tips and storefront sales. Pro-tier creators keep 90%. There is no listing fee and no monthly platform fee.' },
+  { q: 'Do I need to be verified to publish?', a: 'Creator access uses the WAWU ID tier you already have. Certified professional or Trusted partner can publish content, turn on paid DMs and host communities.' },
+  { q: 'Does my first upload have to be free?', a: 'Yes. Every creator’s first piece of content is free — it is how people find out your work is worth paying for. Price everything after that yourself.' },
+  { q: 'What happens if a creator never replies to a paid DM?', a: 'The sender is refunded in full after 24 hours and WAWU takes no fee on that refund. Creators who repeatedly miss the window have DMs switched off automatically.' },
+  { q: 'What are WAWU Credits?', a: 'Prepaid message units for open communities — one credit sends one message. They are a count, not a cash balance, and they are never converted back to naira.' },
+];
+
+class Component extends DCLogic {
+  state = { fans: 5000, price: 2500, pro: false, open: 0 };
+
+  renderVals() {
+    const { fans, price, pro, open } = this.state;
+    const rate = pro ? 0.9 : 0.85;
+    const naira = (n) => '₦' + Math.round(n).toLocaleString('en-NG');
+    const monthly = fans * 0.05 * (price || 0) * rate;
+
+    return {
+      showActivity: this.props.showActivity ?? true,
+      statsAreDraft: this.props.statsAreDraft ?? true,
+      unlockAmount: 2500,
+      noop: () => {},
+      pricePresets: [500, 1000, 2500, 5000],
+
+      fans,
+      fansLabel: fans.toLocaleString('en-NG'),
+      price,
+      isPro: pro,
+      keepPct: pro ? '90%' : '85%',
+      monthlyText: naira(monthly),
+      yearlyText: naira(monthly * 12),
+      onFans: (e) => this.setState({ fans: Number(e.target.value) }),
+      onPrice: (v) => this.setState({ price: v == null ? 0 : v }),
+      setStandard: () => this.setState({ pro: false }),
+      setPro: () => this.setState({ pro: true }),
+      standardStyle: pro
+        ? { flex: 1, height: 38, borderRadius: 999, border: '1px solid transparent', background: 'transparent', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }
+        : { flex: 1, height: 38, borderRadius: 999, border: '1px solid transparent', background: 'var(--accent)', color: 'var(--text-on-accent)', fontFamily: 'var(--font-sans)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' },
+      proStyle: pro
+        ? { flex: 1, height: 38, borderRadius: 999, border: '1px solid transparent', background: 'var(--accent)', color: 'var(--text-on-accent)', fontFamily: 'var(--font-sans)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }
+        : { flex: 1, height: 38, borderRadius: 999, border: '1px solid transparent', background: 'transparent', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' },
+
+      faq: FAQ.map((f, i) => ({
+        q: f.q,
+        a: f.a,
+        open: open === i,
+        icon: open === i ? 'Minus' : 'Plus',
+        toggle: () => this.setState({ open: open === i ? -1 : i }),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

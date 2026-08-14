@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #08070A; }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:44px;padding:56px 56px 96px;background:#08070A;min-height:100vh">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:880px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Batch 19 · Settings, static pages, global states</span>
+    <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">The last mile</h1>
+    <p style="margin:0;font-size:15.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">A user's settings list is shorter than a creator's — paid messages, tier and billing, and earnings preferences simply are not there. The delete flow names what leaves and what stays. Global states each offer one way out.</p>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">1 · Two settings lists</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Settings</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:12px 16px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="E" size="{{ av44 }}" hint-size="44px,44px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:15px;font-weight:600">Emeka Obi</span>
+                <span style="font-size:12.5px;color:var(--text-muted)">emeka@obi.ng</span>
+              </div>
+              <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="neutral" hint-size="auto,22px">User</x-import></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px;line-height:1">Account</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Edit profile" subtitle="Name, photo, bio, interests" icon="UserRound" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Account verification" subtitle="Verified user" icon="ShieldCheck" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Sign-in details" subtitle="Email, phone and password" icon="Lock" hint-size="100%,66px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px;line-height:1">App</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Notifications" subtitle="What reaches you, and how" icon="Bell" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Privacy" subtitle="Who sees what" icon="EyeOff" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Credits" subtitle="42 left" icon="Ticket" hint-size="100%,66px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px;line-height:1">WAWU</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Become a creator" subtitle="Sell what you know" icon="Upload" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="About WAWU" subtitle="Partners, privacy, terms" icon="Info" hint-size="100%,66px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:18px;padding:2px 4px">
+              <a href="#signout" style="font-size:14px;font-weight:600">Sign out</a>
+              <a href="#delete" style="font-size:14px;font-weight:600;color:var(--danger)">Delete account</a>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">1a · User — no DM settings, no tier, no earnings</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Settings</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:12px 16px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="A" size="{{ av44 }}" hint-size="44px,44px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:15px;font-weight:600">Adaeze Okonkwo</span>
+                <span style="font-size:12.5px;color:var(--text-muted)">adaeze@okonkwo.ng</span>
+              </div>
+              <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.TierBadge" tier="pro" size="sm" hint-size="auto,22px"></x-import></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px;line-height:1">Creating</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-accent);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Paid messages" subtitle="On · ₦300 each" icon="MessageCircle" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Tier and billing" subtitle="Pro · renews 14 Aug 2027" icon="CreditCard" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Payout details" subtitle="GTB ••••6789" icon="Landmark" hint-size="100%,58px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px;line-height:1">Account</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Edit profile" icon="UserRound" hint-size="100%,58px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Account verification" icon="ShieldCheck" hint-size="100%,58px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Sign-in details" subtitle="Email, phone and password" icon="Lock" hint-size="100%,66px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px;line-height:1">App</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Notifications" icon="Bell" hint-size="100%,58px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Privacy" icon="EyeOff" hint-size="100%,58px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="About WAWU" subtitle="Partners, privacy, terms" icon="Info" hint-size="100%,66px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:18px;padding:2px 4px">
+              <a href="#signout" style="font-size:14px;font-weight:600">Sign out</a>
+              <a href="#delete" style="font-size:14px;font-weight:600;color:var(--danger)">Delete account</a>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">1b · Creator — a Creating group appears on top</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Notifications</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Money</span>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:6px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:600">Something sold</span>
+                    <span style="font-size:12px;color:var(--text-muted)">Push and email</span>
+                  </div>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:600">A message is expiring</span>
+                    <span style="font-size:12px;color:var(--text-muted)">Always on — you lose the payment</span>
+                  </div>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);opacity:.5;flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:600">Tips</span>
+                  </div>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Your content</span>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:6px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <span style="flex:1;font-size:14.5px;font-weight:600">Approved or rejected</span>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+                  <span style="flex:1;font-size:14.5px;font-weight:600">Comments</span>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                    <span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--text-disabled)"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Everything else</span>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:6px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <span style="flex:1;font-size:14.5px;font-weight:600">New followers</span>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                    <span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--text-disabled)"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <span style="flex:1;font-size:14.5px;font-weight:600">Community activity</span>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:600">WAWU news</span>
+                    <span style="font-size:12px;color:var(--text-muted)">Monthly at most</span>
+                  </div>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                    <span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--text-disabled)"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">2 · Preferences — the money-losing one cannot be switched off</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">3–5 · Privacy, deleting, and saved</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Privacy</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Your profile</span>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:6px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:600">Show what I have bought</span>
+                    <span style="font-size:12px;color:var(--text-muted)">Off — nobody sees your purchases</span>
+                  </div>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                    <span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--text-disabled)"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-hairline)">
+                  <span style="flex:1;font-size:14.5px;font-weight:600">Show my saved items</span>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                    <span style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--text-disabled)"></span>
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+                  <span style="flex:1;font-size:14.5px;font-weight:600">Show who I follow</span>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Communities</span>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:6px 14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:14.5px;font-weight:600">Show me in member lists</span>
+                    <span style="font-size:12px;color:var(--text-muted)">Your messages are visible either way</span>
+                  </div>
+                  <span style="position:relative;width:48px;height:28px;border-radius:999px;background:var(--accent);flex-shrink:0">
+                    <span style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:999px;background:#fff"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 4px">Your data</span>
+              <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Blocked accounts" icon="UserRoundX" meta="2" hint-size="100%,58px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Download my data" subtitle="Sent to your email" icon="Download" hint-size="100%,66px"></x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Privacy policy" icon="FileText" trailing="external" hint-size="100%,58px"></x-import>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ShieldCheck" size="15" color="var(--text-muted)" style="margin-top:1px" hint-size="15px,15px"></x-import>
+              <span style="flex:1;font-size:12.5px;line-height:1.5;color:var(--text-secondary)">Your BVN and NIN are never shown on your profile and never given to another member.</span>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">3 · Privacy — each toggle says its consequence</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:16px;gap:14px;opacity:.4">
+            <div style="height:36px;width:50%;border-radius:12px;background:var(--surface-card)"></div>
+            <div style="height:150px;border-radius:var(--radius-card);background:var(--surface-card)"></div>
+          </div>
+
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Sheet" title="Delete your account?" caption="This cannot be undone, and support cannot bring it back." on-close="{{ noop }}" hint-size="100%,100%">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:11px;padding:16px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid rgba(255,92,92,0.28)">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--danger)">You lose</span>
+                <span style="display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.45;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="X" size="15" color="var(--danger)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>The 6 pieces you unlocked — access ends immediately</span>
+                <span style="display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.45;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="X" size="15" color="var(--danger)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>42 credits, which are not refundable</span>
+                <span style="display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.45;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="X" size="15" color="var(--danger)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>Your saved items and message history</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:11px;padding:16px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">What stays</span>
+                <span style="display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.45;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--text-muted)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>Comments you left stay, shown as a removed account</span>
+                <span style="display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.45;color:var(--text-secondary)"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--text-muted)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>Payment records we must keep by law</span>
+              </div>
+
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Type DELETE to confirm" placeholder="DELETE" hint-size="100%,84px"></x-import>
+
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" variant="secondary" hint-size="100%,56px">Keep my account</x-import>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" variant="destructive" disabled="{{ true }}" hint-size="100%,48px">Delete permanently</x-import>
+              </div>
+              <span style="align-self:center;font-size:12px;color:var(--text-muted);text-align:center">Only signing out? <a href="#signout">Sign out instead</a></span>
+            </div>
+          </x-import>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">4 · Delete — losses, what stays, typed confirmation</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+              <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+              </span>
+              <span style="flex:1;font-size:16px;font-weight:600">Saved</span>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="SlidersHorizontal" size="19" color="var(--text-secondary)" hint-size="19px,19px"></x-import>
+            </div>
+
+            <div style="display:flex;gap:8px;padding:12px 16px;overflow:hidden;border-bottom:1px solid var(--border-hairline)">
+              <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--accent);color:var(--text-on-accent);font-size:13px;font-weight:600">All 14</span>
+              <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13px;font-weight:500">Content</span>
+              <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13px;font-weight:500">Guides</span>
+              <span style="flex-shrink:0;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13px;font-weight:500">Products</span>
+            </div>
+
+            <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;align-content:start;grid-auto-rows:1fr">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="Welding rebar" subtitle="Musa Danladi" price="{{ p1500 }}" content-type="video" count="Video" ratio="4 / 3" hint-size="100%,240px"></x-import>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Playbook" subtitle="Zainab Bello" content-type="post" count="PDF" ratio="4 / 3" hint-size="100%,240px"></x-import>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Invoices" subtitle="Ifeanyi Nwosu" content-type="post" count="Template" ratio="4 / 3" hint-size="100%,240px"></x-import>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="Horn stems" subtitle="Tolu Balogun" price="{{ p1000 }}" content-type="audio" count="Audio" ratio="4 / 3" hint-size="100%,240px"></x-import>
+            </div>
+          </div>
+
+          <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Home</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Explore</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Profile</span>
+          </nav>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">5 · Saved — content, guides and products together</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">6 · Static pages</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">About</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:24px 20px;display:flex;flex-direction:column;gap:20px">
+            <img src="assets/wawu-logo-white.png" alt="WAWU" style="height:26px;width:auto;object-fit:contain;align-self:flex-start">
+            <h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1.2">African expertise, finally paid for</h1>
+            <p style="margin:0;font-size:14.5px;line-height:1.6;color:var(--text-secondary);text-wrap:pretty">WAWU exists because the person who knows how to register a business, price a market stall or pass an export inspection has always given that knowledge away free. We built a place where it earns.</p>
+            <p style="margin:0;font-size:14.5px;line-height:1.6;color:var(--text-secondary);text-wrap:pretty">Creators keep 85% of what they earn, or 90% on Pro. Beyond that we do the parts no other platform touches: registering the business, training, insurance and pension.</p>
+
+            <div style="display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">The family</span>
+              <div style="display:flex;align-items:center;gap:11px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ShoppingBag" size="16" color="var(--accent)" stroke="2" hint-size="16px,16px"></x-import>
+                <span style="flex:1;font-size:13.5px;color:var(--text-secondary)">WAWUBasket — goods</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:11px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Scissors" size="16" color="var(--accent)" stroke="2" hint-size="16px,16px"></x-import>
+                <span style="flex:1;font-size:13.5px;color:var(--text-secondary)">WAWUBeauty — services</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Partners" subtitle="Who we work with" icon="Handshake" hint-size="100%,66px"></x-import>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Privacy policy" icon="FileText" hint-size="100%,58px"></x-import>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Terms of service" icon="Scale" hint-size="100%,58px"></x-import>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Contact us" subtitle="hello@wawuafrica.com" icon="Mail" hint-size="100%,66px"></x-import>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;padding-top:4px">
+              <span style="flex:1;font-size:12px;color:var(--text-muted)">© 2026 WAWUAfrica · v3.0</span>
+              <a href="#whatsapp" aria-label="WhatsApp" style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="whatsapp" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+              </a>
+              <a href="#instagram" aria-label="Instagram" style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="instagram" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+              </a>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">6 · About — the static pages hang off here</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Partners</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:20px 16px;display:flex;flex-direction:column;gap:18px">
+            <p style="margin:0;font-size:14px;line-height:1.55;color:var(--text-secondary);padding:0 2px">The organisations that deliver parts of WAWU — training, registration and the services on the way.</p>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Delivering today</span>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:13px;padding:15px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                  <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:14px;flex-shrink:0;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+                    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="GraduationCap" size="18" color="var(--text-secondary)" hint-size="18px,18px"></x-import>
+                  </span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:15px;font-weight:600">Alison</span>
+                    <span style="font-size:12.5px;line-height:1.45;color:var(--text-secondary)">Delivers the course catalogue and certificates.</span>
+                  </div>
+                </div>
+                <div style="display:flex;gap:13px;padding:15px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                  <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:14px;flex-shrink:0;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+                    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CreditCard" size="18" color="var(--text-secondary)" hint-size="18px,18px"></x-import>
+                  </span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:15px;font-weight:600">Flutterwave</span>
+                    <span style="font-size:12.5px;line-height:1.45;color:var(--text-secondary)">Handles every payment. WAWU never sees your card.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">In progress</span>
+              <div style="display:flex;gap:13px;padding:15px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:14px;flex-shrink:0;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Landmark" size="18" color="var(--text-secondary)" hint-size="18px,18px"></x-import>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:15px;font-weight:600">Pension and insurance</span>
+                  <span style="font-size:12.5px;line-height:1.45;color:var(--text-secondary)">Being arranged with a licensed administrator and an insurer. Not signed yet.</span>
+                  <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ComingSoonPill" hint-size="auto,26px">Coming soon</x-import></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:11px;padding:16px;border-radius:var(--radius-card);background:var(--surface-elevated);border:1px solid var(--border-accent)">
+              <span style="font-size:15px;font-weight:600">Work with WAWU</span>
+              <span style="font-size:13px;line-height:1.5;color:var(--text-secondary)">If you train, register or insure Nigerian businesses, we would like to hear from you.</span>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" size="sm" style="align-self:flex-start" hint-size="auto,38px">Get in touch</x-import>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">6b · Partners — delivering today vs still being arranged</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">7 · Global states</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:460px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:grid;place-items:center">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.EmptyState" icon="Bookmark" title="Nothing saved yet" caption="Tap save on any drop and it lands here." action="Browse content" on-action="{{ noop }}" hint-size="100%,320px"></x-import>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Empty</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:460px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:grid;place-items:center">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ErrorState" on-retry="{{ noop }}" hint-size="100%,320px"></x-import>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Error</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:460px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--warning-tint);border-bottom:1px solid rgba(255,183,3,0.28)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="WifiOff" size="16" color="var(--warning)" stroke="2.2" hint-size="16px,16px"></x-import>
+            <span style="flex:1;font-size:13px;font-weight:600">No connection</span>
+          </div>
+          <div style="flex:1;display:grid;place-items:center">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.EmptyState" icon="WifiOff" title="You are offline" caption="Anything you already opened still works. New content needs a connection." action="Try again" on-action="{{ noop }}" hint-size="100%,300px"></x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Offline — sticky bar plus what still works</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:460px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:grid;place-items:center">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.EmptyState" icon="Compass" title="This page is gone" caption="The link may be old, or the creator took the piece down." action="Go to Home" on-action="{{ noop }}" hint-size="100%,320px"></x-import>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">404</span>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:1100}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { noop: () => {}, av44: 44, p1500: 1500, p1000: 1000 };
+  }
+}
+</script>
+</body>
+</html>

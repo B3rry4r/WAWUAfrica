@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #08070A; }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:44px;padding:56px 56px 96px;background:#08070A;min-height:100vh">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:880px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Batch 9 · Communities and Credits</span>
+    <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">Reading is free. Sending costs one credit.</h1>
+    <p style="margin:0;font-size:15.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">Credits are counted, never valued — the balance is always a number of messages, like airtime. Naira appears at exactly one moment: choosing a pack. No cash balance, no conversion back, no withdrawal anywhere in these screens.</p>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">1–3 · Find a community, join, chat on trial</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+              <span style="flex:1;font-size:20px;font-weight:600;letter-spacing:-0.02em">Communities</span>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="19" color="var(--text-secondary)" hint-size="19px,19px"></x-import>
+            </div>
+
+            <div style="display:flex;gap:26px;padding:2px 18px 0;border-bottom:1px solid var(--border-hairline)">
+              <span style="position:relative;padding-bottom:12px;font-size:14.5px;font-weight:600;color:var(--text-primary)">Yours
+                <span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)"></span>
+              </span>
+              <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Discover</span>
+            </div>
+
+            <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:var(--radius-input);background:var(--accent-tint);border:1px solid var(--border-accent)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ticket" size="17" color="var(--accent)" stroke="2.2" hint-size="17px,17px"></x-import>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:14.5px;font-weight:600">48 credits</span>
+                  <span style="font-size:12.5px;color:var(--text-secondary)">One credit sends one message</span>
+                </div>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" size="sm" variant="secondary" hint-size="auto,38px">Top up</x-import>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">You are in</span>
+
+                <div style="display:flex;gap:14px;padding:14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                  <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:14px;flex-shrink:0;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+                    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="19" color="var(--text-secondary)" hint-size="19px,19px"></x-import>
+                  </span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="flex:1;font-size:15px;font-weight:600">Traders of Ogbete</span>
+                      <span style="min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center">12</span>
+                    </div>
+                    <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ngozi: the new levy notice is on the gate</span>
+                    <span style="font-size:11.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">2,140 members · Adaeze Okonkwo</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:14px;padding:14px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                  <span style="display:grid;place-items:center;width:46px;height:46px;border-radius:14px;flex-shrink:0;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+                    <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="19" color="var(--text-secondary)" hint-size="19px,19px"></x-import>
+                  </span>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                    <span style="font-size:15px;font-weight:600">Poultry, dry season</span>
+                    <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Zainab: feed prices should settle by March</span>
+                    <span style="font-size:11.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">870 members · Zainab Bello</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);padding:0 2px">Worth joining</span>
+                <div style="display:flex;flex-direction:column;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);padding:4px">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Tailors of Aba" subtitle="1,410 members · open" icon="Users" meta="Join" trailing="none" hint-size="100%,66px"></x-import>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Lagos studio talk" subtitle="640 members · open" icon="Users" meta="Join" trailing="none" hint-size="100%,66px"></x-import>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ListRow" title="Adaeze's inner circle" subtitle="Private · Pro creators only" icon="Lock" meta="Request" trailing="none" hint-size="100%,66px"></x-import>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Home</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Communities</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Explore</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+            <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+          </nav>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">1 · Communities — balance is a count, at the top</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+            </span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:14.5px;font-weight:600">Traders of Ogbete</span>
+              <span style="font-size:11.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">2,140 members · 34 online</span>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Info" size="19" color="var(--text-secondary)" hint-size="19px,19px"></x-import>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border-hairline);background:var(--info-tint)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Clock" size="16" color="var(--info)" stroke="2.2" hint-size="16px,16px"></x-import>
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13.5px;font-weight:600">{{ trialDays }} days of free chat left</span>
+              <span style="font-size:12px;color:var(--text-secondary)">After that, sending costs 1 credit. Reading stays free.</span>
+            </div>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:18px 16px;display:flex;flex-direction:column;gap:22px">
+            <span style="align-self:center;font-size:11.5px;color:var(--text-muted)">Today</span>
+
+            <div style="display:flex;gap:14px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="N" style="width:34px;height:34px;font-size:13px" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Ngozi Eze</span>
+                  <span style="font-size:11.5px;color:var(--text-muted)">9:12 am</span>
+                </div>
+                <div style="align-self:flex-start;max-width:96%;padding:12px 15px;border-radius:16px 16px 16px 5px;background:var(--surface-card);border:1px solid var(--border-hairline);font-size:14px;line-height:1.5;color:var(--text-primary)">The new levy notice is on the gate. ₦200 a day from Monday.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:14px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="A" style="width:34px;height:34px;font-size:13px" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Adaeze Okonkwo</span>
+                  <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="neutral" hint-size="auto,22px">Host</x-import></div>
+                  <span style="font-size:11.5px;color:var(--text-muted)">9:20 am</span>
+                </div>
+                <div style="align-self:flex-start;max-width:96%;padding:12px 15px;border-radius:16px 16px 16px 5px;background:var(--surface-card);border:1px solid var(--border-accent);font-size:14px;line-height:1.5;color:var(--text-primary)">Ask for the receipt every single day. No receipt, no payment — that is the whole rule.</div>
+              </div>
+            </div>
+
+            <div style="align-self:flex-end;max-width:84%;display:flex;flex-direction:column;gap:7px;align-items:flex-end">
+              <div style="padding:12px 15px;border-radius:16px 16px 5px 16px;background:var(--accent);color:var(--text-on-accent);font-size:14px;line-height:1.5">Do they give receipts for the Saturday market too?</div>
+              <span style="font-size:11px;color:var(--text-muted)">9:24 am · on trial</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;padding:12px 16px 22px;border-top:1px solid var(--border-hairline)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="flex:1;display:flex;align-items:center;height:44px;padding:0 15px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline);font-size:14px;color:var(--text-muted)">Say something</div>
+              <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:var(--accent)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ArrowUp" size="19" color="#fff" stroke="2.4" hint-size="19px,19px"></x-import>
+              </span>
+            </div>
+            <span style="align-self:center;font-size:11.5px;color:var(--text-muted)">Free while your trial is running</span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">2–3 · Chat on trial — banner states what changes after</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+            </span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:14.5px;font-weight:600">Traders of Ogbete</span>
+              <span style="font-size:11.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">2,140 members · 34 online</span>
+            </div>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:18px 16px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;gap:14px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="A" style="width:34px;height:34px;font-size:13px" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Adaeze Okonkwo</span>
+                  <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="neutral" hint-size="auto,22px">Host</x-import></div>
+                </div>
+                <div style="align-self:flex-start;max-width:96%;padding:12px 15px;border-radius:16px 16px 16px 5px;background:var(--surface-card);border:1px solid var(--border-accent);font-size:14px;line-height:1.5">Ask for the receipt every single day. No receipt, no payment.</div>
+              </div>
+            </div>
+
+            <div style="align-self:flex-end;max-width:84%;display:flex;flex-direction:column;gap:7px;align-items:flex-end">
+              <div style="padding:12px 15px;border-radius:16px 16px 5px 16px;background:var(--accent);color:var(--text-on-accent);font-size:14px;line-height:1.5">Do they give receipts for the Saturday market too?</div>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ticket" size="12" color="var(--text-muted)" hint-size="12px,12px"></x-import>
+                1 credit used · 47 left
+              </span>
+            </div>
+
+            <div style="display:flex;gap:14px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="N" style="width:34px;height:34px;font-size:13px" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:13px;font-weight:600">Ngozi Eze</span>
+                <div style="align-self:flex-start;max-width:96%;padding:12px 15px;border-radius:16px 16px 16px 5px;background:var(--surface-card);border:1px solid var(--border-hairline);font-size:14px;line-height:1.5">Saturday too. Same book, same man.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:12px 16px 22px;border-top:1px solid var(--border-hairline)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="flex:1;display:flex;align-items:center;height:44px;padding:0 15px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline);font-size:14px;color:var(--text-muted)">Say something</div>
+              <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:var(--accent)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ArrowUp" size="19" color="#fff" stroke="2.4" hint-size="19px,19px"></x-import>
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;align-self:center">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ticket" size="13" color="var(--text-secondary)" hint-size="13px,13px"></x-import>
+              <span style="font-size:12px;color:var(--text-secondary)"><span style="color:var(--text-primary);font-weight:600">47 credits</span> · 1 per message</span>
+              <a href="#topup" style="font-size:12px;font-weight:600">Top up</a>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">4 · Paid chat — count under the composer, "1 credit used" on the message</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">5–7 · Out of credits, buying more, back to chatting</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="16" color="var(--text-secondary)" hint-size="16px,16px"></x-import>
+            </span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:14.5px;font-weight:600">Traders of Ogbete</span>
+              <span style="font-size:11.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">2,140 members</span>
+            </div>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:18px 16px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;gap:14px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="N" style="width:34px;height:34px;font-size:13px" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:13px;font-weight:600">Ngozi Eze</span>
+                <div style="align-self:flex-start;max-width:96%;padding:12px 15px;border-radius:16px 16px 16px 5px;background:var(--surface-card);border:1px solid var(--border-hairline);font-size:14px;line-height:1.5">Saturday too. Same book, same man.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="M" style="width:34px;height:34px;font-size:13px" hint-size="34px,34px"></x-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:13px;font-weight:600">Musa Danladi</span>
+                <div style="align-self:flex-start;max-width:96%;padding:12px 15px;border-radius:16px 16px 16px 5px;background:var(--surface-card);border:1px solid var(--border-hairline);font-size:14px;line-height:1.5">Keep reading, it costs nothing. Only sending uses a credit.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;padding:16px 16px 24px;border-top:1px solid var(--border-hairline);background:var(--surface-elevated)">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ticket" size="18" color="var(--locked)" stroke="2" hint-size="18px,18px"></x-import>
+              </span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:15px;font-weight:600">0 credits left</span>
+                <span style="font-size:12.5px;line-height:1.4;color:var(--text-secondary)">Buy credits to keep chatting. Reading stays free.</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;opacity:.5">
+              <div style="flex:1;display:flex;align-items:center;height:44px;padding:0 15px;border-radius:999px;background:var(--surface-input);border:1px dashed var(--border-hairline);font-size:14px;color:var(--text-disabled)">Sending needs a credit</div>
+              <span style="display:grid;place-items:center;width:44px;height:44px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Lock" size="17" color="var(--text-disabled)" stroke="2.2" hint-size="17px,17px"></x-import>
+              </span>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" icon="Ticket" hint-size="100%,56px">Buy credits</x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">5 · Empty balance — composer blocked, thread still readable</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:16px;gap:14px;opacity:.45">
+            <div style="height:36px;width:70%;border-radius:12px;background:var(--surface-card)"></div>
+            <div style="height:60px;border-radius:16px;background:var(--surface-card)"></div>
+            <div style="height:60px;width:80%;border-radius:16px;background:var(--surface-card)"></div>
+          </div>
+
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Sheet" title="Buy credits" caption="One credit sends one message in an open community." on-close="{{ noop }}" hint-size="100%,100%">
+            <div style="display:flex;flex-direction:column;gap:16px">
+
+              <div style="display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:15px;font-weight:600">Starter</span>
+                  <span style="font-size:12.5px;color:var(--text-muted)">₦10 a message</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+                  <span style="font-size:17px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">50 credits</span>
+                  <span style="font-size:13px;color:var(--text-secondary);font-feature-settings:var(--font-feature-tabular)">₦500</span>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:var(--radius-input);background:var(--accent-tint);border:1px solid var(--border-accent)">
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:15px;font-weight:600">Popular</span>
+                    <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="neutral" hint-size="auto,22px">Best value</x-import></div>
+                  </div>
+                  <span style="font-size:12.5px;color:var(--text-muted)">₦8.33 a message</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+                  <span style="font-size:17px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">120 credits</span>
+                  <span style="font-size:13px;color:var(--text-secondary);font-feature-settings:var(--font-feature-tabular)">₦1,000</span>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid var(--border-hairline)">
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:15px;font-weight:600">Pro</span>
+                  <span style="font-size:12.5px;color:var(--text-muted)">₦6.67 a message</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+                  <span style="font-size:17px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">300 credits</span>
+                  <span style="font-size:13px;color:var(--text-secondary);font-feature-settings:var(--font-feature-tabular)">₦2,000</span>
+                </div>
+              </div>
+
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" hint-size="100%,56px">Pay ₦1,000 for 120 credits</x-import>
+
+              <p style="margin:0;font-size:11.5px;line-height:1.55;color:var(--text-muted)">Credits are message units, not money. Once bought they cannot be refunded or turned back into naira, and they only pay for messages in open communities — not content, tips or paid messages.</p>
+            </div>
+          </x-import>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">6 · Three packs — per-message value, honest fine print</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:16px;gap:14px;opacity:.45">
+            <div style="height:36px;width:70%;border-radius:12px;background:var(--surface-card)"></div>
+            <div style="height:60px;border-radius:16px;background:var(--surface-card)"></div>
+          </div>
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Sheet" hint-size="100%,100%">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:14px 6px 6px;text-align:center">
+              <span style="display:grid;place-items:center;width:72px;height:72px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent)">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Ticket" size="30" color="var(--accent)" stroke="2.2" hint-size="30px,30px"></x-import>
+              </span>
+              <span style="font-size:34px;font-weight:700;letter-spacing:-0.03em;line-height:1;font-feature-settings:var(--font-feature-tabular)">120 credits</span>
+              <span style="font-size:14px;line-height:1.5;color:var(--text-secondary);max-width:250px">Added to your balance. That is 120 messages.</span>
+              <div style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 15px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid var(--border-hairline);text-align:left">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+                <span style="flex:1;font-size:12.5px;line-height:1.45;color:var(--text-secondary)">Spend them in any open community you have joined.</span>
+              </div>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" hint-size="100%,56px">Back to the chat</x-import>
+            </div>
+          </x-import>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">7 · Success — the new balance, as a count</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="max-width:900px;padding:20px 22px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);display:flex;flex-direction:column;gap:10px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">What is deliberately absent</span>
+    <p style="margin:0;font-size:14.5px;line-height:1.6;color:var(--text-secondary);text-wrap:pretty">No naira value on the balance, no "credits worth ₦X", no transfer to another member, no cash out, no withdrawal entry point. Naira appears only on the pack rows, where you are buying. Everywhere else a credit is a message.</p>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:1100},&quot;trialDays&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:4,&quot;min&quot;:0,&quot;max&quot;:7,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Credits&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { noop: () => {}, trialDays: this.props.trialDays ?? 4 };
+  }
+}
+</script>
+</body>
+</html>

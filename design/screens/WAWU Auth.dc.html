@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #08070A; }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:44px;padding:56px 56px 96px;background:#08070A;min-height:100vh">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:820px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Batch 3 · Authentication</span>
+    <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">Signing up as a user, or as a creator</h1>
+    <p style="margin:0;font-size:15.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">Auth stays with WAWU ID — these screens collect and hand off, they do not replace it. The account-type split happens before the form, and it decides where signup ends. No ID upload or document capture here; that belongs to creator onboarding.</p>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">1 · Choose an account type</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:20px;padding:34px 20px 20px">
+            <img src="assets/wawu-logo-white.png" alt="WAWU" style="height:24px;width:auto;object-fit:contain;align-self:flex-start">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <h2 style="margin:0;font-size:30px;font-weight:700;letter-spacing:-0.03em;line-height:1.12">What brings you to WAWU?</h2>
+              <p style="margin:0;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">You can switch to a creator account later — nothing here is permanent.</p>
+            </div>
+
+            <div style="display:flex;gap:14px;padding:16px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+              <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--surface-tag);border:1px solid var(--border-hairline);flex-shrink:0">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="19" color="var(--text-secondary)" stroke="2" hint-size="19px,19px"></x-import>
+              </span>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:17px;font-weight:600">I'm here to discover</span>
+                  <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="neutral" hint-size="auto,24px">Free</x-import></div>
+                </div>
+                <span style="font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Browse and unlock content, message creators, join communities, shop the marketplace.</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px;padding:18px;border-radius:var(--radius-card);background:var(--surface-elevated);border:1px solid var(--border-accent)">
+              <div style="display:flex;gap:14px">
+                <span style="display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent);flex-shrink:0">
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Upload" size="19" color="var(--accent)" stroke="2" hint-size="19px,19px"></x-import>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                  <span style="font-size:17px;font-weight:600">I want to create and earn</span>
+                  <span style="font-size:13.5px;line-height:1.45;color:var(--text-secondary)">Everything above, plus upload and price your work, paid DMs, host communities, and keep 85% — 90% on Pro.</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline);background:var(--surface-page)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" icon-right="ArrowRight" hint-size="100%,56px">Continue</x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" variant="ghost" hint-size="100%,48px">I already have an account</x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Entry choice — creator card carries the cost and the ID check up front</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">2 · Sign up — same fields for both types</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Create your account</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Step 1 of 3</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-input);background:var(--accent-tint);border:1px solid var(--border-accent)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Upload" size="16" color="var(--accent)" stroke="2.2" hint-size="16px,16px"></x-import>
+              <span style="flex:1;font-size:13.5px;font-weight:600">Creator account</span>
+              <a href="#change" style="font-size:13px;font-weight:600">Change</a>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Full name" default-value="Ada Okeke" hint-size="100%,84px"></x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Email" type="email" default-value="ada@okeke.ng" hint-size="100%,84px"></x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Password" type="password" default-value="okekeada2026" hint="At least 8 characters." hint-size="100%,104px"></x-import>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Phone</span>
+              <div style="display:flex;gap:8px">
+                <button type="button" style="display:flex;align-items:center;gap:7px;height:52px;padding:0 14px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);color:var(--text-primary);font-family:var(--font-sans);font-size:15px;font-weight:600;cursor:pointer;flex-shrink:0">+234
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronDown" size="15" color="var(--text-muted)" stroke="2.2" hint-size="15px,15px"></x-import>
+                </button>
+                <div style="flex:1;display:flex;align-items:center;height:52px;padding:0 16px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);font-size:15px;font-feature-settings:var(--font-feature-tabular)">803 000 0000</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" icon-right="ArrowRight" hint-size="100%,56px">Continue</x-import>
+            <span style="display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--text-muted)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ShieldCheck" size="13" color="var(--text-muted)" hint-size="13px,13px"></x-import>
+              Secured by WAWU ID
+            </span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Part 1 — identity, filled</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Create your account</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Step 1 of 3</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--radius-input);background:var(--danger-tint);border:1px solid rgba(255,92,92,0.32)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleAlert" size="16" color="var(--danger)" stroke="2.2" style="margin-top:1px" hint-size="16px,16px"></x-import>
+              <span style="flex:1;font-size:13.5px;line-height:1.45;color:var(--danger)">Two fields need attention before you can continue.</span>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Full name" default-value="Ada Okeke" hint-size="100%,84px"></x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Email" type="email" default-value="ada@okeke" error="That email address is not complete." hint-size="100%,104px"></x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Password" type="password" default-value="okeke" error="Too short — use at least 8 characters." hint-size="100%,104px"></x-import>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Phone</span>
+              <div style="display:flex;gap:8px">
+                <button type="button" style="display:flex;align-items:center;gap:7px;height:52px;padding:0 14px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);color:var(--text-primary);font-family:var(--font-sans);font-size:15px;font-weight:600;cursor:pointer;flex-shrink:0">+234
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronDown" size="15" color="var(--text-muted)" stroke="2.2" hint-size="15px,15px"></x-import>
+                </button>
+                <div style="flex:1;display:flex;align-items:center;height:52px;padding:0 16px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);font-size:15px;font-feature-settings:var(--font-feature-tabular)">803 000 0000</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" disabled="{{ true }}" icon-right="ArrowRight" hint-size="100%,56px">Continue</x-import>
+            <span style="display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--text-muted)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ShieldCheck" size="13" color="var(--text-muted)" hint-size="13px,13px"></x-import>
+              Secured by WAWU ID
+            </span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Part 1 — validation: short password, incomplete email</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">A bit about you</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Step 1 of 3</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:18px 20px 20px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Country</span>
+              <button type="button" style="display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);color:var(--text-primary);font-family:var(--font-sans);font-size:15px;cursor:pointer;text-align:left"><span style="flex:1">Nigeria</span><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronDown" size="16" color="var(--text-muted)" stroke="2.2" hint-size="16px,16px"></x-import></button>
+              <span style="font-size:12px;color:var(--text-muted)">Sets your national-ID field at verification.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">State</span>
+              <button type="button" style="display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);color:var(--text-primary);font-family:var(--font-sans);font-size:15px;cursor:pointer;text-align:left"><span style="flex:1">Enugu</span><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronDown" size="16" color="var(--text-muted)" stroke="2.2" hint-size="16px,16px"></x-import></button>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Occupation" default-value="Agripreneur" hint-size="100%,84px"></x-import>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Gender <span style="font-weight:500;color:var(--text-muted)">— optional</span></span>
+              <div style="display:flex;gap:8px">
+                <span style="flex:1;display:grid;place-items:center;height:44px;border-radius:999px;background:var(--accent);color:var(--text-on-accent);font-size:13.5px;font-weight:600">Female</span>
+                <span style="flex:1;display:grid;place-items:center;height:44px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:13.5px;font-weight:500">Male</span>
+                <span style="flex:1;display:grid;place-items:center;height:44px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:500">Prefer not to say</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding-top:2px">
+              <span style="display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--accent);flex-shrink:0;margin-top:1px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="14" color="#fff" stroke="3" hint-size="14px,14px"></x-import>
+              </span>
+              <span style="flex:1;font-size:13.5px;line-height:1.45;color:var(--text-secondary)">I agree to the <a href="#terms">terms of service</a> and <a href="#privacy">privacy policy</a>.</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" hint-size="100%,56px">Create account</x-import>
+            <span style="display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--text-muted)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ShieldCheck" size="13" color="var(--text-muted)" hint-size="13px,13px"></x-import>
+              Secured by WAWU ID
+            </span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Part 2 — location and about you, filled</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">A bit about you</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Step 1 of 3</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:18px 20px 20px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Country</span>
+              <button type="button" style="display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline);color:var(--text-primary);font-family:var(--font-sans);font-size:15px;cursor:pointer;text-align:left"><span style="flex:1">Ghana</span><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronDown" size="16" color="var(--text-muted)" stroke="2.2" hint-size="16px,16px"></x-import></button>
+              <span style="font-size:12px;color:var(--text-muted)">Sets your national-ID field at verification.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Region</span>
+              <div style="display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:var(--radius-input);background:var(--surface-input);border:1px dashed var(--border-hairline);opacity:.7">
+                <span style="flex:1;font-size:15px;color:var(--text-disabled)">No regions listed</span>
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Minus" size="16" color="var(--text-disabled)" stroke="2.2" hint-size="16px,16px"></x-import>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted)">Ghana has no regions on file yet — skip this and continue.</span>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Occupation" placeholder="e.g. Agripreneur" hint-size="100%,84px"></x-import>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding-top:2px">
+              <span style="display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:transparent;border:1.5px solid var(--danger);flex-shrink:0;margin-top:1px"></span>
+              <span style="flex:1;display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:13.5px;line-height:1.45;color:var(--text-secondary)">I agree to the <a href="#terms">terms of service</a> and <a href="#privacy">privacy policy</a>.</span>
+                <span style="font-size:12px;color:var(--danger)">You need to accept the terms to continue.</span>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" disabled="{{ true }}" hint-size="100%,56px">Create account</x-import>
+            <span style="display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--text-muted)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ShieldCheck" size="13" color="var(--text-muted)" hint-size="13px,13px"></x-import>
+              Secured by WAWU ID
+            </span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Part 2 — region empty state and unaccepted terms</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">3 · Verify the email</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Verify your email</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Step 2 of 3</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:32px 20px 20px;display:flex;flex-direction:column;gap:26px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.025em">Enter the 6-digit code</h2>
+              <p style="margin:0;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">We sent it to <span style="color:var(--text-primary);font-weight:600">ada@okeke.ng</span>. <a href="#change">Change email</a></p>
+            </div>
+
+            <div style="display:flex;gap:9px">
+              <span style="flex:1;aspect-ratio:1 / 1.15;display:grid;place-items:center;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-strong);font-size:26px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">4</span>
+              <span style="flex:1;aspect-ratio:1 / 1.15;display:grid;place-items:center;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-strong);font-size:26px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">1</span>
+              <span style="flex:1;aspect-ratio:1 / 1.15;display:grid;place-items:center;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-strong);font-size:26px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">9</span>
+              <span style="flex:1;aspect-ratio:1 / 1.15;display:grid;place-items:center;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-strong);font-size:26px;font-weight:700;font-feature-settings:var(--font-feature-tabular)">2</span>
+              <span style="flex:1;aspect-ratio:1 / 1.15;display:grid;place-items:center;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--accent);box-shadow:var(--accent-glow)"></span>
+              <span style="flex:1;aspect-ratio:1 / 1.15;display:grid;place-items:center;border-radius:var(--radius-input);background:var(--surface-input);border:1px solid var(--border-hairline)"></span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Clock" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+              <span style="font-size:13.5px;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Resend the code in 0:{{ resendSeconds }}</span>
+            </div>
+
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-radius:var(--radius-input);background:var(--surface-card);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Info" size="16" color="var(--text-muted)" style="margin-top:1px" hint-size="16px,16px"></x-import>
+              <span style="flex:1;font-size:13px;line-height:1.5;color:var(--text-secondary)">Codes come from WAWU ID and expire after 10 minutes. Check your spam folder if it has not arrived.</span>
+            </div>
+          </div>
+
+          <div style="padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" disabled="{{ true }}" hint-size="100%,56px">Verify</x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">OTP — destination shown back, resend on a timer</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px 32px;text-align:center">
+            <span style="display:grid;place-items:center;width:88px;height:88px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="40" color="var(--accent)" stroke="2.6" hint-size="40px,40px"></x-import>
+            </span>
+            <h2 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.03em">Email verified</h2>
+            <p style="margin:0;font-size:15px;line-height:1.55;color:var(--text-secondary);max-width:290px">Your WAWU ID is live. One more step and we will know what to put in front of you.</p>
+            <div style="display:flex"><x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="success" hint-size="auto,26px">Creator account created</x-import></div>
+          </div>
+          <div style="padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" icon-right="ArrowRight" hint-size="100%,56px">Pick your interests</x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Success moment</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">4 · Interests</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="flex:1;font-size:16px;font-weight:600">What are you into?</span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">Step 3 of 3</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:20px 20px 20px;display:flex;flex-direction:column;gap:20px">
+            <p style="margin:0;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">Pick at least {{ interestsMin }} so your feed starts with work you actually care about.</p>
+
+            <div style="display:flex;flex-wrap:wrap;gap:9px">
+              <span style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:999px;background:var(--accent);color:var(--text-on-accent);font-size:14px;font-weight:600">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="14" color="#fff" stroke="3" hint-size="14px,14px"></x-import>Business</span>
+              <span style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:999px;background:var(--accent);color:var(--text-on-accent);font-size:14px;font-weight:600">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="14" color="#fff" stroke="3" hint-size="14px,14px"></x-import>Agriculture</span>
+              <span style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:999px;background:var(--accent);color:var(--text-on-accent);font-size:14px;font-weight:600">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="14" color="#fff" stroke="3" hint-size="14px,14px"></x-import>Finance</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Trade</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Entertainment</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Career</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Education</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Health</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Technology</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Creative Arts</span>
+              <span style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:14px;font-weight:500">Culture</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <div style="display:flex;align-items:center;gap:9px">
+              <div style="flex:1;height:5px;border-radius:999px;background:var(--surface-tag);overflow:hidden">
+                <div style="width:60%;height:100%;border-radius:999px;background:var(--accent)"></div>
+              </div>
+              <span style="font-size:12.5px;font-weight:600;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">3 of {{ interestsMin }}</span>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" disabled="{{ true }}" hint-size="100%,56px">{{ interestsCta }}</x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Interests — button stays locked until the minimum is met</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">5 · Coming back</span>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="flex:1;overflow:hidden;padding:44px 20px 20px;display:flex;flex-direction:column;gap:24px">
+            <img src="assets/wawu-logo-white.png" alt="WAWU" style="height:24px;width:auto;object-fit:contain;align-self:flex-start">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <h2 style="margin:0;font-size:30px;font-weight:700;letter-spacing:-0.03em">Welcome back</h2>
+              <p style="margin:0;font-size:14.5px;color:var(--text-secondary)">Sign in with your WAWU ID.</p>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Email" type="email" placeholder="you@email.com" hint-size="100%,84px"></x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Password" type="password" placeholder="Your password" hint-size="100%,84px"></x-import>
+            <a href="#forgot" style="align-self:flex-start;font-size:13.5px;font-weight:600">Forgot your password?</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" hint-size="100%,56px">Sign in</x-import>
+            <span style="align-self:center;font-size:13.5px;color:var(--text-secondary)">New here? <a href="#signup">Create an account</a></span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Sign in</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ChevronLeft" size="18" color="var(--text-primary)" stroke="2.2" hint-size="18px,18px"></x-import>
+            </span>
+            <span style="flex:1;font-size:16px;font-weight:600">Forgot password</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:28px 20px 20px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.025em">Reset it by email</h2>
+              <p style="margin:0;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">Give us the address on your WAWU ID and we will send a reset link.</p>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Email" type="email" default-value="ada@okeke.ng" icon="Mail" hint-size="100%,84px"></x-import>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" hint-size="100%,56px">Send reset link</x-import>
+            <span style="align-self:center;font-size:13.5px;color:var(--text-secondary)">Remembered it? <a href="#signin">Sign in</a></span>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Forgot password</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border-hairline)">
+            <span style="flex:1;font-size:16px;font-weight:600">Set a new password</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:28px 20px 20px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.025em">Choose something new</h2>
+              <p style="margin:0;font-size:14.5px;line-height:1.5;color:var(--text-secondary)">You will be signed in on this device once it is saved.</p>
+            </div>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="New password" type="password" default-value="okekeada2026" hint="At least 8 characters." hint-size="100%,104px"></x-import>
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Input" label="Confirm password" type="password" default-value="okekeada20" error="Both passwords need to match." hint-size="100%,104px"></x-import>
+          </div>
+          <div style="padding:16px 20px 26px;border-top:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Button" full="{{ true }}" size="lg" disabled="{{ true }}" hint-size="100%,56px">Save new password</x-import>
+          </div>
+        </div>
+        <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Reset password — mismatch state</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">6 · Where signup ends</span>
+    <div style="display:flex;flex-wrap:wrap;gap:20px;max-width:1000px">
+
+      <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:14px;padding:22px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--surface-tag);border:1px solid var(--border-hairline)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="18" color="var(--text-secondary)" stroke="2" hint-size="18px,18px"></x-import>
+          </span>
+          <span style="font-size:18px;font-weight:600">User account</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ArrowRight" size="17" color="var(--accent)" stroke="2.2" hint-size="17px,17px"></x-import>
+          <span style="font-size:15px;font-weight:600">Lands in the content feed</span>
+        </div>
+        <p style="margin:0;font-size:13.5px;line-height:1.5;color:var(--text-secondary)">Straight into Home with their interests applied. No creator tools anywhere in the shell — no upload, no earnings, no inbox for incoming paid DMs.</p>
+      </div>
+
+      <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:14px;padding:22px;border-radius:var(--radius-card);background:var(--surface-elevated);border:1px solid var(--border-accent)">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--accent-tint);border:1px solid var(--border-accent)">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Upload" size="18" color="var(--accent)" stroke="2" hint-size="18px,18px"></x-import>
+          </span>
+          <span style="font-size:18px;font-weight:600">Creator account</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="ArrowRight" size="17" color="var(--accent)" stroke="2.2" hint-size="17px,17px"></x-import>
+          <span style="font-size:15px;font-weight:600">Lands in creator onboarding, not the feed</span>
+        </div>
+        <p style="margin:0;font-size:13.5px;line-height:1.5;color:var(--text-secondary)">Tier choice and payment first, then the ID details. Both gates are independent: paying unlocks uploading and creator tools; the manual ID review unlocks getting paid. Someone can be selling with a review still pending.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="success" hint-size="auto,26px">Subscription active</x-import>
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.StatusPill" kind="warning" hint-size="auto,26px">ID review pending</x-import>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:1100},&quot;interestsMin&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:10,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Auth&quot;},&quot;resendSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:42,&quot;min&quot;:5,&quot;max&quot;:59,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Auth&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const min = this.props.interestsMin ?? 5;
+    const secs = this.props.resendSeconds ?? 42;
+    return {
+      interestsMin: min,
+      resendSeconds: String(secs).padStart(2, '0'),
+      interestsCta: 'Pick ' + Math.max(0, min - 3) + ' more',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+html, body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
+img { display: block; max-width: 100%; }
+a { color: var(--accent); text-decoration: none; transition: color var(--dur-base) var(--ease-soft); }
+a:hover { color: var(--accent-hover); }
+button, input, textarea, select { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+::selection { background: var(--accent); color: #fff; }
+
+.wb-display { font-size: var(--text-display); font-weight: var(--weight-bold); letter-spacing: -0.03em; line-height: var(--leading-tight); color: var(--text-primary); }
+.wb-h1 { font-size: var(--text-h1); font-weight: var(--weight-semibold); letter-spacing: -0.02em; line-height: var(--leading-tight); color: var(--text-primary); }
+.wb-h2 { font-size: var(--text-h2); font-weight: var(--weight-semibold); letter-spacing: -0.015em; line-height: var(--leading-snug); color: var(--text-primary); }
+.wb-h3 { font-size: var(--text-h3); font-weight: var(--weight-medium); letter-spacing: -0.01em; line-height: var(--leading-snug); color: var(--text-primary); }
+.wb-card-title { font-size: var(--text-card); font-weight: var(--weight-medium); line-height: var(--leading-snug); color: var(--text-primary); }
+.wb-body { font-size: var(--text-body); line-height: var(--leading-body); color: var(--text-primary); }
+.wb-secondary { font-size: var(--text-sec); line-height: 1.45; color: var(--text-secondary); }
+.wb-caption { font-size: var(--text-caption); line-height: 1.4; color: var(--text-muted); }
+.wb-label { font-size: var(--text-label); font-weight: var(--weight-semibold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+
+.wawu-no-scrollbar{scrollbar-width:none;-ms-overflow-style:none}
+.wawu-no-scrollbar::-webkit-scrollbar{display:none;width:0;height:0}
+
+@keyframes wawuShimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+@keyframes wawuFadeUp { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes wawuSheetIn { from { transform: translateY(100%) } to { transform: none } }
+/* ============================================================
+   WAWUAfrica — colour
+   Source: "NEW WAWU LOGO.pdf" brand guidelines (Colour Palette, p.6).
+   Dark-first surfaces (the passes.com model). ONE primary accent:
+   WAWU Purple #9411C9. Secondary hues are for category coding and
+   illustration only — never for buttons, links or chrome.
+   ============================================================ */
+
+:root {
+  /* ---------- Surfaces (dark, default) ---------- */
+  --surface-page: #0B0A0D;
+  --surface-card: #131316;
+  --surface-elevated: #1A1920;
+  --surface-input: #17161B;
+  --surface-tag: #201F27;
+  --surface-scrim: rgba(0, 0, 0, 0.72);
+
+  /* ---------- Borders ---------- */
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-accent: rgba(148, 17, 201, 0.55);
+
+  /* ---------- Text ---------- */
+  --text-primary: #FEFEFE;
+  --text-secondary: #A5A4AE;
+  --text-muted: #6E6D78;
+  --text-disabled: #4A4952;
+  --text-on-accent: #FFFFFF;
+  --text-on-light: #0B0A0D;
+
+  /* ---------- WAWU Purple — the single primary accent ---------- */
+  --accent: #9411C9;         /* Core Brand Energy */
+  --accent-hover: #A813E3;
+  --accent-press: #810FAF;
+  --accent-deep: #471471;    /* trust, depth, financial/professional */
+  --accent-tint: rgba(148, 17, 201, 0.14);
+  --accent-tint-strong: rgba(148, 17, 201, 0.26);
+  --accent-glow: 0 0 0 3px rgba(148, 17, 201, 0.28);
+
+  /* ---------- Secondary brand hues (category & illustration only) ---------- */
+  --brand-yellow: #FFB703;   /* WOW, optimism, opportunity */
+  --brand-lime: #B8E83E;     /* movement, youth, energy */
+  --brand-aqua: #20C9C3;     /* growth, discovery, digital ecosystem */
+  --brand-coral: #FF5C5C;    /* human connection, creativity */
+
+  /* ---------- Semantic roles ---------- */
+  --success: #B8E83E;
+  --success-tint: rgba(184, 232, 62, 0.14);
+  --warning: #FFB703;
+  --warning-tint: rgba(255, 183, 3, 0.14);
+  --danger: #FF5C5C;
+  --danger-tint: rgba(255, 92, 92, 0.14);
+  --info: #20C9C3;
+  --info-tint: rgba(32, 201, 195, 0.14);
+  --locked: #8A8994;
+  --locked-veil: rgba(11, 10, 13, 0.62);
+}
+
+/* ---------- Light mode: same token set, inverted ---------- */
+[data-theme="light"] {
+  --surface-page: #F5F6F6;
+  --surface-card: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --surface-input: #F5F6F6;
+  --surface-tag: #ECECEC;
+  --surface-scrim: rgba(11, 10, 13, 0.45);
+
+  --border-hairline: rgba(11, 10, 13, 0.09);
+  --border-strong: rgba(11, 10, 13, 0.18);
+
+  --text-primary: #0B0A0D;
+  --text-secondary: #55545E;
+  --text-muted: #85848E;
+  --text-disabled: #B4B3BB;
+
+  --accent-tint: rgba(148, 17, 201, 0.10);
+  --accent-tint-strong: rgba(148, 17, 201, 0.18);
+
+  --success: #4E9A00;
+  --warning: #B87A00;
+  --danger: #D93A3A;
+  --info: #12908B;
+
+  --locked: #6E6D78;
+  --locked-veil: rgba(255, 255, 255, 0.55);
+}
+:root {
+  /* On dark, elevation reads as a lighter surface + a hairline, not a shadow.
+     Shadows are only used for things that truly float. */
+  --shadow-card: none;
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-sheet: 0 -12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-accent: 0 8px 24px rgba(255, 0, 132, 0.28);
+  --blur-veil: blur(14px) /* @kind other */;   /* locked content veil */
+  --blur-chrome: blur(20px) /* @kind other */; /* sticky bars over content */
+}
+/* Alan Sans — the brand font, per the WAWU brand guidelines PDF (page 9/10).
+   Seven weights, 300–900. Served from the Fontsource CDN (the real Google
+   Fonts binary, not a substitute). */
+@font-face {
+  font-family: "Alan Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/alan-sans:vf@5.3.0/latin-wght-normal.woff2) format("woff2") tech(variations);
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --font-sans: "Alan Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Naira amounts and stat numerals use the same family with tabular figures. */
+  --numeric: "Alan Sans", ui-monospace, sans-serif; /* @kind font */
+  --font-feature-tabular: "tnum" 1, "lnum" 1;
+}
+:root {
+  --ease-soft: cubic-bezier(0.32, 0.72, 0, 1) /* @kind other */;
+  --dur-fast: 120ms /* @kind other */;
+  --dur-base: 220ms /* @kind other */;
+  --dur-slow: 360ms /* @kind other */;
+  --press-scale: 0.98 /* @kind other */;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms /* @kind other */; --dur-base: 0ms /* @kind other */;
+    --dur-slow: 0ms /* @kind other */; --press-scale: 1 /* @kind other */;
+  }
+}
+:root {
+  --radius-chip: 999px;
+  --radius-button: 999px;   /* pills, like passes */
+  --radius-input: 14px;
+  --radius-card: 20px;
+  --radius-media: 16px;
+  --radius-sheet: 28px;
+}
+:root {
+  /* 8pt scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Layout constants observed in the product */
+  --mobile-column: 430px;  /* max width of the phone column on desktop */
+  --gutter: 16px;
+  --card-pad: 16px;        /* PostCard / OpportunityCard padding */
+  --stack-gap: 12px;       /* gap between cards in a feed */
+  --control-h: 52px;       /* input + md button height */
+  --tap-min: 44px;
+}
+:root {
+  /* Albert Sans throughout — the product font. */
+  --text-display: 44px;  /* Bold, -0.03em — hero numerals & landing headlines */
+  --text-h1: 32px;       /* SemiBold, -0.02em */
+  --text-h2: 24px;       /* SemiBold, -0.015em */
+  --text-h3: 20px;       /* Medium, -0.01em */
+  --text-card: 18px;     /* Medium — card titles */
+  --text-body: 16px;     /* Regular */
+  --text-sec: 14px;      /* Regular — secondary/meta */
+  --text-caption: 12px;  /* Regular */
+  --text-label: 11px;    /* SemiBold, +0.06em, uppercase — eyebrows, stat captions */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-body: 1.5;
+}

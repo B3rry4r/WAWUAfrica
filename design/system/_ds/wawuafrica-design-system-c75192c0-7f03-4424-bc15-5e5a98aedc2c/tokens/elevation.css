@@ -1,0 +1,10 @@
+:root {
+  /* On dark, elevation reads as a lighter surface + a hairline, not a shadow.
+     Shadows are only used for things that truly float. */
+  --shadow-card: none;
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-sheet: 0 -12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-accent: 0 8px 24px rgba(255, 0, 132, 0.28);
+  --blur-veil: blur(14px) /* @kind other */;   /* locked content veil */
+  --blur-chrome: blur(20px) /* @kind other */; /* sticky bars over content */
+}

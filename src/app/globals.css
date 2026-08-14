@@ -1,0 +1,8 @@
+/* Design tokens — generated from design/system. Do not edit by hand. */
+@import "./tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { background: var(--surface-page); color: var(--text-primary); }

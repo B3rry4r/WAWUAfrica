@@ -1,0 +1,86 @@
+/* ============================================================
+   WAWUAfrica — colour
+   Source: "NEW WAWU LOGO.pdf" brand guidelines (Colour Palette, p.6).
+   Dark-first surfaces (the passes.com model). ONE primary accent:
+   WAWU Purple #9411C9. Secondary hues are for category coding and
+   illustration only — never for buttons, links or chrome.
+   ============================================================ */
+
+:root {
+  /* ---------- Surfaces (dark, default) ---------- */
+  --surface-page: #0B0A0D;
+  --surface-card: #131316;
+  --surface-elevated: #1A1920;
+  --surface-input: #17161B;
+  --surface-tag: #201F27;
+  --surface-scrim: rgba(0, 0, 0, 0.72);
+
+  /* ---------- Borders ---------- */
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-accent: rgba(148, 17, 201, 0.55);
+
+  /* ---------- Text ---------- */
+  --text-primary: #FEFEFE;
+  --text-secondary: #A5A4AE;
+  --text-muted: #6E6D78;
+  --text-disabled: #4A4952;
+  --text-on-accent: #FFFFFF;
+  --text-on-light: #0B0A0D;
+
+  /* ---------- WAWU Purple — the single primary accent ---------- */
+  --accent: #9411C9;         /* Core Brand Energy */
+  --accent-hover: #A813E3;
+  --accent-press: #810FAF;
+  --accent-deep: #471471;    /* trust, depth, financial/professional */
+  --accent-tint: rgba(148, 17, 201, 0.14);
+  --accent-tint-strong: rgba(148, 17, 201, 0.26);
+  --accent-glow: 0 0 0 3px rgba(148, 17, 201, 0.28);
+
+  /* ---------- Secondary brand hues (category & illustration only) ---------- */
+  --brand-yellow: #FFB703;   /* WOW, optimism, opportunity */
+  --brand-lime: #B8E83E;     /* movement, youth, energy */
+  --brand-aqua: #20C9C3;     /* growth, discovery, digital ecosystem */
+  --brand-coral: #FF5C5C;    /* human connection, creativity */
+
+  /* ---------- Semantic roles ---------- */
+  --success: #B8E83E;
+  --success-tint: rgba(184, 232, 62, 0.14);
+  --warning: #FFB703;
+  --warning-tint: rgba(255, 183, 3, 0.14);
+  --danger: #FF5C5C;
+  --danger-tint: rgba(255, 92, 92, 0.14);
+  --info: #20C9C3;
+  --info-tint: rgba(32, 201, 195, 0.14);
+  --locked: #8A8994;
+  --locked-veil: rgba(11, 10, 13, 0.62);
+}
+
+/* ---------- Light mode: same token set, inverted ---------- */
+[data-theme="light"] {
+  --surface-page: #F5F6F6;
+  --surface-card: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --surface-input: #F5F6F6;
+  --surface-tag: #ECECEC;
+  --surface-scrim: rgba(11, 10, 13, 0.45);
+
+  --border-hairline: rgba(11, 10, 13, 0.09);
+  --border-strong: rgba(11, 10, 13, 0.18);
+
+  --text-primary: #0B0A0D;
+  --text-secondary: #55545E;
+  --text-muted: #85848E;
+  --text-disabled: #B4B3BB;
+
+  --accent-tint: rgba(148, 17, 201, 0.10);
+  --accent-tint-strong: rgba(148, 17, 201, 0.18);
+
+  --success: #4E9A00;
+  --warning: #B87A00;
+  --danger: #D93A3A;
+  --info: #12908B;
+
+  --locked: #6E6D78;
+  --locked-veil: rgba(255, 255, 255, 0.55);
+}

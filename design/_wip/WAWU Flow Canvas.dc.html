@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #08070A; }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:36px;padding:56px 56px 120px;background:#08070A;min-height:100vh">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:980px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Step 5 · Flow canvas</span>
+    <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">The whole app, real screens, in flow order</h1>
+    <p style="margin:0;font-size:15.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">Every board built in this project, mounted live at scale and arranged in the order a person moves through them. Nothing here is a redraw — each panel is the actual screen set, so the arrows prove the routing and the absence of orphans.</p>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline);max-width:1180px">
+    <span style="display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-secondary)"><span style="width:14px;height:14px;border-radius:5px;background:var(--surface-card);border:1.5px solid var(--accent)"></span>Entry into a flow</span>
+    <span style="display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-secondary)"><span style="width:14px;height:14px;border-radius:5px;background:var(--surface-card);border:1px solid rgba(255,183,3,0.5)"></span>Gated — subscription or KYC</span>
+    <span style="display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-secondary)"><span style="width:14px;height:14px;border-radius:5px;background:var(--surface-card);border:1px solid var(--border-hairline)"></span>Shared by both shells</span>
+    <span style="display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-secondary)"><span style="font-size:15px;color:var(--accent)">→</span>navigation · every panel has an inbound and an outbound path</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:18px;padding:24px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">Band 1 · Entry</span>
+      <span style="font-size:13px;color:var(--text-secondary)">Landing → account type → sign up → OTP → interests → routing split</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="position:relative;width:560px;height:360px;overflow:hidden;border-radius:16px;border:1.5px solid var(--accent);background:var(--surface-page)">
+          <div style="position:absolute;top:-150px;left:-40px;width:1600px;transform:scale(0.4);transform-origin:top left">
+            <dc-import name="WAWU Landing Page" hint-size="1600px,2400px"></dc-import>
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center">Landing page — the only pre-auth surface</span>
+      </div>
+      <span style="font-size:22px;color:var(--accent)">→</span>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="position:relative;width:900px;height:360px;overflow:hidden;border-radius:16px;border:1.5px solid var(--accent);background:var(--surface-page)">
+          <div style="position:absolute;top:-150px;left:-40px;width:3600px;transform:scale(0.4);transform-origin:top left">
+            <dc-import name="WAWU Auth" hint-size="3600px,2600px"></dc-import>
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center">Auth — account type, sign up, OTP, interests, sign in, reset, routing split</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:18px;padding:24px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-size:12.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">Band 2 · User app</span>
+      <span style="font-size:13px;color:var(--text-secondary)">Home → content → unlock → purchases · creator profile → DM · communities → credits · Explore → shops, Learn, Services</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="position:relative;width:640px;height:360px;overflow:hidden;border-radius:16px;border:1.5px solid var(--accent);background:var(--surface-page)">
+          <div style="position:absolute;top:-150px;left:-40px;width:2600px;transform:scale(0.4);transform-origin:top left">
+            <dc-import name="WAWU Home Feed" hint-size="2600px,2400px"></dc-import>
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center">Home feed — for you, following, loading, empty, browse</span>
+      </div>
+      <span style="font-size:22px;color:var(--accent)">→</span>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="position:relative;width:900px;height:360px;overflow:hidden;border-radius:16px;border:1px solid var(--border-hairline);background:var(--surface-page)">
+          <div style="position:absolute;top:-150px;left:-40px;width:3600px;transform:scale(0.4);transform-origin:top left">
+            <dc-import name="WAWU Content Detail" hint-size="3600px,2600px"></dc-import>
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);text-align:center">Content detail — free, locked, unlock sheet, payment states, unlocked, comments, purchases</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        
+</x-dc>
+</body>
+</html>

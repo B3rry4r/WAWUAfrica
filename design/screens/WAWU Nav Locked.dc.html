@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/radius.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/motion.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/tokens/base.css">
+<link rel="stylesheet" href="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/styles.css">
+<script src="_ds/wawuafrica-design-system-c75192c0-7f03-4424-bc15-5e5a98aedc2c/_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #08070A; }
+  body { font-family: var(--font-sans); color: var(--text-primary); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:40px;padding:56px 56px 96px;background:#08070A;min-height:100vh">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:880px">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">Step 1 · Navigation locked — 1a</span>
+    <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1.1">The bar, in both account states</h1>
+    <p style="margin:0;font-size:15.5px;line-height:1.55;color:var(--text-secondary);text-wrap:pretty">Confirm this and I sweep every screen in every batch to match it exactly. One decision needed from you, called out below the frames.</p>
+  </header>
+
+  <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-strong)">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:16px 16px 12px;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-hairline)">
+            <img src="assets/wawu-icon-white.png" alt="WAWU" style="width:26px;height:26px;object-fit:contain">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+              <span style="font-size:13.5px;color:var(--text-muted)">Search creators and content</span>
+            </div>
+            <span style="position:relative;display:grid;place-items:center;width:36px;height:36px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Bell" size="17" color="var(--text-secondary)" hint-size="17px,17px"></x-import>
+              <span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:999px;background:var(--accent)"></span>
+            </span>
+            <span style="display:grid;place-items:center;width:36px;height:36px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="LayoutGrid" size="17" color="var(--accent)" stroke="2.2" hint-size="17px,17px"></x-import>
+            </span>
+          </div>
+
+          <div style="display:flex;gap:26px;padding:2px 18px 0;border-bottom:1px solid var(--border-hairline)">
+            <span style="position:relative;padding-bottom:12px;font-size:14.5px;font-weight:600;color:var(--text-primary)">For you
+              <span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)"></span>
+            </span>
+            <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Following</span>
+            <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Trending</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:flex;flex-direction:column;gap:16px">
+            <article style="display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+              <div style="display:flex;align-items:center;gap:10px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="A" size="{{ av36 }}" hint-size="36px,36px"></x-import>
+                <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:14.5px;font-weight:600">Adaeze Okonkwo</span>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.VerificationBadge" tier="certified_professional" size="{{ b16 }}" hint-size="16px,16px"></x-import>
+                  <span style="font-size:12.5px;color:var(--text-muted)">· 2h</span>
+                </div>
+              </div>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="CAC in 7 days" subtitle="6 lessons · 48 minutes" price="{{ p2500 }}" content-type="course" count="Course" ratio="2 / 1" hint-size="100%,320px"></x-import>
+            </article>
+            <article style="display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+              <div style="display:flex;align-items:center;gap:10px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="Z" size="{{ av36 }}" hint-size="36px,36px"></x-import>
+                <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:14.5px;font-weight:600">Zainab Bello</span>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.VerificationBadge" tier="verified_business" size="{{ b16 }}" hint-size="16px,16px"></x-import>
+                  <span style="font-size:12.5px;color:var(--text-muted)">· 5h</span>
+                </div>
+              </div>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="The trader's playbook" subtitle="34 pages · free to download" content-type="post" count="PDF" ratio="2 / 1" hint-size="100%,320px"></x-import>
+            </article>
+          </div>
+        </div>
+
+        <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Home</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Compass" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Explore</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Messages</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+        </nav>
+      </div>
+      <span style="font-size:12.5px;color:var(--text-muted);text-align:center">User account — slot 3 is Explore</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="position:relative;width:430px;height:932px;border-radius:30px;overflow:hidden;background:var(--surface-page);border:1px solid var(--border-accent)">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:16px 16px 12px;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-hairline)">
+            <img src="assets/wawu-icon-white.png" alt="WAWU" style="width:26px;height:26px;object-fit:contain">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+              <span style="font-size:13.5px;color:var(--text-muted)">Search creators and content</span>
+            </div>
+            <span style="position:relative;display:grid;place-items:center;width:36px;height:36px;border-radius:999px;background:var(--surface-input);border:1px solid var(--border-hairline)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Bell" size="17" color="var(--text-secondary)" hint-size="17px,17px"></x-import>
+              <span style="position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:999px;background:var(--accent)"></span>
+            </span>
+            <span style="display:grid;place-items:center;width:36px;height:36px;border-radius:999px;background:var(--accent-tint);border:1px solid var(--border-accent)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="LayoutGrid" size="17" color="var(--accent)" stroke="2.2" hint-size="17px,17px"></x-import>
+            </span>
+          </div>
+
+          <div style="display:flex;gap:26px;padding:2px 18px 0;border-bottom:1px solid var(--border-hairline)">
+            <span style="position:relative;padding-bottom:12px;font-size:14.5px;font-weight:600;color:var(--text-primary)">For you
+              <span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)"></span>
+            </span>
+            <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Following</span>
+            <span style="padding-bottom:12px;font-size:14.5px;font-weight:500;color:var(--text-muted)">Trending</span>
+          </div>
+
+          <div style="flex:1;overflow:hidden;padding:14px 16px 96px;display:flex;flex-direction:column;gap:16px">
+            <article style="display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+              <div style="display:flex;align-items:center;gap:10px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="M" size="{{ av36 }}" hint-size="36px,36px"></x-import>
+                <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:14.5px;font-weight:600">Musa Danladi</span>
+                  <span style="font-size:12.5px;color:var(--text-muted)">· 1h</span>
+                </div>
+              </div>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="locked" title="Welding rebar the right way" subtitle="18 minutes" price="{{ p1500 }}" content-type="video" count="Video" ratio="2 / 1" hint-size="100%,320px"></x-import>
+            </article>
+            <article style="display:flex;flex-direction:column;gap:10px;flex-shrink:0">
+              <div style="display:flex;align-items:center;gap:10px">
+                <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Avatar" initial="I" size="{{ av36 }}" hint-size="36px,36px"></x-import>
+                <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:14.5px;font-weight:600">Ifeanyi Nwosu</span>
+                  <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.VerificationBadge" tier="verified_business" size="{{ b16 }}" hint-size="16px,16px"></x-import>
+                  <span style="font-size:12.5px;color:var(--text-muted)">· 6h</span>
+                </div>
+              </div>
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.ContentCard" state="free" title="Invoice pack for tailors" subtitle="6 files · free" content-type="post" count="Template" ratio="2 / 1" hint-size="100%,320px"></x-import>
+            </article>
+          </div>
+        </div>
+
+        <nav style="position:absolute;left:0;right:0;bottom:0;height:78px;padding-bottom:12px;display:flex;align-items:center;background:rgba(19,19,22,.86);backdrop-filter:blur(20px);border-top:1px solid var(--border-hairline)">
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--accent);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="House" size="22" color="var(--accent)" stroke="2.4" hint-size="22px,22px"></x-import>Home</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Users" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Communities</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <span style="display:grid;place-items:center;width:34px;height:26px;border-radius:9px;background:var(--accent)">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Plus" size="18" color="#fff" stroke="2.6" hint-size="18px,18px"></x-import>
+            </span>Create</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <span style="position:relative;display:grid;place-items:center">
+              <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="MessageCircle" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>
+              <span style="position:absolute;top:-4px;right:-9px;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center">3</span>
+            </span>Messages</span>
+          <span style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text-muted);font-size:10.5px;font-weight:600">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="CircleUser" size="22" color="var(--text-muted)" hint-size="22px,22px"></x-import>Profile</span>
+        </nav>
+      </div>
+      <span style="font-size:12.5px;color:var(--text-muted);text-align:center">Creator account — slot 3 is Create</span>
+    </div>
+
+    <div style="width:420px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="display:flex;flex-direction:column;gap:12px;padding:22px;border-radius:var(--radius-card);background:var(--surface-elevated);border:1px solid var(--border-accent)">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent)">One decision left</span>
+        <span style="font-size:17px;font-weight:600;letter-spacing:-0.015em;line-height:1.3">Slot 3 cannot be Create for a user</span>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:var(--text-secondary)">1a puts Create in the bar, but a user account has nothing to create — and you asked that creator tools not exist in their app at all. So slot 3 holds <span style="color:var(--text-primary);font-weight:600">Explore</span> for users and <span style="color:var(--text-primary);font-weight:600">Create</span> for creators. Four slots identical, one swaps on account type.</p>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:var(--text-secondary)">The alternative is a four-slot bar for users with a gap where Create sits. I think the swap is better — say if you disagree and I will change it before sweeping.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;padding:22px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">The locked bar</span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:20px;font-size:12px;font-weight:700;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">1</span>
+          <span style="flex:1;font-size:13.5px;color:var(--text-secondary)"><span style="color:var(--text-primary);font-weight:600">Home</span> — the content feed</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:20px;font-size:12px;font-weight:700;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">2</span>
+          <span style="flex:1;font-size:13.5px;color:var(--text-secondary)"><span style="color:var(--text-primary);font-weight:600">Communities</span> — credits live here</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:20px;font-size:12px;font-weight:700;color:var(--accent);font-feature-settings:var(--font-feature-tabular)">3</span>
+          <span style="flex:1;font-size:13.5px;color:var(--text-secondary)"><span style="color:var(--text-primary);font-weight:600">Create</span> on creator · <span style="color:var(--text-primary);font-weight:600">Explore</span> on user</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:20px;font-size:12px;font-weight:700;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">4</span>
+          <span style="flex:1;font-size:13.5px;color:var(--text-secondary)"><span style="color:var(--text-primary);font-weight:600">Messages</span> — paid DMs, badge on unread</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:20px;font-size:12px;font-weight:700;color:var(--text-muted);font-feature-settings:var(--font-feature-tabular)">5</span>
+          <span style="flex:1;font-size:13.5px;color:var(--text-secondary)"><span style="color:var(--text-primary);font-weight:600">Profile</span> — purchases, saved, settings, dashboard</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;padding-top:14px;border-top:1px solid var(--border-hairline)">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Header, every screen</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Search" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+            <span style="flex:1;font-size:13px;color:var(--text-secondary)">Search — content, creators, communities</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Bell" size="15" color="var(--text-muted)" hint-size="15px,15px"></x-import>
+            <span style="flex:1;font-size:13px;color:var(--text-secondary)">Notifications — dot when unread</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="LayoutGrid" size="15" color="var(--accent)" stroke="2.2" hint-size="15px,15px"></x-import>
+            <span style="flex:1;font-size:13px;color:var(--text-secondary)">Explore — creator accounts only, since their slot 3 is Create</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;padding:22px;border-radius:var(--radius-card);background:var(--surface-card);border:1px solid var(--border-hairline)">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">What the sweep will change</span>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>
+          <span style="flex:1;font-size:13px;line-height:1.5;color:var(--text-secondary)">Creator-context screens — publishing, dashboard, DM inbox, earnings, tier — get <span style="color:var(--text-primary);font-weight:600">Create</span> in slot 3.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>
+          <span style="flex:1;font-size:13px;line-height:1.5;color:var(--text-secondary)">Consumer screens — feed, communities, marketplace, learn, services, purchases — get <span style="color:var(--text-primary);font-weight:600">Explore</span>.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>
+          <span style="flex:1;font-size:13px;line-height:1.5;color:var(--text-secondary)">Active slot always matches the screen. Messages carries its unread badge everywhere.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <x-import component-from-global-scope="WAWUAfricaDesignSystem_c75192.Icon" name="Check" size="15" color="var(--accent)" stroke="2.4" style="margin-top:2px" hint-size="15px,15px"></x-import>
+          <span style="flex:1;font-size:13px;line-height:1.5;color:var(--text-secondary)">The old nav board keeps its three proposals as a record — it documents the decision, so it is not swept.</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1420,&quot;height&quot;:1050}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { av36: 36, b16: 16, p2500: 2500, p1500: 1500 };
+  }
+}
+</script>
+</body>
+</html>
