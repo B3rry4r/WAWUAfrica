@@ -27,6 +27,7 @@ export async function getFeed(): Promise<ContentFeedResponse> {
     const res = await apiFetch<ContentFeedResponse>("/api/hub/content?scope=feed");
     return { items: res.items.map(guardLocked) };
   } catch {
+    // SEAM: replace with GET /api/hub/content
     return { items: mockContent.map((c) => guardLocked(mockContentById(c.id)!.content)) };
   }
 }
@@ -49,6 +50,7 @@ export async function getContent(id: string): Promise<ContentDetailResponse> {
   } catch {
     const mock = mockContentById(id);
     if (!mock) throw new Error("Content not found");
+    // SEAM: replace with GET /api/hub/content/:id
     return { content: guardLocked(mock.content) };
   }
 }
