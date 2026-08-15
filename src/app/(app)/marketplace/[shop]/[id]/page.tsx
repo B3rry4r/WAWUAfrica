@@ -2,10 +2,14 @@ import { notFound } from "next/navigation";
 import type { MarketplaceProduct, ShopId } from "@/types/marketplace";
 import { getProduct, getShop, shopHandoffUrl } from "@/lib/api/marketplace";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Icon } from "@/components/ui/Icon";
 import { HandoffPill } from "@/components/ui/HandoffPill";
+import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { formatNaira } from "@/lib/format";
+import { ProductActionsRow } from "./_components/ProductActionsRow";
 
 const SHOP_IDS: ShopId[] = ["basket", "beauty"];
 
@@ -74,6 +78,33 @@ export default async function ProductPage({
             ) : null}
           </div>
 
+          {/* Desktop-only seller card (design D11) — avatar, verification, role ·
+              location · followers, Profile link. Mobile keeps the plain-text
+              seller line above; that design has no equivalent card. */}
+          {product.sellerDetail ? (
+            <div className="hidden items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-3 xl:flex">
+              <Avatar initial={product.seller.charAt(0)} size={44} />
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-[14px] font-semibold text-[var(--text-primary)]">
+                    {product.seller}
+                  </span>
+                  <VerificationBadge tier={product.sellerDetail.verification} size={16} />
+                </div>
+                <span className="truncate text-[12.5px] text-[var(--text-muted)]">
+                  {[product.sellerDetail.role, product.location, `${product.sellerDetail.followers} followers`]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </div>
+              {product.sellerDetail.wawuId ? (
+                <Button href={`/profile/${product.sellerDetail.wawuId}`} size="sm" variant="secondary">
+                  Profile
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+
           <p className="text-[14px] leading-[1.55] text-[var(--text-secondary)]">
             {product.description}
           </p>
@@ -106,6 +137,15 @@ export default async function ProductPage({
             {shopName} handles payment and delivery. Your WAWU sign-in carries over, and{" "}
             {shopName} returns you here when you are done.
           </p>
+
+          <ProductActionsRow
+            productTitle={product.title}
+            seller={
+              product.sellerDetail?.wawuId
+                ? { wawuId: product.sellerDetail.wawuId, name: product.seller }
+                : null
+            }
+          />
         </div>
       </div>
     </div>
