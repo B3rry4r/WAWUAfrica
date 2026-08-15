@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ContentCard } from "@/components/content/ContentCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { HomeRightRail } from "@/components/shared/HomeRightRail";
 import { getFeed } from "@/lib/api/content";
 import type { ContentPiece } from "@/types/content";
 
@@ -39,68 +40,72 @@ export function HomeFeed() {
   const feed = useMemo(() => items ?? [], [items]);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex gap-[26px] border-b border-hairline px-[18px]">
-        {TABS.map((t) => {
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`relative pb-[12px] text-[14.5px] transition-colors ${
-                active ? "font-semibold text-text-primary" : "font-medium text-text-muted"
-              }`}
-            >
-              {t.label}
-              {active ? (
-                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] rounded-[2px] bg-accent" aria-hidden="true" />
-              ) : null}
-            </button>
-          );
-        })}
+    <div className="flex flex-col xl:flex-row xl:items-start">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex gap-[26px] border-b border-hairline px-[18px] xl:px-[26px]">
+          {TABS.map((t) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`relative pb-[12px] text-[14.5px] transition-colors xl:h-[54px] xl:pb-0 ${
+                  active ? "font-semibold text-text-primary" : "font-medium text-text-muted"
+                }`}
+              >
+                {t.label}
+                {active ? (
+                  <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] rounded-[2px] bg-accent" aria-hidden="true" />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col gap-4 px-4 pb-8 pt-4 xl:px-[26px] xl:pt-[22px]">
+          {error ? (
+            <EmptyState
+              icon="WifiOff"
+              title="Could not load your feed"
+              caption={error}
+              action="Try again"
+              onAction={() => window.location.reload()}
+            />
+          ) : !items ? (
+            <FeedSkeleton />
+          ) : tab === "following" ? (
+            <EmptyState
+              icon="Users"
+              title="Worth following"
+              caption="Follow creators to see their work surface here."
+              action="Browse creators"
+              onAction={() => router.push("/search")}
+            />
+          ) : feed.length === 0 ? (
+            <EmptyState
+              icon="SearchX"
+              title="Nothing here yet"
+              caption="We have not curated anything in this format yet. Try another tab."
+            />
+          ) : (
+            <div className="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:items-start xl:gap-[22px]">
+              {feed.map((c) => (
+                <ContentCard key={c.id} content={c} ratio="2 / 1" authorRow />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-4 pb-8 pt-4">
-        {error ? (
-          <EmptyState
-            icon="WifiOff"
-            title="Could not load your feed"
-            caption={error}
-            action="Try again"
-            onAction={() => window.location.reload()}
-          />
-        ) : !items ? (
-          <FeedSkeleton />
-        ) : tab === "following" ? (
-          <EmptyState
-            icon="Users"
-            title="Worth following"
-            caption="Follow creators to see their work surface here."
-            action="Browse creators"
-            onAction={() => router.push("/search")}
-          />
-        ) : feed.length === 0 ? (
-          <EmptyState
-            icon="SearchX"
-            title="Nothing here yet"
-            caption="We have not curated anything in this format yet. Try another tab."
-          />
-        ) : (
-          <div className="flex flex-col gap-4">
-            {feed.map((c) => (
-              <ContentCard key={c.id} content={c} ratio="2 / 1" authorRow />
-            ))}
-          </div>
-        )}
-      </div>
+      <HomeRightRail />
     </div>
   );
 }
 
 function FeedSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-[22px]">
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="flex flex-col gap-2 overflow-hidden rounded-card border border-hairline bg-card">
           <div className="flex items-center gap-2.5 p-3 pb-2.5">

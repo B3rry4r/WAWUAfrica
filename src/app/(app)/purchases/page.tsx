@@ -7,10 +7,16 @@ import type { IconName } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { ListRow } from "@/components/ui/ListRow";
+import { ContentCard } from "@/components/content/ContentCard";
 import { getPurchases } from "@/lib/api/purchases";
+import { getOtherApplications } from "@/lib/api/services";
+import { getDmThreads } from "@/lib/api/dm";
 import { formatNaira } from "@/lib/format";
-import type { ContentType } from "@/types/content";
+import type { ContentPiece, ContentType } from "@/types/content";
 import type { Purchase } from "@/types/purchase";
+import type { ServiceApplication } from "@/types/services";
+import type { DmThreadSummary } from "@/types/dm";
 
 const FILTERS: Array<{ id: ContentType | "all"; label: string }> = [
   { id: "all", label: "All" },
@@ -49,7 +55,7 @@ export default function MyPurchasesPage() {
   const filtered = useMemo(() => (filter === "all" ? (items ?? []) : (items ?? []).filter((p) => p.contentType === filter)), [items, filter]);
 
   return (
-    <div className="flex flex-col gap-4 px-4 pb-8 pt-2">
+    <div className="flex flex-col gap-4 px-4 pb-8 pt-2 xl:px-[26px] xl:pb-[26px] xl:pt-[22px]">
       <div className="flex flex-col gap-1">
         <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em]">My purchases</h1>
         <p className="m-0 text-[13px] text-text-muted">
@@ -85,12 +91,148 @@ export default function MyPurchasesPage() {
           onAction={() => (window.location.href = "/")}
         />
       ) : (
-        <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card">
-          {filtered.map((p, i) => (
-            <PurchaseRow key={p.id} purchase={p} last={i === filtered.length - 1} />
+        <>
+          <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card xl:hidden">
+            {filtered.map((p, i) => (
+              <PurchaseRow key={p.id} purchase={p} last={i === filtered.length - 1} />
+            ))}
+          </div>
+
+          <div className="hidden xl:grid xl:grid-cols-3 xl:items-start xl:gap-[22px]">
+            {filtered.map((p) => (
+              <PurchaseCard key={p.id} purchase={p} />
+            ))}
+            {filter === "all" ? <AlsoTracked /> : null}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Purchase only carries the flat summary shown in the mobile row (title,
+ * creator name, type, price) — not the full ContentPiece the shared
+ * ContentCard renders elsewhere. This fills the rest with safe, inert
+ * defaults so the desktop grid (design D5) can reuse the one card component
+ * instead of forking a second, purchases-only card.
+ */
+function purchaseToContentPiece(p: Purchase): ContentPiece {
+  return {
+    id: p.contentId,
+    slug: p.contentId,
+    contentType: p.contentType,
+    title: p.title,
+    description: "",
+    category: "",
+    accessType: p.price === 0 ? "free" : "paid",
+    price: p.price,
+    creator: {
+      wawuId: p.creatorName,
+      fullName: p.creatorName,
+      handle: p.creatorName,
+      verificationLevel: "verified_user",
+    },
+    views: 0,
+    commentCount: 0,
+    likes: 0,
+    saved: false,
+    createdAt: p.purchasedAt,
+    previewAssetUrl: "",
+    fullAssetLocked: false,
+    purchased: true,
+  };
+}
+
+function PurchaseCard({ purchase }: { purchase: Purchase }) {
+  const date = new Date(purchase.purchasedAt);
+  const dateLabel = date.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
+  return (
+    <div className="flex flex-col gap-2.5">
+      <ContentCard content={purchaseToContentPiece(purchase)} state="unlocked" ratio="16 / 9" />
+      <span className="text-[12.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
+        {purchase.price > 0 ? `${formatNaira(purchase.price)} · ` : ""}
+        {dateLabel} · {purchase.creatorName}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Desktop-only "Also bought" panel (design D5): the creator-service
+ * applications and paid questions a buyer is tracking, kept as rows — never
+ * cards — because they're tracked processes, not content to reopen. There is
+ * no purchases mobile design for this, so it's xl-only, not a mobile feature
+ * moved to desktop. WAWUBasket/WAWUBeauty orders are deliberately left out:
+ * those are handoff-only external apps (CLAUDE.md) with no order-tracking
+ * data model here.
+ */
+function AlsoTracked() {
+  const [applications, setApplications] = useState<ServiceApplication[] | null>(null);
+  const [questions, setQuestions] = useState<DmThreadSummary[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    // "" never matches a real application id, so this returns every tracked
+    // application — the same mock read the applications detail page uses for
+    // its own "other applications" rail.
+    getOtherApplications("")
+      .then((res) => {
+        if (!cancelled) setApplications(res);
+      })
+      .catch(() => {
+        if (!cancelled) setApplications([]);
+      });
+    getDmThreads()
+      .then((res) => {
+        if (!cancelled) setQuestions(res.filter((t) => t.status === "responded"));
+      })
+      .catch(() => {
+        if (!cancelled) setQuestions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (applications === null || questions === null) {
+    return (
+      <div className="hidden flex-col gap-3 rounded-card border border-hairline bg-card p-5 xl:col-span-3 xl:flex">
+        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Also tracked — the verb matches the type</span>
+        <div className="flex flex-col gap-1">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Skeleton key={i} variant="row" className="h-[52px]" />
           ))}
         </div>
-      )}
+      </div>
+    );
+  }
+
+  if (applications.length === 0 && questions.length === 0) return null;
+
+  return (
+    <div className="hidden flex-col gap-3 rounded-card border border-hairline bg-card p-5 xl:col-span-3 xl:flex">
+      <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Also tracked — the verb matches the type</span>
+      <div className="flex flex-col">
+        {applications.map((a) => (
+          <ListRow
+            key={a.id}
+            title={a.title}
+            subtitle={`${a.statusLabel} · reference ${a.reference}`}
+            icon="Stamp"
+            href={`/services/applications/${a.id}`}
+          />
+        ))}
+        {questions.map((q) => (
+          <ListRow
+            key={q.id}
+            title={`Question to ${q.creatorName}`}
+            subtitle={`Answered · ${formatNaira(q.amount)}`}
+            icon="MessageCircleQuestion"
+            href={`/messages/${q.id}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -137,16 +279,26 @@ function typeIcon(type: ContentType): IconName {
 
 function ListSkeleton() {
   return (
-    <div className="flex flex-col gap-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3.5">
-          <Skeleton className="h-[64px] w-[64px] rounded-card" />
-          <div className="flex flex-1 flex-col gap-2">
-            <Skeleton className="h-4 w-[60%] rounded" />
-            <Skeleton className="h-3 w-[45%] rounded" />
+    <>
+      <div className="flex flex-col gap-3 xl:hidden">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3.5">
+            <Skeleton className="h-[64px] w-[64px] rounded-card" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-[60%] rounded" />
+              <Skeleton className="h-3 w-[45%] rounded" />
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <div className="hidden xl:grid xl:grid-cols-3 xl:gap-[22px]">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-2.5">
+            <Skeleton className="aspect-[16/9] w-full rounded-card" />
+            <Skeleton className="h-3 w-[60%] rounded" />
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

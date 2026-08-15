@@ -168,42 +168,57 @@ export default function ContentDetailPage() {
       ) : !content ? (
         <DetailSkeleton />
       ) : (
-        <div className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-4">
-          <MediaBlock content={content} state={state} />
-          <TitleBlock content={content} state={state} following={following} />
-          {content.contentType === "course" ? <LessonList content={content} /> : null}
-          {state === "locked" ? (
-            <LockedCta content={content} onUnlock={startUnlock} />
-          ) : state === "unlocked" ? (
-            <UnlockedActions
-              content={content}
-              onDownload={() => downloadAsset(content.fullAssetUrl, content.title)}
-              onTip={() => setTipOpen(true)}
-            />
-          ) : null}
-          {downloadNotice ? (
-            <div role="status" className="rounded-button border border-hairline bg-tag px-3.5 py-2.5 text-center text-[12.5px] font-semibold text-text-secondary">
-              {downloadNotice}
+        <div className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-4 xl:flex-row xl:items-start xl:gap-[26px] xl:px-[26px] xl:pb-[26px] xl:pt-[26px]">
+          <div className="flex flex-col gap-5 xl:min-w-0 xl:flex-1">
+            <MediaBlock content={content} state={state} />
+            <TitleBlock content={content} state={state} following={following} />
+            {/* Below xl this is the mobile stack (lesson list, then the CTA / owned-file
+                actions). At xl the same two blocks move into the sticky right rail
+                instead — see PurchasePanel — so this whole block is desktop-hidden. */}
+            <div className="flex flex-col gap-5 xl:hidden">
+              {content.contentType === "course" ? <LessonList content={content} /> : null}
+              {state === "locked" ? (
+                <LockedCta content={content} onUnlock={startUnlock} />
+              ) : state === "unlocked" ? (
+                <UnlockedActions
+                  content={content}
+                  onDownload={() => downloadAsset(content.fullAssetUrl, content.title)}
+                  onTip={() => setTipOpen(true)}
+                />
+              ) : null}
             </div>
-          ) : null}
-          <EngagementRow
+            {downloadNotice ? (
+              <div role="status" className="rounded-button border border-hairline bg-tag px-3.5 py-2.5 text-center text-[12.5px] font-semibold text-text-secondary">
+                {downloadNotice}
+              </div>
+            ) : null}
+            <EngagementRow
+              content={content}
+              state={state}
+              onShare={shareContent}
+              shared={shareFeedback}
+              onToggleSave={toggleSaved}
+              rated={myRating}
+              onRate={() => setRateOpen(true)}
+            />
+            <Comments
+              content={content}
+              comments={comments}
+              draft={draft}
+              onDraftChange={setDraft}
+              onSubmit={submitComment}
+              replyTo={replyTo}
+              onReply={startReply}
+              inputRef={commentInputRef}
+            />
+          </div>
+
+          <PurchasePanel
             content={content}
             state={state}
-            onShare={shareContent}
-            shared={shareFeedback}
-            onToggleSave={toggleSaved}
-            rated={myRating}
-            onRate={() => setRateOpen(true)}
-          />
-          <Comments
-            content={content}
-            comments={comments}
-            draft={draft}
-            onDraftChange={setDraft}
-            onSubmit={submitComment}
-            replyTo={replyTo}
-            onReply={startReply}
-            inputRef={commentInputRef}
+            onUnlock={startUnlock}
+            onDownload={() => downloadAsset(content.fullAssetUrl, content.title)}
+            onTip={() => setTipOpen(true)}
           />
         </div>
       )}
@@ -256,7 +271,7 @@ function ContentHeader({
   onToggleSave: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-hairline px-[18px] py-3">
+    <div className="flex items-center gap-3 border-b border-hairline px-[18px] py-3 xl:h-[68px] xl:px-[26px] xl:py-0">
       <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag">
         <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
       </button>
@@ -348,6 +363,40 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
         </span>
       </div>
       <p className="m-0 text-[14.5px] leading-relaxed text-text-secondary">{content.description}</p>
+    </div>
+  );
+}
+
+/**
+ * Sticky right rail (design D4, ~380px, xl only): price CTA / owned-file
+ * actions, then the lesson list for a course. Mobile keeps the same two
+ * blocks stacked under the title (see the `xl:hidden` block above) instead
+ * of a sticky CTA sheet — this never scrolls out of view, unlike mobile's
+ * bottom-sheet CTA.
+ */
+function PurchasePanel({
+  content,
+  state,
+  onUnlock,
+  onDownload,
+  onTip,
+}: {
+  content: ContentPiece;
+  state: string;
+  onUnlock: () => void;
+  onDownload: () => void;
+  onTip: () => void;
+}) {
+  const hasContent = state === "locked" || state === "unlocked" || content.contentType === "course";
+  if (!hasContent) return null;
+  return (
+    <div className="hidden xl:sticky xl:top-[26px] xl:flex xl:w-[380px] xl:shrink-0 xl:flex-col xl:gap-4 xl:self-start">
+      {state === "locked" ? (
+        <LockedCta content={content} onUnlock={onUnlock} />
+      ) : state === "unlocked" ? (
+        <UnlockedActions content={content} onDownload={onDownload} onTip={onTip} />
+      ) : null}
+      {content.contentType === "course" ? <LessonList content={content} /> : null}
     </div>
   );
 }
@@ -577,15 +626,7 @@ function Comments({
   );
 }
 
-function UnlockSheet({
-  open,
-  onClose,
-  content,
-  payment,
-  onRetry,
-  onDownload,
-  onDone,
-}: {
+interface UnlockDialogProps {
   open: boolean;
   onClose: () => void;
   content: ContentPiece | null;
@@ -593,12 +634,91 @@ function UnlockSheet({
   onRetry: () => void;
   onDownload: () => void;
   onDone: () => void;
-}) {
+}
+
+/**
+ * Mobile bottom sheet below xl, centered ~520px dialog at xl (design D4 —
+ * "the mobile bottom sheet becomes a centred modal, same three states reuse
+ * this frame"). Sheet.tsx has no dialog variant, so both wrappers render the
+ * same `UnlockDialogBody` here rather than forking the state markup itself.
+ */
+function UnlockSheet(props: UnlockDialogProps) {
+  return (
+    <>
+      <div className="xl:hidden">
+        <MobileUnlockSheet {...props} />
+      </div>
+      <div className="hidden xl:block">
+        <DesktopUnlockDialog {...props} />
+      </div>
+    </>
+  );
+}
+
+function MobileUnlockSheet({ open, onClose, content, payment, onRetry, onDownload, onDone }: UnlockDialogProps) {
   if (!content) return null;
+  return (
+    <Sheet open={open} onClose={payment === "processing" ? undefined : onClose} title={payment === "idle" ? "Unlock this piece" : undefined}>
+      <UnlockDialogBody content={content} payment={payment} onRetry={onRetry} onDownload={onDownload} onDone={onDone} onClose={onClose} />
+    </Sheet>
+  );
+}
+
+function DesktopUnlockDialog({ open, onClose, content, payment, onRetry, onDownload, onDone }: UnlockDialogProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!open || !mounted || !content) return null;
+  const canClose = payment !== "processing";
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center" role="dialog" aria-modal="true">
+      <button type="button" aria-label="Close" className="absolute inset-0 bg-scrim" onClick={canClose ? onClose : undefined} />
+      <div className="relative z-10 flex max-h-[88vh] w-[520px] flex-col gap-[18px] overflow-hidden overflow-y-auto rounded-card border border-hairline bg-elevated p-[26px] shadow-sheet [animation:wawuSheetIn_var(--dur-slow)_var(--ease-soft)]">
+        {payment === "idle" ? (
+          <div className="flex items-start gap-3.5">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <h2 className="m-0 text-[21px] font-semibold leading-snug tracking-[-0.02em] text-text-primary">Unlock this {content.contentType === "course" ? "course" : "piece"}</h2>
+              <span className="truncate text-[13.5px] text-text-secondary">
+                {content.title} · {content.creator.fullName}
+              </span>
+            </div>
+            {canClose ? (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-card text-text-secondary"
+              >
+                <Icon name="X" size={17} />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+        <UnlockDialogBody content={content} payment={payment} onRetry={onRetry} onDownload={onDownload} onDone={onDone} onClose={onClose} />
+      </div>
+    </div>
+  );
+}
+
+function UnlockDialogBody({
+  content,
+  payment,
+  onRetry,
+  onDownload,
+  onDone,
+  onClose,
+}: {
+  content: ContentPiece;
+  payment: PaymentState;
+  onRetry: () => void;
+  onDownload: () => void;
+  onDone: () => void;
+  onClose: () => void;
+}) {
   const split = Math.round(content.price * creatorSplitRate(content.creator.isPro));
 
   return (
-    <Sheet open={open} onClose={payment === "processing" ? undefined : onClose} title={payment === "idle" ? "Unlock this piece" : undefined}>
+    <>
       {payment === "idle" ? (
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
@@ -692,7 +812,7 @@ function UnlockSheet({
           </Button>
         </div>
       ) : null}
-    </Sheet>
+    </>
   );
 }
 
@@ -733,16 +853,19 @@ function RateSheet({
 
 function DetailSkeleton() {
   return (
-    <div className="flex flex-col gap-5 px-4 pb-8 pt-4">
-      <Skeleton className="aspect-[16/10] w-full rounded-media" />
-      <div className="flex flex-col gap-2.5">
-        <Skeleton className="h-[22px] w-[82%] rounded" />
-        <Skeleton className="h-[18px] w-[55%] rounded" />
-        <Skeleton className="h-[14px] w-full rounded" />
-        <Skeleton className="h-[14px] w-[92%] rounded" />
-        <Skeleton className="h-[14px] w-[70%] rounded" />
+    <div className="flex flex-col gap-5 px-4 pb-8 pt-4 xl:flex-row xl:items-start xl:gap-[26px] xl:px-[26px] xl:pb-[26px] xl:pt-[26px]">
+      <div className="flex flex-col gap-5 xl:min-w-0 xl:flex-1">
+        <Skeleton className="aspect-[16/10] w-full rounded-media" />
+        <div className="flex flex-col gap-2.5">
+          <Skeleton className="h-[22px] w-[82%] rounded" />
+          <Skeleton className="h-[18px] w-[55%] rounded" />
+          <Skeleton className="h-[14px] w-full rounded" />
+          <Skeleton className="h-[14px] w-[92%] rounded" />
+          <Skeleton className="h-[14px] w-[70%] rounded" />
+        </div>
+        <Skeleton className="h-[120px] w-full rounded-card xl:hidden" />
       </div>
-      <Skeleton className="h-[120px] w-full rounded-card" />
+      <Skeleton className="hidden h-[220px] w-full rounded-card xl:block xl:w-[380px] xl:shrink-0" />
     </div>
   );
 }
