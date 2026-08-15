@@ -3,6 +3,7 @@ import type { VerificationLevelEntry, VerificationSubmission } from "@/types/ver
 import { getVerificationLadder, getVerificationSubmissions } from "@/lib/api/verification";
 import { getOwnProfile } from "@/lib/api/verification";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { VerificationLadderList } from "@/components/profile/VerificationLadderList";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { VERIFY_TIER_LABELS } from "@/types/verification";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -26,7 +27,7 @@ export default async function VerificationPage() {
   const nextTier = next?.tier ?? "verified_business";
 
   return (
-    <div className="flex flex-col gap-5 px-4 pb-24 pt-4">
+    <div className="flex flex-col gap-5 px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[700px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
       <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-text-primary">
@@ -66,52 +67,16 @@ export default async function VerificationPage() {
         <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">
           The ladder
         </span>
-        <div className="flex flex-col rounded-[var(--radius-card)] border border-hairline bg-card p-1">
-          {ladder.map((level, i) => {
-            const t = VERIFY_TIER_LABELS[level.tier];
-            const isNext = level.status === "next";
-            const isYours = level.status === "yours";
-            return (
-              <div
-                key={level.tier}
-                className={[
-                  "flex items-center gap-[13px] rounded-[var(--radius-input)] p-3",
-                  isNext
-                    ? "border border-[var(--border-accent)] bg-[var(--accent-tint)]"
-                    : "border border-transparent bg-transparent",
-                  level.status === "locked" ? "opacity-[0.55]" : "",
-                ].join(" ")}
-              >
-                {level.status === "done" ? (
-                  <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-accent">
-                    <Icon name="Check" size={15} color="#fff" strokeWidth={2.6} />
-                  </span>
-                ) : level.status === "locked" ? (
-                  <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-tag">
-                    <Icon name="Lock" size={14} color="var(--text-muted)" strokeWidth={2} />
-                  </span>
-                ) : (
-                  <VerificationBadge tier={level.tier} size={34} />
-                )}
-                <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                  <span className="text-[14.5px] font-semibold text-text-primary">
-                    {level.tier === "basic" ? "Basic" : t}
-                  </span>
-                  <span className="text-[12px] leading-[1.4] text-text-secondary">{level.copy}</span>
-                </div>
-                {isNext && (
-                  <Link href={`/profile/verification/${nextTier}`} className="no-underline">
-                    <Button size="sm">Start</Button>
-                  </Link>
-                )}
-                {isYours && <StatusPill kind="info">You&apos;re here</StatusPill>}
-              </div>
-            );
-          })}
-        </div>
+        <VerificationLadderList ladder={ladder} nextTier={nextTier} />
         <p className="m-0 px-1 text-[11.5px] leading-[1.5] text-text-muted">
           Verification is separate from your paid plan and your KYC status — the three are independent.
         </p>
+        <div className="flex gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-4">
+          <Icon name="Info" size={17} color="var(--text-muted)" strokeWidth={2} className="mt-px shrink-0" />
+          <span className="text-[12.5px] leading-[1.5] text-text-muted">
+            A rejected level says which document failed and lets you resubmit. Nothing else on your account changes.
+          </span>
+        </div>
       </section>
 
       <section className="flex flex-col gap-[10px]">

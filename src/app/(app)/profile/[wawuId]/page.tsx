@@ -7,6 +7,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { PriceChip } from "@/components/ui/PriceChip";
 import { HandoffPill } from "@/components/ui/HandoffPill";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { StatBlock } from "@/components/ui/StatBlock";
+import { TierBadge } from "@/components/ui/TierBadge";
+import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,6 +18,7 @@ import { FollowButton } from "@/components/shared/FollowButton";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { CompactHeaderActions } from "@/components/profile/CompactHeaderActions";
+import { DesktopProfileActions } from "@/components/profile/DesktopProfileActions";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { CommunityJoinButton } from "@/components/profile/CommunityJoinButton";
 import { ShareButton } from "@/components/profile/ShareButton";
@@ -43,17 +47,102 @@ export default async function FanProfilePage({ params, searchParams }: FanProfil
   const isDeepTab = tab === "shop" || tab === "about";
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      {isDeepTab ? (
-        <CompactHeader profile={profile} following={following} />
-      ) : (
-        <FullHeader profile={profile} following={following} />
-      )}
+    <div className="flex min-h-dvh flex-col xl:min-h-0 xl:flex-1 xl:overflow-hidden">
+      {/* Mobile chrome — unchanged, hidden at xl where the wide identity row below takes over. */}
+      <div className="xl:hidden">
+        {isDeepTab ? (
+          <CompactHeader profile={profile} following={following} />
+        ) : (
+          <FullHeader profile={profile} following={following} />
+        )}
+      </div>
+      {/* Desktop chrome (design D16) — cover + one wide identity row on every tab, not just Content. */}
+      <DesktopIdentity profile={profile} following={following} />
+
       <ProfileTabs wawuId={wawuId} active={tab} />
-      <div className="flex flex-1 flex-col px-4 pb-24 pt-3">
+
+      <div className="flex flex-1 flex-col px-4 pb-24 pt-3 xl:hidden">
         <TabBody profile={profile} tab={tab} following={following} />
       </div>
+
+      <div className="hidden xl:flex xl:min-h-0 xl:flex-1 xl:gap-[26px] xl:overflow-y-auto xl:px-[26px] xl:pb-[26px] xl:pt-5">
+        <div className="xl:min-w-0 xl:flex-1">
+          <TabBody profile={profile} tab={tab} following={following} />
+        </div>
+        <DesktopRail profile={profile} />
+      </div>
     </div>
+  );
+}
+
+/**
+ * Design D16's wide identity row: cover, avatar overlapping it, name/badges/
+ * meta on one line, and the three paid actions (Follow, Ask, Tip) grouped
+ * top-right — where a desktop reader looks for them, instead of stacked
+ * under the header the way mobile's ProfileActions lays them out. Shown on
+ * every tab (D16 doesn't collapse to a compact bar on desktop — that's a
+ * mobile-scroll-driven affordance the wide rail doesn't need).
+ */
+function DesktopIdentity({ profile, following }: { profile: CreatorProfile; following: boolean }) {
+  const metaParts = [profile.categories[0], profile.location, profile.replyTime].filter(Boolean) as string[];
+  return (
+    <div className="hidden xl:block">
+      <div className="h-[180px] shrink-0 bg-[linear-gradient(160deg,var(--accent-deep),var(--surface-elevated))]" />
+      <div className="-mt-[66px] flex items-end gap-5 border-b border-hairline px-[26px] pb-5">
+        <div className="overflow-hidden rounded-full border-[3px] border-page">
+          <Avatar initial={profile.name.charAt(0)} size={96} />
+        </div>
+        <div className="flex min-w-0 flex-1 items-end justify-between gap-5 pb-1.5">
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <div className="flex items-center gap-[9px]">
+              <span className="text-[26px] font-bold tracking-[-0.025em] text-text-primary">{profile.name}</span>
+              <VerificationBadge tier={profile.verification} size={20} />
+              <TierBadge tier={profile.plan} />
+            </div>
+            {metaParts.length > 0 && <span className="text-[14px] text-text-secondary">{metaParts.join(" · ")}</span>}
+          </div>
+          <DesktopProfileActions
+            creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, dmPrice: profile.dmPrice }}
+            dmEnabled={profile.dmEnabled}
+            following={following}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Right rail (~360px, design D16): stats + about move here from the mobile
+ * stack. D16's rail also carries a "Trust" card built on TrustMeter — that
+ * component (and the trust-points model behind it: course completion +50,
+ * fraud -200, tiers earned by points) is exactly what docs/04_DESIGN_SYSTEM.md
+ * flags as a removed, out-of-scope system carried over stale from the old
+ * repo ("Trust Score points... Not in scope. We use the verification ladder
+ * + EVG-lite" — TrustMeter is explicitly on that file's do-not-port list).
+ * This app already has no Trust-points concept anywhere in its types or
+ * mocks; EVG is the real, current stat and it's already in the Stats card
+ * below. Left out rather than silently reintroducing the banned system —
+ * see PR notes.
+ */
+function DesktopRail({ profile }: { profile: CreatorProfile }) {
+  return (
+    <aside className="hidden w-[360px] shrink-0 flex-col gap-4 pt-5 xl:flex">
+      <div className="flex gap-5 rounded-[var(--radius-card)] border border-hairline bg-card p-5">
+        <StatBlock value={profile.stats.followers} label="Followers" align="start" size="sm" />
+        <StatBlock value={String(profile.stats.pieces)} label={profile.stats.piecesLabel} align="start" size="sm" />
+        <StatBlock value={profile.stats.evg.toLocaleString("en-NG")} label="EVG" align="start" size="sm" />
+      </div>
+      <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-hairline bg-card p-5">
+        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">About</span>
+        {profile.bio && <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">{profile.bio}</p>}
+        <div className="flex flex-col gap-2">
+          {profile.location && <InfoRow icon="MapPin" text={profile.location} />}
+          {profile.memberSince && <InfoRow icon="Calendar" text={`On WAWU since ${profile.memberSince}`} />}
+          {profile.replyTime && <InfoRow icon="Clock" text={profile.replyTime} />}
+        </div>
+      </div>
+    </aside>
   );
 }
 
@@ -136,7 +225,7 @@ function ContentTab({ profile }: { profile: CreatorProfile }) {
     );
   }
   return (
-    <div className="flex flex-col gap-[10px]">
+    <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-3 xl:gap-[18px]">
       {profile.content.map((item) => (
         <ContentRow key={item.id} item={item} />
       ))}
@@ -144,17 +233,31 @@ function ContentTab({ profile }: { profile: CreatorProfile }) {
   );
 }
 
+/**
+ * Mobile: a horizontal row (thumb, title/subtitle, price trailing). Desktop
+ * (design D16, 3-across grid): the same data becomes a vertical card — wide
+ * 16:9 media on top with the price/status chip overlaid, title and subtitle
+ * below. One component, `xl:` classes reflow it into the other shape rather
+ * than forking a second content-card component for the grid.
+ */
 function ContentRow({ item }: { item: CreatorProfile["content"][number] }) {
+  const priceNode =
+    item.status === "pending" ? (
+      <StatusPill kind="warning">In review</StatusPill>
+    ) : (
+      <PriceChip amount={item.price} label="PPV" free={item.price === 0} tone="plain" size="sm" />
+    );
   return (
-    <div className="flex h-[82px] shrink-0 items-center gap-[13px] rounded-[var(--radius-card)] border border-hairline bg-card px-[14px]">
-      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]">
+    <div className="flex h-[82px] shrink-0 items-center gap-[13px] rounded-[var(--radius-card)] border border-hairline bg-card px-[14px] xl:h-auto xl:flex-col xl:items-stretch xl:gap-0 xl:overflow-hidden xl:px-0">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:aspect-video xl:h-auto xl:w-full xl:rounded-none xl:border-0 xl:border-b xl:border-hairline">
         {item.locked && (
           <div className="absolute inset-0 grid place-items-center bg-[var(--locked-veil)]">
             <Icon name="Lock" size={15} color="#fff" strokeWidth={2.2} />
           </div>
         )}
+        <span className="absolute right-2.5 top-2.5 hidden xl:flex">{priceNode}</span>
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 xl:flex-none xl:gap-1.5 xl:px-[14px] xl:pb-[14px] xl:pt-3">
         <span className="truncate text-[15px] font-semibold text-text-primary">
           {item.title}
         </span>
@@ -162,13 +265,7 @@ function ContentRow({ item }: { item: CreatorProfile["content"][number] }) {
           {item.kindLabel}
         </span>
       </div>
-      <div className="flex shrink-0">
-        {item.status === "pending" ? (
-          <StatusPill kind="warning">In review</StatusPill>
-        ) : (
-          <PriceChip amount={item.price} label="PPV" free={item.price === 0} tone="plain" size="sm" />
-        )}
-      </div>
+      <div className="flex shrink-0 xl:hidden">{priceNode}</div>
     </div>
   );
 }
@@ -235,7 +332,7 @@ function ShopTab({ profile }: { profile: CreatorProfile }) {
       {profile.products.length === 0 ? (
         <EmptyState icon="ShoppingBag" title="No shop yet" caption="This creator has not linked any products." />
       ) : (
-        <div className="grid grid-cols-2 content-start items-start gap-x-3 gap-y-[18px]">
+        <div className="grid grid-cols-2 content-start items-start gap-x-3 gap-y-[18px] xl:grid-cols-3 xl:gap-x-[18px]">
           {profile.products.map((p) => (
             <Link key={p.id} href={`/marketplace/${p.platform}/${p.id}`} className="flex flex-col gap-[9px] no-underline">
               <div className="aspect-square rounded-[var(--radius-media)] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]" />

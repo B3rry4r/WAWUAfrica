@@ -38,7 +38,7 @@ export default async function OwnProfilePage() {
   const nextLevel = ladder.find((l) => l.status === "next");
 
   return (
-    <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4">
+    <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
       <IdentityBlock profile={profile} />
       {isCreator && <CreatorDashboardCard profile={profile} />}
       <VerificationProgressCard tier={currentLevel?.tier ?? profile.verification} nextTier={nextLevel?.tier} />
@@ -54,7 +54,7 @@ export default async function OwnProfilePage() {
         </div>
       </section>
 
-      <div className="flex flex-col rounded-[var(--radius-card)] border border-hairline bg-card p-1">
+      <div className="flex flex-col rounded-[var(--radius-card)] border border-hairline bg-card p-1 xl:grid xl:grid-cols-2 xl:gap-1">
         {isCreator ? (
           <>
             <ListRow title="Creator dashboard" subtitle="Earnings, uploads, messages" icon="LayoutDashboard" href="/creator" />
