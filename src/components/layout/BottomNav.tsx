@@ -1,59 +1,53 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/cn";
-import { useIsCreator } from "@/lib/auth/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { Icon } from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: IconName;
+}
 
 /**
- * Locked navigation — five slots. Slot 3 swaps by account type:
- *   user    → Explore
- *   creator → Create
- * Search and notifications live in the header, not here.
+ * Locked 5-slot bottom bar (CLAUDE.md). Slot 3 swaps by account type:
+ * user → Explore, creator → Create. Destinations owned by Dev B/C are wired
+ * but not built here.
  */
-type Slot = { label: string; href: string };
-
-const SLOT_1_2: Slot[] = [
-  { label: "Home", href: "/home" },
-  { label: "Communities", href: "/communities" },
-];
-const SLOT_4_5: Slot[] = [
-  { label: "Messages", href: "/messages" },
-  { label: "Profile", href: "/profile" },
-];
-
 export function BottomNav() {
+  const { accountType } = useSession();
   const pathname = usePathname();
-  const isCreator = useIsCreator();
 
-  const middle: Slot = isCreator
-    ? { label: "Create", href: "/create" }
-    : { label: "Explore", href: "/explore" };
-
-  const slots = [...SLOT_1_2, middle, ...SLOT_4_5];
+  const items: NavItem[] = [
+    { href: "/", label: "Home", icon: "Home" },
+    { href: "/communities", label: "Communities", icon: "Users" },
+    accountType === "creator"
+      ? { href: "/create", label: "Create", icon: "PlusCircle" }
+      : { href: "/explore", label: "Explore", icon: "Compass" },
+    { href: "/messages", label: "Messages", icon: "MessageCircle" },
+    { href: "/profile", label: "Profile", icon: "CircleUser" },
+  ];
 
   return (
     <nav
-      aria-label="Primary"
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-[var(--mobile-column)] items-stretch",
-        "border-t border-[var(--border-hairline)] bg-[var(--surface-card)]/95",
-        "backdrop-blur-[var(--blur-chrome)]"
-      )}
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex h-[78px] w-full max-w-[430px] items-center border-t border-hairline bg-[rgba(19,19,22,0.86)] pb-[12px] backdrop-blur"
+      style={{ backdropFilter: "var(--blur-chrome)" }}
     >
-      {slots.map((slot) => {
-        const active = pathname.startsWith(slot.href);
+      {items.map((item) => {
+        const active = pathname === item.href;
         return (
           <Link
-            key={slot.href}
-            href={slot.href}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex min-h-[var(--tap-min)] flex-1 flex-col items-center justify-center gap-1 py-2",
-              "text-[11px] font-medium transition-colors duration-[var(--dur-fast)]",
-              active ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
-            )}
+            key={item.href}
+            href={item.href}
+            className={`flex flex-1 flex-col items-center gap-[5px] text-[10.5px] font-semibold transition-colors ${
+              active ? "text-accent" : "text-text-muted"
+            }`}
           >
-            {slot.label}
+            <Icon name={item.icon} size={22} strokeWidth={active ? 2.4 : 2} />
+            {item.label}
           </Link>
         );
       })}

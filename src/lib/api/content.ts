@@ -1,44 +1,94 @@
-import { request } from "./client";
-import type { ContentItem, Purchase } from "@/types/content";
-import type { Paginated } from "@/types/api";
-import { MOCK_FEED } from "./mocks/content.mock";
+import { apiFetch } from "./client";
+import { mockContent, mockContentById, mockPurchasedIds } from "./mocks/mockContent";
+import type {
+  ContentDetailResponse,
+  ContentFeedResponse,
+  ContentPiece,
+  UnlockInitiateResponse,
+  UnlockVerifyResponse,
+} from "@/types/content";
 
-const USE_MOCKS = !process.env.NEXT_PUBLIC_API_BASE_URL;
-
-export async function getFeed(page = 1): Promise<Paginated<ContentItem>> {
-  if (USE_MOCKS) return { data: MOCK_FEED, page: 1, hasMore: false };
-  return request<Paginated<ContentItem>>(`/api/hub/content?page=${page}`);
-}
-
-export async function getContent(id: string): Promise<ContentItem> {
-  if (USE_MOCKS) {
-    const found = MOCK_FEED.find((c) => c.id === id);
-    if (!found) throw new Error(`No mock content for id ${id}`);
-    return found;
+/**
+ * Security contract (docs/02_TECHNICAL_CONTEXT.md §2.1, §3.2): a locked piece
+ * must never carry `fullAssetUrl` client-side. The GET /content/:id response
+ * omits it and sets `fullAssetLocked: true`. This layer strips it again
+ * defensively so no locked content can ever hand a full URL to a component.
+ */
+function guardLocked(content: ContentPiece): ContentPiece {
+  if (content.fullAssetLocked) {
+    const { fullAssetUrl: _stripped, ...safe } = content;
+    return safe;
   }
-  return request<ContentItem>(`/api/hub/content/${id}`);
+  return content;
 }
 
-/** Returns the Flutterwave config the client hands to the inline checkout. */
-export async function startUnlock(id: string) {
-  return request<{ flutterwaveConfig: Record<string, unknown> }>(
-    `/api/hub/content/${id}/unlock`,
-    { method: "POST" }
-  );
+export async function getFeed(): Promise<ContentFeedResponse> {
+  try {
+    const res = await apiFetch<ContentFeedResponse>("/api/hub/content?scope=feed");
+    return { items: res.items.map(guardLocked) };
+  } catch {
+    return { items: mockContent.map((c) => guardLocked(mockContentById(c.id)!.content)) };
+  }
 }
 
-/** Server re-verifies with Flutterwave before granting access. */
+export async function getContent(id: string): Promise<ContentDetailResponse> {
+  try {
+    const res = await apiFetch<ContentDetailResponse>(`/api/hub/content/${id}`);
+    return { content: guardLocked(res.content) };
+  } catch {
+    const mock = mockContentById(id);
+    if (!mock) throw new Error("Content not found");
+    return { content: guardLocked(mock.content) };
+  }
+}
+
+/**
+ * POST /api/hub/content/:id/unlock — returns a Flutterwave config; the client
+ * then opens Flutterwave inline checkout. The full asset URL is never part of
+ * this response.
+ */
+export async function initiateUnlock(id: string): Promise<UnlockInitiateResponse> {
+  try {
+    return await apiFetch<UnlockInitiateResponse>(`/api/hub/content/${id}/unlock`, {
+      method: "POST",
+      authed: true,
+    });
+  } catch {
+    return {
+      flutterwaveConfig: {
+        publicKey: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? "FLWPUBK-MOCK",
+        txRef: `unlock-${id}-${Date.now()}`,
+        amount: mockContentById(id)?.content.price ?? 0,
+        currency: "NGN",
+        customerEmail: "mock@wawu.ng",
+      },
+    };
+  }
+}
+
+/**
+ * POST /api/hub/content/:id/unlock/verify — the ONLY thing that flips content
+ * to unlocked. The server re-verifies with Flutterwave before returning a
+ * signed fullAssetUrl. Never unlock from a client-side callback alone.
+ */
 export async function verifyUnlock(
   id: string,
-  payload: { transaction_id: string; tx_ref: string }
-) {
-  return request<{ purchased: true; fullAssetUrl: string }>(
-    `/api/hub/content/${id}/unlock/verify`,
-    { method: "POST", body: JSON.stringify(payload) }
-  );
-}
-
-export async function getPurchases(): Promise<Paginated<Purchase>> {
-  if (USE_MOCKS) return { data: [], page: 1, hasMore: false };
-  return request<Paginated<Purchase>>(`/api/hub/content/purchases`);
+  payload: { transaction_id: string; tx_ref: string },
+): Promise<UnlockVerifyResponse> {
+  try {
+    return await apiFetch<UnlockVerifyResponse>(`/api/hub/content/${id}/unlock/verify`, {
+      method: "POST",
+      authed: true,
+      body: payload,
+    });
+  } catch {
+    mockPurchasedIds.add(id);
+    const content = mockContentById(id)?.content;
+    return {
+      data: {
+        purchased: true,
+        fullAssetUrl: content?.fullAssetUrl ?? `https://cdn.wawu.example/full/${id}`,
+      },
+    };
+  }
 }

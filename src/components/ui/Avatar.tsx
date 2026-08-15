@@ -1,40 +1,17 @@
-import { cn } from "@/lib/cn";
-
-export function Avatar({
-  src,
-  name,
-  size = 40,
-  className,
-}: {
-  src?: string | null;
-  name: string;
+interface AvatarProps {
+  initial: string;
   size?: number;
   className?: string;
-}) {
-  const initials = name
-    .split(" ")
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join("")
-    .toUpperCase();
+}
 
+export function Avatar({ initial, size = 36, className = "" }: AvatarProps) {
   return (
     <span
-      style={{ width: size, height: size }}
-      className={cn(
-        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full",
-        "bg-[var(--surface-tag)] text-[var(--text-secondary)]",
-        className
-      )}
+      className={`grid shrink-0 place-items-center rounded-full bg-accent-tint text-accent-hover ring-1 ring-border-accent ${className}`}
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      aria-hidden="true"
     >
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <span style={{ fontSize: size * 0.36 }} className="font-semibold">
-          {initials}
-        </span>
-      )}
+      <span className="font-semibold">{initial.slice(0, 1).toUpperCase()}</span>
     </span>
   );
 }

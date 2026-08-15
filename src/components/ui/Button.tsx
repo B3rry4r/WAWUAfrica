@@ -1,55 +1,73 @@
-"use client";
-import { cn } from "@/lib/cn";
+import { forwardRef } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
+import { Icon } from "./Icon";
+import type { IconName } from "./Icon";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
-type Size = "sm" | "md" | "lg";
+type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonSize = "sm" | "md" | "lg";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-  size?: Size;
-  fullWidth?: boolean;
-  loading?: boolean;
+interface BaseProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  full?: boolean;
+  icon?: IconName;
+  iconRight?: IconName;
+  children?: ReactNode;
+  className?: string;
 }
 
-const VARIANT: Record<Variant, string> = {
-  primary:
-    "bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]",
-  secondary:
-    "bg-[var(--surface-elevated)] text-[var(--text-primary)] border border-[var(--border-hairline)]",
-  ghost: "bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-  danger: "bg-[var(--danger)] text-[var(--text-on-accent)]",
+type ButtonProps = (BaseProps & ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined }) | (BaseProps & { href: string });
+
+const variantClass: Record<ButtonVariant, string> = {
+  primary: "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press",
+  secondary: "bg-elevated text-text-primary border border-strong hover:bg-tag",
+  ghost: "bg-transparent text-text-primary hover:bg-tag",
 };
 
-const SIZE: Record<Size, string> = {
-  sm: "h-9 px-3 text-[13px]",
-  md: "h-11 px-4 text-[15px]",
-  lg: "h-[var(--control-h)] px-5 text-[16px]",
+const sizeClass: Record<ButtonSize, string> = {
+  sm: "h-[38px] px-[13px] text-[13px] font-semibold",
+  md: "h-[48px] px-5 text-[14px] font-semibold",
+  lg: "h-[56px] px-6 text-[15px] font-semibold",
 };
 
-export function Button({
-  variant = "primary",
-  size = "md",
-  fullWidth,
-  loading,
-  disabled,
-  className,
-  children,
-  ...rest
-}: ButtonProps) {
+function buttonClass(variant: ButtonVariant, size: ButtonSize, full: boolean, className: string) {
+  return [
+    "inline-flex items-center justify-center gap-2 rounded-button transition-all duration-200 select-none",
+    "disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]",
+    variantClass[variant],
+    sizeClass[size],
+    full ? "w-full" : "",
+    className,
+  ].join(" ");
+}
+
+function content(size: ButtonSize, icon?: IconName, iconRight?: IconName, children?: ReactNode) {
+  const iconSize = size === "sm" ? 16 : 18;
   return (
-    <button
-      {...rest}
-      disabled={disabled || loading}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] font-semibold",
-        "transition-colors duration-[var(--dur-fast)] disabled:opacity-45 disabled:pointer-events-none",
-        VARIANT[variant],
-        SIZE[size],
-        fullWidth && "w-full",
-        className
-      )}
-    >
-      {loading ? "…" : children}
-    </button>
+    <>
+      {icon ? <Icon name={icon} size={iconSize} strokeWidth={2.2} /> : null}
+      {children}
+      {iconRight ? <Icon name={iconRight} size={iconSize} strokeWidth={2.2} /> : null}
+    </>
   );
 }
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = "primary", size = "md", full = false, icon, iconRight, className = "", children, href, ...rest },
+  ref,
+) {
+  const cls = buttonClass(variant, size, full, className);
+  if (href) {
+    return (
+      <Link href={href} className={cls}>
+        {content(size, icon, iconRight, children)}
+      </Link>
+    );
+  }
+  return (
+    <button ref={ref} className={cls} {...(rest as ButtonHTMLAttributes<HTMLButtonElement>)}>
+      {content(size, icon, iconRight, children)}
+    </button>
+  );
+});

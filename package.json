@@ -11,6 +11,7 @@
     "sync-agent-rules": "bash scripts/sync-agent-rules.sh"
   },
   "dependencies": {
+    "lucide-react": "^1.31.0",
     "next": "14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

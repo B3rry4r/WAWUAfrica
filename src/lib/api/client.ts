@@ -1,40 +1,80 @@
-import { ApiError } from "@/types/api";
+import { sessionStorage } from "@/lib/auth/session-storage";
+import { API_BASE, USE_MOCKS } from "./config";
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const REQUEST_TIMEOUT_MS = 8000;
+
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+/** Thrown by apiFetch in mock mode so the try/catch→mock pattern short-circuits. */
+class MockModeError extends Error {
+  constructor() {
+    super("Running in mock mode — no backend configured");
+    this.name = "MockModeError";
+  }
+}
+
+interface ApiRequestOptions extends Omit<RequestInit, "body"> {
+  body?: unknown;
+  /** Attach the WAWU ID session token. */
+  authed?: boolean;
+  token?: string;
+}
 
 /**
- * The single entry point for every network call. Components must never call
- * fetch() directly — go through a domain module in src/lib/api/.
+ * Thin fetch wrapper — the only place raw fetch lives. Components call the
+ * domain modules in src/lib/api/*, never fetch directly.
  *
- * The backend is being rewritten. Until an endpoint exists, its domain module
- * should fall back to a named mock in src/lib/api/mocks/.
+ * In mock mode (no NEXT_PUBLIC_API_BASE_URL) it throws immediately so the
+ * domain modules return their mock data instantly, with no network round-trip.
+ * Otherwise it applies an 8s timeout so a misconfigured/unreachable backend
+ * fails fast and the mock fallback kicks in instead of hanging the UI.
  */
-export async function request<T>(
-  path: string,
-  init: RequestInit & { token?: string } = {}
-): Promise<T> {
-  const { token, headers, ...rest } = init;
+export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  if (USE_MOCKS) throw new MockModeError();
 
-  const res = await fetch(`${BASE}${path}`, {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-  });
+  const { body, authed, token, ...rest } = options;
+
+  const headers = new Headers(rest.headers);
+  if (body !== undefined) headers.set("Content-Type", "application/json");
+  if (authed || token) {
+    const sessionToken = token ?? sessionStorage.getToken();
+    if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...rest,
+      headers,
+      signal: controller.signal,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (e) {
+    throw e instanceof Error ? e : new ApiError("Network error", 0);
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
-    let code: string | undefined;
     let message = `Request failed (${res.status})`;
     try {
-      const body = await res.json();
-      code = body?.code;
-      message = body?.message ?? message;
+      const data = await res.json();
+      if (data && typeof data.message === "string") message = data.message;
     } catch {
-      /* non-JSON error body */
+      /* non-JSON error body — keep the status message */
     }
-    throw new ApiError(message, res.status, code);
+    throw new ApiError(message, res.status);
   }
 
   if (res.status === 204) return undefined as T;

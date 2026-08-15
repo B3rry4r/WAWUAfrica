@@ -1,19 +1,27 @@
-import { AppHeader } from "./AppHeader";
-import { BottomNav } from "./BottomNav";
+"use client";
 
-/** Authenticated shell. Mobile only for now — desktop layout lands later. */
-export function AppShell({
-  title,
-  children,
-}: {
-  title?: string;
-  children: React.ReactNode;
-}) {
+import type { ReactNode } from "react";
+import { SessionProvider } from "@/lib/auth/session-provider";
+import { BottomNav } from "./BottomNav";
+import { AppHeader } from "./AppHeader";
+
+interface AppShellProps {
+  children: ReactNode;
+  /** Show the app header (search pill + bell). Defaults to true. */
+  header?: boolean;
+  /** Backdrop-blur sticky header, used on the home feed. */
+  elevatedHeader?: boolean;
+}
+
+/** Authenticated app chrome — session context, header, content column, bottom nav. */
+export function AppShell({ children, header = true, elevatedHeader = false }: AppShellProps) {
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-[var(--mobile-column)] bg-[var(--surface-page)]">
-      <AppHeader title={title} />
-      <main className="px-[var(--gutter)] pb-24 pt-[var(--space-md)]">{children}</main>
+    <SessionProvider>
+      <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-hairline bg-surface-page">
+        {header ? <AppHeader elevated={elevatedHeader} /> : null}
+        <main className="pb-[96px]">{children}</main>
+      </div>
       <BottomNav />
-    </div>
+    </SessionProvider>
   );
 }

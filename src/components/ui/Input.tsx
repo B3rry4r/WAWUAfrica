@@ -1,40 +1,48 @@
-"use client";
-import { cn } from "@/lib/cn";
+import { forwardRef } from "react";
+import type { InputHTMLAttributes } from "react";
+import { Icon } from "./Icon";
+import type { IconName } from "./Icon";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  hint?: string;
   error?: string;
+  hint?: string;
+  icon?: IconName;
 }
 
-export function Input({ label, hint, error, className, id, ...rest }: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { label, error, hint, icon, className = "", id, ...rest },
+  ref,
+) {
   const inputId = id ?? rest.name;
   return (
-    <div className="flex flex-col gap-1.5">
-      {label && (
-        <label htmlFor={inputId} className="text-[13px] font-medium text-[var(--text-secondary)]">
+    <div className={`flex flex-col gap-2 ${className}`}>
+      {label ? (
+        <label htmlFor={inputId} className="text-[13px] font-semibold text-text-secondary">
           {label}
         </label>
-      )}
-      <input
-        {...rest}
-        id={inputId}
-        aria-invalid={!!error}
-        className={cn(
-          "h-[var(--control-h)] w-full rounded-[var(--radius-input)] bg-[var(--surface-input)] px-3",
-          "text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]",
-          "border outline-none transition-colors duration-[var(--dur-fast)]",
-          error
-            ? "border-[var(--danger)]"
-            : "border-[var(--border-hairline)] focus:border-[var(--border-accent)]",
-          className
-        )}
-      />
-      {error ? (
-        <p className="text-[12px] text-[var(--danger)]">{error}</p>
-      ) : hint ? (
-        <p className="text-[12px] text-[var(--text-muted)]">{hint}</p>
       ) : null}
+      <div className="relative">
+        {icon ? (
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
+            <Icon name={icon} size={16} color="var(--text-muted)" />
+          </span>
+        ) : null}
+        <input
+          ref={ref}
+          id={inputId}
+          className={[
+            "h-[52px] w-full rounded-input border bg-input text-text-primary placeholder:text-text-disabled",
+            "px-4 text-[15px] outline-none transition-colors",
+            "focus:border-accent focus:ring-2 focus:ring-accent/20",
+            icon ? "pl-11" : "",
+            error ? "border-danger" : "border-hairline",
+          ].join(" ")}
+          {...rest}
+        />
+      </div>
+      {error ? <span className="text-[12.5px] text-danger">{error}</span> : null}
+      {!error && hint ? <span className="text-[12px] text-text-muted">{hint}</span> : null}
     </div>
   );
-}
+});

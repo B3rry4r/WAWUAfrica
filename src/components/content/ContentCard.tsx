@@ -1,75 +1,134 @@
 import Link from "next/link";
-import { Avatar, PriceChip, Skeleton } from "@/components/ui";
-import { cn } from "@/lib/cn";
-import type { ContentItem, ContentType } from "@/types/content";
+import { Avatar } from "@/components/ui/Avatar";
+import { Icon } from "@/components/ui/Icon";
+import { PriceChip } from "@/components/ui/PriceChip";
+import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import type { IconName } from "@/components/ui/Icon";
+import type { ContentPiece, ContentState, ContentType } from "@/types/content";
 
-const TYPE_LABEL: Record<ContentType, string> = {
+const typeVisual: Record<ContentType, IconName> = {
+  video: "Play",
+  course: "GraduationCap",
+  audio: "Headphones",
+  pdf: "FileText",
+  image: "Image",
+  template: "LayoutTemplate",
+};
+
+const typeLabel: Record<ContentType, string> = {
   video: "Video",
   course: "Course",
   audio: "Audio",
-  pdf: "Book",
-  image: "Art",
+  pdf: "PDF",
+  image: "Image",
   template: "Template",
 };
 
-/**
- * The most reused component in the app — feed, creator profile, search, purchases,
- * saved. Do not fork it. If a surface needs a variant, add a prop here.
- */
-export function ContentCard({ item }: { item: ContentItem }) {
-  const locked = item.fullAssetLocked;
-
-  return (
-    <article className="overflow-hidden rounded-[var(--radius-card)] bg-[var(--surface-card)] shadow-[var(--shadow-card)]">
-      <Link href={`/content/${item.id}`} className="block">
-        <div className="relative aspect-[16/10] bg-[var(--surface-elevated)]">
-          {item.thumbnailUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-          )}
-          {locked && <div className="absolute inset-0 bg-[var(--locked-veil)]" aria-hidden="true" />}
-          <div className="absolute left-3 top-3">
-            <span className="rounded-[var(--radius-chip)] bg-[var(--surface-scrim)] px-2 py-1 text-[11px] font-medium text-[var(--text-primary)]">
-              {TYPE_LABEL[item.contentType]}
-            </span>
-          </div>
-          <div className="absolute right-3 top-3">
-            <PriceChip price={item.price} locked={locked} />
-          </div>
-        </div>
-      </Link>
-
-      <div className="flex flex-col gap-2 p-[var(--card-pad)]">
-        <Link href={`/content/${item.id}`}>
-          <h3
-            className={cn(
-              "text-[var(--text-card)] font-semibold leading-[var(--leading-snug)]",
-              "text-[var(--text-primary)]"
-            )}
-          >
-            {item.title}
-          </h3>
-        </Link>
-        <Link
-          href={`/creator/${item.creator.wawuId}`}
-          className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]"
-        >
-          <Avatar src={item.creator.avatarUrl} name={item.creator.name} size={22} />
-          <span className="truncate">{item.creator.name}</span>
-        </Link>
-      </div>
-    </article>
-  );
+interface ContentCardProps {
+  content: ContentPiece;
+  state?: ContentState;
+  ratio?: string;
+  href?: string;
+  /** Renders the design's author row (avatar, name, badge, time) above the media. */
+  authorRow?: boolean;
 }
 
-export function ContentCardSkeleton() {
+function timeAgo(iso: string): string {
+  const secs = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  const m = Math.floor(secs / 60);
+  if (m < 1) return "now";
+  const h = Math.floor(m / 60);
+  if (h < 1) return `${m}m`;
+  const d = Math.floor(h / 24);
+  if (d < 1) return `${h}h`;
+  const w = Math.floor(d / 7);
+  if (w < 1) return `${d}d`;
+  return `${w}w`;
+}
+
+/**
+ * The ONE content card, shared across feed, profile, search and purchases
+ * (docs/05_CONVENTIONS.md; shared rule in docs/06_DEV_ASSIGNMENTS.md).
+ * Do not fork a second one.
+ */
+export function ContentCard({ content, state, ratio = "4 / 3", href, authorRow = false }: ContentCardProps) {
+  const resolvedState: ContentState = state ?? (content.fullAssetLocked ? "locked" : content.purchased ? "unlocked" : "free");
+  const locked = resolvedState === "locked";
+
+  const meta =
+    content.pageCount && content.pageCount > 0
+      ? `${content.pageCount} pages`
+      : content.lessonCount && content.lessonCount > 0
+        ? `${content.lessonCount} lessons`
+        : content.durationLabel;
+
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] bg-[var(--surface-card)]">
-      <Skeleton className="aspect-[16/10] rounded-none" />
-      <div className="flex flex-col gap-2 p-[var(--card-pad)]">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-1/3" />
+    <Link
+      href={href ?? `/content/${content.id}`}
+      className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card transition-transform duration-200 hover:scale-[0.99]"
+    >
+      {authorRow ? (
+        <div className="flex items-center gap-2.5 p-3 pb-2.5">
+          <Avatar initial={content.creator.fullName} size={36} />
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            <span className="truncate text-[14.5px] font-semibold text-text-primary">{content.creator.fullName}</span>
+            <VerificationBadge tier={content.creator.verificationLevel} size={16} />
+            <span className="shrink-0 text-[12.5px] text-text-muted">· {timeAgo(content.createdAt)}</span>
+          </div>
+          <Icon name="Ellipsis" size={18} color="var(--text-muted)" />
+        </div>
+      ) : null}
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: ratio }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)",
+          }}
+          aria-hidden="true"
+        />
+        <span className="absolute inset-0 grid place-items-center">
+          <span className="grid h-12 w-12 place-items-center rounded-full border border-strong bg-[rgba(11,10,13,0.55)] text-text-primary backdrop-blur">
+            <Icon name={typeVisual[content.contentType]} size={20} strokeWidth={2} />
+          </span>
+        </span>
+
+        {locked ? (
+          <span className="absolute inset-0 grid place-items-center bg-locked-veil">
+            <Icon name="Lock" size={20} color="var(--text-on-accent)" strokeWidth={2} />
+          </span>
+        ) : null}
+
+        <span className="absolute right-2.5 top-2.5">
+          {content.accessType === "free" ? (
+            <PriceChip free />
+          ) : (
+            <PriceChip amount={content.price} tone={locked ? "glass" : "accent"} />
+          )}
+        </span>
+
+        <span className="absolute left-2.5 top-2.5 inline-flex h-[24px] items-center rounded-full border border-strong bg-locked-veil px-[10px] text-[11.5px] font-semibold text-text-primary backdrop-blur">
+          {typeLabel[content.contentType]}
+        </span>
+
+        {content.contentType === "course" || content.contentType === "video" || content.contentType === "audio" ? (
+          <span className="absolute bottom-2.5 left-2.5 inline-flex h-[24px] items-center rounded-full border border-strong bg-locked-veil px-[10px] text-[11.5px] font-semibold text-text-primary backdrop-blur">
+            {content.durationLabel}
+          </span>
+        ) : null}
       </div>
-    </div>
+
+      <div className="flex flex-col gap-[5px] p-3">
+        <span className="line-clamp-2 text-[15px] font-semibold leading-snug text-text-primary">{content.title}</span>
+        {authorRow ? (
+          <span className="truncate text-[12.5px] text-text-muted">{meta}</span>
+        ) : (
+          <span className="truncate text-[12.5px] text-text-muted">
+            {content.creator.fullName}
+            {meta ? ` · ${meta}` : ""}
+          </span>
+        )}
+      </div>
+    </Link>
   );
 }

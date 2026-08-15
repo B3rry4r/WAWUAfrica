@@ -1,46 +1,40 @@
 import { formatNaira } from "@/lib/format";
-import { cn } from "@/lib/cn";
 
-/**
- * Renders "Free" or a naira price. Used on content cards and detail headers.
- * `locked` adds the lock affordance for paid content the viewer has not bought.
- */
-export function PriceChip({
-  price,
-  locked,
-  className,
-}: {
-  price: number;
-  locked?: boolean;
-  className?: string;
-}) {
-  const isFree = price === 0;
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-[var(--radius-chip)] px-2 py-1",
-        "text-[12px] font-semibold leading-none backdrop-blur-[var(--blur-chrome)]",
-        isFree
-          ? "bg-[var(--surface-tag)] text-[var(--text-secondary)]"
-          : "bg-[var(--accent)] text-[var(--text-on-accent)]",
-        className
-      )}
-    >
-      {locked && !isFree && <LockGlyph />}
-      {isFree ? "Free" : formatNaira(price)}
-    </span>
-  );
+interface PriceChipProps {
+  free?: boolean;
+  amount?: number;
+  label?: string;
+  tone?: "plain" | "glass" | "accent";
+  size?: "sm" | "md";
 }
 
-function LockGlyph() {
+/**
+ * Price badge — "Free" or "₦X", always naira via formatNaira(). Paid chips
+ * render on the accent tint so a locked piece is instantly readable.
+ */
+export function PriceChip({ free, amount, label, tone = "plain", size = "sm" }: PriceChipProps) {
+  const height = size === "sm" ? "h-6" : "h-7";
+  const text = size === "sm" ? "text-[12px]" : "text-[13px]";
+
+  const toneClass =
+    tone === "plain"
+      ? "bg-tag text-text-secondary border-hairline"
+      : tone === "glass"
+        ? "bg-[rgba(19,19,22,0.86)] text-text-primary border-strong backdrop-blur"
+        : "bg-accent-tint text-accent-hover border-accent";
+
   return (
-    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path
-        d="M3 5V3.5a3 3 0 0 1 6 0V5M2.5 5h7v5.5h-7z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <span
+      className={[
+        "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-[9px]",
+        height,
+        text,
+        toneClass,
+      ].join(" ")}
+      style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}
+    >
+      {free ? "Free" : formatNaira(amount ?? 0)}
+      {label ? <span className="opacity-70">{label}</span> : null}
+    </span>
   );
 }

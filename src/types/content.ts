@@ -1,51 +1,100 @@
+import type { VerificationLevel } from "./account";
+
+/**
+ * Content model, mirroring docs/02_TECHNICAL_CONTEXT.md §2.1.
+ * `fullAssetUrl` is server-side gated and must NEVER reach the client for
+ * locked content — see the API layer in src/lib/api/content.ts.
+ */
 export type ContentType = "video" | "course" | "audio" | "pdf" | "image" | "template";
+
 export type DeliveryMode = "stream" | "download";
+
 export type AccessType = "free" | "paid";
 
-export const DELIVERY_MODE: Record<ContentType, DeliveryMode> = {
-  video: "stream",
-  course: "stream",
-  audio: "download",
-  pdf: "download",
-  image: "download",
-  template: "download",
-};
+export type ContentState = "free" | "locked" | "unlocked";
 
-export interface CreatorSummary {
+export interface CreatorProfile {
   wawuId: string;
-  name: string;
-  avatarUrl: string | null;
-  verified: boolean;
-  tier: "basic" | "pro" | null;
+  fullName: string;
+  handle: string;
+  headline?: string;
+  location?: string;
+  verificationLevel: VerificationLevel;
+  isPro?: boolean;
 }
 
-export interface ContentItem {
+export interface ContentPiece {
   id: string;
+  slug: string;
   contentType: ContentType;
   title: string;
   description: string;
-  thumbnailUrl: string | null;
-  creator: CreatorSummary;
+  category: string;
   accessType: AccessType;
-  /** Integer Naira. 0 when free. */
   price: number;
-  /** Always safe to serve to anyone. */
-  previewAssetUrl: string | null;
-  /**
-   * Only present when the content is free or the viewer has purchased it.
-   * The server decides this — never infer access on the client.
-   */
-  fullAssetUrl: string | null;
-  /** True when paid and not yet purchased by the viewer. */
-  fullAssetLocked: boolean;
+  creator: CreatorProfile;
+  durationLabel?: string;
+  pageCount?: number;
+  lessonCount?: number;
+  views: number;
+  ratingPct?: number;
+  commentCount: number;
+  likes: number;
+  saved: boolean;
   createdAt: string;
+  /** Always safe to serve — truncated PDF, 30–60s clip, episode-gated preview. */
+  previewAssetUrl: string;
+  /**
+   * Gated. Present ONLY when the requester is entitled to the full asset
+   * (free piece or completed purchase). Never present for locked content —
+   * enforce in the API layer, not just in components.
+   */
+  fullAssetUrl?: string;
+  /** Derived — tells the client to render lock/unlock UI without a real URL. */
+  fullAssetLocked: boolean;
+  courseLessons?: CourseLesson[];
+  /** Whether the current user has a completed purchase for this piece. */
+  purchased?: boolean;
 }
 
-export interface Purchase {
+export interface CourseLesson {
   id: string;
-  contentId: string;
-  type: "content" | "tip";
+  index: number;
+  title: string;
+  durationLabel: string;
+  free: boolean;
+}
+
+export interface ContentFilterOption {
+  id: string;
+  label: string;
+}
+
+export interface ContentFeedResponse {
+  items: ContentPiece[];
+}
+
+export interface ContentDetailResponse {
+  content: ContentPiece;
+}
+
+/**
+ * Server response to POST /api/hub/content/:id/unlock.
+ * `fullAssetUrl` is a short-lived signed URL — treat as ephemeral, never cache.
+ */
+export interface UnlockInitiateResponse {
+  flutterwaveConfig: FlutterwaveConfig;
+}
+
+export interface UnlockVerifyResponse {
+  data: { purchased: true; fullAssetUrl: string } | { purchased: false };
+}
+
+export interface FlutterwaveConfig {
+  publicKey: string;
+  txRef: string;
   amount: number;
-  status: "pending" | "completed" | "failed";
-  purchasedAt: string;
+  currency: "NGN";
+  customerEmail: string;
+  customerName?: string;
 }
