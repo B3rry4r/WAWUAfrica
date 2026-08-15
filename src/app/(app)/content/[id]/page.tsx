@@ -13,14 +13,12 @@ import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { getContent, initiateUnlock, verifyUnlock } from "@/lib/api/content";
-import { formatNaira } from "@/lib/format";
+import { formatNaira, creatorSplitRate } from "@/lib/format";
 import type { ContentPiece, ContentType } from "@/types/content";
 import { mockComments } from "@/lib/api/mocks/mockComments";
 import type { MockComment } from "@/lib/api/mocks/mockComments";
 
 type PaymentState = "idle" | "processing" | "success" | "failure";
-
-const SPLIT = 0.85;
 
 const typeVisual: Record<ContentType, IconName> = {
   video: "Play",
@@ -233,7 +231,7 @@ function LessonList({ content }: { content: ContentPiece }) {
 }
 
 function LockedCta({ content, onUnlock }: { content: ContentPiece; onUnlock: () => void }) {
-  const split = Math.round(content.price * SPLIT);
+  const split = Math.round(content.price * creatorSplitRate(content.creator.isPro));
   return (
     <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-5">
       <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview ends</span>
@@ -382,7 +380,7 @@ function UnlockSheet({
   onDone: () => void;
 }) {
   if (!content) return null;
-  const split = Math.round(content.price * SPLIT);
+  const split = Math.round(content.price * creatorSplitRate(content.creator.isPro));
 
   return (
     <Sheet open={open} onClose={payment === "processing" ? undefined : onClose} title={payment === "idle" ? "Unlock this piece" : undefined}>
