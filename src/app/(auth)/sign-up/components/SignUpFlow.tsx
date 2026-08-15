@@ -237,8 +237,7 @@ export function SignUpFlow() {
                 onChange={(e) => setIdentity({ ...identity, phone: e.target.value })}
                 placeholder="803 000 0000"
                 inputMode="tel"
-                className="h-[52px] flex-1 rounded-input border border-hairline bg-input px-4 text-[15px] outline-none placeholder:text-text-disabled"
-                style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}
+                className="h-[52px] flex-1 rounded-input border border-hairline bg-input px-4 text-[15px] outline-none placeholder:text-text-disabled [font-feature-settings:var(--font-feature-tabular)]"
                 aria-label="Phone number"
               />
             </div>
@@ -304,10 +303,9 @@ export function SignUpFlow() {
                   key={value}
                   type="button"
                   onClick={() => setDetails({ ...details, gender: value })}
-                  className={`flex-1 rounded-button text-[13.5px] font-semibold transition-colors ${
+                  className={`h-11 flex-1 rounded-button text-[13.5px] font-semibold transition-colors ${
                     details.gender === value ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
                   }`}
-                  style={{ height: 44 }}
                 >
                   {label}
                 </button>
@@ -354,7 +352,7 @@ export function SignUpFlow() {
           {otpError ? <p className="m-0 text-[13px] font-medium text-danger">{otpError}</p> : null}
           <div className="flex items-center gap-2">
             <Icon name="Clock" size={15} color="var(--text-muted)" />
-            <span className="text-[13.5px] text-text-muted" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+            <span className="text-[13.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
               Resend the code in 0:{String(resendSeconds).padStart(2, "0")}
             </span>
           </div>
@@ -429,7 +427,7 @@ export function SignUpFlow() {
               style={{ width: `${Math.min(100, (interests.length / INTERESTS_MIN) * 100)}%` }}
             />
           </div>
-          <span className="text-[12.5px] font-semibold text-text-muted" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[12.5px] font-semibold text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
             {interests.length} of {INTERESTS_MIN}
           </span>
         </div>
@@ -464,7 +462,7 @@ function AuthScaffold({
         ) : null}
         <span className="flex-1 text-[16px] font-semibold">{title}</span>
         {stepLabel ? (
-          <span className="text-[12.5px] font-semibold text-text-muted" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[12.5px] font-semibold text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
             {stepLabel}
           </span>
         ) : null}

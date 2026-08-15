@@ -41,7 +41,7 @@ export function EarningsCalculator() {
       <div className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-[13px] font-semibold text-text-secondary">How many followers do you have?</span>
-          <span className="text-[17px] font-bold" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[17px] font-bold [font-feature-settings:var(--font-feature-tabular)]">
             {fans.toLocaleString("en-NG")}
           </span>
         </div>
@@ -52,11 +52,10 @@ export function EarningsCalculator() {
           step={100}
           value={fans}
           onChange={(e) => setFans(Number(e.target.value))}
-          className="h-6 w-full cursor-pointer"
-          style={{ accentColor: "var(--accent)" }}
+          className="h-6 w-full cursor-pointer [accent-color:var(--accent)]"
           aria-label="Followers"
         />
-        <div className="flex justify-between text-[11.5px] text-text-muted" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+        <div className="flex justify-between text-[11.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
           <span>100</span>
           <span>50,000</span>
         </div>
@@ -72,8 +71,7 @@ export function EarningsCalculator() {
             max={5000}
             value={price}
             onChange={(e) => setPrice(Math.max(0, Number(e.target.value)))}
-            className="w-full bg-transparent text-[15px] font-semibold text-text-primary outline-none"
-            style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}
+            className="w-full bg-transparent text-[15px] font-semibold text-text-primary outline-none [font-feature-settings:var(--font-feature-tabular)]"
             aria-label="Average price per piece"
           />
         </div>
@@ -99,7 +97,7 @@ export function EarningsCalculator() {
       <div className="flex gap-3 border-t border-hairline pt-[18px]">
         <div className="flex-1 rounded-input border border-hairline bg-elevated p-4">
           <div className="flex flex-col gap-1">
-            <span className="text-[22px] font-bold tracking-tight text-text-primary" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+            <span className="text-[22px] font-bold tracking-tight text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
               {formatNaira(monthly)}
             </span>
             <span className="text-[12.5px] text-text-muted">A month</span>
@@ -107,7 +105,7 @@ export function EarningsCalculator() {
         </div>
         <div className="flex-1 rounded-input border border-accent bg-accent-tint p-4">
           <div className="flex flex-col gap-1">
-            <span className="text-[22px] font-bold tracking-tight text-accent-hover" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+            <span className="text-[22px] font-bold tracking-tight text-accent-hover [font-feature-settings:var(--font-feature-tabular)]">
               {formatNaira(yearly)}
             </span>
             <span className="text-[12.5px] text-text-muted">A year</span>

@@ -109,16 +109,14 @@ export async function LandingContent() {
           {FIELDS.map((field) => (
             <div
               key={field}
-              className="relative aspect-square overflow-hidden rounded-media border border-hairline"
-              style={{ background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)" }}
+              className="relative aspect-square overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]"
             >
               <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,10,13,0.88)_0%,rgba(11,10,13,0.32)_42%,transparent_68%)]" />
               <span className="absolute bottom-3 left-[13px] text-[15px] font-semibold text-text-primary">{field}</span>
             </div>
           ))}
           <div
-            className="relative col-span-2 aspect-[2.1/1] overflow-hidden rounded-media border border-hairline"
-            style={{ background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)" }}
+            className="relative col-span-2 aspect-[2.1/1] overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]"
           >
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,10,13,0.88)_0%,rgba(11,10,13,0.32)_42%,transparent_68%)]" />
             <span className="absolute bottom-3 left-[13px] text-[15px] font-semibold text-text-primary">Culture</span>
@@ -199,7 +197,7 @@ export async function LandingContent() {
           <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5">
             <TierBadge tier="basic" />
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[32px] font-bold tracking-[-0.03em]" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+              <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
                 {formatNaira(5999)}
               </span>
               <span className="text-[14px] text-text-muted">a year</span>
@@ -220,7 +218,7 @@ export async function LandingContent() {
           <div className="flex flex-col gap-3.5 rounded-card border border-accent bg-elevated p-5">
             <TierBadge tier="pro" />
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[32px] font-bold tracking-[-0.03em]" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+              <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
                 {formatNaira(18999)}
               </span>
               <span className="text-[14px] text-text-muted">a year</span>
@@ -277,7 +275,7 @@ export async function LandingContent() {
       </section>
 
       {/* CTA */}
-      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card p-7" style={{ background: "linear-gradient(150deg, var(--accent-deep) 0%, var(--accent) 100%)" }}>
+      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card p-7 bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)]">
         <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent">Ready to get paid for what you know?</h2>
         <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)]">No entry fee. Publish your first piece free, price the next one yourself.</p>
         <Link

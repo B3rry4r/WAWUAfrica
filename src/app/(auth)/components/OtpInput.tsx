@@ -51,10 +51,9 @@ export function OtpInput({ length = 6, value, onChange }: OtpInputProps) {
               onChange(pasted);
             }
           }}
-          className={`aspect-[1/1.15] w-[46px] rounded-input border bg-input text-center text-[26px] font-bold outline-none transition-colors ${
+          className={`aspect-[1/1.15] w-[46px] rounded-input border bg-input text-center text-[26px] font-bold outline-none transition-colors [font-feature-settings:var(--font-feature-tabular)] ${
             digit ? "border-strong text-text-primary" : "border-hairline text-text-primary"
           } focus:border-accent focus:shadow-accent`}
-          style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}
         />
       ))}
     </div>
