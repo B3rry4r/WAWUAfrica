@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
 import { PLANS } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
+import { subscriptionApi } from "@/lib/api/subscription";
+import { setSubscriptionPaid, setCreatorTier } from "@/lib/api/mocks/session";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -32,7 +34,13 @@ export function CreatorOnboarding() {
 
   const pay = () => {
     setStep("processing");
-    window.setTimeout(() => setStep("success"), 1500);
+    subscriptionApi.subscribe(tier).then(() => {
+      // Subscription payment succeeded: the session must reflect the paid
+      // tier so canUpload flips on for the rest of the app.
+      setSubscriptionPaid(true);
+      setCreatorTier(tier);
+      setStep("success");
+    });
   };
 
   if (step === "processing") {
@@ -262,6 +270,7 @@ export function CreatorOnboarding() {
             <Button full size="lg" onClick={pay}>
               Pay {formatNaira(price)}
             </Button>
+            {/** DEV ONLY — remove when the session endpoint is live. */}
             <span className="text-[12px] text-[var(--text-muted)] cursor-pointer" style={{alignSelf: "center"}} onClick={() => setStep("failed")}>
               Simulate a failed payment
             </span>

@@ -1,4 +1,5 @@
 import { currentSession } from "@/lib/api/mocks/session";
+import { creatorGates } from "@/lib/auth/gates";
 import { KycFlow } from "@/components/kyc/KycFlow";
 
 export const metadata = {
@@ -6,6 +7,6 @@ export const metadata = {
 };
 
 export default function KycPage() {
-  const status = currentSession.creator?.kyc ?? "not_started";
-  return <KycFlow initialStatus={status} />;
+  const { kycStatus } = creatorGates(currentSession);
+  return <KycFlow initialStatus={kycStatus} />;
 }
