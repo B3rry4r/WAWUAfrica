@@ -149,7 +149,13 @@ export function SignUpFlow() {
             <h2 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">What brings you to WAWU?</h2>
             <p className="m-0 text-[14.5px] leading-normal text-text-secondary">You can switch to a creator account later — nothing here is permanent.</p>
           </div>
-          <button type="button" onClick={() => setAccountType("user")} className="flex gap-3.5 rounded-card border border-hairline bg-card p-4 text-left">
+          <button
+            type="button"
+            onClick={() => setAccountType("user")}
+            className={`flex gap-3.5 rounded-card border bg-card p-4 text-left ${
+              accountType === "user" ? "border-accent" : "border-hairline"
+            }`}
+          >
             <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
               <Icon name="Compass" size={19} strokeWidth={2} />
             </span>
