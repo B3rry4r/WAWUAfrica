@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import type { CreatorProfile, ProfileTab } from "@/types/profile";
 import { getCreatorProfile, isFollowing } from "@/lib/api/profile";
 import { ProfileHeader } from "@/components/ui/ProfileHeader";
-import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { PriceChip } from "@/components/ui/PriceChip";
 import { HandoffPill } from "@/components/ui/HandoffPill";
@@ -14,9 +14,11 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ProfileActions } from "@/components/profile/ProfileActions";
+import { CompactHeaderActions } from "@/components/profile/CompactHeaderActions";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { CommunityJoinButton } from "@/components/profile/CommunityJoinButton";
 import { ShareButton } from "@/components/profile/ShareButton";
+import { formatNaira } from "@/lib/format";
 
 const VALID_TABS: ProfileTab[] = ["content", "community", "shop", "about"];
 
@@ -97,8 +99,10 @@ function CompactHeader({ profile, following }: { profile: CreatorProfile; follow
       </span>
       <div className="flex shrink-0 items-center gap-[7px]">
         <FollowButton wawuId={profile.wawuId} initial={following} size="sm" />
-        <Button size="sm" variant="secondary" icon="MessageCircle" aria-label="Message" className="w-[38px] !px-0" />
-        <Button size="sm" variant="secondary" icon="HandCoins" aria-label="Tip" className="w-[38px] !px-0" />
+        <CompactHeaderActions
+          creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, dmPrice: profile.dmPrice }}
+          dmEnabled={profile.dmEnabled}
+        />
       </div>
     </div>
   );
@@ -127,6 +131,7 @@ function ContentTab({ profile }: { profile: CreatorProfile }) {
         title="Nothing published yet"
         caption={`Follow ${profile.name.split(" ")[0]} and their first piece reaches you when it lands.`}
         action="Find similar creators"
+        actionHref="/explore/creators"
       />
     );
   }
@@ -232,16 +237,16 @@ function ShopTab({ profile }: { profile: CreatorProfile }) {
       ) : (
         <div className="grid grid-cols-2 content-start items-start gap-x-3 gap-y-[18px]">
           {profile.products.map((p) => (
-            <div key={p.id} className="flex flex-col gap-[9px]">
+            <Link key={p.id} href={`/marketplace/${p.platform}/${p.id}`} className="flex flex-col gap-[9px] no-underline">
               <div className="aspect-square rounded-[var(--radius-media)] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]" />
               <span className="text-[14px] font-semibold leading-[1.3] text-text-primary">{p.name}</span>
               <div className="flex">
                 <HandoffPill app={p.platform === "beauty" ? "WAWUBeauty" : "WAWUBasket"} />
               </div>
               <span className="text-[15px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
-                ₦{p.price.toLocaleString("en-NG")}
+                {formatNaira(p.price)}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       )}
