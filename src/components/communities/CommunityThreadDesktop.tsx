@@ -127,7 +127,7 @@ export function CommunityThreadDesktop({ id }: { id: string }) {
 
           <div className="mt-auto shrink-0 p-[18px]">
             {balance < 1 ? (
-              <Button full icon="Ticket" onClick={() => router.push("/communities")}>
+              <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>
                 Top up credits to send a message
               </Button>
             ) : (

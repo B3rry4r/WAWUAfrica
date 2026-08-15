@@ -13,6 +13,7 @@ import type { IconName } from "@/components/ui/Icon";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/Button";
 
 interface NavItem {
   href: string;
@@ -174,6 +175,9 @@ export function Sidebar() {
                 <Skeleton variant="row" className="h-4 flex-1" />
               )}
             </div>
+            <Button href="/communities?topup=1" size="sm" variant="secondary" full>
+              Top up
+            </Button>
             <span className="text-[12px] leading-[1.45] text-text-secondary">1 credit sends 1 community message</span>
           </>
         )}

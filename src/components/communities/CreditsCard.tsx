@@ -11,10 +11,21 @@ import { Icon } from "@/components/ui/Icon";
 
 type Phase = "choose" | "processing" | "done";
 
+interface CreditsCardProps {
+  initialBalance: number;
+  /** Renders the balance card widget. Off when only the purchase sheet is needed
+   * (e.g. the xl: three-pane empty state, which has no room for the mobile card). */
+  showCard?: boolean;
+  /** Opens the purchase sheet on mount — used by callers that route here with
+   * `?topup=1` (Sidebar's foot-card button, in-thread "Top up credits" CTAs)
+   * so the sheet is reachable from anywhere, not just this card's own button. */
+  defaultOpen?: boolean;
+}
+
 /** Credits render as a count, never a naira value, never cashable. */
-export function CreditsCard({ initialBalance }: { initialBalance: number }) {
+export function CreditsCard({ initialBalance, showCard = true, defaultOpen = false }: CreditsCardProps) {
   const [balance, setBalance] = useState(initialBalance);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [phase, setPhase] = useState<Phase>("choose");
   const [chosen, setChosen] = useState<CreditPackId | null>(null);
   const [added, setAdded] = useState(0);
@@ -40,23 +51,25 @@ export function CreditsCard({ initialBalance }: { initialBalance: number }) {
 
   return (
     <>
-      <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-          <Icon name="Ticket" size={18} color="var(--accent)" strokeWidth={2} />
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">
-            WAWU Credits
+      {showCard ? (
+        <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+            <Icon name="Ticket" size={18} color="var(--accent)" strokeWidth={2} />
           </span>
-          <span className="text-[26px] font-extrabold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
-            {balance}
-          </span>
-          <span className="text-[12px] text-text-muted">One credit sends one message. Reading is free.</span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">
+              WAWU Credits
+            </span>
+            <span className="text-[26px] font-extrabold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
+              {balance}
+            </span>
+            <span className="text-[12px] text-text-muted">One credit sends one message. Reading is free.</span>
+          </div>
+          <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
+            Top up
+          </Button>
         </div>
-        <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
-          Top up
-        </Button>
-      </div>
+      ) : null}
 
       <Sheet open={open} onClose={close} title="Top up credits" caption="Credits are for sending community messages — they can't be cashed out.">
         {phase === "choose" ? (
