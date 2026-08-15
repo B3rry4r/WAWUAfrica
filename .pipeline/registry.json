@@ -1,0 +1,3239 @@
+{
+  "version": 1,
+  "frozenAt": "2026-08-15T23:50:00Z",
+  "resources": [
+    {
+      "name": "UserProfile",
+      "fields": [
+        {
+          "name": "wawuUserId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "accountType",
+          "type": "user|creator",
+          "nullable": false
+        },
+        {
+          "name": "handle",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "bio",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "interests",
+          "type": "string[]",
+          "nullable": false
+        },
+        {
+          "name": "instagramHandle",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "whatsappHandle",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "websiteUrl",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "auth-flows",
+        "app-shell-header-nav",
+        "profile-own-and-public",
+        "settings-account"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "response": {
+            "shape": "UserProfile & WawuJwtClaims (merged)"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/users/me",
+          "body": [
+            {
+              "name": "accountType",
+              "type": "user|creator",
+              "nullable": true
+            },
+            {
+              "name": "interests",
+              "type": "string[]",
+              "nullable": true
+            },
+            {
+              "name": "bio",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "handle",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "instagramHandle",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "whatsappHandle",
+              "type": "string",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "UserProfile"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "Creates the UserProfile row on first call (post-WAWU-ID-signup onboarding, per supersede S-4) or updates it (settings/profile-edit)."
+        },
+        {
+          "method": "GET",
+          "path": "/users/:wawuId/public-profile",
+          "response": {
+            "shape": "CreatorProfile"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "Public creator profile view (profile-own-and-public fragment's CreatorProfile shape) \u2014 merges UserProfile + CreatorState + EvgScore + content/community/product summaries."
+        }
+      ]
+    },
+    {
+      "name": "CreatorState",
+      "fields": [
+        {
+          "name": "wawuUserId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tier",
+          "type": "basic|pro",
+          "nullable": false
+        },
+        {
+          "name": "subscriptionPaid",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "kycStatus",
+          "type": "pending|approved|rejected",
+          "nullable": false
+        },
+        {
+          "name": "slotsUsed",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "slotsTotal",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "dmPrice",
+          "type": "int",
+          "nullable": true,
+          "unit": "naira"
+        },
+        {
+          "name": "dmEnabled",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "auth-flows",
+        "creator-dashboard",
+        "messages-dm",
+        "messages-settings",
+        "earnings",
+        "creator-studio-create",
+        "onboarding",
+        "creator-onboarding-subscription-signup",
+        "subscription-management",
+        "kyc"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/creator/state",
+          "response": {
+            "shape": "CreatorState"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/creator/dm-settings",
+          "body": [
+            {
+              "name": "dmEnabled",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "dmPrice",
+              "type": "int",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "CreatorState"
+          },
+          "roles": [
+            "creator"
+          ],
+          "note": "dmPrice validated server-side 50-500 naira per product-truths.json."
+        }
+      ]
+    },
+    {
+      "name": "VerificationSubmission",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "wawuUserId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tier",
+          "type": "basic|verified_user|verified_business|certified_professional|trusted_partner",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "pending|approved|rejected",
+          "nullable": false
+        },
+        {
+          "name": "documents",
+          "type": "string[]",
+          "nullable": true,
+          "note": "signed upload URLs"
+        },
+        {
+          "name": "submittedAt",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "reviewedAt",
+          "type": "datetime",
+          "nullable": true
+        },
+        {
+          "name": "rejectionReason",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "profile-verification"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/verification/ladder",
+          "response": {
+            "shape": "VerificationLevelEntry[] (derived: JWT verificationTier + submission history)"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/verification/submissions",
+          "response": {
+            "shape": "VerificationSubmission[]"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/verification/submissions",
+          "body": [
+            {
+              "name": "tier",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "documents",
+              "type": "string[]",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "VerificationSubmission"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/verification/submissions/:id/resubmit",
+          "body": [
+            {
+              "name": "documents",
+              "type": "string[]",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "VerificationSubmission"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/verification/submissions/:id/review",
+          "body": [
+            {
+              "name": "decision",
+              "type": "approved|rejected",
+              "nullable": false
+            },
+            {
+              "name": "rejectionReason",
+              "type": "string",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "VerificationSubmission"
+          },
+          "roles": [
+            "admin"
+          ],
+          "note": "On approved: calls WawuIdClient.elevateVerificationTier (declared/wawu-id-integration.json) \u2014 tier is NOT stored as this backend's source of truth, only the submission workflow is."
+        }
+      ]
+    },
+    {
+      "name": "KycSubmission",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "wawuUserId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "bvn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "nin",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "nationalIdEquivalent",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "idDocumentType",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "idDocumentUrl",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "payoutBankName",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "payoutAccountNumber",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "pending|approved|rejected",
+          "nullable": false
+        },
+        {
+          "name": "rejectionReason",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "submittedAt",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "reviewedAt",
+          "type": "datetime",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "kyc"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/kyc",
+          "response": {
+            "shape": "KycSubmission | null"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/kyc",
+          "body": [
+            {
+              "name": "country",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "bvn",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "nin",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "idDocumentType",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "idDocumentUrl",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "payoutBankName",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "payoutAccountNumber",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "KycSubmission"
+          },
+          "roles": [
+            "creator"
+          ],
+          "note": "Sets CreatorState.kycStatus=pending. Nigeria requires bvn+nin; elsewhere nationalIdEquivalent. Server validates by country per product-truths.json."
+        },
+        {
+          "method": "POST",
+          "path": "/kyc/:id/review",
+          "body": [
+            {
+              "name": "decision",
+              "type": "approved|rejected",
+              "nullable": false
+            },
+            {
+              "name": "rejectionReason",
+              "type": "string",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "KycSubmission"
+          },
+          "roles": [
+            "admin"
+          ],
+          "note": "Manual review only \u2014 no automated approval path exists anywhere, per CLAUDE.md."
+        }
+      ]
+    },
+    {
+      "name": "ContentPiece",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "contentType",
+          "type": "video|course|audio|pdf|image|template",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "accessType",
+          "type": "free|paid",
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira"
+        },
+        {
+          "name": "durationLabel",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "pageCount",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "previewAssetUrl",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "fullAssetUrl",
+          "type": "string",
+          "nullable": true,
+          "note": "server-gated: present only if free or requester has completed Purchase"
+        },
+        {
+          "name": "fullAssetLocked",
+          "type": "boolean",
+          "nullable": false,
+          "note": "derived"
+        },
+        {
+          "name": "creatorFirstUploadFree",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "pending|live|rejected",
+          "nullable": false
+        },
+        {
+          "name": "views",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "ratingPct",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "commentCount",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "likes",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "content-detail",
+        "home-feed",
+        "landing-marketing",
+        "saved",
+        "search",
+        "creator-studio-create"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/content",
+          "query": [
+            {
+              "name": "scope",
+              "type": "feed|mine",
+              "nullable": "string",
+              "optional": true
+            },
+            {
+              "name": "category",
+              "type": "string",
+              "nullable": false,
+              "optional": true
+            }
+          ],
+          "response": {
+            "shape": "PaginatedList<ContentPiece>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/content/:id",
+          "response": {
+            "shape": "ContentPiece"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/content",
+          "body": [
+            {
+              "name": "contentType",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "description",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "category",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tags",
+              "type": "string[]",
+              "nullable": true
+            },
+            {
+              "name": "accessType",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "price",
+              "type": "int",
+              "nullable": false
+            },
+            {
+              "name": "previewAsset",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "fullAsset",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "ContentPiece"
+          },
+          "roles": [
+            "creator"
+          ],
+          "note": "Server rejects paid on first submission (creatorFirstUploadFree) and requires CreatorState.canUpload=subscriptionPaid=true (supersede S-1 \u2014 never trust-tier gated). status starts 'pending' until moderation."
+        },
+        {
+          "method": "GET",
+          "path": "/content/mine",
+          "response": {
+            "shape": "PaginatedList<ContentPiece>"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/content/purchases",
+          "response": {
+            "shape": "PaginatedList<Purchase>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/content/:id/unlock",
+          "response": {
+            "shape": "{flutterwaveConfig}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/content/:id/unlock/verify",
+          "body": [
+            {
+              "name": "transaction_id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tx_ref",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{data:{purchased,fullAssetUrl}}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/content/:id/save",
+          "response": {
+            "shape": "SavedItem"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/content/:id/save",
+          "response": {
+            "shape": "void"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/content/:id/rate",
+          "body": [
+            {
+              "name": "rating",
+              "type": "int",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "ContentPiece"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "designed-state task: rateContent currently local-only, ratingPct never recomputed. New endpoint recomputes the aggregate."
+        }
+      ]
+    },
+    {
+      "name": "CourseLesson",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "contentId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "order",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "locked",
+          "type": "boolean",
+          "nullable": false,
+          "note": "derived from purchase state"
+        },
+        {
+          "name": "durationLabel",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "content-detail"
+      ],
+      "endpoints": []
+    },
+    {
+      "name": "Comment",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "contentId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "authorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "replyToId",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "likes",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "content-detail"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/content/:id/comments",
+          "response": {
+            "shape": "PaginatedList<Comment>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/content/:id/comments",
+          "body": [
+            {
+              "name": "text",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "replyToId",
+              "type": "string",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "Comment"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "designed-state task: submitComment currently local-only no-op (stubsObserved), this makes it real."
+        }
+      ]
+    },
+    {
+      "name": "Purchase",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "contentId",
+          "type": "string",
+          "nullable": true,
+          "note": "null for tips"
+        },
+        {
+          "name": "type",
+          "type": "content|tip",
+          "nullable": false
+        },
+        {
+          "name": "buyerWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "amount",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira"
+        },
+        {
+          "name": "commissionRate",
+          "type": "decimal",
+          "nullable": false,
+          "note": "snapshotted: 0.15 standard / 0.10 Pro-tier, never recomputed later"
+        },
+        {
+          "name": "flutterwaveTxRef",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "flutterwaveTxId",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "pending|completed|failed",
+          "nullable": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "nullable": true,
+          "note": "tip message"
+        },
+        {
+          "name": "purchasedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "content-detail",
+        "messages-dm",
+        "purchases"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/tips",
+          "body": [
+            {
+              "name": "creatorWawuId",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "amount",
+              "type": "int",
+              "nullable": false
+            },
+            {
+              "name": "note",
+              "type": "string",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "{flutterwaveConfig}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/tips/verify",
+          "body": [
+            {
+              "name": "transaction_id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tx_ref",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{data:{tipped:true}}"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SavedItem",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "contentId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "savedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "saved"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/users/me/saved",
+          "query": [
+            {
+              "name": "kind",
+              "type": "content|guide|product",
+              "nullable": "string",
+              "optional": true
+            }
+          ],
+          "response": {
+            "shape": "PaginatedList<SavedItem>"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FollowRelationship",
+      "fields": [
+        {
+          "name": "followerWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "followingWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "explore",
+        "profile-own-and-public"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/creators/:wawuId/follow",
+          "response": {
+            "shape": "{following:true}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/creators/:wawuId/follow",
+          "response": {
+            "shape": "{following:false}"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DirectMessage",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "senderWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "amount",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira",
+          "note": "snapshot of CreatorState.dmPrice at send time"
+        },
+        {
+          "name": "status",
+          "type": "awaiting_response|responded|refunded",
+          "nullable": false
+        },
+        {
+          "name": "sentAt",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "deadlineAt",
+          "type": "datetime",
+          "nullable": false,
+          "note": "sentAt + 24h, single locked deadline"
+        },
+        {
+          "name": "respondedAt",
+          "type": "datetime",
+          "nullable": true
+        },
+        {
+          "name": "responseText",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "flutterwaveTxRef",
+          "type": "string",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "messages-dm",
+        "messages-settings"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/dm/:creatorWawuId/send",
+          "body": [
+            {
+              "name": "text",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{flutterwaveConfig, threadId}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/dm/:messageId/send/verify",
+          "body": [
+            {
+              "name": "transaction_id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tx_ref",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "DirectMessage"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/dm/:messageId/respond",
+          "body": [
+            {
+              "name": "text",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "DirectMessage"
+          },
+          "roles": [
+            "creator"
+          ],
+          "note": "Triggers payout release (creates a Purchase-shaped earning row or direct CreatorEarnings ledger entry)."
+        },
+        {
+          "method": "GET",
+          "path": "/dm/inbox",
+          "response": {
+            "shape": "PaginatedList<DirectMessage> (creator's incoming, with countdown)"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/dm/threads",
+          "response": {
+            "shape": "PaginatedList<DirectMessage> (fan's own sent threads)"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/dm/:messageId",
+          "response": {
+            "shape": "DirectMessage"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreatorNoResponseTracker",
+      "fields": [
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "noResponseRatePct",
+          "type": "decimal",
+          "nullable": false
+        },
+        {
+          "name": "penaltyState",
+          "type": "none|warned|disabled_7d|disabled_30d",
+          "nullable": false
+        },
+        {
+          "name": "dmDisabledUntil",
+          "type": "datetime",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "messages-dm",
+        "messages-settings"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/dm/response-stats",
+          "response": {
+            "shape": "CreatorNoResponseTracker"
+          },
+          "roles": [
+            "creator"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DmReport",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "threadId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "reporterWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "messages-dm"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/dm/:messageId/report",
+          "response": {
+            "shape": "DmReport"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Community",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "hostWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "type": "open|private",
+          "nullable": false
+        },
+        {
+          "name": "memberCount",
+          "type": "int",
+          "nullable": false,
+          "note": "derived"
+        },
+        {
+          "name": "messagesToday",
+          "type": "int",
+          "nullable": false,
+          "note": "derived"
+        }
+      ],
+      "sourceScreens": [
+        "communities"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/communities",
+          "response": {
+            "shape": "PaginatedList<Community>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/communities/:id",
+          "response": {
+            "shape": "Community"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/communities/:id/join",
+          "response": {
+            "shape": "CommunityMembership"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "designed-state task: open communities join instantly; private communities create status=pending (currently missing from the frontend build entirely \u2014 see ui-align-tasks)."
+        }
+      ]
+    },
+    {
+      "name": "CommunityMembership",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "communityId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "joined|pending",
+          "nullable": false
+        },
+        {
+          "name": "joinedAt",
+          "type": "datetime",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "communities"
+      ],
+      "endpoints": []
+    },
+    {
+      "name": "CommunityMessage",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "communityId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "senderWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "costInCredits",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "sentAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "communities"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/communities/:id/messages",
+          "response": {
+            "shape": "PaginatedList<CommunityMessage>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/communities/:id/messages",
+          "body": [
+            {
+              "name": "text",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "CommunityMessage"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "Server checks CreditsState.creditBalance>0 OR within 7-day trial before accepting; decrements by 1; 402-style rejection with 'buy more credits' if balance=0 and trial ended."
+        }
+      ]
+    },
+    {
+      "name": "CreditsState",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "creditBalance",
+          "type": "int",
+          "nullable": false,
+          "note": "never a currency amount"
+        },
+        {
+          "name": "trialEndsAt",
+          "type": "datetime",
+          "nullable": false,
+          "note": "7 days from signup"
+        }
+      ],
+      "sourceScreens": [
+        "communities"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/credits",
+          "response": {
+            "shape": "CreditsState"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreditPurchase",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "pack",
+          "type": "starter|popular|pro",
+          "nullable": false
+        },
+        {
+          "name": "creditsGranted",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "flutterwaveTxRef",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "amount",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira"
+        },
+        {
+          "name": "status",
+          "type": "pending|completed|failed",
+          "nullable": false
+        },
+        {
+          "name": "purchasedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "communities"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/credits/purchase",
+          "body": [
+            {
+              "name": "pack",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{flutterwaveConfig}"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "pack->amount/credits looked up server-side: starter=\u20a6500/50, popular=\u20a61000/120, pro=\u20a62000/300 per product-truths.json."
+        },
+        {
+          "method": "POST",
+          "path": "/credits/purchase/verify",
+          "body": [
+            {
+              "name": "transaction_id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tx_ref",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{data:{creditBalance}}"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreditSpend",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "communityId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "creditsSpent",
+          "type": "int",
+          "nullable": false,
+          "note": "always 1"
+        },
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false,
+          "note": "community host, for the 90/10 share"
+        },
+        {
+          "name": "spentAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "communities"
+      ],
+      "endpoints": []
+    },
+    {
+      "name": "CreatorSubscription",
+      "fields": [
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tier",
+          "type": "basic|pro",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "active|past_due|cancelled|expired",
+          "nullable": false
+        },
+        {
+          "name": "commissionRateOverride",
+          "type": "decimal",
+          "nullable": true,
+          "note": "0.10 when tier=pro and active"
+        },
+        {
+          "name": "flutterwaveCustomerRef",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "flutterwavePlanId",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "currentPeriodEnd",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "renewalAttempts",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "cancelsAt",
+          "type": "datetime",
+          "nullable": true
+        },
+        {
+          "name": "cardLast4",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "onboarding",
+        "creator-onboarding-subscription-signup",
+        "subscription-management",
+        "messages-settings",
+        "earnings"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/creator-subscription",
+          "response": {
+            "shape": "CreatorSubscription"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/creator-subscription",
+          "body": [
+            {
+              "name": "tier",
+              "type": "basic|pro",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{flutterwaveConfig}"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "First-time subscribe (onboarding + creator-onboarding-subscription-signup fragments) \u2014 recurring charge setup via Flutterwave Payment Plans."
+        },
+        {
+          "method": "POST",
+          "path": "/creator-subscription/verify",
+          "body": [
+            {
+              "name": "transaction_id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tx_ref",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "CreatorSubscription"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "On success: CreatorState.subscriptionPaid=true, tier set. This is the ONLY place that flips subscriptionPaid \u2014 closes STUB-3 (dev-only setSubscriptionPaid/setCreatorTier switches must not survive into the real build)."
+        },
+        {
+          "method": "POST",
+          "path": "/creator-subscription/upgrade",
+          "response": {
+            "shape": "{flutterwaveConfig} (prorated)"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/creator-subscription/downgrade",
+          "response": {
+            "shape": "CreatorSubscription"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/creator-subscription/retry-payment",
+          "response": {
+            "shape": "{flutterwaveConfig}"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/creator-subscription",
+          "response": {
+            "shape": "CreatorSubscription"
+          },
+          "roles": [
+            "creator"
+          ],
+          "note": "cancelPro \u2014 sets cancelsAt, stays active until period end."
+        },
+        {
+          "method": "PATCH",
+          "path": "/creator-subscription/card",
+          "body": [
+            {
+              "name": "flutterwaveCardToken",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{last4}"
+          },
+          "roles": [
+            "creator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/creator-subscription/billing-history",
+          "response": {
+            "shape": "PaginatedList<CreditPurchase-like billing row>"
+          },
+          "roles": [
+            "creator"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvgScore",
+      "fields": [
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "score",
+          "type": "int",
+          "nullable": false,
+          "note": "views + purchases*weight + comments"
+        },
+        {
+          "name": "updatedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "creator-dashboard",
+        "earnings",
+        "profile-own-and-public"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/creators/:wawuId/evg",
+          "response": {
+            "shape": "EvgScore"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreatorEarnings",
+      "fields": [
+        {
+          "name": "creatorWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "payable",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira"
+        },
+        {
+          "name": "held",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira"
+        },
+        {
+          "name": "thisMonth",
+          "type": "int",
+          "nullable": false,
+          "unit": "naira"
+        }
+      ],
+      "sourceScreens": [
+        "creator-dashboard",
+        "earnings"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/content/mine/earnings",
+          "response": {
+            "shape": "{total, payable, held, recentSales:[], streamBreakdown:[]}"
+          },
+          "roles": [
+            "creator"
+          ],
+          "note": "Flat aggregate query across Purchase+DirectMessage+CreditSpend+CreatorSubscription streams, not a running ledger balance, per docs/02_TECHNICAL_CONTEXT.md \u00a73.7."
+        }
+      ]
+    },
+    {
+      "name": "Notification",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tone",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "amount",
+          "type": "int",
+          "nullable": true,
+          "unit": "naira"
+        },
+        {
+          "name": "creditsCount",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "actionLabel",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "read",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "notifications"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/notifications",
+          "response": {
+            "shape": "{unreadCount, items: PaginatedList<Notification>}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/notifications/mark-all-read",
+          "response": {
+            "shape": "void"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NotificationSettings",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "newReplies",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "newFollowers",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "dmReminders",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "refunds",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "promotions",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "communityDigest",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "settings-account"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/settings/notifications",
+          "response": {
+            "shape": "NotificationSettings"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/settings/notifications",
+          "body": [
+            {
+              "name": "newReplies",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "newFollowers",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "dmReminders",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "refunds",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "promotions",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "communityDigest",
+              "type": "boolean",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "NotificationSettings"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchResponse",
+      "fields": [],
+      "sourceScreens": [
+        "search"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/search",
+          "query": [
+            {
+              "name": "q",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tab",
+              "type": "all|content|creators|communities",
+              "nullable": "string",
+              "optional": true
+            }
+          ],
+          "response": {
+            "shape": "SearchResults {content,creators,communities}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/search/suggestions",
+          "response": {
+            "shape": "{recentSearches, popularSearches, suggestedCreators}"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/search/closest",
+          "query": [
+            {
+              "name": "q",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{items: ContentPiece[]}"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "fuzzy no-results fallback"
+        }
+      ]
+    },
+    {
+      "name": "PartnerService",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tagline",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "blurb",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "live|coming",
+          "nullable": false
+        },
+        {
+          "name": "turnaround",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "priceFrom",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "partner",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "comingNote",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "services-hub"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/services",
+          "response": {
+            "shape": "PartnerService[]"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "reference/seed data, admin-managed later"
+        },
+        {
+          "method": "GET",
+          "path": "/services/:id",
+          "response": {
+            "shape": "PartnerService"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/services/:id/notify-me",
+          "response": {
+            "shape": "{success:true}"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ServiceApplication",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "applicantWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "type": "cac|nepc|mentor-request",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "appliedDate",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "statusLabel",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "amountPaid",
+          "type": "int",
+          "nullable": true,
+          "unit": "naira"
+        },
+        {
+          "name": "certificateExpectedBy",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "timeline",
+          "type": "object[]",
+          "nullable": false
+        },
+        {
+          "name": "rejection",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "services-hub",
+        "services-cac",
+        "services-nepc",
+        "services-applications"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/services/applications",
+          "response": {
+            "shape": "PaginatedList<ServiceApplication>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/services/applications/:id",
+          "response": {
+            "shape": "ServiceApplication"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/services/cac/apply",
+          "body": [
+            {
+              "name": "registrationType",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "names",
+              "type": "string[]",
+              "nullable": false
+            },
+            {
+              "name": "nature",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "{flutterwaveConfig}"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "\u20a625,000 CAC fee, server-priced. Refund-on-all-names-taken per product-truths.json."
+        },
+        {
+          "method": "POST",
+          "path": "/services/cac/apply/verify",
+          "body": [
+            {
+              "name": "transaction_id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tx_ref",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "ServiceApplication"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/services/nepc/apply",
+          "body": [
+            {
+              "name": "rcNumber",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "exportCategory",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "mainProduct",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "targetMarkets",
+              "type": "string[]",
+              "nullable": false
+            },
+            {
+              "name": "yearlyVolume",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "ServiceApplication"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mentor",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "handle",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tagline",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "bio",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "topics",
+          "type": "string[]",
+          "nullable": false
+        },
+        {
+          "name": "verification",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "openForRequests",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "fullUntil",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "yearsExperience",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "sessions",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "languages",
+          "type": "string[]",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "services-mentors"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/services/mentors",
+          "query": [
+            {
+              "name": "category",
+              "type": "string",
+              "nullable": false,
+              "optional": true
+            }
+          ],
+          "response": {
+            "shape": "Mentor[]"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/services/mentors/:id",
+          "response": {
+            "shape": "Mentor"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MentorRequest",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "mentorId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "requesterWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "topics",
+          "type": "string[]",
+          "nullable": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "services-mentors"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/services/mentors/:id/requests",
+          "body": [
+            {
+              "name": "topics",
+              "type": "string[]",
+              "nullable": false
+            },
+            {
+              "name": "note",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "slot",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "MentorRequest"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "FREE \u2014 mentors volunteer their time. No payment step, per product-truths.json (a prior fabricated-pricing bug in the frontend was already fixed this session)."
+        }
+      ]
+    },
+    {
+      "name": "LearnCourse",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "hours",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "certificate",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "overview",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "whatItCovers",
+          "type": "string[]",
+          "nullable": false
+        },
+        {
+          "name": "externalHostUrl",
+          "type": "string",
+          "nullable": false,
+          "note": "Alison handoff, per the mobile Learn rebuild"
+        }
+      ],
+      "sourceScreens": [
+        "learn"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/learn/courses",
+          "response": {
+            "shape": "LearnCourse[]"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/learn/courses/:id",
+          "response": {
+            "shape": "LearnCourse"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CourseEnrollment",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "courseId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "enrolledAt",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "progressPct",
+          "type": "int",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "learn"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/learn/courses/:id/enrol",
+          "response": {
+            "shape": "LearnEntitlement"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "Spends a free-course slot (freeCoursesTotal derived from CreatorState.tier: basic=1, pro=3). Handoff to externalHostUrl."
+        }
+      ]
+    },
+    {
+      "name": "LearnEntitlement",
+      "fields": [
+        {
+          "name": "tier",
+          "type": "basic|pro",
+          "nullable": false
+        },
+        {
+          "name": "freeCoursesTotal",
+          "type": "int",
+          "nullable": false,
+          "note": "derived from CreatorState.tier"
+        },
+        {
+          "name": "freeCoursesUsed",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "enrolledCourseIds",
+          "type": "string[]",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "learn"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/learn/entitlement",
+          "response": {
+            "shape": "LearnEntitlement"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Playbook",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "pages",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "chapters",
+          "type": "object[]",
+          "nullable": false
+        },
+        {
+          "name": "readingSections",
+          "type": "object[]",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "learn"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/learn/playbook",
+          "response": {
+            "shape": "Playbook"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LearnGuide",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "type": "country|article|template",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "updated",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "subtitle",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "readMinutes",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "name": "sections",
+          "type": "object[]",
+          "nullable": true
+        },
+        {
+          "name": "fileCount",
+          "type": "int",
+          "nullable": true
+        }
+      ],
+      "sourceScreens": [
+        "learn"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/learn/guides",
+          "response": {
+            "shape": "LearnGuide[]"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/learn/guides/:id",
+          "response": {
+            "shape": "LearnGuide"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MarketplaceSave",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "productId",
+          "type": "string",
+          "nullable": false,
+          "note": "external id, WAWUBasket/Beauty-owned, opaque to this backend"
+        },
+        {
+          "name": "shop",
+          "type": "basket|beauty",
+          "nullable": false
+        },
+        {
+          "name": "savedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "marketplace"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/marketplace/saves",
+          "body": [
+            {
+              "name": "productId",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "shop",
+              "type": "string",
+              "nullable": false
+            }
+          ],
+          "response": {
+            "shape": "MarketplaceSave"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "Per supersede S-5: this is the ONLY marketplace resource this backend owns. Product catalog stays on frontend mocks / a future WAWUBasket-API integration, explicitly out of scope tonight."
+        },
+        {
+          "method": "DELETE",
+          "path": "/marketplace/saves/:productId",
+          "response": {
+            "shape": "void"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PrivacySettings",
+      "fields": [
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "showPurchases",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "showSavedItems",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "showFollowing",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "showInMemberLists",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "settings-privacy"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/settings/privacy",
+          "response": {
+            "shape": "PrivacySettings"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/settings/privacy",
+          "body": [
+            {
+              "name": "showPurchases",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "showSavedItems",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "showFollowing",
+              "type": "boolean",
+              "nullable": true
+            },
+            {
+              "name": "showInMemberLists",
+              "type": "boolean",
+              "nullable": true
+            }
+          ],
+          "response": {
+            "shape": "PrivacySettings"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BlockedAccount",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "blockedWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "blockedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "settings-privacy"
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/settings/privacy/blocked",
+          "response": {
+            "shape": "PaginatedList<BlockedAccount>"
+          },
+          "roles": [
+            "any"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/settings/privacy/blocked/:id",
+          "response": {
+            "shape": "void"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DataExportRequest",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "userWawuId",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "pending|ready",
+          "nullable": false
+        },
+        {
+          "name": "requestedAt",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "sourceScreens": [
+        "settings-privacy"
+      ],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/settings/privacy/export",
+          "response": {
+            "shape": "DataExportRequest"
+          },
+          "roles": [
+            "any"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "fields": [],
+      "sourceScreens": [
+        "settings-account"
+      ],
+      "endpoints": [
+        {
+          "method": "DELETE",
+          "path": "/account",
+          "response": {
+            "shape": "{deletionScheduledAt}"
+          },
+          "roles": [
+            "any"
+          ],
+          "note": "48h soft-deletion grace period per WAWU ID's own DELETE /internal/users/:userId?mode pattern \u2014 this backend mirrors that grace-period idea for its own data, then calls WAWU ID's account deletion separately (frontend or backend orchestrates both)."
+        }
+      ]
+    }
+  ],
+  "sharedShapes": {
+    "PaginatedList<T>": "per conventions.md \u00a7 Pagination: items[] wrapped by ResponseInterceptor into {data:[], pagination:{currentPage,nextPage,perPage,total}}",
+    "ErrorEnvelope": "{statusCode, message, data: null} per conventions.md \u00a7 Error envelope"
+  }
+}

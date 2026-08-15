@@ -1,0 +1,257 @@
+{
+  "edges": [
+    {
+      "from": "UserProfile",
+      "to": [
+        "CreatorState",
+        "EvgScore"
+      ]
+    },
+    {
+      "from": "CreatorState",
+      "to": []
+    },
+    {
+      "from": "VerificationSubmission",
+      "to": []
+    },
+    {
+      "from": "KycSubmission",
+      "to": [
+        "Account",
+        "CreatorState"
+      ]
+    },
+    {
+      "from": "ContentPiece",
+      "to": [
+        "CreatorState",
+        "Purchase",
+        "SavedItem"
+      ]
+    },
+    {
+      "from": "CourseLesson",
+      "to": []
+    },
+    {
+      "from": "Comment",
+      "to": []
+    },
+    {
+      "from": "Purchase",
+      "to": []
+    },
+    {
+      "from": "SavedItem",
+      "to": []
+    },
+    {
+      "from": "FollowRelationship",
+      "to": []
+    },
+    {
+      "from": "DirectMessage",
+      "to": [
+        "CreatorEarnings",
+        "CreatorState",
+        "Purchase"
+      ]
+    },
+    {
+      "from": "CreatorNoResponseTracker",
+      "to": []
+    },
+    {
+      "from": "DmReport",
+      "to": []
+    },
+    {
+      "from": "Community",
+      "to": [
+        "CommunityMembership"
+      ]
+    },
+    {
+      "from": "CommunityMembership",
+      "to": [
+        "Community"
+      ]
+    },
+    {
+      "from": "CommunityMessage",
+      "to": [
+        "Community",
+        "CreditsState"
+      ]
+    },
+    {
+      "from": "CreditsState",
+      "to": []
+    },
+    {
+      "from": "CreditPurchase",
+      "to": [
+        "Purchase"
+      ]
+    },
+    {
+      "from": "CreditSpend",
+      "to": []
+    },
+    {
+      "from": "CreatorSubscription",
+      "to": [
+        "CreatorState",
+        "CreditPurchase",
+        "Purchase"
+      ]
+    },
+    {
+      "from": "EvgScore",
+      "to": []
+    },
+    {
+      "from": "CreatorEarnings",
+      "to": [
+        "CreatorSubscription",
+        "CreditSpend",
+        "DirectMessage",
+        "Purchase"
+      ]
+    },
+    {
+      "from": "Notification",
+      "to": []
+    },
+    {
+      "from": "NotificationSettings",
+      "to": [
+        "Notification"
+      ]
+    },
+    {
+      "from": "SearchResponse",
+      "to": [
+        "ContentPiece"
+      ]
+    },
+    {
+      "from": "PartnerService",
+      "to": []
+    },
+    {
+      "from": "ServiceApplication",
+      "to": []
+    },
+    {
+      "from": "Mentor",
+      "to": []
+    },
+    {
+      "from": "MentorRequest",
+      "to": [
+        "Mentor"
+      ]
+    },
+    {
+      "from": "LearnCourse",
+      "to": []
+    },
+    {
+      "from": "CourseEnrollment",
+      "to": [
+        "CreatorState",
+        "LearnEntitlement"
+      ]
+    },
+    {
+      "from": "LearnEntitlement",
+      "to": [
+        "CreatorState"
+      ]
+    },
+    {
+      "from": "Playbook",
+      "to": []
+    },
+    {
+      "from": "LearnGuide",
+      "to": []
+    },
+    {
+      "from": "MarketplaceSave",
+      "to": []
+    },
+    {
+      "from": "PrivacySettings",
+      "to": [
+        "Purchase",
+        "SavedItem"
+      ]
+    },
+    {
+      "from": "BlockedAccount",
+      "to": [
+        "Account"
+      ]
+    },
+    {
+      "from": "DataExportRequest",
+      "to": []
+    },
+    {
+      "from": "Account",
+      "to": []
+    }
+  ],
+  "waves": [
+    [
+      "Account",
+      "Comment",
+      "CourseLesson",
+      "CreatorNoResponseTracker",
+      "CreatorState",
+      "CreditSpend",
+      "CreditsState",
+      "DataExportRequest",
+      "DmReport",
+      "EvgScore",
+      "FollowRelationship",
+      "LearnCourse",
+      "LearnGuide",
+      "MarketplaceSave",
+      "Mentor",
+      "Notification",
+      "PartnerService",
+      "Playbook",
+      "Purchase",
+      "SavedItem",
+      "ServiceApplication",
+      "VerificationSubmission"
+    ],
+    [
+      "BlockedAccount",
+      "ContentPiece",
+      "CreditPurchase",
+      "KycSubmission",
+      "LearnEntitlement",
+      "MentorRequest",
+      "NotificationSettings",
+      "PrivacySettings",
+      "UserProfile"
+    ],
+    [
+      "CourseEnrollment",
+      "CreatorSubscription",
+      "SearchResponse"
+    ],
+    [
+      "Community",
+      "CommunityMembership",
+      "CommunityMessage",
+      "CreatorEarnings",
+      "DirectMessage"
+    ]
+  ]
+}

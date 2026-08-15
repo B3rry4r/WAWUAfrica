@@ -1,0 +1,193 @@
+{
+  "screenId": "marketplace",
+  "reads": [
+    {
+      "entity": "Shop",
+      "fields": [
+        { "name": "id", "type": "string (\"basket\"|\"beauty\")", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "tagline", "type": "string", "nullable": false },
+        { "name": "stat", "type": "string (pre-formatted, e.g. \"4,120 items\")", "nullable": false },
+        { "name": "categories", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — always exactly the 2 fixed shops (basket, beauty), no page controls"
+    },
+    {
+      "entity": "Shop",
+      "fields": [
+        { "name": "id", "type": "string (\"basket\"|\"beauty\")", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "tagline", "type": "string", "nullable": false },
+        { "name": "stat", "type": "string", "nullable": false },
+        { "name": "categories", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "n/a — fetched by shop id path param"
+    },
+    {
+      "entity": "MarketplaceItem",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "shop", "type": "string (\"basket\"|\"beauty\")", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "seller", "type": "string (display name)", "nullable": false },
+        { "name": "location", "type": "string", "nullable": true },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "price", "type": "integer (naira, whole ₦)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "category (query param `?category=`, defaults to \"All\"; filtered client-request-side inside the mock/api function, not on the client)"
+      ],
+      "pagination": "none — full filtered list returned in one call, no page/cursor param, no infinite scroll"
+    },
+    {
+      "entity": "MarketplaceProduct",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "shop", "type": "string (\"basket\"|\"beauty\")", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "seller", "type": "string", "nullable": false },
+        { "name": "location", "type": "string", "nullable": true },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "price", "type": "integer (naira)", "nullable": false },
+        { "name": "description", "type": "string", "nullable": false },
+        { "name": "facts", "type": "string[] (short bullet facts, e.g. delivery/turnaround notes)", "nullable": false },
+        { "name": "deliveryNote", "type": "string", "nullable": true },
+        { "name": "sellerDetail", "type": "nested object: { role: string, verification: enum(\"basic\"|\"verified_user\"|\"verified_business\"|\"certified_professional\"|\"trusted_partner\"), followers: string (pre-formatted, e.g. \"3.1k\"), wawuId?: string }", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "n/a — fetched by shop id + product id path params; returns undefined (→ notFound()) if no match"
+    },
+    {
+      "entity": "MarketplaceSearchResults",
+      "fields": [
+        { "name": "query", "type": "string (echoed back)", "nullable": false },
+        { "name": "basket", "type": "MarketplaceItem[]", "nullable": false },
+        { "name": "beauty", "type": "MarketplaceItem[]", "nullable": false },
+        { "name": "alsoOnWawu", "type": "{ id: string, title: string, subtitle: string, href: string }[]", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [
+        "free-text query `q` (query string param on /marketplace/search), matched server/mock-side against title, seller, category, case-insensitive substring"
+      ],
+      "pagination": "none — full match set returned in one call"
+    }
+  ],
+  "actions": [
+    {
+      "name": "toggleSaved",
+      "kind": "create",
+      "entity": "MarketplaceSave",
+      "payload": [
+        { "name": "productId", "type": "string", "note": "inferred from the SEAM comment's implied target (POST /api/hub/marketplace/saves) and page context (product id in scope); the code itself sends NO payload and makes NO network/mock call — `setSaved` is pure client-side React state with a SEAM comment marking intent, not an implemented mock function" }
+      ],
+      "expectedResponse": { "entity": "MarketplaceSave", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "marketplace-hub:error",
+      "entersWhen": "getShops() throws inside the try/catch in marketplace/page.tsx, rendering ErrorState",
+      "reachable": "no"
+    },
+    {
+      "state": "marketplace-hub:success",
+      "entersWhen": "getShops() resolves — always true today since the mock (SHOPS.basket, SHOPS.beauty) never rejects and always returns exactly 2 shops",
+      "reachable": "yes"
+    },
+    {
+      "state": "shop-page:notFound",
+      "entersWhen": "the [shop] route param is not \"basket\" or \"beauty\" — calls Next's notFound()",
+      "reachable": "yes"
+    },
+    {
+      "state": "shop-page:error",
+      "entersWhen": "getShop()/getShopItems() throw inside the try/catch, rendering ErrorState",
+      "reachable": "no"
+    },
+    {
+      "state": "shop-page:empty",
+      "entersWhen": "items.length === 0 for the resolved shop+category combination, rendering EmptyState (\"Nothing in this category yet\")",
+      "reachable": "yes — not reachable by clicking the rendered category chips (every category in the current mock data set has ≥1 item), but reachable by editing the `?category=` query param directly to an arbitrary/unlisted value, since getShopItems does no allowlist validation of the category string"
+    },
+    {
+      "state": "shop-page:success",
+      "entersWhen": "items.length > 0 for the resolved shop+category combination",
+      "reachable": "yes"
+    },
+    {
+      "state": "product-page:notFound",
+      "entersWhen": "the [shop] route param is invalid, OR getProduct() returns undefined for the given shop+id (no matching item)",
+      "reachable": "yes"
+    },
+    {
+      "state": "product-page:error",
+      "entersWhen": "getProduct()/getShop() throw inside the try/catch, rendering ErrorState",
+      "reachable": "no"
+    },
+    {
+      "state": "product-page:success",
+      "entersWhen": "product resolves to a defined MarketplaceProduct",
+      "reachable": "yes"
+    },
+    {
+      "state": "product-actions:saved-toggled",
+      "entersWhen": "desktop-only (xl breakpoint) — user clicks the Save button in ProductActionsRow; local boolean flips, no persistence",
+      "reachable": "yes (as a local UI toggle only — the underlying save is never actually written anywhere, see toggleSaved action note)"
+    },
+    {
+      "state": "product-actions:share-link-copied",
+      "entersWhen": "desktop-only — user clicks Share; navigator.share() unsupported/dismissed, falls back to clipboard.writeText(), shows \"Link copied\" for 1.6s",
+      "reachable": "yes"
+    },
+    {
+      "state": "product-actions:tip-sheet-open",
+      "entersWhen": "desktop-only — user clicks \"Tip the seller\", only rendered when product.sellerDetail.wawuId is present (4 of 8 mock products have it)",
+      "reachable": "yes when a wawuId-bearing seller is viewed; note the actual tip-send action/payload is owned by the messages-dm screen's data layer (src/lib/api/tips.ts, src/components/dm/TipSheet.tsx), out of scope for this fragment"
+    },
+    {
+      "state": "search:empty-no-query",
+      "entersWhen": "q is empty/absent — default state of /marketplace/search, shows \"Search both shops\" EmptyState",
+      "reachable": "yes"
+    },
+    {
+      "state": "search:empty-no-results",
+      "entersWhen": "q is non-empty but results.basket.length + results.beauty.length === 0, shows \"Nothing for \\\"{q}\\\"\" EmptyState with a Browse-the-marketplace action",
+      "reachable": "yes — note: this branch check (`total`) excludes alsoOnWawu.length, and the mock's alsoOnWawu is unconditionally non-empty for ANY truthy query regardless of actual text match, so a query that matches zero basket/beauty items still silently drops a nonzero alsoOnWawu payload the mock did return; a real backend implementing q-based filtering on alsoOnWawu the way the frontend's own EmptyState branch is written would reproduce this same drop"
+    },
+    {
+      "state": "search:results",
+      "entersWhen": "q is non-empty and total > 0 — renders Basket/Beauty result groups plus an optional \"Also on WAWU\" section",
+      "reachable": "yes"
+    },
+    {
+      "state": "search:error",
+      "entersWhen": "searchMarketplace() throws inside the try/catch, rendering ErrorState",
+      "reachable": "no"
+    }
+  ],
+  "uiStatesDesigned": [
+    { "frame": "WAWU Marketplace Tips.dc.html — frame 1 · Landing", "description": "Two shop cards (Basket, Beauty) with handoff pill and stat line — mobile" },
+    { "frame": "WAWU Marketplace Tips.dc.html — frame 2 · Basket", "description": "Shop item list, priced in naira — mobile" },
+    { "frame": "WAWU Marketplace Tips.dc.html — frame 3 · Beauty", "description": "Shop item list, services with location — mobile" },
+    { "frame": "WAWU Marketplace Tips.dc.html — frame 4 · Product", "description": "Product detail, CTA names the destination shop — mobile" },
+    { "frame": "WAWU Marketplace Tips.dc.html — frame 5 · Search", "description": "Search across both shops, then WAWU's own results underneath — mobile" },
+    { "frame": "WAWU Desktop Shell.dc.html — D11 · Product detail", "description": "Desktop product detail: thumbnail gallery rail + fixed 460px detail column, seller card, Save/Share/Tip actions row" },
+    { "frame": "note", "description": "No dedicated loading, empty, or error frames exist in either design source for this screen — all 5 mobile frames and D11 are happy-path only. Empty/error rendering (EmptyState/ErrorState) is a code-level addition with no design-source counterpart to check against. D10 (\"Explore\") in the desktop shell shows shop-preview cards but is the Explore screen's own frame, not a Marketplace-screen design source — not counted here." }
+  ],
+  "stubsObserved": []
+}

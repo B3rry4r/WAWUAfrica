@@ -1,0 +1,216 @@
+{
+  "screenId": "creator-dashboard",
+  "reads": [
+    {
+      "entity": "Session",
+      "fields": [
+        { "name": "accountType", "type": "'user' | 'creator'", "nullable": false },
+        { "name": "creator", "type": "object", "nullable": true },
+        { "name": "creator.tier", "type": "'basic' | 'pro'", "nullable": false },
+        { "name": "creator.subscriptionPaid", "type": "boolean", "nullable": false },
+        { "name": "creator.kyc", "type": "'not_started' | 'pending' | 'approved' | 'rejected'", "nullable": false },
+        { "name": "creator.slotsUsed", "type": "number", "nullable": false },
+        { "name": "creator.slotsTotal", "type": "number", "nullable": false },
+        { "name": "creator.dmPrice", "type": "number", "nullable": false },
+        { "name": "creator.dmEnabled", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [
+        "derived entirely client-side via creatorGates(session): canEarn = creator.kyc === 'approved'; canUpload = !!creator.subscriptionPaid; awaitingKyc = subscriptionPaid && kyc !== 'approved'; slotsRemaining = slotsTotal - slotsUsed",
+        "IMPORTANT: two different sources feed the same shape into this screen — CreatorDashboard.tsx (the actual /creator route) reads the module-level `currentSession` singleton directly (src/lib/api/mocks/session.ts), completely bypassing the real auth session-provider; HomeRightRail.tsx's CreatorRail instead reads `useSession().user` (the SessionUser populated by real sign-in). The two never disagree today only because the mock singleton and the mock sign-in flow happen to be seeded consistently — once a real backend exists this is a genuine seam gap: the main dashboard page has no wired GET for 'who is the current creator', it needs to be pointed at the session/profile endpoint the same way HomeRightRail already is."
+      ],
+      "pagination": "none"
+    },
+    {
+      "entity": "EarningsSummary",
+      "fields": [
+        { "name": "payable", "type": "number (₦)", "nullable": false },
+        { "name": "held", "type": "number (₦)", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [
+        "earned = gates.canEarn ? payable + held : held — displayed total switches meaning depending on the KYC gate",
+        "CreatorDashboard.tsx reads the synchronous `currentEarnings` singleton export directly (src/lib/api/earnings.ts) — SEAM-tagged there as GET /api/hub/content/mine/earnings but never actually called through `earningsApi.getSummary()`",
+        "HomeRightRail.tsx's CreatorRail instead calls the real async `earningsApi.getSummary()` (mockRequest-wrapped) inside a useEffect — the two files in this same screen use inconsistent access patterns for the identical entity"
+      ],
+      "pagination": "none"
+    },
+    {
+      "entity": "MessagingState",
+      "fields": [
+        { "name": "threads", "type": "Thread[]", "nullable": false },
+        { "name": "threads[].id", "type": "string", "nullable": false },
+        { "name": "threads[].buyerName", "type": "string", "nullable": false },
+        { "name": "threads[].buyerInitials", "type": "string", "nullable": false },
+        { "name": "threads[].price", "type": "number (₦)", "nullable": false },
+        { "name": "threads[].opened", "type": "boolean", "nullable": false },
+        { "name": "threads[].expiresAt", "type": "string (human label, e.g. 'in 18h 20m')", "nullable": true },
+        { "name": "responseStats.responded", "type": "number", "nullable": false },
+        { "name": "responseStats.total", "type": "number", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [
+        "urgentCount = threads.filter(t => !t.opened).length (mobile banner count)",
+        "urgentThread = threads.find(t => t.expiresAt) — desktop rail picks the one thread whose 24h window is actively counting down; expiresAt is only set once a buyer has opened the thread",
+        "answeredPct = total > 0 ? round(responded/total*100) : 0 — explicit 0/0 guard for creators with no DM history yet",
+        "CreatorDashboard.tsx reads the synchronous `currentMessaging` singleton (src/lib/api/messaging.ts) directly, SEAM-tagged GET /api/hub/dm/inbox but never called through the async `messagingApi.getState()`; HomeRightRail's CreatorRail does call the async `messagingApi.getState()` — same inconsistency as EarningsSummary above",
+        "penalty field exists on MessagingState but is never read by this screen (surfaced only on messages-settings)"
+      ],
+      "pagination": "none"
+    },
+    {
+      "entity": "ContentItem",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "type", "type": "ContentType ('video'|'course'|'audio'|'pdf'|'image'|'template')", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "price", "type": "number (₦, 0 = free)", "nullable": false },
+        { "name": "status", "type": "'live' | 'review' | 'rejected'", "nullable": false },
+        { "name": "earned", "type": "number (₦, lifetime)", "nullable": true },
+        { "name": "activity", "type": "string (free-text, e.g. '34 sold' or '1,204 views')", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "live = libraryItems.filter(i => i.status === 'live') — drives the 'Your content' / 'Your pieces' list on both mobile and desktop; unfiltered by price/date, no explicit sort observed beyond mock array order",
+        "HomeRightRail.salesCount() reduces over ALL libraryItems regardless of status, regex-parsing a leading '<number> sold' out of the free-text `activity` field to produce a 'Sales' stat — there is no dedicated units-sold field; the code's own comment flags this as needing a real field once GET /api/hub/content/mine/earnings exposes one",
+        "getLibrary() is SEAM-tagged GET /api/hub/content/mine in src/lib/api/creator-content.ts, but this screen reads the synchronous `libraryItems` singleton export directly instead of calling it"
+      ],
+      "pagination": "none"
+    },
+    {
+      "entity": "RevenueStreamBreakdown",
+      "fields": [
+        { "name": "label", "type": "string", "nullable": false },
+        { "name": "amount", "type": "number (₦)", "nullable": false },
+        { "name": "pct", "type": "number (0-100)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "This is the desktop 'Four streams, this month' bar chart. The four entries (Content sales / Paid messages / Community credits / Tips) are a hardcoded, unlabeled const STREAMS array inline in CreatorDashboard.tsx (line 35) — there is no mock/API function backing it at all (not even a SEAM comment), and its total is never cross-checked against EarningsSummary.payable+held. Flagged in stubs.json as STUB-12."
+      ],
+      "pagination": "none"
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["creator"]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "no-creator-session",
+      "entersWhen": "currentSession.creator is null in CreatorDashboard.tsx (`if (!creator) return null`) — i.e. the session's accountType isn't 'creator' or its creator record is missing. There is no redirect or guard wrapping this route; the page just renders a blank body.",
+      "reachable": "yes"
+    },
+    {
+      "state": "kyc-pending-not-approved",
+      "entersWhen": "gates.canEarn === false (creator.kyc !== 'approved') — shows the warning-tint 'KYC in review — 1 to 3 days' banner and the 'Held — not payable yet' pill, on both mobile and desktop",
+      "reachable": "yes"
+    },
+    {
+      "state": "kyc-approved-payable",
+      "entersWhen": "gates.canEarn === true (creator.kyc === 'approved') — shows the 'Paid out to GTB ••••6789' success pill and includes both payable and held amounts in the displayed total",
+      "reachable": "yes"
+    },
+    {
+      "state": "urgent-dm-banner-shown (mobile)",
+      "entersWhen": "approved === true AND currentMessaging.threads contains at least one thread with opened === false",
+      "reachable": "yes"
+    },
+    {
+      "state": "urgent-dm-banner-hidden (mobile)",
+      "entersWhen": "approved === false, OR every thread has opened === true",
+      "reachable": "yes"
+    },
+    {
+      "state": "desktop-needs-reply-populated",
+      "entersWhen": "currentMessaging.threads contains a thread with expiresAt set (buyer has opened it, 24h reply window actively counting down)",
+      "reachable": "yes"
+    },
+    {
+      "state": "desktop-needs-reply-empty",
+      "entersWhen": "no thread in currentMessaging.threads has expiresAt set — renders 'Nothing counting down right now — every open thread is still inside its window.'",
+      "reachable": "yes"
+    },
+    {
+      "state": "content-library-empty",
+      "entersWhen": "libraryItems.filter(i => i.status === 'live').length === 0 (brand-new creator with nothing live yet, or everything still in review/rejected)",
+      "reachable": "yes — and currently UNHANDLED: the code renders an empty bordered card with zero rows and no explicit empty-state copy ('nothing published yet, upload your first piece'); this is a real, reachable gap, not a dev-only artifact."
+    },
+    {
+      "state": "content-library-populated",
+      "entersWhen": "at least one libraryItems entry has status === 'live'",
+      "reachable": "yes"
+    },
+    {
+      "state": "dashboard-main-content-loading",
+      "entersWhen": "theoretically, while the session/earnings/messaging/library reads are in flight",
+      "reachable": "no — CreatorDashboard.tsx never actually calls the async `earningsApi`/`messagingApi`/`contentApi`/session functions; it imports the plain synchronous mock singletons (`currentEarnings`, `currentMessaging`, `libraryItems`, `currentSession`) directly with no useEffect/fetch at all, so there is currently zero loading UI anywhere on this route. This is a structural gap distinct from a dev-only stub: once a real backend is wired, whoever rewires this page must add the loading state from scratch — unlike its sibling HomeRightRail.tsx, which already does this correctly for its own reads."
+    },
+    {
+      "state": "dashboard-main-content-error",
+      "entersWhen": "theoretically, if a session/earnings/messaging/library fetch fails",
+      "reachable": "no — same root cause as dashboard-main-content-loading: no fetch happens at all on this route today, so no failure path exists to enter this state."
+    },
+    {
+      "state": "home-rail-loading (HomeRightRail CreatorRail)",
+      "entersWhen": "threads === null (messagingApi.getState() still pending) or summary === null (earningsApi.getSummary() still pending) — initial render before the effect's promise resolves",
+      "reachable": "yes"
+    },
+    {
+      "state": "home-rail-earnings-fetch-failed (HomeRightRail CreatorRail)",
+      "entersWhen": "earningsApi.getSummary() rejects — the .catch sets summary to null, which is the exact same value as 'still loading'",
+      "reachable": "yes — and currently mishandled: a real fetch failure shows a permanent skeleton forever, indistinguishable from a slow load, with no retry affordance or error copy."
+    },
+    {
+      "state": "home-rail-messaging-fetch-failed-silent (HomeRightRail CreatorRail)",
+      "entersWhen": "messagingApi.getState() rejects — the .catch sets threads to [], which renders identically to a creator who genuinely has zero DM threads",
+      "reachable": "yes — silent failure with no error indicator to the user."
+    },
+    {
+      "state": "home-rail-trending-loading",
+      "entersWhen": "tags === null (getPopularSearches() still pending)",
+      "reachable": "yes"
+    },
+    {
+      "state": "home-rail-trending-empty",
+      "entersWhen": "getPopularSearches() resolves to [] (or the request fails, also mapped to [] in the catch) — TrendingCard renders nothing",
+      "reachable": "yes"
+    },
+    {
+      "state": "home-rail-trending-populated",
+      "entersWhen": "tags.length > 0 (first 4 shown)",
+      "reachable": "yes"
+    },
+    {
+      "state": "answered-pct-zero-no-history",
+      "entersWhen": "currentMessaging.responseStats.total === 0 — answeredPct is explicitly guarded to 0 rather than computing 0/0",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "source": "design/screens/WAWU User vs Creator.dc.html, frame 6 'Dashboard — verified creator'",
+      "state": "Mobile approved-creator dashboard: Pro TierBadge in header, 'Earned this month' card with success StatusPill 'Paid out to GTB ••••6789' + '90/10 on Pro' tag, Upload slots + EVG StatBlocks, full-width 'New upload — N slots left' button, urgent-messages banner, 'Selling best / Your content' SectionHeader over a populated ListRow stack."
+    },
+    {
+      "source": "design/screens/WAWU User vs Creator.dc.html, frame 7 (Basic tier, KYC-pending — immediately follows frame 6, unlabeled span but same layout family)",
+      "state": "Mobile pending-KYC dashboard: warning-tint 'KYC in review — 1 to 3 days' banner at top, Basic TierBadge, warning StatusPill 'Held — not payable yet' + '85/15 on Basic' tag, muted-color earned figure, explanatory footer line about release-on-verification, no urgent-messages banner, plain ListRow stack with no SectionHeader."
+    },
+    {
+      "source": "design/screens/desktop/WAWU Desktop Shell.dc.html, frame D6 'Creator dashboard · 1440 × 900'",
+      "state": "Desktop dashboard: persistent left sidebar with account-type-aware nav + Dashboard highlighted, header with page title + current month label + a 'Statement' download button, 4-across stat row (Earned this month / Unlocks / Questions answered / EVG), 'Four streams, this month' bar chart with a 'Payouts land weekly, Fridays' caption, 'Your pieces' ListRow stack, right rail with Needs-a-reply / Response-rate / Slots cards, and a bottom 'Withdraw ₦148,500' panel with a Withdraw button."
+    }
+  ],
+  "designVsCodeNotes": [
+    "The D6 desktop design's 'Withdraw ₦…' panel with a Withdraw button is INTENTIONALLY not implemented — CreatorDashboard.tsx carries an explicit comment citing CLAUDE.md/docs/01_SPEC.md §6 ('no wallet, no withdrawal UI, no cash out') and substitutes the same non-actionable 'Paid out to GTB' treatment used on mobile. This is a resolved, documented divergence, not a gap.",
+    "The D6 desktop design's header 'Statement' download button (icon=Download) has NO corresponding implementation anywhere in CreatorDashboard.tsx's desktop JSX, and carries no comment explaining the omission — unlike the Withdraw panel, this divergence is undocumented and unflagged in code.",
+    "Design's D6 stat row shows 'Unlocks: 86' and 'Questions answered: 19' as static mockup numbers; the shipped code keeps 'Unlocks' fully hardcoded to '86' with no backing field/variable at all (not even a SEAM comment), while 'Questions answered' is correctly wired to the live responseStats.responded count. The 'Unlocks' stat is an additional undocumented hardcode beyond the ones already listed in stubs.json (STUB-5/STUB-12) — worth flagging for a future stub-discovery pass."
+  ],
+  "stubsObserved": ["STUB-1", "STUB-5", "STUB-12"]
+}

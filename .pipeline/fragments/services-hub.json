@@ -1,0 +1,144 @@
+{
+  "screenId": "services-hub",
+  "reads": [
+    {
+      "entity": "PartnerService",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "tagline", "type": "string", "nullable": false },
+        { "name": "blurb", "type": "string", "nullable": false },
+        { "name": "icon", "type": "string (IconName)", "nullable": false },
+        { "name": "status", "type": "\"live\" | \"coming\"", "nullable": false },
+        { "name": "turnaround", "type": "string, e.g. \"7–14 days\"", "nullable": true },
+        { "name": "priceFrom", "type": "string, e.g. \"From ₦25,000\" — built with formatNaira()", "nullable": true },
+        { "name": "partner", "type": "string, e.g. \"CAC\"", "nullable": true },
+        { "name": "cta", "type": "{ label: string, href: string }", "nullable": true },
+        { "name": "comingNote", "type": "string", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "client-side only: services.filter(s => s.status === 'live') rendered under 'Open now'",
+        "client-side only: services.filter(s => s.status === 'coming') rendered under 'Coming with Pro'",
+        "no filter/sort/status param is sent to getServices() itself — it always returns the full catalogue"
+      ],
+      "pagination": "none — full catalogue array fetched once and rendered in full, no page/cursor param, no infinite scroll"
+    },
+    {
+      "entity": "PartnerService",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "tagline", "type": "string", "nullable": false },
+        { "name": "blurb", "type": "string", "nullable": false },
+        { "name": "icon", "type": "string (IconName)", "nullable": false },
+        { "name": "status", "type": "\"live\" | \"coming\"", "nullable": false },
+        { "name": "comingNote", "type": "string", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["fetched by id route param via getService(id); [id]/page.tsx renders unconditionally as a coming-soon layout regardless of the fetched status value — see uiStatesHandled note"],
+      "pagination": "none"
+    },
+    {
+      "entity": "ServiceApplication",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "kind", "type": "\"cac\" | \"nepc\" | \"mentor\"", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "subtitle", "type": "string", "nullable": true },
+        { "name": "reference", "type": "string", "nullable": false },
+        { "name": "appliedDate", "type": "string", "nullable": false },
+        { "name": "status", "type": "\"under_review\" | \"approved\" | \"rejected\" | \"pending\"", "nullable": false },
+        { "name": "statusLabel", "type": "string", "nullable": false },
+        { "name": "amountPaid", "type": "number (integer Naira)", "nullable": true },
+        { "name": "certificateExpectedBy", "type": "string", "nullable": true },
+        { "name": "timeline", "type": "list of { stage: string, status: \"done\"|\"current\"|\"upcoming\", date?: string, note: string }", "nullable": false },
+        { "name": "rejection", "type": "{ note: string, refunded: boolean }", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "getOtherApplications(excludeId) filters out the application whose id === excludeId; this screen (page.tsx) calls it with excludeId = '' so no record is ever excluded and the full mock set (4 applications) is returned",
+        "inline SEAM comment in page.tsx: 'no dedicated \"list my applications\" endpoint exists yet — getOtherApplications(\"\") with a non-matching id returns the full mock set. Swap for GET /api/hub/services/applications.'",
+        "client-side derivation: applications.find(a => a.status === 'under_review' || a.status === 'pending') ?? applications[0] ?? null picks the single 'featured' application shown in the desktop 'Your applications' card"
+      ],
+      "pagination": "none — desktop-only card shows one featured application's timeline plus a link; no list of all applications is rendered on this screen (full list/tracking lives on the out-of-scope /services/applications/:id route)"
+    }
+  ],
+  "actions": [
+    {
+      "name": "notifyComingSoon",
+      "kind": "custom",
+      "entity": "PartnerService",
+      "payload": [
+        { "name": "id", "type": "string", "description": "id of the coming-soon service to be notified about" }
+      ],
+      "expectedResponse": { "entity": "boolean (success flag)", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "hub: catalogue loaded (live + coming-soon grouped)",
+      "entersWhen": "getServices() resolves successfully; services.filter() splits into 'live' and 'coming' arrays rendered as the main content",
+      "reachable": "yes"
+    },
+    {
+      "state": "hub: error loading services",
+      "entersWhen": "getServices() throws inside the try/catch in ServicesPage — renders <ErrorState title=\"We couldn't load services.\" body={message}/>",
+      "reachable": "no — getMockServices() in mocks/services.ts only awaits a fixed delay(280) and always returns MOCK_SERVICES; it has no throw path, so this catch branch cannot fire under the current mock-driven app. It is a real code path a live backend must be able to hit."
+    },
+    {
+      "state": "hub (desktop only): featured application card populated",
+      "entersWhen": "getOtherApplications('') resolves with at least one item and applications.find(status under_review/pending) or applications[0] is truthy — renders the timeline dots, reference number, and 'View full tracking' link",
+      "reachable": "yes — MOCK_APPLICATIONS is non-empty and its first record (wa-cac-40912) has status 'under_review', so the find() always succeeds under current mock data"
+    },
+    {
+      "state": "hub (desktop only): no applications yet",
+      "entersWhen": "applications array is empty — either getOtherApplications resolves to [] or the surrounding try/catch caught a rejection and set applications = [] — renders \"You haven't started an application yet.\"",
+      "reachable": "no — getMockOtherApplications never rejects and MOCK_APPLICATIONS always has 4 records, none of which has id === '' (the excludeId passed by this screen), so the returned list can never be empty under the current mock"
+    },
+    {
+      "state": "detail ([id]/page.tsx): loading skeleton",
+      "entersWhen": "component mount, before getService(id) has resolved or rejected — service === null && error === false — renders three pulsing skeleton rows",
+      "reachable": "yes — always transiently entered, getMockService has a 250ms delay"
+    },
+    {
+      "state": "detail ([id]/page.tsx): service not found",
+      "entersWhen": "getService(id) resolves to null (no MOCK_SERVICES entry matches id) or the promise rejects — error === true — renders <ErrorState title=\"Service not found\" .../>",
+      "reachable": "yes — reachable today by navigating to /services/<id> for any id not in MOCK_SERVICES and not matched by a sibling static route (cac/nepc/mentors/applications); getMockService(id) returns null for unmatched ids"
+    },
+    {
+      "state": "detail ([id]/page.tsx): loaded, not yet notified",
+      "entersWhen": "getService(id) resolves to a PartnerService and notified === false (initial state) — renders icon/name/tagline/blurb, 'Pro members first' card, and a 'Notify me when it launches' button",
+      "reachable": "yes. Note: this layout is rendered unconditionally regardless of the fetched service.status value — the component never branches on status, so if this route were ever reached for a 'live' service it would still show the coming-soon copy and CTA. In practice this is masked because Next.js route precedence resolves /services/cac, /services/nepc and /services/mentors to their own static page.tsx files (outside this screen's scope) before falling through to [id]/page.tsx, so only the four 'coming' services (health-insurance, pension, banking, grants-funding) are ever actually served by this component today."
+    },
+    {
+      "state": "detail ([id]/page.tsx): notified confirmation",
+      "entersWhen": "user clicks 'Notify me when it launches' → notify() calls notifyComingSoon(id) and awaits it → notified === true — renders a green check banner 'You're on the list — we'll tell you the moment it launches.'",
+      "reachable": "yes — notifyMockComingSoon() always resolves true after a 400ms delay, so this state is reachable on every click under current mocks. No error/failure UI exists for a rejected notifyComingSoon call — the click handler has no try/catch."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "catalogue / landing (mobile Frame 1 of design/screens/WAWU Services.dc.html, 'Landing — open now, then what Pro will carry')",
+      "entersWhen": "design frame — default state of the hub screen: an 'Open now' section listing live services with icon/name/tagline/price·turnaround, and a 'Coming with Pro' section with a Pro TierBadge listing coming-soon services"
+    },
+    {
+      "state": "catalogue (desktop D13 Frame 1 of design/screens/desktop/WAWU Desktop Shell.dc.html, 'Services · catalogue and the application form')",
+      "entersWhen": "design frame — desktop 2-up grid of live/coming-soon service cards as equal-status cards distinguished by border/badge, plus 'Free with any account' (Mentors, Business playbook) and 'Your applications' dot-timeline tracker cards side by side"
+    },
+    {
+      "state": "coming-soon service detail (mobile Frame 3 of design/screens/WAWU Services.dc.html, 'Coming soon — real page, honest status, notify only')",
+      "entersWhen": "design frame — icon, name + ComingSoonPill, tagline, blurb, a Pro-tier-badged 'first access' info card, and a single 'Tell me when it opens' button with 'One notification. No marketing.' caption. Design shows only the not-yet-notified state; it does not depict a post-click 'notified' confirmation variant, which the code nonetheless implements."
+    }
+  ],
+  "stubsObserved": []
+}

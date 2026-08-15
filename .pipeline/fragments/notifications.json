@@ -1,0 +1,108 @@
+{
+  "screenId": "notifications",
+  "reads": [
+    {
+      "entity": "Notification",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "kind", "type": "NotificationKind (enum: dm_deadline|sale|dm_received|content_published|kyc_verified|dm_refunded|credits_low|content_rejected|subscription_renewal|new_follower|tip_received|trial_ending)", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "body", "type": "string", "nullable": false },
+        { "name": "tone", "type": "NotificationTone (enum: danger|accent|success|warning|info|neutral)", "nullable": false },
+        { "name": "amount", "type": "number (integer ₦ naira — rendered via formatNaira; present only on money-bearing kinds: sale, dm_received, dm_refunded, tip_received, subscription_renewal)", "nullable": true },
+        { "name": "creditsCount", "type": "number (integer count — rendered via formatCredits, never as naira; present only on credits_low, trial_ending)", "nullable": true },
+        { "name": "actionLabel", "type": "string (CTA button text, e.g. 'Reply now', 'Buy credits')", "nullable": true },
+        { "name": "read", "type": "boolean", "nullable": false },
+        { "name": "createdAt", "type": "string (ISO-8601 datetime)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "Mobile: client-side split into 'Now' (createdAt within last 24h of render time) vs 'Earlier' (>=24h) groups — computed with Date.now() on every render, not server-provided",
+        "Desktop (design D15): client-side regroup by consequence — 'Needs you now' (kind === 'dm_deadline'), 'Money' (amount !== undefined and not already in needs-now), 'Earlier' (everything else) — independent of the mobile time-based grouping, same underlying list",
+        "No user-facing filter/sort controls (no tabs, no type filter, no date picker) — all grouping is fixed client-side logic over the full returned list"
+      ],
+      "pagination": "None. getNotifications() fetches the entire list in one call with no page/cursor param, no 'load more' control, no infinite scroll observed in the UI. All grouping/splitting happens client-side over the full in-memory array."
+    },
+    {
+      "entity": "NotificationsResponse (wrapper)",
+      "fields": [
+        { "name": "unreadCount", "type": "number (integer)", "nullable": false },
+        { "name": "items", "type": "Notification[]", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "N/A — see Notification entity above. Note: the page component does NOT read res.unreadCount at all; it recomputes its own 'unread' count client-side via items.filter(n => !n.read).length. The response field is fetched but currently unused by the UI — worth flagging as a possible dead/redundant field or a future single-source-of-truth question for reconciliation."
+    }
+  ],
+  "actions": [
+    {
+      "name": "markAllRead",
+      "kind": "update",
+      "entity": "Notification",
+      "payload": [],
+      "expectedResponse": { "entity": "void", "cardinality": "none" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "No explicit gate/role check in this screen's code (no creatorGates() call, no account-type branch). Both getNotifications() and markAllRead() call apiFetch with { authed: true } — 'any authenticated user' is the only observed requirement. The mock notification list itself mixes fan-facing kinds (credits_low, trial_ending) and creator-facing kinds (dm_deadline, sale, dm_received, kyc_verified, subscription_renewal, tip_received) in a single undifferentiated feed, implying the real backend must return a per-user feed already filtered to events relevant to that user's account type/role rather than the screen doing any client-side role filtering."
+    ]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading",
+      "entersWhen": "items === null, i.e. before getNotifications() resolves (set at the start of load() and on every re-load) — renders 5 skeleton rows",
+      "reachable": "yes"
+    },
+    {
+      "state": "error",
+      "entersWhen": "the getNotifications() promise passed to .then/.catch in the page rejects, setting error to a fixed string and rendering <ErrorState onRetry={load} />",
+      "reachable": "no — src/lib/api/notifications.ts wraps the real apiFetch call in its own try/catch and the catch branch always resolves with mockNotifications rather than rethrowing (the try-fetch-then-mock-fallback pattern). This means getNotifications() as called from the page can never actually reject in the current architecture, whether USE_MOCKS is on (apiFetch throws MockModeError immediately, caught internally) or a real backend is wired up and returns a network/server error (also caught internally and silently replaced with mock data). The page's ErrorState branch is unreachable dead code under the present data-layer design; it would only ever fire today if the mockNotifications import itself threw, which cannot happen. This is a gap the backend-wiring pass must address deliberately (e.g. rethrow on genuine network failure once mocks are removed) rather than assume the fallback pattern alone makes this state live."
+    },
+    {
+      "state": "empty",
+      "entersWhen": "items !== null && items.length === 0 — renders EmptyState ('Nothing to see yet') plus three CTA buttons (Browse the feed / Explore creators / Find a community)",
+      "reachable": "no — mockNotifications.items is a hardcoded 12-element array with no dev-only toggle, filter, or account-state switch that can reduce it to zero (unlike e.g. the KYC preview switcher in STUB-2). Under the current always-on mock, the notifications list can never actually be empty at runtime, so this state — though fully coded and matching design frame '2 · Empty' — cannot currently be reached by any user action."
+    },
+    {
+      "state": "populated (mobile, time-grouped)",
+      "entersWhen": "items !== null && items.length > 0, on viewport < xl — renders a 'Now' section (items with createdAt within 24h) and/or an 'Earlier' section (items >= 24h), each conditionally rendered only if non-empty",
+      "reachable": "yes — with the current static mock array's relative minutesAgo() offsets, both the Now group (4 items, 2min–4h old) and the Earlier group (8 items, 24h–7d old) are always non-empty at any load time"
+    },
+    {
+      "state": "populated (desktop, consequence-grouped)",
+      "entersWhen": "items !== null && items.length > 0, on viewport >= xl — renders 'Needs you now' (kind === 'dm_deadline'), 'Money' (amount !== undefined, excluding needs-now items), and 'Earlier' (remainder), each conditionally rendered only if non-empty",
+      "reachable": "yes — with the current mock data, needsNow has 1 item, money has 5 items, and laterDesktop has 6 items, so all three sections are always populated"
+    },
+    {
+      "state": "mark-all-read applied",
+      "entersWhen": "user clicks 'Mark all read' (visible only when unread > 0, computed client-side as items.filter(n => !n.read).length); on success, optimistically sets every item's read to true locally after markAllRead() resolves",
+      "reachable": "yes — the mock unread count from the seed data is 4 (4 items with read:false), so the button renders and the action is triggered by a real click; note markAllRead() itself has the exact same silent-fallback-always-succeeds issue as getNotifications() (src/lib/api/notifications.ts's catch swallows any error and returns undefined) so the action can never actually surface its own error path either — the page's catch → setError(\"Could not mark everything read right now.\") branch is equally unreachable dead code today."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "frame": "1 · Money and urgency first (design/screens/WAWU Notifications Search.dc.html)",
+      "description": "Mobile populated list, time-grouped, amounts shown inline on money-bearing rows, the expiring DM row carries a 'Reply now' action button"
+    },
+    {
+      "frame": "1b · Earlier — approvals, billing, followers, tips (design/screens/WAWU Notifications Search.dc.html)",
+      "description": "Mobile populated list continuation showing the 'Earlier' time group with tappable rows (chevron-right) for rejected content, subscription renewal, new follower, and a tip"
+    },
+    {
+      "frame": "2 · Empty — with three things to actually do (design/screens/WAWU Notifications Search.dc.html)",
+      "description": "Mobile empty state: EmptyState('Nothing yet') plus a 'While you wait' list of three suggestion rows (Follow creators / Join a community / Notification settings) — the shipped code's empty state uses three separate CTA buttons instead of this suggestion-row layout, a layout deviation from the design source worth reconciling"
+    },
+    {
+      "frame": "D15 · Notifications and search · money and urgency first (design/screens/desktop/WAWU Desktop Shell.dc.html)",
+      "description": "Desktop populated list, consequence-grouped into 'Needs you now' (includes both an expiring-DM row AND a 'Your Basic renewal did not go through' subscription past-due row with a Fix button — this second needs-you-now kind has no equivalent in the 12 documented NotificationKind values or in mockNotifications.ts, a design/code gap worth flagging), 'Money' (sale/tip/payout rows), and 'Earlier' (approval/billing/follower rows)"
+    }
+  ],
+  "stubsObserved": []
+}

@@ -1,0 +1,207 @@
+{
+  "screenId": "content-detail",
+  "reads": [
+    {
+      "entity": "ContentPiece",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "slug", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "\"video\"|\"course\"|\"audio\"|\"pdf\"|\"image\"|\"template\"", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": false },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "accessType", "type": "\"free\"|\"paid\"", "nullable": false },
+        { "name": "price", "type": "number", "nullable": false },
+        { "name": "creator", "type": "CreatorProfile (nested object)", "nullable": false },
+        { "name": "creator.wawuId", "type": "string", "nullable": false },
+        { "name": "creator.fullName", "type": "string", "nullable": false },
+        { "name": "creator.headline", "type": "string", "nullable": true },
+        { "name": "creator.location", "type": "string", "nullable": true },
+        { "name": "creator.verificationLevel", "type": "VerificationLevel enum", "nullable": false },
+        { "name": "creator.isPro", "type": "boolean", "nullable": true },
+        { "name": "durationLabel", "type": "string", "nullable": true },
+        { "name": "pageCount", "type": "number", "nullable": true },
+        { "name": "lessonCount", "type": "number", "nullable": true },
+        { "name": "views", "type": "number", "nullable": false },
+        { "name": "ratingPct", "type": "number", "nullable": true, "note": "UI falls back to 96 with ?? when absent; component comment notes ContentPiece has no dedicated 5-star rating field yet" },
+        { "name": "commentCount", "type": "number", "nullable": false },
+        { "name": "saved", "type": "boolean", "nullable": false },
+        { "name": "purchased", "type": "boolean", "nullable": true, "note": "drives locked/unlocked derived state; mock always sets it (true for free or already-purchased ids), so effectively non-null at runtime" },
+        { "name": "fullAssetUrl", "type": "string", "nullable": true, "note": "server-gated; absent whenever fullAssetLocked is true (enforced twice: mock generator strips it, then content.ts's guardLocked strips it again defensively)" },
+        { "name": "fullAssetLocked", "type": "boolean", "nullable": false },
+        { "name": "courseLessons", "type": "CourseLesson[] (id, index, title, durationLabel, free)", "nullable": true, "cardinality-of-field": "list" }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single content piece fetched by :id route param"
+    },
+    {
+      "entity": "MockComment",
+      "fields": [
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "time", "type": "string", "nullable": false, "note": "pre-formatted relative-time string, e.g. \"3h\", \"1d\" — not an ISO timestamp" },
+        { "name": "text", "type": "string", "nullable": false },
+        { "name": "likes", "type": "number", "nullable": false },
+        { "name": "author", "type": "boolean", "nullable": false, "note": "true when the commenter is the content's creator; renders an \"Author\" badge" }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — mockComments is a flat hardcoded array of 3, rendered in full with no page/scroll boundary in the code"
+    },
+    {
+      "entity": "isFollowing (boolean)",
+      "fields": [
+        { "name": "following", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "OUT OF SCOPE dependency: page.tsx calls isFollowing(creator.wawuId) from src/lib/api/profile.ts (not in this screen's dataFiles per scan-map.json) to seed the FollowButton's initial state. Reported for completeness but not deep-extracted here."
+    }
+  ],
+  "actions": [
+    {
+      "name": "initiateUnlock",
+      "kind": "custom",
+      "entity": "ContentPiece / FlutterwaveConfig",
+      "payload": [{ "name": "id", "type": "string", "source": "content.id, route param" }],
+      "expectedResponse": { "entity": "UnlockInitiateResponse { flutterwaveConfig: { publicKey, txRef, amount, currency: \"NGN\", customerEmail, customerName? } }", "cardinality": "single" },
+      "note": "SEAM: POST /api/hub/content/:id/unlock. Real implementation in content.ts (not just a comment) — mock branch fabricates a Flutterwave config with amount from mockContentById(id).price."
+    },
+    {
+      "name": "verifyUnlock",
+      "kind": "custom",
+      "entity": "ContentPiece",
+      "payload": [
+        { "name": "id", "type": "string", "source": "content.id" },
+        { "name": "transaction_id", "type": "string", "source": "client-generated `txn-${Date.now()}`" },
+        { "name": "tx_ref", "type": "string", "source": "client-generated `unlock-${content.id}-${Date.now()}`" }
+      ],
+      "expectedResponse": { "entity": "UnlockVerifyResponse { data: { purchased: true, fullAssetUrl: string } | { purchased: false } }", "cardinality": "single" },
+      "note": "SEAM: POST /api/hub/content/:id/unlock/verify — the ONLY thing that is meant to flip content to unlocked, per content.ts's own doc comment. Real implementation exists in content.ts; mock branch always returns purchased:true and adds the id to mockPurchasedIds, so a real 'declined' response is never exercised by the current mock (see uiStatesHandled: payment=failure)."
+    },
+    {
+      "name": "toggleSaved",
+      "kind": "update",
+      "entity": "ContentPiece.saved",
+      "payload": [{ "name": "id", "type": "string", "source": "content.id (implicit, not passed — this is a pure local state flip)" }],
+      "expectedResponse": { "entity": "none — optimistic local toggle only, no API call is made at all", "cardinality": "single" },
+      "note": "SEAM comment only (content.ts has no save endpoint): 'replace with POST /api/hub/content/:id/save'. No network/mock call happens today — setContent flips `saved` in React state directly."
+    },
+    {
+      "name": "submitComment",
+      "kind": "create",
+      "entity": "MockComment",
+      "payload": [
+        { "name": "text", "type": "string", "source": "draft input, trimmed, required non-empty" },
+        { "name": "replyTo", "type": "string | null", "source": "replyTo state, set via 'Reply' button on an existing comment; prefixes draft with \"@name \"" }
+      ],
+      "expectedResponse": { "entity": "none — no API call is made; comment is unshifted onto local `comments` state and content.commentCount is incremented client-side", "cardinality": "single" },
+      "note": "SEAM comment only, no matching function in content.ts: 'replace with POST /api/hub/content/:id/comments'."
+    },
+    {
+      "name": "rateContent (RateSheet onRate)",
+      "kind": "custom",
+      "entity": "ContentPiece rating",
+      "payload": [{ "name": "rating", "type": "number (1-5)", "source": "star tapped in RateSheet" }],
+      "expectedResponse": { "entity": "none — myRating is set in local component state only; ContentPiece.ratingPct is never recomputed or re-fetched", "cardinality": "single" },
+      "note": "SEAM comment only, no matching function in content.ts: 'replace with POST /api/hub/content/:id/rate — no rating endpoint is documented yet'."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": false,
+    "rolesObserved": [],
+    "note": "No auth guard found in this route, its (app) layout (AppShell), or content.ts/getContent. useSession() is called only to read `user?.wawuId`/`user?.fullName` for optimistically labeling a just-posted comment as by the current user (isCreator check, display name fallback to 'You') — the screen never checks isAuthenticated or redirects when user is null. initiateUnlock/verifyUnlock are called with `authed: true` in content.ts (attaches a bearer token IF one exists in sessionStorage), but the UI itself performs no pre-check and would let a logged-out session attempt the unlock flow. creatorGates() is not imported or referenced anywhere in this screen — no Creator-account gating logic applies to content-detail."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": true
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading",
+      "entersWhen": "content === null && error === null, i.e. between mount/param-change and getContent(id) resolving — renders DetailSkeleton",
+      "reachable": "yes"
+    },
+    {
+      "state": "error",
+      "entersWhen": "getContent(id) rejects — either mockContentById(id) returns null ('Content not found') or apiFetch throws in a real-backend build — caught in load()'s .catch and rendered as ErrorState with a Retry that re-calls load()",
+      "reachable": "yes"
+    },
+    {
+      "state": "content=free",
+      "entersWhen": "content.accessType === \"free\" (derived `state` variable) — full engagement row, no lock veil, no CTA/unlock panel",
+      "reachable": "yes"
+    },
+    {
+      "state": "content=locked",
+      "entersWhen": "content.accessType === \"paid\" && content.purchased === false — shows lock veil/preview cut-line, hides live engagement actions (share/save/rate), shows LockedCta with 'Unlock for ₦X' button",
+      "reachable": "yes"
+    },
+    {
+      "state": "content=unlocked",
+      "entersWhen": "content.accessType === \"paid\" && content.purchased === true (either seeded that way by mockPurchasedIds, or flipped client-side after a successful verifyUnlock) — shows 'Yours' pill, UnlockedActions (download/tip), live engagement row",
+      "reachable": "yes"
+    },
+    {
+      "state": "unlock-sheet: payment=idle",
+      "entersWhen": "unlockOpen is set true (user tapped Unlock) and payment state reset to \"idle\" — shows price, split-in-naira, and Pay button",
+      "reachable": "yes"
+    },
+    {
+      "state": "unlock-sheet: payment=processing",
+      "entersWhen": "after initiateUnlock() resolves, payment is set to \"processing\" while a 2400ms mock timer stands in for bank confirmation",
+      "reachable": "yes"
+    },
+    {
+      "state": "unlock-sheet: payment=success",
+      "entersWhen": "the mock timer's `paid` boolean resolves true (hardcoded, always true in mock) AND verifyUnlock's response has data.purchased === true (also hardcoded true in mock) — content is patched to purchased:true, fullAssetLocked:false",
+      "reachable": "yes"
+    },
+    {
+      "state": "unlock-sheet: payment=failure",
+      "entersWhen": "code path exists for: (a) the mock `paid` promise resolving false, or (b) verifyUnlock's response having data.purchased === false, or (c) initiateUnlock/verifyUnlock throwing (caught by the outer try/catch)",
+      "reachable": "no",
+      "note": "In the current mock layer this state is DEAD CODE at the data-flow level for the two 'declined' paths: the mock `paid` promise in page.tsx is hardcoded to always resolve(true) (no branch ever produces false), and content.ts's mock verifyUnlock always returns { purchased: true, ... } with no failure branch. The only way to reach payment=failure today is an actual thrown exception (e.g. a real misconfigured/unreachable backend once NEXT_PUBLIC_API_BASE_URL is set) — there is no dev-only toggle for it on this screen (unlike CreatorOnboarding.tsx's STUB-4 simulate-failure button), so this designed state (frame 4c in the .dc.html) currently has NO reachable trigger in a pure-mock build."
+    },
+    {
+      "state": "comments list + composer",
+      "entersWhen": "content is loaded; always rendered under EngagementRow — comments seeded from mockComments (3 hardcoded entries), locally appended to on submit",
+      "reachable": "yes"
+    },
+    {
+      "state": "download notice: no file attached",
+      "entersWhen": "downloadAsset() called with a falsy url (fullAssetUrl undefined) — shows 'No downloadable file is attached to this piece yet.' for 2.2s",
+      "reachable": "yes",
+      "note": "reachable whenever a purchased/free piece happens to have no fullAssetUrl in its data, or if download is somehow triggered while still locked"
+    },
+    {
+      "state": "download notice: started",
+      "entersWhen": "downloadAsset() called with a truthy url — triggers a synthetic <a download> click and shows 'Download started' for 2.2s",
+      "reachable": "yes"
+    },
+    {
+      "state": "share: link copied feedback",
+      "entersWhen": "navigator.share is unavailable/unsupported (or user dismisses it) and navigator.clipboard.writeText succeeds — shows a 'Copied'/checkmark state for 1.6s",
+      "reachable": "yes"
+    },
+    {
+      "state": "rate sheet open",
+      "entersWhen": "user taps the Rate pill in EngagementRow — opens a 1–5 star picker; selecting a star sets local myRating and closes the sheet with no network call",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    { "frame": "1", "state": "Free — plays in full, engagement row live" },
+    { "frame": "2", "state": "Locked — real preview then a labelled cut line (image/video/pdf lock veil)" },
+    { "frame": "2b", "state": "Locked course — gated at the episode (lesson list with free lesson 1, locked 2+)" },
+    { "frame": "3", "state": "Unlock sheet — idle, price and split stated in naira" },
+    { "frame": "4a", "state": "Unlock sheet — processing ('Confirming with your bank')" },
+    { "frame": "4b", "state": "Unlock sheet — success ('Unlocked', Start reading / Download the file)" },
+    { "frame": "4c", "state": "Unlock sheet — failed ('Payment did not go through', Try again / Use another method)" },
+    { "frame": "5", "state": "Unlocked — quiet 'Yours' chip, download + tip actions" },
+    { "frame": "6", "state": "Comments — existing thread restyled, composer pinned to bottom" }
+  ],
+  "stubsObserved": []
+}

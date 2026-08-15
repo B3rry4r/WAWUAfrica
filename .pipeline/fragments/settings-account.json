@@ -1,0 +1,151 @@
+{
+  "screenId": "settings-account",
+  "reads": [
+    {
+      "entity": "OwnProfile",
+      "fields": [
+        { "name": "accountType", "type": "AccountType (\"user\"|\"creator\")", "nullable": false },
+        { "name": "handle", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "email", "type": "string", "nullable": false },
+        { "name": "plan", "type": "CreatorTier (\"basic\"|\"pro\")", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single-object read, no list",
+      "notes": "getOwnProfile() (src/lib/api/verification.ts, SEAM: GET /api/hub/profile) returns the full OwnProfile shape (wawuId, bio, verification, stats{published,sales,followers}, interests[], socials{instagram?,whatsapp?}, credits, earningsThisMonth?, toReply?, contentSlots?{published,total} — see src/types/verification.ts) but settings/page.tsx (this screen) only reads accountType/handle/name/email/plan from the response; the remaining fields are consumed by other screens (profile-own-and-public, profile-verification) that share this same read. `plan` is only rendered when accountType===\"creator\" (TierBadge). Mock (src/lib/api/mocks/verification.ts getMockOwnProfile) always resolves successfully after a 350ms delay — no reject path exists."
+    },
+    {
+      "entity": "NotificationSettings",
+      "fields": [
+        { "name": "newReplies", "type": "boolean", "nullable": false },
+        { "name": "newFollowers", "type": "boolean", "nullable": false },
+        { "name": "dmReminders", "type": "boolean", "nullable": false },
+        { "name": "refunds", "type": "boolean", "nullable": false },
+        { "name": "promotions", "type": "boolean", "nullable": false },
+        { "name": "communityDigest", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single-object read, no list",
+      "notes": "getNotificationSettings() (src/lib/api/settings.ts, SEAM: GET /api/hub/notifications/settings) returns all 6 flags flat; NotificationsSettingsBody.tsx groups them presentationally into 'Money' (dmReminders, refunds) and 'Activity' (newReplies, newFollowers, promotions, communityDigest) — grouping is UI-only per the file's own SEAM comment, not a field on the type. Mock (mocks/settings.ts) always resolves after 250ms, no reject path."
+    }
+  ],
+  "actions": [
+    {
+      "name": "saveNotificationSettings",
+      "kind": "update",
+      "entity": "NotificationSettings",
+      "payload": [
+        { "name": "newReplies", "type": "boolean" },
+        { "name": "newFollowers", "type": "boolean" },
+        { "name": "dmReminders", "type": "boolean" },
+        { "name": "refunds", "type": "boolean" },
+        { "name": "promotions", "type": "boolean" },
+        { "name": "communityDigest", "type": "boolean" }
+      ],
+      "expectedResponse": { "entity": "NotificationSettings", "cardinality": "single" },
+      "notes": "SEAM: PUT /api/hub/notifications/settings. NotificationsSettingsBody.toggle() sends the ENTIRE settings object on every single toggle ({...settings, [key]: !settings[key]}), not a partial/diff payload — every PUT carries all 6 fields regardless of which one changed. Call site does `void saveNotificationSettings(next)` (fire-and-forget, optimistic UI update applied immediately, no await, no .catch) — if the real endpoint ever rejects a save, the UI has no failure state to show; the toggle will appear to have succeeded regardless."
+    },
+    {
+      "name": "deleteAccount",
+      "kind": "delete",
+      "entity": "Account",
+      "payload": [],
+      "expectedResponse": { "entity": "boolean", "cardinality": "single" },
+      "notes": "SEAM: DELETE /api/hub/account. Called with zero arguments/body — the client-side confirmation ('type delete to confirm', case-insensitive match against the literal string 'delete') is validated entirely in DeleteAccountBody.tsx and is NEVER sent to the server; the server has no way to know the user typed the confirmation phrase, it only sees an authenticated DELETE call. No try/catch around `await deleteAccount()` in DeleteAccountBody.submit() — if the real endpoint ever rejects, `deleting` stays true forever with no error surfaced (mock deleteMockAccount always resolves true after 500ms, so this path is never exercised today)."
+    },
+    {
+      "name": "signOut",
+      "kind": "custom",
+      "entity": "session",
+      "payload": [],
+      "expectedResponse": { "entity": "none", "cardinality": "single" },
+      "notes": "Not an API-layer action — SettingsFooterActions.tsx and SettingsDesktopShared.tsx's sign-out row call useSession().signOut() (src/lib/auth/session-provider.tsx), which only clears the in-memory session-storage module and local React state, then router.push('/sign-in'). No src/lib/api/* call, no SEAM comment, no network round trip anywhere in this path. Listed here because it is a real user-triggered mutation reachable from this screen, but it is out of scope for a backend contract (WAWU ID / token clearing is entirely client-side per conventions.md's auth model)."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["user", "creator"]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "settings-hub-loading",
+      "entersWhen": "profile state is null on initial render, before getOwnProfile() resolves — renders an avatar-row skeleton plus two card skeletons",
+      "reachable": "yes"
+    },
+    {
+      "state": "settings-hub-error",
+      "entersWhen": "getOwnProfile() promise rejects, caught in the .catch() and setError(message) — renders ErrorState",
+      "reachable": "no — getMockOwnProfile() (src/lib/api/mocks/verification.ts) has no throw/reject path; it unconditionally resolves after a fixed 350ms delay. This state is only reachable once a real backend can return a real 4xx/5xx for GET /api/hub/profile."
+    },
+    {
+      "state": "settings-hub-success-user",
+      "entersWhen": "profile loaded and profile.accountType === \"user\" — 'Creator' row group (Paid messages, Earnings) is omitted",
+      "reachable": "yes"
+    },
+    {
+      "state": "settings-hub-success-creator",
+      "entersWhen": "profile loaded and profile.accountType === \"creator\" — 'Creator' row group (Paid messages, Earnings) is shown with a TierBadge",
+      "reachable": "yes"
+    },
+    {
+      "state": "notifications-loading",
+      "entersWhen": "settings state is null on initial render, before getNotificationSettings() resolves — renders 6 skeleton blocks",
+      "reachable": "yes"
+    },
+    {
+      "state": "notifications-success",
+      "entersWhen": "settings loaded — renders Money/Activity toggle groups plus a static info line",
+      "reachable": "yes"
+    },
+    {
+      "state": "delete-account-form",
+      "entersWhen": "default state; done === false, before submit is called — renders the warning card, confirm-text input, and delete button",
+      "reachable": "yes"
+    },
+    {
+      "state": "delete-account-validation-error",
+      "entersWhen": "submit() called while confirm.trim().toLowerCase() !== \"delete\" — renders an inline error message, no API call made",
+      "reachable": "yes"
+    },
+    {
+      "state": "delete-account-in-progress",
+      "entersWhen": "deleting === true, between a valid submit() and the deleteAccount() promise settling — button label switches to 'Deleting…', button disabled",
+      "reachable": "yes"
+    },
+    {
+      "state": "delete-account-done",
+      "entersWhen": "done === true, after deleteAccount() resolves — renders a full-pane success screen with a 'Back to Home' button",
+      "reachable": "yes — deleteMockAccount() (mocks/settings.ts) always resolves true after a 500ms delay, so this success path is always reached and never fails under the current mock; there is no corresponding delete-account-error state anywhere in the code (no catch block), so a real backend rejection has nowhere to render today."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "1a · Settings hub — User account",
+      "description": "design/screens/WAWU Settings States.dc.html frame 1a. Avatar row + 'User' StatusPill. Account group: Edit profile, Account verification, Sign-in details. App group: Notifications, Privacy, Credits ('42 left'). WAWU group: Become a creator, About WAWU. Footer: Sign out / Delete account links. Rows not present in the implemented code: 'Sign-in details', 'Credits' (as a settings row — Credits exists elsewhere in this app but not as a Settings row), 'Become a creator'. Implemented code instead shows 'Saved' and 'Partners' rows and groups differently (Account/App/About vs the design's Account/App/WAWU)."
+    },
+    {
+      "state": "1b · Settings hub — Creator account",
+      "description": "design/screens/WAWU Settings States.dc.html frame 1b. Same shell, plus a 'Creating' group on top: Paid messages ('On · ₦300 each'), Tier and billing ('Pro · renews 14 Aug 2027'), Payout details ('GTB ••••6789'). Implemented code's 'Creator' group only has 'Paid messages' and 'Earnings' — no 'Tier and billing' row, no 'Payout details' row anywhere in this screen's rows (payout bank details / tier billing are surfaced via /earnings and /subscription instead, not inline on this hub)."
+    },
+    {
+      "state": "2 · Notifications preferences",
+      "description": "design/screens/WAWU Settings States.dc.html frame 2, captioned 'the money-losing one cannot be switched off'. Three groups: 'Money' (Something sold; A message is expiring — rendered ALWAYS ON and visually locked/non-interactive, opacity-dimmed; Tips), 'Your content' (Approved or rejected; Comments), 'Everything else' (New followers; Community activity; WAWU news). This does not match NotificationSettings' actual 6 keys (newReplies, newFollowers, dmReminders, refunds, promotions, communityDigest) or the implemented Money/Activity grouping — several designed concepts ('Something sold', 'Tips', 'Approved or rejected', 'Comments', 'WAWU news') have no corresponding field on NotificationSettings at all. Also, the design renders the DM-deadline row as a genuinely disabled/locked toggle; the implemented dmReminders toggle is fully interactive (toggle() has no per-key lock), with the 'never switched off' guarantee only expressed as static caption text below the list, not enforced in the UI."
+    },
+    {
+      "state": "4 · Delete account confirmation",
+      "description": "design/screens/WAWU Settings States.dc.html frame 4, a modal Sheet titled 'Delete your account?'. 'You lose' card lists 3 specific losses (the N pieces unlocked — access ends immediately; N credits, not refundable; saved items and message history). 'What stays' card lists 2 items (comments shown as a removed account; payment records kept by law). Confirm input labeled 'Type DELETE to confirm' (uppercase). Two buttons: 'Keep my account' (secondary) and 'Delete permanently' (destructive, disabled until valid). Footer link: 'Only signing out? Sign out instead'. Implemented DeleteAccountBody is materially simpler: one generic warning card with prose (no itemized loss/stays lists, no live counts of unlocked-pieces/credits), lowercase 'delete' confirm phrase, a single button ('Delete my account'), no 'Keep my account' button, no 'Sign out instead' escape hatch, and no modal/Sheet presentation (full-page instead)."
+    },
+    {
+      "state": "7 · Global states — Empty/Error/Offline/404",
+      "description": "design/screens/WAWU Settings States.dc.html frame 7 shows generic app-shell states (EmptyState, ErrorState, an offline sticky-bar variant, and a 404 EmptyState) illustrated using the Saved screen as the example context, not settings specifically. These read as app-wide component patterns rather than settings-account-specific designed states; the settings-hub-error state implemented in this screen's own page.tsx does use the same ErrorState component, but no offline-specific or 404 state exists anywhere in this screen's own code."
+    }
+  ],
+  "stubsObserved": []
+}

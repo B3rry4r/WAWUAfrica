@@ -1,0 +1,264 @@
+{
+  "screenId": "profile-own-and-public",
+  "reads": [
+    {
+      "entity": "OwnProfile",
+      "fields": [
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "handle", "type": "string", "nullable": false },
+        { "name": "bio", "type": "string", "nullable": false },
+        { "name": "accountType", "type": "\"user\" | \"creator\"", "nullable": false },
+        { "name": "verification", "type": "VerificationLevel (\"basic\"|\"verified_user\"|\"verified_business\"|\"certified_professional\"|\"trusted_partner\")", "nullable": false },
+        { "name": "plan", "type": "CreatorTier (\"basic\"|\"pro\")", "nullable": false },
+        { "name": "stats.published", "type": "number", "nullable": false },
+        { "name": "stats.sales", "type": "number", "nullable": false },
+        { "name": "stats.followers", "type": "string", "nullable": false },
+        { "name": "interests", "type": "string[]", "nullable": false },
+        { "name": "credits", "type": "number (count only, never naira)", "nullable": false },
+        { "name": "earningsThisMonth", "type": "number (naira)", "nullable": true },
+        { "name": "toReply", "type": "number", "nullable": true },
+        { "name": "contentSlots.published", "type": "number", "nullable": true },
+        { "name": "contentSlots.total", "type": "number", "nullable": true },
+        { "name": "socials.instagram", "type": "string", "nullable": true },
+        { "name": "socials.whatsapp", "type": "string", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single record, no list pagination",
+      "notes": "GET /api/hub/profile (SEAM in src/lib/api/verification.ts:17). Fields wawuId and email are part of the OwnProfile type and are returned by the mock but are never read/rendered by any code in this screen's uiFiles (profile/page.tsx, profile/edit/page.tsx) — excluded above as unconsumed."
+    },
+    {
+      "entity": "VerificationLevelEntry",
+      "fields": [
+        { "name": "tier", "type": "VerificationLevel", "nullable": false },
+        { "name": "status", "type": "\"done\" | \"yours\" | \"next\" | \"locked\"", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["client-side .find(status === 'yours') and .find(status === 'next')"],
+      "pagination": "none",
+      "notes": "GET /api/hub/verification/ladder (SEAM in verification.ts:27). Used only by profile/page.tsx to derive the own-profile verification progress card's tier/nextTier; the `copy` field on this entity exists but is not read by this screen (only by profile-verification)."
+    },
+    {
+      "entity": "Purchases (getPurchases)",
+      "fields": [
+        { "name": "items", "type": "array (length only consumed)", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none observed here",
+      "notes": "profile/page.tsx calls getPurchases() from src/lib/api/purchases.ts purely to compute purchasesCount = items.length for the fan-view 'My purchases' subtitle. purchases.ts is NOT in this screen's declared dataFiles (scan-map lists only profile.ts/verification.ts + their mocks) so its internal shape was not read in depth for this extraction — flagged as an out-of-scope dependency this screen actually has at runtime."
+    },
+    {
+      "entity": "CreatorProfile",
+      "fields": [
+        { "name": "wawuId", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "handle", "type": "string", "nullable": false },
+        { "name": "bio", "type": "string", "nullable": false },
+        { "name": "verification", "type": "VerificationLevel", "nullable": false },
+        { "name": "plan", "type": "CreatorTier", "nullable": false },
+        { "name": "stats.followers", "type": "string", "nullable": false },
+        { "name": "stats.pieces", "type": "number", "nullable": false },
+        { "name": "stats.piecesLabel", "type": "string", "nullable": false },
+        { "name": "stats.evg", "type": "number", "nullable": false },
+        { "name": "dmEnabled", "type": "boolean", "nullable": false },
+        { "name": "dmPrice", "type": "number (naira, only meaningful when dmEnabled)", "nullable": false },
+        { "name": "location", "type": "string", "nullable": true },
+        { "name": "memberSince", "type": "string", "nullable": true },
+        { "name": "replyTime", "type": "string", "nullable": true },
+        { "name": "categories", "type": "string[]", "nullable": false },
+        { "name": "socials.instagram", "type": "string", "nullable": true },
+        { "name": "socials.website", "type": "string", "nullable": true },
+        { "name": "content[].id", "type": "string", "nullable": false },
+        { "name": "content[].title", "type": "string", "nullable": false },
+        { "name": "content[].kindLabel", "type": "string", "nullable": false },
+        { "name": "content[].price", "type": "number (naira, 0 = free)", "nullable": false },
+        { "name": "content[].locked", "type": "boolean", "nullable": false },
+        { "name": "content[].status", "type": "\"pending\" | \"approved\"", "nullable": true },
+        { "name": "communities[].id", "type": "string", "nullable": false },
+        { "name": "communities[].name", "type": "string", "nullable": false },
+        { "name": "communities[].memberCount", "type": "number", "nullable": false },
+        { "name": "communities[].kind", "type": "\"open\" | \"private\"", "nullable": false },
+        { "name": "communities[].joined", "type": "boolean", "nullable": false },
+        { "name": "products[].id", "type": "string", "nullable": false },
+        { "name": "products[].name", "type": "string", "nullable": false },
+        { "name": "products[].price", "type": "number (naira)", "nullable": false },
+        { "name": "products[].platform", "type": "\"basket\" | \"beauty\"", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["tab query param selects which nested list (content/communities/products) is displayed; no server-side filter/sort observed — full CreatorProfile fetched once per wawuId regardless of tab"],
+      "pagination": "none — content/communities/products arrays render in full, no infinite scroll or page controls",
+      "notes": "GET /api/hub/creators/:wawuId (SEAM in profile.ts:10). ownerMeta field exists on ProfileContentItem type but is never read by this screen's code."
+    },
+    {
+      "entity": "FollowState",
+      "fields": [
+        { "name": "following", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "GET /api/hub/creators/:wawuId/following (SEAM in profile.ts:15/mocks/profile.ts:10). Read once server-side alongside getCreatorProfile to seed FollowButton/ProfileActions' initial state."
+    }
+  ],
+  "actions": [
+    {
+      "name": "toggleFollowProfile",
+      "kind": "custom",
+      "entity": "FollowState",
+      "payload": [{ "name": "wawuId", "type": "string", "in": "path" }],
+      "expectedResponse": { "entity": "FollowState (boolean)", "cardinality": "single" },
+      "notes": "SEAM: POST /api/hub/creators/:wawuId/follow (profile.ts:20). No request body — toggles server-side state for the current session against the given wawuId and returns the new boolean. Invoked by FollowButton/ProfileActions/DesktopProfileActions/CompactHeaderActions, none of which are in this screen's declared uiFiles, but the action is defined in profile.ts (an in-scope dataFile) and exists solely to back this screen's Follow control."
+    },
+    {
+      "name": "toggleCommunityJoin",
+      "kind": "custom",
+      "entity": "CreatorCommunity",
+      "payload": [
+        { "name": "wawuId", "type": "string", "in": "path/context" },
+        { "name": "communityId", "type": "string", "in": "path" }
+      ],
+      "expectedResponse": { "entity": "joined (boolean)", "cardinality": "single" },
+      "notes": "SEAM: POST /api/hub/communities/:id/join (profile.ts:30). Toggles join state for a community shown on the Community tab; mock keys state by `${wawuId}:${communityId}` composite, implying the real endpoint needs the viewing creator's id in scope even though it's nominally keyed by community id alone. Invoked via CommunityJoinButton (not in this screen's uiFiles, but wired to this dataFile action)."
+    },
+    {
+      "name": "saveProfile",
+      "kind": "update",
+      "entity": "OwnProfile",
+      "payload": [
+        { "name": "name", "type": "string" },
+        { "name": "handle", "type": "string (client strips a leading '@' before sending)" },
+        { "name": "bio", "type": "string" },
+        { "name": "interests", "type": "string[]" },
+        { "name": "socials.instagram", "type": "string, optional" },
+        { "name": "socials.whatsapp", "type": "string, optional" }
+      ],
+      "expectedResponse": { "entity": "OwnProfile", "cardinality": "single" },
+      "notes": "SEAM: PATCH /api/hub/profile (verification.ts:22). Called from profile/edit/page.tsx's submit(); client-side validation blocks submit when name or handle is blank, but no server-side validation contract is visible from this code. Avatar 'Change photo' camera button in the edit form has no onClick handler at all — it is decorative only, not wired to any upload action (see special.uploads below)."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "own-profile branch reads profile.accountType === 'creator' directly (not via creatorGates()) to switch between creator and fan layouts on /profile",
+      "public profile screen assumes any signed-in viewer (no role/gate check in the read files themselves; Follow/DM/Tip affordances are unconditional on viewer role)"
+    ]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "own-profile-error",
+      "entersWhen": "getOwnProfile() or getVerificationLadder() or getPurchases() throws inside profile/page.tsx's Promise.all — renders ErrorState",
+      "reachable": "no"
+    },
+    {
+      "state": "own-profile-creator-view",
+      "entersWhen": "profile.accountType === 'creator' — shows CreatorDashboardCard + creator-only ListRows (My content, Earnings, Subscription, Verification)",
+      "reachable": "yes"
+    },
+    {
+      "state": "own-profile-user-view",
+      "entersWhen": "profile.accountType === 'user' — shows fan ListRows (My purchases, Saved, Credits) and no CreatorDashboardCard",
+      "reachable": "no"
+    },
+    {
+      "state": "verification-basic-tier-copy",
+      "entersWhen": "resolved tier (ladder 'yours' entry, or fallback profile.verification) === 'basic' — shows 'Verify to show buyers you're real'",
+      "reachable": "no"
+    },
+    {
+      "state": "verification-next-tier-copy",
+      "entersWhen": "a ladder entry has status === 'next' and current tier isn't basic — shows 'Apply to be a {label}'",
+      "reachable": "yes"
+    },
+    {
+      "state": "verification-top-of-ladder-copy",
+      "entersWhen": "no ladder entry has status === 'next' — shows 'You're at the top of the ladder'",
+      "reachable": "no"
+    },
+    {
+      "state": "edit-loading",
+      "entersWhen": "profile/edit/page.tsx mounted, before getOwnProfile() resolves — renders Skeleton placeholders",
+      "reachable": "yes"
+    },
+    {
+      "state": "edit-load-error",
+      "entersWhen": "getOwnProfile() rejects in the edit page's effect — renders ErrorState with a reload retry",
+      "reachable": "no"
+    },
+    {
+      "state": "edit-loaded-form",
+      "entersWhen": "getOwnProfile() resolves — draft populated, form fields rendered",
+      "reachable": "yes"
+    },
+    {
+      "state": "edit-saving",
+      "entersWhen": "submit() called and saveProfile() promise in flight — Save button reads 'Saving…' and is disabled",
+      "reachable": "yes"
+    },
+    {
+      "state": "edit-submit-disabled-empty",
+      "entersWhen": "draft.name.trim() or draft.handle.trim() is empty (or saving is true) — Save button disabled",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-not-found",
+      "entersWhen": "getCreatorProfile(wawuId) throws because wawuId isn't a key in MOCK_PROFILES — renders ErrorState 'Creator not found'",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-content-empty",
+      "entersWhen": "profile.content.length === 0 on the Content tab — renders EmptyState 'Nothing published yet'",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-shop-empty",
+      "entersWhen": "profile.products.length === 0 on the Shop tab — renders EmptyState 'No shop yet'",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-content-pending",
+      "entersWhen": "a content item has status === 'pending' — ContentRow shows a StatusPill 'In review' instead of its price",
+      "reachable": "no"
+    },
+    {
+      "state": "public-profile-full-header",
+      "entersWhen": "tab is 'content' or 'community' — renders the tall FullHeader with ProfileHeader + ProfileActions",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-compact-header",
+      "entersWhen": "tab is 'shop' or 'about' — renders the sticky CompactHeader bar",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-community-private-styling",
+      "entersWhen": "a community entry has kind === 'private' — CommunityRow gets an accent border and a lock icon instead of the open-community users icon",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-socials-empty",
+      "entersWhen": "profile.socials has neither instagram nor website set — the About tab's 'Elsewhere' section is omitted entirely",
+      "reachable": "yes"
+    },
+    {
+      "state": "public-profile-following-true",
+      "entersWhen": "isFollowing(wawuId) resolves true (seeded only for wawu-zainab, or after a successful follow toggle) — Follow control shows 'Following' state",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    { "frame": "1", "state": "Default, not followed — Content tab" },
+    { "frame": "2", "state": "Followed — Community tab, join states differ" },
+    { "frame": "3", "state": "Shop — every item carries a handoff pill" },
+    { "frame": "4", "state": "About — response time is the useful fact" },
+    { "frame": "7", "state": "New creator — no content, DMs off, no shop; Community and Shop tabs also bare, tabs stay visible so profile shape doesn't change later" },
+    { "frame": "8", "state": "Own view — Edit profile replaces Follow, dashboard entry, drafts and pending pieces visible only here, creator bar" }
+  ],
+  "uiStatesDesignedSourceNote": "Matched to design/screens/WAWU Creator Profile.dc.html (frames explicitly numbered 1,2,3,4,7,8 in the file — frames 5 and 6 are not present as separate captioned frames in this .dc.html, not an extraction omission). This file covers both the public creator-profile view and frame 8's own-profile view. It does NOT contain a dedicated edit-profile form frame (only an 'Edit profile' button in frame 8) — no design source for the edit form's own states (loading/saving/validation) was found, so those entries in uiStatesHandled above have no corresponding uiStatesDesigned counterpart. design/screens/WAWU Profiles Verification.dc.html was not used here — it matches the separate profile-verification screen id, not this one.",
+  "stubsObserved": []
+}

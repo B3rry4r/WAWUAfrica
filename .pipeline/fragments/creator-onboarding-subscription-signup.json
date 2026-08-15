@@ -1,0 +1,110 @@
+{
+  "screenId": "creator-onboarding-subscription-signup",
+  "reads": [
+    {
+      "entity": "Subscription",
+      "fields": [
+        { "name": "plan.tier", "type": "\"basic\"|\"pro\"", "nullable": false },
+        { "name": "plan.price", "type": "number (naira, e.g. 5999 | 18999)", "nullable": false },
+        { "name": "plan.slots", "type": "number", "nullable": false },
+        { "name": "plan.freeSlots", "type": "number", "nullable": false },
+        { "name": "plan.split", "type": "number (85 | 90)", "nullable": false },
+        { "name": "plan.features", "type": "string[]", "nullable": false },
+        { "name": "state", "type": "\"none\"|\"active\"|\"past_due\"|\"expired\"", "nullable": false },
+        { "name": "renewsAt", "type": "string (ISO date)", "nullable": true },
+        { "name": "cancelsAt", "type": "string (ISO date)", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "Screen does not call subscriptionApi.getSubscription() itself. PLANS[tier] (a local static table in src/types/subscription.ts, not fetched) is what actually drives the tier-picker card contents (price, split, slots) and is what a real backend's plan-catalog read must match. The success-screen 'Renews' date is a hardcoded literal '14 Aug 2027', not read from Subscription.renewsAt."
+    }
+  ],
+  "actions": [
+    {
+      "name": "subscribe",
+      "kind": "create",
+      "entity": "Subscription",
+      "payload": [
+        { "name": "tier", "type": "\"basic\"|\"pro\"", "source": "user's tier-step selection, passed as the sole argument to subscriptionApi.subscribe(tier)" }
+      ],
+      "expectedResponse": { "entity": "Subscription", "cardinality": "single" },
+      "note": "SEAM-tagged in src/lib/api/subscription.ts as POST /api/hub/creator-subscription (tier=basic|pro). The mock's real side effect on success is NOT this call's return value -- the component ignores the resolved Subscription and instead calls the DEV-ONLY mock-session mutators setSubscriptionPaid(true) and setCreatorTier(tier) directly (see STUB-3). A real backend must make POST /api/hub/creator-subscription itself the thing that flips session.creator.subscriptionPaid and session.creator.tier server-side; nothing in this screen's code currently depends on the subscribe() response shape beyond it resolving successfully."
+    },
+    {
+      "name": "setSubscriptionPaid (DEV ONLY)",
+      "kind": "custom",
+      "entity": "Session",
+      "payload": [
+        { "name": "paid", "type": "boolean", "source": "hardcoded true, called after subscribe() resolves" }
+      ],
+      "expectedResponse": { "entity": "Session", "cardinality": "single" },
+      "note": "Direct mutation of the in-memory mock session store (src/lib/api/mocks/session.ts), not an API call. STUB-1 and STUB-3. Must not exist against a real backend -- the real subscribe endpoint should be the sole source of this state change."
+    },
+    {
+      "name": "setCreatorTier (DEV ONLY)",
+      "kind": "custom",
+      "entity": "Session",
+      "payload": [
+        { "name": "tier", "type": "\"basic\"|\"pro\"", "source": "the tier chosen in the tier step, called after subscribe() resolves" }
+      ],
+      "expectedResponse": { "entity": "Session", "cardinality": "single" },
+      "note": "Direct mutation of the in-memory mock session store. STUB-1 and STUB-3. Also mutates a derived field, slotsTotal (7 for pro, 3 for basic), that the real subscribe response would need to carry or that a session read would need to recompute."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "note": "The component itself performs no explicit auth or gate check (no creatorGates() call, no session read) -- it assumes it is only reachable by an already-authenticated user choosing to become a creator, and it writes session.creator fields on success as if that session already exists. It does not check accountType, canUpload, or kyc before rendering; it is presumably route-guarded upstream, but no such guard is present in this file."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false,
+    "pagination": "none",
+    "note": "The 'processing' step shows a fixed 62%-width progress bar (not driven by real progress events) for the duration of the subscribe() promise (700ms mock delay)."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "value",
+      "entersWhen": "initial step; also reached by pressing back from the tier step",
+      "reachable": "yes"
+    },
+    {
+      "state": "tier",
+      "entersWhen": "user presses 'Choose a tier' on the value step, or 'Choose another tier' from the failed step",
+      "reachable": "yes"
+    },
+    {
+      "state": "confirm",
+      "entersWhen": "user presses 'Continue with {tier}' on the tier step",
+      "reachable": "yes"
+    },
+    {
+      "state": "processing",
+      "entersWhen": "user presses 'Pay {price}' on the confirm step, calling pay() which sets step to 'processing' and awaits subscriptionApi.subscribe(tier)",
+      "reachable": "yes"
+    },
+    {
+      "state": "success",
+      "entersWhen": "subscriptionApi.subscribe(tier) resolves (mock always resolves after 700ms; no rejection path exists in the mock)",
+      "reachable": "yes"
+    },
+    {
+      "state": "failed",
+      "entersWhen": "user taps the 'Simulate a failed payment' dev-only link on the confirm step -- there is no code path that reaches this state from an actual failed subscribe() call, because the mock subscribe() never rejects",
+      "reachable": "no",
+      "note": "STUB-4. This is a dev-only preview trigger for the failure UI, not a reachable outcome of a real payment attempt in this codebase. A real backend must supply an actual failure response (e.g. declined charge) for this UI state to be reachable in production; currently nothing wires a real failure into step='failed'."
+    }
+  ],
+  "uiStatesDesigned": [
+    { "state": "value", "source": "WAWU Creator Onboarding.dc.html — frame labeled 'Value screen'" },
+    { "state": "tier (Pro selected)", "source": "WAWU Creator Onboarding.dc.html — frame labeled 'Pro — the 90/10 split leads', includes an additional Pro feature row ('1 month health insurance — coming soon') not present in CreatorOnboarding.tsx's CheckRow list" },
+    { "state": "tier (Basic selected)", "source": "WAWU Creator Onboarding.dc.html — frame labeled 'Basic — limits stated plainly', includes an explicit 'No private communities' X-row not present in the code" },
+    { "state": "confirm", "source": "WAWU Creator Onboarding.dc.html — 'Confirm and pay' frame under section '3–4 · Payment and its states'" },
+    { "state": "processing", "source": "WAWU Creator Onboarding.dc.html — 'Confirming your payment' frame" },
+    { "state": "success", "source": "WAWU Creator Onboarding.dc.html — 'You are on Pro' frame" },
+    { "state": "failed", "source": "WAWU Creator Onboarding.dc.html — 'Payment did not go through' frame" }
+  ],
+  "stubsObserved": ["STUB-1", "STUB-3", "STUB-4"]
+}

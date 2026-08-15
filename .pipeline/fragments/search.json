@@ -1,0 +1,184 @@
+{
+  "screenId": "search",
+  "reads": [
+    {
+      "entity": "SearchResults.content (ContentPiece)",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "ContentType (video|course|audio|pdf|image|template)", "nullable": false },
+        { "name": "creator", "type": "CreatorProfile (nested object)", "nullable": false },
+        { "name": "creator.fullName", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "server-side text match against query (title/description/category/creator.fullName per mock)",
+        "client-side tab filter: 'all' | 'content' | 'creators' | 'communities' (SearchTab), applied after fetch, not sent to API",
+        "'all' tab additionally truncates to first 3 client-side (results.content.slice(0,3)); the 'content' tab shows the full list"
+      ],
+      "pagination": "none — no infinite scroll or page controls; only a client-side slice(0,3) cap on the 'all' tab. Full ContentPiece object is passed through to the shared ContentCard component (out of this screen's file scope) for the desktop grid, so ContentCard likely consumes more fields than listed here."
+    },
+    {
+      "entity": "SearchResults.creators (SearchCreatorResult)",
+      "fields": [
+        { "name": "wawuId", "type": "string", "nullable": false },
+        { "name": "fullName", "type": "string", "nullable": false },
+        { "name": "headline", "type": "string", "nullable": false },
+        { "name": "location", "type": "string", "nullable": true },
+        { "name": "verificationLevel", "type": "VerificationLevel", "nullable": false },
+        { "name": "pieceCount", "type": "number", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "server-side text match against query (fullName/headline/location per mock)",
+        "client-side tab filter (see content entity); 'all' tab truncates to first 2 (results.creators.slice(0,2))"
+      ],
+      "pagination": "none"
+    },
+    {
+      "entity": "SearchResults.communities (SearchCommunityResult)",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "memberCount", "type": "number", "nullable": false },
+        { "name": "visibility", "type": "\"open\" | \"private\"", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "server-side text match against query (name only, per mock)",
+        "client-side tab filter (see content entity); 'all' tab truncates to first 2 (results.communities.slice(0,2))"
+      ],
+      "pagination": "none"
+    },
+    {
+      "entity": "suggestedCreators (SearchCreatorResult, shown on the pre-search / idle screen as 'Creators to know')",
+      "fields": [
+        { "name": "wawuId", "type": "string", "nullable": false },
+        { "name": "fullName", "type": "string", "nullable": false },
+        { "name": "headline", "type": "string", "nullable": false },
+        { "name": "location", "type": "string", "nullable": true },
+        { "name": "verificationLevel", "type": "VerificationLevel", "nullable": false },
+        { "name": "pieceCount", "type": "number", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — fetched once on mount via getSuggestedCreators(), rendered in full (no visible cap in page.tsx)"
+    },
+    {
+      "entity": "recentSearches (bare string terms)",
+      "fields": [
+        { "name": "(array element)", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — capped to 5 client-side after each new search: [trimmed, ...prev.filter(r => r !== trimmed)].slice(0,5). No server write-back for this cap or for the 'Clear' action — see stubsObserved note below."
+    },
+    {
+      "entity": "popularSearches (bare string terms, 'People are searching')",
+      "fields": [
+        { "name": "(array element)", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none"
+    },
+    {
+      "entity": "closestResults (ContentPiece, fuzzy no-results fallback: 'Closest things we have')",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "ContentType", "nullable": false },
+        { "name": "creator", "type": "CreatorProfile (nested object)", "nullable": false },
+        { "name": "creator.fullName", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "server-side per-word fuzzy match against query (mock: any word in title/description/creator.fullName)"
+      ],
+      "pagination": "none — client-side truncated to first 3 (closest.slice(0,3))"
+    }
+  ],
+  "actions": [
+    {
+      "name": "searchAll",
+      "kind": "custom",
+      "entity": "SearchResponse",
+      "payload": [
+        { "name": "q", "type": "string", "location": "query-string on GET /api/hub/search?q=" }
+      ],
+      "expectedResponse": {
+        "entity": "SearchResponse { query: string; results: SearchResults }",
+        "cardinality": "single"
+      }
+    },
+    {
+      "name": "getClosestResults",
+      "kind": "custom",
+      "entity": "ContentPiece",
+      "payload": [
+        { "name": "q", "type": "string", "location": "query-string on GET /api/hub/search/closest?q=" }
+      ],
+      "expectedResponse": {
+        "entity": "{ items: ContentPiece[] }",
+        "cardinality": "list"
+      }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "idle (pre-search: recent / trending / suggested creators)",
+      "entersWhen": "screen === 'idle' — the initial state on mount, and re-entered whenever the query input is cleared (onQueryChange fires with an empty/whitespace-only value, or the query is cleared via the X button)",
+      "reachable": "yes"
+    },
+    {
+      "state": "loading (skeleton rows)",
+      "entersWhen": "screen === 'loading' — set synchronously inside runSearch() the instant a non-empty trimmed query fires (350ms after the last keystroke, via the debounce timer), before searchAll()'s promise settles",
+      "reachable": "yes"
+    },
+    {
+      "state": "results (tabs + at least one non-empty section)",
+      "entersWhen": "screen === 'results' && counts.all > 0 — searchAll() resolved and at least one of results.content / results.creators / results.communities is non-empty",
+      "reachable": "yes"
+    },
+    {
+      "state": "no results ('Try a shorter search' + optional 'Closest things we have')",
+      "entersWhen": "screen === 'results' && counts.all === 0 — searchAll() resolved but all three result arrays are empty (mock query matched nothing), which additionally triggers getClosestResults()",
+      "reachable": "yes"
+    },
+    {
+      "state": "error ('Search is unavailable', with retry)",
+      "entersWhen": "screen === 'error' — set only in searchAll(trimmed).catch(() => setScreen('error')), i.e. only if the promise returned by searchAll() rejects",
+      "reachable": "no — searchAll() in src/lib/api/search.ts wraps its apiFetch call in its own try/catch and always falls back to mockSearch(query) on any failure (network error, timeout, or MockModeError in mock mode), so the promise it returns to the page never rejects under any currently reachable code path. This .catch() is dead code today; it only becomes live once a real backend replaces the SEAM without also removing the internal fallback, or the fallback is changed to rethrow."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "Before typing — recent, trending, creators",
+      "source": "design/screens/WAWU Notifications Search.dc.html, frame 3 (caption: '3 · Before typing — recent, trending, creators')"
+    },
+    {
+      "state": "All tab — three treatments, one per type (results)",
+      "source": "design/screens/WAWU Notifications Search.dc.html, frames 4–5 (caption: '4–5 · All tab — three treatments, one per type'), showing tab pills with live counts (All 19 / Content 11 / Creators 5 / Communities 3)"
+    },
+    {
+      "state": "No results — shorter terms, then near matches",
+      "source": "design/screens/WAWU Notifications Search.dc.html, frame 6 (caption: '6 · No results — shorter terms, then near matches'), using an EmptyState component (icon SearchX, title 'Nothing for that yet', action 'Browse Explore') that the implemented page does not render — the implementation goes straight to the 'Try a shorter search' chips and 'Closest things we have' list with no EmptyState/'Browse Explore' affordance"
+    }
+  ],
+  "stubsObserved": [],
+  "notes": [
+    "No stubs.json entries reference this screen's files (src/app/(app)/search/page.tsx, src/lib/api/search.ts, src/lib/api/mocks/mockSearch.ts).",
+    "Follow (on creator rows) and Join (on community rows) buttons are rendered with no onClick handler at all in page.tsx — they are decorative in the current build, not wired to any action, mutation, or even a console log. No follow/join action exists for this screen.",
+    "The 'Clear' button on Recent searches only mutates local React state (setRecent([])) — there is no DELETE/clear call to /api/hub/search/recent, and no corresponding write endpoint is SEAM-tagged anywhere in search.ts. Likewise, recent-search history itself is entirely client-derived (pushed into local state after each successful search) with a GET SEAM for reading it but no POST/PUT seam for persisting a new entry server-side.",
+    "src/lib/api/search.ts also exports getSuggestedCommunities() (GET /api/hub/search/suggested-communities, backed by mockSearchCommunities), but this screen's page.tsx never calls it — it's dead/unused from this screen's perspective (out of scope for reads above)."
+  ]
+}

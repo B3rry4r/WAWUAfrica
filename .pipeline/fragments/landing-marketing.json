@@ -1,0 +1,88 @@
+{
+  "screenId": "landing-marketing",
+  "reads": [
+    {
+      "entity": "ContentPiece",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "slug", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "ContentType (\"video\"|\"course\"|\"audio\"|\"pdf\"|\"image\"|\"template\")", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": false },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "accessType", "type": "AccessType (\"free\"|\"paid\")", "nullable": false },
+        { "name": "price", "type": "number", "nullable": false },
+        { "name": "creator", "type": "CreatorProfile (nested: wawuId, fullName, handle, headline?, location?, verificationLevel, isPro?)", "nullable": false },
+        { "name": "durationLabel", "type": "string", "nullable": true },
+        { "name": "pageCount", "type": "number", "nullable": true },
+        { "name": "lessonCount", "type": "number", "nullable": true },
+        { "name": "views", "type": "number", "nullable": false },
+        { "name": "ratingPct", "type": "number", "nullable": true },
+        { "name": "commentCount", "type": "number", "nullable": false },
+        { "name": "likes", "type": "number", "nullable": false },
+        { "name": "saved", "type": "boolean", "nullable": false },
+        { "name": "createdAt", "type": "string (ISO datetime)", "nullable": false },
+        { "name": "previewAssetUrl", "type": "string (URL)", "nullable": false },
+        { "name": "fullAssetUrl", "type": "string (URL) -- gated, must never be present for locked content", "nullable": true },
+        { "name": "fullAssetLocked", "type": "boolean", "nullable": false },
+        { "name": "courseLessons", "type": "CourseLesson[] (nested: id, index, title, durationLabel, free)", "nullable": true },
+        { "name": "purchased", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "scope=featured query param on GET /api/hub/content; mock layer filters mockContent to a fixed 3-id allowlist (cac-in-7-days, ankara-pattern-drafting, dry-season-poultry) -- server-side curation criteria for 'featured' is not specified in UI code",
+        "no client-side sort; server/mock order is render order",
+        "LandingContent.tsx additionally re-derives a 4-item desktop hero collage by indexing [0,1,2,0] into the same fetched list -- not a separate fetch or filter"
+      ],
+      "pagination": "none -- fixed-size list rendered in a horizontally scrollable snap-carousel (CreatorCarousel) and reused for the desktop hero collage; no infinite scroll, no page controls, no 'load more'"
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": false,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "featured creators populated (carousel + desktop hero collage render)",
+      "entersWhen": "getFeaturedContent() resolves with items.length > 0 -- CreatorCarousel renders a ContentCard per item and LandingContent renders the xl-only 4-card hero collage since collage.length === 4 whenever toWatch.length > 0",
+      "reachable": "yes"
+    },
+    {
+      "state": "featured creators empty (carousel header with empty rail; desktop hero collage omitted; scroll dots hidden)",
+      "entersWhen": "getFeaturedContent() resolves with items.length === 0 -- collage becomes [] so the `collage.length === 4` check fails and the xl hero collage block does not render; CreatorCarousel's dot indicator is gated on `items.length > 1` so it also disappears",
+      "reachable": "no -- getFeaturedContent() wraps the real fetch in try/catch and falls back to a hardcoded mock filter that always returns exactly 3 items; there is no live '/api/hub/content?scope=featured' endpoint yet for this to legitimately return an empty array, so this branch is currently dead code in practice"
+    },
+    {
+      "state": "creator carousel active-dot tracking",
+      "entersWhen": "user horizontally scrolls the CreatorCarousel rail; onScroll computes the nearest-centered card and updates the active dot -- pure client-side UI state, not backend-dependent",
+      "reachable": "yes"
+    },
+    {
+      "state": "FAQ item expanded / collapsed",
+      "entersWhen": "user clicks a FaqAccordion question row, toggling local `open` index state; first item (index 0) is expanded by default on load",
+      "reachable": "yes"
+    },
+    {
+      "state": "earnings calculator Standard vs Pro-tier toggle",
+      "entersWhen": "user clicks the 'Standard'/'Pro creator' segmented control in EarningsCalculator, switching the local `pro` boolean and recomputing keepPct (85% vs 90%) and monthly/yearly estimates from the fans/price sliders -- fully client-side, no backend read",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "single populated landing page (mobile, WAWU Landing Page.dc.html)",
+      "note": "The design file defines one static frame: hero, populated 'Creators to watch' rail with 3 named ContentCards (state=free), fields grid, 'how you earn' cards, earnings calculator, services list, tier cards, testimonials, FAQ, CTA, newsletter, footer. No loading, error, or empty-state frame is defined for this screen."
+    },
+    {
+      "state": "single populated landing page (desktop, D2 in WAWU Desktop Shell.dc.html)",
+      "note": "D2 'Landing page' is likewise one static 1440x2380 frame mirroring the same populated sections at desktop width. No alternate/empty/error frame variant exists for D2 either."
+    }
+  ],
+  "stubsObserved": []
+}

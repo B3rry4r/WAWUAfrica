@@ -2,17 +2,17 @@
   "entries": [
     {
       "id": "S-1",
-      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md §3.1 gates POST /api/hub/content on the requester's legacy trust tier being certified_professional or trusted_partner",
-      "targetState": "Publishing is gated ONLY by creatorGates().canUpload, which is derived from subscriptionPaid (paid Basic/Pro tier) — never from verification tier/trust score. KYC gates earning payout, not uploading. Verification badges are a fully separate credibility ladder.",
-      "reason": "docs/01_SPEC.md §6 and CLAUDE.md both explicitly state the trust-tier creator gate is the OLD, WRONG model, replaced by the two-independent-gates model. The actual current frontend (src/app/(focused)/create/**, wired in a prior fix wave) already implements the two-gate model exclusively — creatorGates().canUpload checks subscriptionPaid only, with zero verification/trust-tier logic anywhere in the upload path. docs/02_TECHNICAL_CONTEXT.md is a partially-stale doc per its own file-path staleness (already flagged as doc-internal-conflict in product-truths.json T- entries) — this is a second instance of the same staleness, not a new decision.",
+      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md \u00a73.1 gates POST /api/hub/content on the requester's legacy trust tier being certified_professional or trusted_partner",
+      "targetState": "Publishing is gated ONLY by creatorGates().canUpload, which is derived from subscriptionPaid (paid Basic/Pro tier) \u2014 never from verification tier/trust score. KYC gates earning payout, not uploading. Verification badges are a fully separate credibility ladder.",
+      "reason": "docs/01_SPEC.md \u00a76 and CLAUDE.md both explicitly state the trust-tier creator gate is the OLD, WRONG model, replaced by the two-independent-gates model. The actual current frontend (src/app/(focused)/create/**, wired in a prior fix wave) already implements the two-gate model exclusively \u2014 creatorGates().canUpload checks subscriptionPaid only, with zero verification/trust-tier logic anywhere in the upload path. docs/02_TECHNICAL_CONTEXT.md is a partially-stale doc per its own file-path staleness (already flagged as doc-internal-conflict in product-truths.json T- entries) \u2014 this is a second instance of the same staleness, not a new decision.",
       "approvedBy": "dispatcher-inferred-from-explicit-spec-priority-rule",
       "approvedAt": "2026-08-15T22:30:00Z",
       "wireVisible": false
     },
     {
       "id": "S-2",
-      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md §4 describes frontend files to touch using an old file structure (src/lib/posts.ts, src/lib/feed-data.ts, src/app/(feed)/create/[category]/page.tsx, src/components/feed/FeedCard.tsx, admin at src/app/admin/*)",
-      "targetState": "The actual current frontend structure is what Phase 1 Detect's scan-map.json documents — src/app/(app)/, src/app/(focused)/, src/app/(auth)/, src/app/(marketing)/, src/lib/api/<domain>.ts + src/lib/api/mocks/<domain>.ts. Section 4 of the doc is ignored entirely for file paths; only Sections 1-3 (data model + API contract shapes) are treated as authoritative.",
+      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md \u00a74 describes frontend files to touch using an old file structure (src/lib/posts.ts, src/lib/feed-data.ts, src/app/(feed)/create/[category]/page.tsx, src/components/feed/FeedCard.tsx, admin at src/app/admin/*)",
+      "targetState": "The actual current frontend structure is what Phase 1 Detect's scan-map.json documents \u2014 src/app/(app)/, src/app/(focused)/, src/app/(auth)/, src/app/(marketing)/, src/lib/api/<domain>.ts + src/lib/api/mocks/<domain>.ts. Section 4 of the doc is ignored entirely for file paths; only Sections 1-3 (data model + API contract shapes) are treated as authoritative.",
       "reason": "The doc predates the ground-up rebuild CLAUDE.md describes. Confirmed directly by reading both the doc and the actual current repo structure this session.",
       "approvedBy": "dispatcher-inferred-from-explicit-repo-inspection",
       "approvedAt": "2026-08-15T22:30:00Z",
@@ -26,6 +26,24 @@
       "approvedBy": "dispatcher-inferred-from-sibling-evidence",
       "approvedAt": "2026-08-15T22:30:00Z",
       "wireVisible": false
+    },
+    {
+      "id": "S-4",
+      "asBuilt": "auth-flows fragment shows 5 SEAM-tagged actions (signUp, verifyOtp, signIn, requestPasswordReset, saveNewPassword) implying this new backend owns /api/hub/auth/* signup/login/OTP/password-reset",
+      "targetState": "This backend NEVER implements signup/login/OTP/password-reset. WAWU ID (external service) owns 100% of that -- frontend calls WAWU ID directly (POST /auth/register, /auth/login, /auth/otp/start+verify, /auth/forgot-password+reset-password on WAWU ID's own base URL), gets back a WAWU-ID-issued JWT, and this backend only ever verifies that JWT via JWKS. This backend's own 'signUp' endpoint (if any) is limited to WAWUAfrica-specific onboarding fields WAWU ID doesn't own: accountType (user|creator) and interests[] -- both saved via PATCH /api/hub/users/me AFTER the WAWU ID signup completes, not as part of a combined signup call.",
+      "reason": "Confirmed directly: (1) design/screens/WAWU Auth.dc.html's own line 35 states 'Auth stays with WAWU ID -- these screens collect and hand off, they do not replace it.' (2) Direct inspection of /workspace/projects/WAWU-ID confirms it's a real, live, separately-deployed service implementing exactly this surface today (POST /auth/register, /auth/login, /auth/otp/start+verify, /auth/forgot-password+reset-password, /auth/refresh, RS256 JWT). (3) conventions.md already commits to this architecture based on that recon. The frontend's SEAM comments predate the WAWU-ID-integration understanding and are the stale artifact here, not a real target contract.",
+      "approvedBy": "dispatcher-autonomous-overnight",
+      "approvedAt": "2026-08-15T23:40:00Z",
+      "wireVisible": true
+    },
+    {
+      "id": "S-5",
+      "asBuilt": "marketplace fragment shows this backend owning Shop/MarketplaceItem/MarketplaceProduct catalog data via /api/hub/marketplace/* endpoints",
+      "targetState": "This backend does NOT own the WAWUBasket/WAWUBeauty product catalog -- CLAUDE.md's non-negotiable rule is 'never rebuild their commerce engine.' Real target: the frontend integrates directly with the existing sibling WAWUBasket-API (and a Beauty equivalent) for product browsing/search, OR (deferred, out of scope for this build) this backend offers a thin read-only proxy later. For THIS build: /api/hub/marketplace/* is limited to what this backend legitimately owns -- MarketplaceSave (a WAWU-side bookmark referencing an external productId by string, no product data duplicated). Shop/MarketplaceItem/MarketplaceProduct reads stay on frontend mocks for this pass, clearly SEAM-tagged as 'external, not this backend.'",
+      "reason": "Direct product-rule conflict with CLAUDE.md non-negotiables. /workspace/projects/WAWUBasket-API exists as a real sibling service confirming the correct integration target, but wiring to it is a distinct integration effort not requested this session (user named Flutterwave and WAWU ID specifically) -- deferring rather than silently building a duplicate commerce backend.",
+      "approvedBy": "dispatcher-autonomous-overnight",
+      "approvedAt": "2026-08-15T23:40:00Z",
+      "wireVisible": true
     }
   ]
 }

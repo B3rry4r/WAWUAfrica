@@ -1,0 +1,135 @@
+{
+  "screenId": "explore",
+  "reads": [
+    {
+      "entity": "ExploreCategory",
+      "fields": [
+        { "name": "id", "type": "ExploreCategoryId (union of 11 fixed slugs: business|trade|finance|entertainment|career|education|agriculture|health|technology|creative_arts|culture)", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — fixed 11-item list rendered in full on /explore (count only, via categories.length) and as a 2-col grid on /explore/categories; CategoryFilterAside renders the same fixed list a third time from the local EXPLORE_CATEGORIES constant rather than re-fetching"
+    },
+    {
+      "entity": "CreatorDiscovery",
+      "fields": [
+        { "name": "wawuId", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "field", "type": "string", "nullable": false },
+        { "name": "pieceCount", "type": "number", "nullable": false },
+        { "name": "verification", "type": "VerificationLevel (basic|verified_user|verified_business|certified_professional|trusted_partner)", "nullable": true },
+        { "name": "following", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "category — single-select ExploreCategoryId, server-applied (getCreators(category) / getMockCreators filters by an internal `category` field on the creator record that is NOT part of the CreatorDiscovery type returned to the client); on /explore/creators an invalid or missing ?category= query param silently falls back to 'business' (VALID_CATEGORIES.includes check) rather than erroring or showing all creators"
+      ],
+      "pagination": "none — flat unpaginated array, no infinite scroll or page controls anywhere in scope; the desktop 'Creators to watch' row on /explore truncates client-side with creators.slice(0,4), not a server limit param"
+    },
+    {
+      "entity": "LearnCourse",
+      "fields": [],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — screen only reads array length (learnCourses.length) for a summary count, no individual course fields are consumed here"
+    },
+    {
+      "entity": "LearnGuide",
+      "fields": [
+        { "name": "kind", "type": "string (union: country|article|template, per CountryGuide/ReferenceArticle/TemplatePack)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "client-side filter learnGuides.filter(g => g.kind === 'country') to compute a country-guide count — filtering happens after fetch, not sent as a query param"
+      ],
+      "pagination": "none — only a derived count is used"
+    },
+    {
+      "entity": "Shop",
+      "fields": [
+        { "name": "id", "type": "\"basket\" | \"beauty\"", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "tagline", "type": "string", "nullable": false },
+        { "name": "stat", "type": "string (e.g. \"4,120 items\")", "nullable": false },
+        { "name": "icon", "type": "IconName", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — fixed 2-item list (WAWUBasket, WAWUBeauty)",
+      "note": "NOT fetched through any api/mocks function — explore/page.tsx defines its own local SHOPS const (STUB-13) that duplicates but does not read src/lib/api/mocks/explore.ts's MOCK_SHOPS export; the 'stat' string is hardcoded copy, not derived from marketplace.ts item counts"
+    }
+  ],
+  "actions": [
+    {
+      "name": "toggleFollow",
+      "kind": "update",
+      "entity": "CreatorDiscovery.following (follow relationship)",
+      "payload": [
+        { "name": "wawuId", "type": "string", "location": "URL path param, e.g. POST /api/hub/creators/:wawuId/follow" }
+      ],
+      "expectedResponse": { "entity": "boolean (the new following state after toggle)", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "success / populated",
+      "entersWhen": "all awaited calls (getCategories, getCourses, getGuides, getCreators on /explore; getCategories alone on /explore/categories; getCreators(category) alone on /explore/creators) resolve — these are async server components that await directly, so this is effectively the only rendered state today",
+      "reachable": "yes"
+    },
+    {
+      "state": "loading / skeleton",
+      "entersWhen": "no loading.tsx or Suspense boundary exists anywhere under src/app/(app)/explore/ — none of the three route segments (explore, explore/categories, explore/creators) define one, so the route simply blocks (no custom skeleton UI) until the awaited data resolves",
+      "reachable": "no"
+    },
+    {
+      "state": "empty categories grid",
+      "entersWhen": "getCategories() returns an empty array — /explore/categories would render a 0-tile grid with no explicit empty-state message coded",
+      "reachable": "no — EXPLORE_CATEGORIES is a hardcoded 11-item constant in src/types/explore.ts that both the mock and the real getCategories() seam return verbatim; nothing in this MOCK-driven app can currently produce an empty list"
+    },
+    {
+      "state": "empty creators-for-category list",
+      "entersWhen": "getCreators(category) returns an empty array for the selected category — the mobile creator-row list and desktop grid on /explore/creators both render zero items with no explicit 'no creators in this category' message anywhere in the code",
+      "reachable": "yes — the mock creator dataset (src/lib/api/mocks/explore.ts) only tags 5 creators across business/finance/agriculture/trade/creative_arts; selecting any of the other 6 categories (entertainment, career, education, health, technology, culture) via the chip row or CategoryFilterAside right now yields zero results with no empty-state UI, a real user-reachable gap in the current mock data"
+    },
+    {
+      "state": "invalid category query param",
+      "entersWhen": "/explore/creators?category=<value not in VALID_CATEGORIES> is requested (typed URL, stale link, etc.)",
+      "reachable": "yes — silently falls back to category='business' with no error/notice, per the VALID_CATEGORIES.includes(...) ? ... : 'business' ternary in creators/page.tsx"
+    },
+    {
+      "state": "optimistic follow toggle with rollback",
+      "entersWhen": "user taps Follow/Following on a CreatorRow (mobile /explore/creators) or CreatorGridCard (desktop /explore and /explore/creators) — FollowButton flips local state immediately, calls toggleFollow(wawuId), and reverts the local state only if the call rejects (.catch)",
+      "reachable": "yes"
+    },
+    {
+      "state": "error (fetch failure)",
+      "entersWhen": "getCategories/getCreators/getCourses/getGuides throw — no error.tsx exists under src/app/(app)/explore/, and explore.ts + learn.ts are pure-mock-delegation (no try/fetch-then-mock fallback, unlike auth/content/notifications/purchases/search), so any real-backend failure here has no screen-authored handling at all",
+      "reachable": "no — mock functions never throw under the current mock-driven app, so this path is never exercised today; it is a genuine gap for when a real backend replaces the mock"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "1 · Landing — shops, Learn, Services, each with a real preview",
+      "detail": "Browse tiles (Categories/Creators), Buy-and-sell shop cards (WAWUBasket/WAWUBeauty with HandoffPill + stat line), Learn preview rows, Services preview rows"
+    },
+    {
+      "state": "2 · All eleven categories",
+      "detail": "2-col grid of all 11 category tiles with gradient-over-placeholder art and a name label"
+    },
+    {
+      "state": "3 · Creator discovery — filter by category, follow in place",
+      "detail": "Category chip row (Business active, others scrollable) + list of creator rows (avatar, name, verification badge, field · piece count, Follow/Following button)"
+    }
+  ],
+  "stubsObserved": ["STUB-13"]
+}

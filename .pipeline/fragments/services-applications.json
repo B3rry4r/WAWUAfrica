@@ -1,0 +1,127 @@
+{
+  "screenId": "services-applications",
+  "reads": [
+    {
+      "entity": "ServiceApplication",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "kind", "type": "enum(\"cac\"|\"nepc\"|\"mentor\")", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "subtitle", "type": "string", "nullable": true },
+        { "name": "reference", "type": "string", "nullable": false },
+        { "name": "appliedDate", "type": "string (pre-formatted display date)", "nullable": false },
+        { "name": "status", "type": "enum(\"under_review\"|\"approved\"|\"rejected\"|\"pending\")", "nullable": false },
+        { "name": "statusLabel", "type": "string (pre-formatted display label)", "nullable": false },
+        { "name": "amountPaid", "type": "number (integer Naira)", "nullable": true },
+        { "name": "certificateExpectedBy", "type": "string (pre-formatted display date)", "nullable": true },
+        { "name": "timeline", "type": "list<ApplicationTimelineStep{stage:string, status:\"done\"|\"current\"|\"upcoming\", date?:string, note:string}>", "nullable": false },
+        { "name": "rejection", "type": "object{note:string, refunded:boolean}", "nullable": true, "note": "present only when status is \"rejected\"" }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["lookup by id (route param [id])"],
+      "pagination": "none"
+    },
+    {
+      "entity": "ServiceApplication",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "kind", "type": "enum(\"cac\"|\"nepc\"|\"mentor\")", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "reference", "type": "string", "nullable": false },
+        { "name": "statusLabel", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["exclude current application id (getOtherApplications(excludeId))", "implicitly scoped to the current user's own applications"],
+      "pagination": "none — full list rendered, no infinite scroll or page controls"
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "note": "No explicit gate/session check (e.g. creatorGates()) appears in this screen's code. requiresAuth is inferred from the data being user-scoped (own applications, own reference numbers) — the page itself performs no auth check, relying entirely on route/layout-level protection outside this screen's scope."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading",
+      "entersWhen": "state === \"loading\" — the initial value on mount, and re-set at the top of load() on manual retry, before Promise.all([getApplication(id), getOtherApplications(id)]) resolves",
+      "reachable": "yes"
+    },
+    {
+      "state": "error / not found",
+      "entersWhen": "getApplication(id).catch() rejects, OR the resolved application is null/undefined (id does not match any record) — renders ErrorState with an onRetry that re-runs load()",
+      "reachable": "yes"
+    },
+    {
+      "state": "ready / success",
+      "entersWhen": "both getApplication(id) and getOtherApplications(id) resolve and application is non-null",
+      "reachable": "yes"
+    },
+    {
+      "state": "rejection banner shown",
+      "entersWhen": "application.rejection is truthy (per type comment, only ever set when application.status === \"rejected\")",
+      "reachable": "yes"
+    },
+    {
+      "state": "reference/payment card shown",
+      "entersWhen": "application.amountPaid != null OR application.certificateExpectedBy is truthy",
+      "reachable": "yes"
+    },
+    {
+      "state": "reference/payment card omitted",
+      "entersWhen": "application.amountPaid is null/undefined AND application.certificateExpectedBy is falsy (e.g. the mentor 'pending' application in mock data, which is free and has no certificate)",
+      "reachable": "yes"
+    },
+    {
+      "state": "\"Your other applications\" section shown",
+      "entersWhen": "others.length > 0 (i.e. the current user has at least one other application besides this one)",
+      "reachable": "yes"
+    },
+    {
+      "state": "\"Your other applications\" section omitted",
+      "entersWhen": "others.length === 0",
+      "reachable": "yes"
+    },
+    {
+      "state": "subtitle line shown under status header",
+      "entersWhen": "application.subtitle is truthy",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "Status header with pill + reference + applied date",
+      "source": "design/screens/WAWU Services.dc.html, section \"4 · Tracking an application\" — StatusPill kind=\"warning\" labeled \"Under review\", reference/applied-date line"
+    },
+    {
+      "state": "Timeline — done step",
+      "source": "same section — filled accent circle with check icon, e.g. \"Submitted\" with date and detail note"
+    },
+    {
+      "state": "Timeline — current step",
+      "source": "same section — tinted circle with clock icon, e.g. \"Under review\" with a \"Since <date>\" note"
+    },
+    {
+      "state": "Timeline — upcoming step",
+      "source": "same section — muted/tag-colored circle with disabled icon, e.g. \"Certificate ready\" showing an \"Expected by <date>\" note"
+    },
+    {
+      "state": "Rejection banner",
+      "source": "same section — danger-tinted card: \"Earlier attempt was rejected\" with an explanatory note; caption explicitly frames this design frame as showing \"All four states — submitted, in review, ready, and a rejection\""
+    },
+    {
+      "state": "\"Your other applications\" list",
+      "source": "same section — ListRow entries for other applications, one of which shows meta=\"Download\" for an approved/certificate-ready NEPC application"
+    },
+    {
+      "state": "Dedicated desktop screen for this tracker",
+      "source": "NOT present. design/screens/desktop/WAWU Desktop Shell.dc.html only has D13 \"Services · catalogue and the application form\", whose own caption states application status is meant to move \"alongside instead of onto its own screen\" (an inline mini-tracker card on the Services catalogue page). The implemented page.tsx nonetheless ships a full standalone xl: desktop layout for /services/applications/[id] with no corresponding design frame."
+    }
+  ],
+  "stubsObserved": []
+}

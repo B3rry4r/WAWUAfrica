@@ -1,0 +1,189 @@
+{
+  "screenId": "subscription-management",
+  "reads": [
+    {
+      "entity": "Subscription",
+      "fields": [
+        { "name": "plan.tier", "type": "CreatorTier ('basic'|'pro')", "nullable": false },
+        { "name": "plan.price", "type": "number (naira)", "nullable": false },
+        { "name": "plan.slots", "type": "number", "nullable": false },
+        { "name": "plan.freeSlots", "type": "number", "nullable": false },
+        { "name": "plan.split", "type": "number (percent)", "nullable": false },
+        { "name": "plan.features", "type": "string[]", "nullable": false },
+        { "name": "state", "type": "SubscriptionState ('none'|'active'|'past_due'|'expired')", "nullable": false },
+        { "name": "renewsAt", "type": "string (ISO date)", "nullable": true },
+        { "name": "cancelsAt", "type": "string (ISO date)", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single-resource GET, no list"
+    },
+    {
+      "entity": "CreatorSession (via creatorGates(currentSession).creator)",
+      "fields": [
+        { "name": "tier", "type": "CreatorTier ('basic'|'pro')", "nullable": true },
+        { "name": "slotsUsed", "type": "number", "nullable": false },
+        { "name": "slotsTotal", "type": "number", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "Read via creatorGates(currentSession) from src/lib/api/mocks/session.ts, not through subscriptionApi — a second, session-scoped source for tier/slots that overlaps with Subscription.plan.tier. Component resolves the display tier as `subscription?.plan.tier ?? gates.tier ?? 'basic'`, i.e. Subscription is authoritative when present and CreatorSession is only a fallback."
+    },
+    {
+      "entity": "Plan (catalog, PLANS[tier])",
+      "fields": [
+        { "name": "tier", "type": "CreatorTier", "nullable": false },
+        { "name": "price", "type": "number (naira)", "nullable": false },
+        { "name": "slots", "type": "number", "nullable": false },
+        { "name": "freeSlots", "type": "number", "nullable": false },
+        { "name": "split", "type": "number (percent)", "nullable": false },
+        { "name": "features", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "src/types/subscription.ts PLANS constant — a hardcoded 2-entry (basic/pro) client-side catalog, not fetched from any API at all (no SEAM comment, no mocks/ file). Every price/split/feature-list value the screen shows is sourced from this static object, not from a backend read. Flagged because docs/05_CONVENTIONS.md requires canonical prices to be looked up server-side, never client-supplied — this screen currently has zero backend dependency for pricing."
+    },
+    {
+      "entity": "BillingHistory (BILLING_HISTORY inline literal)",
+      "fields": [
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "subtitle", "type": "string", "nullable": false },
+        { "name": "icon", "type": "IconName (string)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "SEAM-tagged (SubscriptionManagement.tsx:23-30) but not promoted to mocks/subscription.ts — stands in for GET /api/hub/creator-subscription/history, which does not exist anywhere in the mock data layer. Rendered only on the desktop layout (BillingHistoryCard, shown whenever state !== 'none')."
+    }
+  ],
+  "actions": [
+    {
+      "name": "upgradeToPro",
+      "kind": "update",
+      "entity": "Subscription",
+      "payload": [],
+      "expectedResponse": { "entity": "Subscription", "cardinality": "single" },
+      "note": "Called with no arguments by both payAndGoPro() (upgrade screen CTA) and startTier('pro') (resubscribe screen). SEAM comment on the mock says 'POST /api/hub/creator-subscription (tier=pro)' — the tier is implied by which client method is called, never passed as an explicit payload field client-side."
+    },
+    {
+      "name": "downgradeToBasic",
+      "kind": "update",
+      "entity": "Subscription",
+      "payload": [],
+      "expectedResponse": { "entity": "Subscription", "cardinality": "single" },
+      "note": "Called with no arguments by handleDowngrade() (cancel sheet's 'Move to Basic' quick action, pro tier only) and startTier('basic') (resubscribe screen). SEAM: 'POST /api/hub/creator-subscription (tier=basic)'. Doc says this both starts a fresh Basic term after expiry (no proration) AND downgrades an active Pro subscription mid-term — two materially different real-world transactions currently collapsed onto the same mock call with no distinguishing payload."
+    },
+    {
+      "name": "retryPayment",
+      "kind": "update",
+      "entity": "Subscription",
+      "payload": [],
+      "expectedResponse": { "entity": "Subscription", "cardinality": "single" },
+      "note": "SEAM: POST /api/hub/creator-subscription/retry. Retries payment on the CURRENT tier after a past-due failure. Mock always succeeds and resets state to 'active' — no failure/still-declined response path exists."
+    },
+    {
+      "name": "cancelPro",
+      "kind": "delete",
+      "entity": "Subscription",
+      "payload": [],
+      "expectedResponse": { "entity": "Subscription", "cardinality": "single" },
+      "note": "SEAM: DELETE /api/hub/creator-subscription. Despite the name, this is 'stop renewing' for either tier (called from the cancel sheet's 'Stop renewing' button regardless of current tier) — it sets cancelsAt to +365 days and leaves state as 'active' until that date, it does not immediately terminate the subscription."
+    },
+    {
+      "name": "updateCard",
+      "kind": "update",
+      "entity": "PaymentCard",
+      "payload": [ { "name": "last4", "type": "string", "nullable": false } ],
+      "expectedResponse": { "entity": "PaymentCard { last4: string }", "cardinality": "single" },
+      "note": "SEAM: POST /api/hub/creator-subscription/card. Mock only ever returns the same last4 it was sent — no real payment-method tokenization/verification modeled. Card sheet itself offers a hardcoded choice between two literal last4 values ('4412','9021'), not a real card-entry form."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["creator"]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading",
+      "entersWhen": "loadState === 'loading' — set synchronously by load() on mount, before subscriptionApi.getSubscription() resolves",
+      "reachable": "yes"
+    },
+    {
+      "state": "error",
+      "entersWhen": "loadState === 'error' — the .catch() branch of subscriptionApi.getSubscription() in load()",
+      "reachable": "no — subscription.ts is pure mock delegation straight into mockRequest(), which always resolves and never rejects; nothing in the mock data layer can throw, so this .catch() is currently dead code"
+    },
+    {
+      "state": "ready (billing view rendered)",
+      "entersWhen": "loadState === 'ready' && subscription !== null",
+      "reachable": "yes"
+    },
+    {
+      "state": "subscription.state === 'active' (current-plan card)",
+      "entersWhen": "subscription.state === 'active'",
+      "reachable": "yes — the mock's initial currentSubscription.state is 'active', and every mutating action (subscribe/upgradeToPro/downgradeToBasic/retryPayment/cancelPro) hardcodes state back to 'active' on completion"
+    },
+    {
+      "state": "subscription.state === 'active' with renewal off (cancelsAt set, 'Renewal off — ends' label)",
+      "entersWhen": "cancelPro() resolves (via the cancel sheet's 'Stop renewing' button) — sets cancelsAt while state stays 'active'",
+      "reachable": "yes"
+    },
+    {
+      "state": "subscription.state === 'past_due' (renewal failed)",
+      "entersWhen": "subscription.state === 'past_due'",
+      "reachable": "no — no function anywhere in src/lib/api/subscription.ts or src/lib/api/mocks/session.ts ever assigns state = 'past_due'; every mutator hardcodes 'active'. The full past-due UI (declined-card banner, retry CTA, 'still working'/'paused until you pay' lists, desktop equivalent) is fully built and matches design frame 4, but is unreachable end-to-end with the current mock data layer."
+    },
+    {
+      "state": "subscription.state === 'expired'",
+      "entersWhen": "subscription.state === 'expired'",
+      "reachable": "no — same reason as past_due: no code path in the mock layer ever sets state to 'expired', despite the UI (design frame 5) being fully built for it, including the 'Start a tier again' CTA that would lead to the resubscribe screen"
+    },
+    {
+      "state": "subscription.state === 'none' (no plan yet)",
+      "entersWhen": "subscription.state === 'none'",
+      "reachable": "no — same reason again; also structurally unlikely since the mock session (src/lib/api/mocks/session.ts) always seeds an existing subscribed pro creator, not a plan-less one"
+    },
+    {
+      "state": "screen === 'upgrade' (Move to Pro flow)",
+      "entersWhen": "setScreen('upgrade'), triggered by the 'See what Pro adds' button, itself only rendered when state==='active' && tier==='basic'",
+      "reachable": "yes, indirectly — the mock's default tier is 'pro', but downgradeToBasic() is reachable via the cancel sheet's 'Move to Basic' quick action (shown only for pro-tier active subscriptions), and once tier becomes 'basic' the 'See what Pro adds' CTA appears"
+    },
+    {
+      "state": "screen === 'resubscribe' (Choose a plan flow)",
+      "entersWhen": "setScreen('resubscribe'), triggered by 'Start a tier again' / 'Choose a plan', both only rendered when state is 'expired' or 'none'",
+      "reachable": "no — gated entirely behind subscription.state values ('expired'/'none') that are themselves unreachable given the mock layer"
+    },
+    {
+      "state": "showPaid sheet (upgrade/plan-change confirmation)",
+      "entersWhen": "setShowPaid(true), set after payAndGoPro() or startTier(tier) resolves",
+      "reachable": "yes via payAndGoPro() (reachable per the 'upgrade' screen path above); no via startTier() specifically, since that call site lives only in the unreachable resubscribe screen"
+    },
+    {
+      "state": "showCancel sheet (Stop renewing)",
+      "entersWhen": "setShowCancel(true), via the 'Do not renew' button shown whenever state==='active'",
+      "reachable": "yes"
+    },
+    {
+      "state": "showCard sheet (payment card picker)",
+      "entersWhen": "setShowCard(true), via the active-state card row's 'Change' link, or the past-due state's 'Use a different card' row",
+      "reachable": "yes via the active-state entry point; no via the past-due entry point, since past_due itself is unreachable"
+    }
+  ],
+  "uiStatesDesigned": [
+    "1 · Current — tier, renewal, slots, limits (design/screens/WAWU Subscription Management.dc.html, frame 1: active/basic billing view)",
+    "2 · Upgrade — the split shown against real sales (frame 2: Move to Pro screen with proration math)",
+    "3 · Upgrade paid — proration and next renewal stated (frame 3: post-payment confirmation sheet)",
+    "4 · Past due — two lists, no ambiguity (frame 4: declined-card banner + still-working/paused lists)",
+    "5 · Expired — work, money, perks, answered separately (frame 5: expired billing view)",
+    "6 · Cancel — consequences, then a cheaper option (frame 6: 'Stop renewing?' sheet with downgrade offer)",
+    "D9 · Subscription — current plan and the upgrade case, side by side (design/screens/desktop/WAWU Desktop Shell.dc.html: desktop layout reusing the left column for past-due/expired/cancel; includes a Billing History card and a 'Pause for a month' button that has no corresponding SubscriptionState or subscriptionApi method — the component's own code comment documents substituting downgrade-to-basic for it since no pause state exists)"
+  ],
+  "stubsObserved": ["STUB-1", "STUB-11"]
+}

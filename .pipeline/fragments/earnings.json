@@ -1,0 +1,145 @@
+{
+  "screenId": "earnings",
+  "reads": [
+    {
+      "entity": "EarningsSummary",
+      "fields": [
+        { "name": "payable", "type": "number", "nullable": false },
+        { "name": "held", "type": "number", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "Read via direct synchronous import of the mutable mock object `currentEarnings` from src/lib/api/earnings.ts, NOT via the async `earningsApi.getSummary()` function that same file exports and SEAM-tags as `GET /api/hub/content/mine/earnings`. The screen never calls that function (only src/components/shared/HomeRightRail.tsx does, a different screen). `EarningsSummary` also declares `refunded: number`, `creditsBalance: number`, and `period: string` (types/earnings.ts) but this screen reads none of those three — the 'August' header label is a separate hardcoded string, not `currentEarnings.period`. `earned` displayed = `approved ? payable + held : held`, where `approved` is screen-local UI state (see uiStatesHandled), not derived per-render from the real gate after mount."
+    },
+    {
+      "entity": "Session.creator",
+      "fields": [
+        { "name": "accountType", "type": "\"user\" | \"creator\"", "nullable": false },
+        { "name": "creator.tier", "type": "\"basic\" | \"pro\"", "nullable": true },
+        { "name": "creator.kyc", "type": "\"not_started\" | \"pending\" | \"approved\" | \"rejected\"", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "`currentSession` read directly from src/lib/api/mocks/session.ts (module-level mutable mock, not an API call). `tier` is read twice: directly off `currentSession.creator?.tier` (line 31, defaulting to \"basic\") to look up `PLANS[tier]`, and indirectly via `creatorGates(currentSession)` for `canEarn`/`isCreator`. Per CLAUDE.md/gates.ts convention, `kyc`/`subscriptionPaid` should only ever be read through `creatorGates()` — this screen's direct `currentSession.creator?.tier` read is a tier lookup, not a gate re-check, but note it bypasses the gates helper for that one field."
+    },
+    {
+      "entity": "SubscriptionPlan",
+      "fields": [
+        { "name": "split", "type": "number (percent, e.g. 85 or 90)", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "`PLANS[tier].split` imported from the static, hardcoded `PLANS` const in src/types/subscription.ts (not fetched from any mock/API layer at all — a compile-time table, matches product-truths T-13/T-14's 85/basic, 90/pro split numbers). Used only to render the '{keep}/{100-keep} on {tierLabel}' badge in the approved state."
+    },
+    {
+      "entity": "EarningsStreamBreakdown (per-stream revenue rows)",
+      "fields": [
+        { "name": "icon", "type": "IconName", "nullable": false },
+        { "name": "label", "type": "string", "nullable": false },
+        { "name": "amount", "type": "number", "nullable": false },
+        { "name": "status", "type": "string (e.g. \"Not on yet\", \"No community yet\")", "nullable": true },
+        { "name": "pct", "type": "number (0-100, bar-fill percent)", "nullable": true },
+        { "name": "dim", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "Fully inline hardcoded literal array in EarningsDashboard.tsx (lines 36-47), NOT sourced from earnings.ts, mocks/, or any entity/type at all — no `StreamRow`-shaped type exists in src/types/. Two fixed variants selected by the local `approved` boolean: approved shows 4 rows (Content sales/Paid messages/Community credits/Tips with real pct splits summing to 101%); pending shows 3 rows (Content sales populated, Paid messages and Community credits zeroed with a status string and dimmed). This is the same inline-literal pattern flagged as STUB-12 for CreatorDashboard.tsx's sibling `STREAMS` array, but STUB-12 in stubs.json only names CreatorDashboard.tsx — this occurrence in EarningsDashboard.tsx is a separate, undocumented instance of the identical gap."
+    },
+    {
+      "entity": "RecentSale (recent-activity list)",
+      "fields": [
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "subtitle", "type": "string", "nullable": false },
+        { "name": "icon", "type": "IconName", "nullable": false },
+        { "name": "meta", "type": "string (pre-formatted naira, e.g. \"₦6,750\")", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "Fully inline hardcoded literal array (lines 49-58), two fixed variants by `approved`. This is conceptually the same activity feed as `EarningsEntry[]` (types/earnings.ts, exposed via `earningsApi.getEntries()`, SEAM-tagged `GET /api/hub/content/mine/earnings?view=entries`) but the screen never imports or calls `getEntries()` — that function and its backing `earningsEntries` mock array are dead code with zero callers anywhere in the app (grep-confirmed). The shapes don't even line up 1:1: `EarningsEntry` has `kind`/`amount`(number)/`held`(HeldStatus)/`date`, while this inline list has `title`/`subtitle`/`meta`(pre-formatted string) — reconciliation will need to decide which shape is authoritative."
+    },
+    {
+      "entity": "CreatorStats (EVG score, sales count)",
+      "fields": [
+        { "name": "evgScore", "type": "string literal \"1,240\"", "nullable": false },
+        { "name": "salesCount", "type": "string literal \"86\"", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "Both StatBlock values are hardcoded strings (lines 179, 182), rendered only when `approved` is true. The EVG one is explicitly STUB-5 in stubs.json (identical '1,240' literal duplicated across HomeRightRail.tsx, EarningsDashboard.tsx, and CreatorDashboard.tsx — stubs.json notes src/lib/api/mocks/profile.ts already models a real, varying `evg` field per creator that these call sites simply never got wired to). The '86' Sales stat has no equivalent modeled field anywhere and is not called out in stubs.json at all — a second, undocumented instance of the same 'hardcoded stat with no backing read' pattern."
+    },
+    {
+      "entity": "Payout bank details (display string)",
+      "fields": [
+        { "name": "bankLabel", "type": "string literal \"Paid to GTB ••••6789\"", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "Hardcoded inline string (line 124) inside a StatusPill, shown only when `approved`. No bank/payout-destination field exists anywhere in the earnings/session/KYC mock data this screen reads — not even a stub-documented placeholder, just literal copy baked into the component."
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["creator"],
+    "notes": "Screen unconditionally reads `currentSession.creator` and `creatorGates(currentSession).canEarn` — it assumes an authenticated creator session with a non-null `creator` object (would throw/render nonsense for a `user`-type account since `currentSession.creator` would be null and `tier` falls back to 'basic' but `canEarn`/`isCreator` would be false). No explicit route guard, redirect, or 'not a creator' UI state was found in src/app/(app)/earnings/page.tsx or EarningsDashboard.tsx itself — access control for non-creator accounts visiting /earnings is not visible within this screen's scope."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false,
+    "polling": false,
+    "notes": "No fetch/await/loading anywhere in this screen — all data is read synchronously from in-memory mock/static objects and inline literals, so there is no network round trip to observe latency, retry, or polling behavior for. The 'See all' SectionHeader action button (next to 'Recent Sales') is rendered with no `onAction` handler passed, so it is a visible but fully inert no-op — no pagination, infinite scroll, or 'view full history' destination exists for the recent-activity list."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "kyc-approved (payable) earnings record",
+      "entersWhen": "local component state `approved === true` — either the initial value `gates.canEarn` (currentSession.creator.kyc === 'approved') is true on mount, OR the user clicks the 'KYC approved' segmented-control button, which sets `approved` via `useState` with no session/gate re-check and no API call",
+      "reachable": "yes"
+    },
+    {
+      "state": "kyc-pending (held) earnings record",
+      "entersWhen": "local component state `approved === false` — either the initial value `gates.canEarn` is false on mount (true for the current mock session, whose `creator.kyc` is 'pending'), OR the user clicks the 'KYC pending' segmented-control button",
+      "reachable": "yes"
+    },
+    {
+      "state": "loading / skeleton",
+      "entersWhen": "N/A — no loading state exists in this component's code at all; every value it renders is read synchronously from mock module state or static imports, never from a Promise/await",
+      "reachable": "no"
+    },
+    {
+      "state": "error / fetch-failed",
+      "entersWhen": "N/A — no try/catch, error boundary, or error UI branch exists in this component",
+      "reachable": "no"
+    },
+    {
+      "state": "empty (no earnings recorded yet)",
+      "entersWhen": "N/A — the 'Where it came from' and 'Recent Sales' lists are always one of two fixed, non-empty hardcoded arrays selected by `approved`; there is no code path that renders zero streams or zero recent-sale rows",
+      "reachable": "no"
+    },
+    {
+      "state": "refunded funds shown",
+      "entersWhen": "N/A — `EarningsSummary.refunded` exists on the type and mock data (currentEarnings.refunded = 0) but is never read or displayed anywhere in this component",
+      "reachable": "no"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "5 · Earnings — four streams, no balance, no withdraw (KYC approved)",
+      "source": "design/screens/WAWU Creator DM Earnings.dc.html frame 5",
+      "detail": "₦184,500 earned this month, 'Paid to GTB ••••6789' success pill, '90/10 on Pro' split badge, four revenue-stream rows (Content sales ₦123,300/67%, Paid messages ₦31,050/17%, Community credits ₦21,600/12%, Tips ₦8,550/5%), EVG score 1,240 + Sales 86 stat pair, Recent Sales list of 3 rows (CAC in 7 days, Paid message, Tip)"
+    },
+    {
+      "state": "6 · KYC pending — visible, counted, held",
+      "source": "design/screens/WAWU Creator DM Earnings.dc.html frame 6",
+      "detail": "Warning-tinted 'Finish verification to get paid' card with 'Complete verification' CTA, ₦12,750 earned this month in muted text, 'Held — not payable yet' warning pill, explanatory footnote about funds not expiring, three revenue-stream rows (Content sales ₦12,750 active; Paid messages 'Not on yet' dimmed; Community credits 'No community yet' dimmed — no Tips row at all in this state), no EVG/Sales stat pair, Recent Sales list of 2 rows (Pricing sheet, Trader's playbook)"
+    }
+  ],
+  "stubsObserved": ["STUB-5"]
+}

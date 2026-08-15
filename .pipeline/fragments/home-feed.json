@@ -1,0 +1,104 @@
+{
+  "screenId": "home-feed",
+  "reads": [
+    {
+      "entity": "ContentPiece",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "slug", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "enum: video|course|audio|pdf|image|template", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": false },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "accessType", "type": "enum: free|paid", "nullable": false },
+        { "name": "price", "type": "number (naira)", "nullable": false },
+        { "name": "creator", "type": "CreatorProfile (nested object)", "nullable": false },
+        { "name": "creator.wawuId", "type": "string", "nullable": false },
+        { "name": "creator.fullName", "type": "string", "nullable": false },
+        { "name": "creator.handle", "type": "string", "nullable": false },
+        { "name": "creator.headline", "type": "string", "nullable": true },
+        { "name": "creator.location", "type": "string", "nullable": true },
+        { "name": "creator.verificationLevel", "type": "VerificationLevel enum", "nullable": false },
+        { "name": "creator.isPro", "type": "boolean", "nullable": true },
+        { "name": "durationLabel", "type": "string", "nullable": true },
+        { "name": "pageCount", "type": "number", "nullable": true },
+        { "name": "lessonCount", "type": "number", "nullable": true },
+        { "name": "views", "type": "number", "nullable": false },
+        { "name": "ratingPct", "type": "number", "nullable": true },
+        { "name": "commentCount", "type": "number", "nullable": false },
+        { "name": "likes", "type": "number", "nullable": false },
+        { "name": "saved", "type": "boolean", "nullable": false },
+        { "name": "createdAt", "type": "string (ISO datetime)", "nullable": false },
+        { "name": "previewAssetUrl", "type": "string (URL, always safe/truncated preview)", "nullable": false },
+        { "name": "fullAssetUrl", "type": "string (URL)", "nullable": true, "note": "present ONLY when entitled (free or purchased); server must omit for locked content, not just null it" },
+        { "name": "fullAssetLocked", "type": "boolean", "nullable": false },
+        { "name": "courseLessons", "type": "list of CourseLesson {id, index, title, durationLabel, free}", "nullable": true },
+        { "name": "purchased", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "None forwarded to the API. HomeFeed.tsx maintains a client-only `tab` state (for-you|following|trending) that is NEVER passed as a parameter to getFeed() — the same unfiltered call fires once on mount regardless of tab.",
+        "'following' tab: no API call is made at all for this tab; the UI unconditionally renders a hardcoded EmptyState ('Worth following' / 'Browse creators') irrespective of whatever `items` holds.",
+        "'trending' tab: renders the exact same `feed` array as 'for-you' with no distinct sort/filter applied — there is no trending-specific field (e.g. trending score) in ContentPiece and no separate endpoint call."
+      ],
+      "pagination": "None. Single unpaginated fetch of the full array on mount (useEffect with empty deps). No infinite scroll, no 'load more' control, no page/cursor param in getFeed()."
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "notes": "SessionGate.tsx (client component at '/') calls useSession().isAuthenticated and renders HomeFeed only when true; signed-out users see the passed-through landing `children` instead. No creatorGates() or account-type/role check is made anywhere in HomeFeed.tsx or SessionGate.tsx — the feed is identical for any authenticated user regardless of account type (user vs creator) or subscription/KYC state."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading",
+      "entersWhen": "items === null, i.e. before the getFeed() promise settles (initial render through first effect tick)",
+      "reachable": "yes"
+    },
+    {
+      "state": "error",
+      "entersWhen": "the getFeed() promise passed to .then/.catch in HomeFeed rejects, setting error to a fixed string",
+      "reachable": "no — content.ts's getFeed() wraps its own apiFetch call in a try/catch and ALWAYS falls back to mockContent on any failure (mock-mode: apiFetch throws MockModeError immediately and is caught; the fallback itself has no external dependency and cannot fail). getFeed() therefore never rejects today, so HomeFeed's own .catch()/error branch is currently dead code. This remains true even once a real API_BASE is wired up, since the same try/catch would still swallow a real network failure and silently return mock data instead of surfacing the error UI — a gap worth flagging for backend/frontend reconciliation."
+    },
+    {
+      "state": "following-tab-empty",
+      "entersWhen": "tab === 'following' (any time the user taps the Following tab)",
+      "reachable": "yes, but not data-driven — this branch is unconditional on `tab`, checked before the real `feed.length === 0` check, so it renders the same static EmptyState regardless of what getFeed() actually returned or whether the user follows anyone. There is no following-specific fetch or field (e.g. followedCreatorIds) anywhere in this screen's data layer."
+    },
+    {
+      "state": "feed-empty (for-you/trending)",
+      "entersWhen": "tab !== 'following' && items !== null && error === null && feed.length === 0",
+      "reachable": "no — mockContent always contains 10 items and getFeed() unconditionally maps over the full array, so feed.length is never 0 under the current mock-driven app. Only reachable once a real backend can legitimately return an empty items array."
+    },
+    {
+      "state": "feed-loaded",
+      "entersWhen": "tab !== 'following' && items !== null && error === null && feed.length > 0",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "frame": "1 · For You",
+      "description": "Default loaded feed: full-width ContentCard per item with an author row (avatar, name, VerificationBadge, relative time, overflow menu) above each card, locked and free cards shown back to back. Accompanying panel: 'One card, six treatments' — the same ContentCard in locked/free/unlocked states across all six content types (video, course, audio, pdf/post, image, template)."
+    },
+    {
+      "frame": "3 · Loading — shimmer at 1.4s",
+      "description": "Skeleton row + skeleton card + a second skeleton row, no tab bar shown yet, header search bar only."
+    },
+    {
+      "frame": "4 · Empty — following nobody, with a way out",
+      "description": "Following tab: EmptyState ('You are not following anyone yet' / 'Follow a creator and their new work shows up here first' / action 'Find creators') PLUS a 'Worth following' section below it listing concrete suggested creators as ListRows (name, headline, location, a 'Follow' affordance) — the implementation only renders the bare EmptyState with a generic caption and 'Browse creators' action; it has no suggested-creators list at all."
+    },
+    {
+      "frame": "5 · Browse — category, price and type filters",
+      "description": "A distinct 'Browse' screen (back chevron + filters icon) with scrollable category chips (Business/Agriculture/Finance/Trade), a second row of active filter chips (Free/Under ₦1,000/Course/Video), a result-count line ('Business · Free · 38 pieces') with a Clear action, and a 2-column ContentCard grid. Not implemented anywhere in HomeFeed.tsx/content.ts — no category, price, or type filter state, no result-count field, and no distinct browse route exists in this screen's code."
+    }
+  ],
+  "stubsObserved": []
+}

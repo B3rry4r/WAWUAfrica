@@ -1,0 +1,191 @@
+{
+  "screenId": "communities",
+  "reads": [
+    {
+      "entity": "CreditsState",
+      "fields": [
+        { "name": "creditBalance", "type": "number", "nullable": false },
+        { "name": "trialEndsAt", "type": "string (ISO date)", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single object, no list"
+    },
+    {
+      "entity": "Community",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": true },
+        { "name": "host.wawuId", "type": "string", "nullable": false },
+        { "name": "host.name", "type": "string", "nullable": false },
+        { "name": "host.verified", "type": "boolean", "nullable": true },
+        { "name": "memberCount", "type": "number", "nullable": false },
+        { "name": "messagesToday", "type": "number", "nullable": true },
+        { "name": "kind", "type": "\"open\" | \"private\"", "nullable": false },
+        { "name": "joined", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["kind param: \"joined\" | \"discover\" — mock filters full community set by c.joined truthiness, no server-side query params beyond this single filter"],
+      "pagination": "none — getCommunities returns the full filtered array in one call, no page/cursor/limit params, no infinite scroll in the UI"
+    },
+    {
+      "entity": "Community",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": true },
+        { "name": "host.wawuId", "type": "string", "nullable": false },
+        { "name": "host.name", "type": "string", "nullable": false },
+        { "name": "host.verified", "type": "boolean", "nullable": true },
+        { "name": "memberCount", "type": "number", "nullable": false },
+        { "name": "messagesToday", "type": "number", "nullable": true },
+        { "name": "kind", "type": "\"open\" | \"private\"", "nullable": false },
+        { "name": "joined", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["lookup by :id path param"],
+      "pagination": "none — single-object fetch; getCommunity(id) resolves to Community | null when id has no match (detail page renders errorKind:\"not-found\" on null)"
+    },
+    {
+      "entity": "CommunityMessage",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "communityId", "type": "string", "nullable": false },
+        { "name": "sender.wawuId", "type": "string", "nullable": false },
+        { "name": "sender.name", "type": "string", "nullable": false },
+        { "name": "sender.avatarUrl", "type": "string", "nullable": true },
+        { "name": "text", "type": "string", "nullable": false },
+        { "name": "costInCredits", "type": "number", "nullable": false },
+        { "name": "sentAt", "type": "string (display-formatted, e.g. \"09:12\", \"Yesterday\", \"Just now\")", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["scoped by :id (communityId) path param; chronological, oldest-first as authored in mock arrays"],
+      "pagination": "none — getCommunityMessages(id) returns the entire thread's message array in one call, no page/cursor params, no visible infinite-scroll-up-for-history in the UI"
+    }
+  ],
+  "actions": [
+    {
+      "name": "sendCommunityMessage",
+      "kind": "create",
+      "entity": "CommunityMessage",
+      "payload": [
+        { "name": "id", "type": "string", "note": "path param — target community id" },
+        { "name": "text", "type": "string", "note": "message body, sent from the composer input" }
+      ],
+      "expectedResponse": { "entity": "CommunityMessage", "cardinality": "single" }
+    },
+    {
+      "name": "joinCommunity",
+      "kind": "custom",
+      "entity": "Community",
+      "payload": [
+        { "name": "id", "type": "string", "note": "path param — community id; no body fields sent" }
+      ],
+      "expectedResponse": { "entity": "boolean (join success flag)", "cardinality": "single" }
+    },
+    {
+      "name": "topUpCredits",
+      "kind": "create",
+      "entity": "CreditsState",
+      "payload": [
+        { "name": "pack", "type": "\"starter\" | \"popular\" | \"pro\" (CreditPackId)", "note": "selected pack id; price/credit amount looked up server-side from CREDIT_PACKS (starter: 50cr/₦500, popular: 120cr/₦1000, pro: 300cr/₦2000) per T-12/T-13 — client never sends amount" }
+      ],
+      "expectedResponse": { "entity": "number (new creditBalance)", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "any authenticated user account (no creator-specific gate checked — no creatorGates() call anywhere in this screen's code; current user identity is hardcoded in the mock as sender.wawuId === \"wawu-me\" / name \"Amara Okafor\", implying the screen assumes a signed-in session but does not branch on account type)"
+    ]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "list:error (CommunitiesErrorRetry)",
+      "entersWhen": "getCreditsState() / getCommunities(\"joined\") / getCommunities(\"discover\") Promise.all rejects on the list page (page.tsx try/catch)",
+      "reachable": "no — all three mock functions (getMockCreditsState, getMockCommunities) only ever delay() and return; none contain a throw path, so this catch block cannot fire against the current mock data layer. Becomes reachable only once a real backend that can fail is wired in."
+    },
+    {
+      "state": "list:topup sheet open",
+      "entersWhen": "searchParams?.topup === \"1\" (navigated to /communities?topup=1 from the Sidebar's foot-card \"Top up\" button, the detail page's \"Top up credits\" CTA, or the desktop empty-state action) — passed as CreditsCard's defaultOpen prop",
+      "reachable": "yes"
+    },
+    {
+      "state": "list:success (Yours/Discover tabs populated)",
+      "entersWhen": "default render once credits/joined/discover all resolve without throwing",
+      "reachable": "yes"
+    },
+    {
+      "state": "detail:loading (skeleton rows)",
+      "entersWhen": "community is still null and errorKind is unset — initial fetch in flight",
+      "reachable": "yes"
+    },
+    {
+      "state": "detail:errorKind === \"not-found\"",
+      "entersWhen": "getCommunity(id) resolves to null, i.e. the :id in the URL matches no entry in MOCK_COMMUNITIES",
+      "reachable": "yes — reachable by direct/typed navigation to a bad community id, independent of any dev-only switch"
+    },
+    {
+      "state": "detail:errorKind === \"failed\"",
+      "entersWhen": "the hook's underlying fetch call rejects (network/API failure)",
+      "reachable": "no — getMockCommunity/getMockCommunityMessages never throw in the current mock data layer; this path has no way to fire until a real backend replaces the mocks"
+    },
+    {
+      "state": "detail:private + not joined (locked view)",
+      "entersWhen": "community.kind === \"private\" && !community.joined",
+      "reachable": "yes — e.g. mock community id \"ifeanyi-tailors\" (kind: \"private\", joined: false)"
+    },
+    {
+      "state": "detail:joined thread — reading free / sending available",
+      "entersWhen": "community.joined === true && balance >= 1",
+      "reachable": "yes"
+    },
+    {
+      "state": "detail:joined thread — out of credits (composer blocked, \"Top up credits\" button replaces input)",
+      "entersWhen": "community.joined === true && balance < 1",
+      "reachable": "yes — MOCK_BALANCE starts at 48 and decrements by 1 per sent message with a Math.max(0, ...) floor, so sending 48+ messages within a session reaches this state client-side"
+    },
+    {
+      "state": "detail:sending in flight (spinner send icon, disabled input)",
+      "entersWhen": "sending === true while a sendCommunityMessage call is pending",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "Communities list — Yours/Discover tabs, credit balance card (\"48 credits\"), \"You are in\" joined rooms, \"Worth joining\" discover rows with Join/Request meta",
+      "source": "design/screens/WAWU Communities Credits.dc.html frame 1"
+    },
+    {
+      "state": "Community chat on trial — info banner \"{{trialDays}} days of free chat left / After that, sending costs 1 credit. Reading stays free.\", composer footnote \"Free while your trial is running\"",
+      "source": "design/screens/WAWU Communities Credits.dc.html frames 2-3"
+    },
+    {
+      "state": "Paid chat (post-trial) — \"1 credit used · N left\" under a sent message, running balance + \"Top up\" link above composer",
+      "source": "design/screens/WAWU Communities Credits.dc.html frame 4"
+    },
+    {
+      "state": "Empty balance — \"0 credits left\" card, composer visually disabled (\"Sending needs a credit\", locked icon), thread still readable, \"Buy credits\" CTA",
+      "source": "design/screens/WAWU Communities Credits.dc.html frame 5"
+    },
+    {
+      "state": "Buy credits sheet — three packs (Starter ₦500/50cr, Popular ₦1,000/120cr \"Best value\", Pro ₦2,000/300cr) each showing per-message naira cost, \"Pay ₦X for Y credits\" CTA, fine-print disclaiming refunds/naira conversion/other-use",
+      "source": "design/screens/WAWU Communities Credits.dc.html frame 6"
+    },
+    {
+      "state": "Purchase success sheet — new balance as a plain count (\"120 credits\" / \"That is 120 messages\"), \"Spend them in any open community you have joined\" note, \"Back to the chat\" CTA",
+      "source": "design/screens/WAWU Communities Credits.dc.html frame 7"
+    },
+    {
+      "state": "Desktop three-pane (D14) — sidebar credit balance + Top up in the nav foot-card, room list (340px) beside an active thread, running balance and per-message cost shown again directly above the desktop composer",
+      "source": "design/screens/desktop/WAWU Desktop Shell.dc.html, frame D14"
+    }
+  ],
+  "stubsObserved": []
+}

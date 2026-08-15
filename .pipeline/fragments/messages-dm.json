@@ -1,0 +1,202 @@
+{
+  "screenId": "messages-dm",
+  "reads": [
+    {
+      "entity": "DmThreadDetail",
+      "fields": [
+        { "name": "summary", "type": "DmThreadSummary (nested)", "nullable": false },
+        { "name": "summary.id", "type": "string", "nullable": false },
+        { "name": "summary.creatorWawuId", "type": "string", "nullable": false },
+        { "name": "summary.creatorName", "type": "string", "nullable": false },
+        { "name": "summary.creatorHandle", "type": "string", "nullable": false },
+        { "name": "summary.snippet", "type": "string", "nullable": false },
+        { "name": "summary.lastAt", "type": "string", "nullable": false },
+        { "name": "summary.unread", "type": "boolean", "nullable": false },
+        { "name": "summary.status", "type": "DmStatus (\"awaiting_response\"|\"responded\"|\"refunded\")", "nullable": false },
+        { "name": "summary.amount", "type": "number (integer Naira, snapshot of dmPrice at send time)", "nullable": false },
+        { "name": "messages", "type": "DmThreadMessage[]", "nullable": false },
+        { "name": "messages[].id", "type": "string", "nullable": false },
+        { "name": "messages[].from", "type": "\"me\"|\"creator\"", "nullable": false },
+        { "name": "messages[].text", "type": "string", "nullable": false },
+        { "name": "messages[].at", "type": "string (display timestamp, not ISO)", "nullable": false },
+        { "name": "deadlineAt", "type": "string", "nullable": true, "note": "present only while summary.status === awaiting_response" },
+        { "name": "refundedAt", "type": "string", "nullable": true, "note": "present only while summary.status === refunded; read into the type but not actually rendered by [threadId]/page.tsx (it recomputes its own refund copy from summary.status/amount instead)" }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["looked up by threadId route param"],
+      "pagination": "none — single thread fetched whole"
+    },
+    {
+      "entity": "MessagingState",
+      "fields": [
+        { "name": "threads", "type": "Thread[]", "nullable": false },
+        { "name": "threads[].id", "type": "string", "nullable": false },
+        { "name": "threads[].buyerName", "type": "string", "nullable": false },
+        { "name": "threads[].buyerInitials", "type": "string", "nullable": false },
+        { "name": "threads[].preview", "type": "string", "nullable": false },
+        { "name": "threads[].price", "type": "number (integer Naira)", "nullable": false },
+        { "name": "threads[].opened", "type": "boolean", "nullable": false, "note": "true once buyer opened it; starts the 24h window per comment" },
+        { "name": "threads[].expiresAt", "type": "string", "nullable": true },
+        { "name": "threads[].unread", "type": "number", "nullable": true },
+        { "name": "responseStats", "type": "ResponseStats (nested)", "nullable": false },
+        { "name": "responseStats.responded", "type": "number", "nullable": false },
+        { "name": "responseStats.total", "type": "number", "nullable": false },
+        { "name": "responseStats.rate", "type": "number (percentage 0-100)", "nullable": false },
+        { "name": "penalty", "type": "PenaltyKind (\"none\"|\"warned\"|\"disabled7\"|\"disabled30\")", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["client-side: threads split into urgent (!opened) vs answered (opened) via Array.filter, not requested as separate params"],
+      "pagination": "none — full state object fetched whole"
+    },
+    {
+      "entity": "ThreadDetail[]",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "buyerName", "type": "string", "nullable": false },
+        { "name": "buyerInitials", "type": "string", "nullable": false },
+        { "name": "location", "type": "string", "nullable": true },
+        { "name": "askedAgo", "type": "string", "nullable": false },
+        { "name": "price", "type": "number (integer Naira)", "nullable": false },
+        { "name": "status", "type": "ThreadStatus (\"awaiting\"|\"answered\"|\"refunded\")", "nullable": false },
+        { "name": "deadlineMinutes", "type": "number", "nullable": true, "note": "present only while status === awaiting" },
+        { "name": "deadlineLabel", "type": "string", "nullable": true, "note": "present only while status === awaiting" },
+        { "name": "messages", "type": "ThreadMessage[]", "nullable": false },
+        { "name": "messages[].id", "type": "string", "nullable": false },
+        { "name": "messages[].from", "type": "\"buyer\"|\"creator\"", "nullable": false },
+        { "name": "messages[].text", "type": "string", "nullable": false },
+        { "name": "messages[].attachmentName", "type": "string", "nullable": true, "note": "display-only filename; no upload/download endpoint backs it anywhere in the API layer" }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["client-side sortThreads(): status rank (awaiting < answered < refunded), then ascending deadlineMinutes within awaiting"],
+      "pagination": "none — full thread list with full message history fetched in one call, no page/cursor param"
+    },
+    {
+      "entity": "Session.creator",
+      "fields": [
+        { "name": "creator.dmPrice", "type": "number (integer Naira)", "nullable": true, "note": "read via currentSession.creator?.dmPrice ?? 300 fallback" },
+        { "name": "creator.tier", "type": "CreatorTier (\"basic\"|\"pro\")", "nullable": true, "note": "read via currentSession.creator?.tier ?? \"basic\" fallback, then used to index the static PLANS map for the revenue-split percentage" }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "Read by direct import of the mock session singleton (`import { currentSession } from \"@/lib/api/mocks/session\"`) in both Inbox.tsx and QuestionsDesktop.tsx, bypassing src/lib/api/ entirely and bypassing creatorGates() — no SEAM comment covers this read, and it is not one of the domain API functions. This is the mechanism the screen uses to compute 'earn X' amounts (price * PLANS[tier].split / 100); the split percentage itself is a static client-side constant (types/subscription.ts PLANS), never fetched, so the backend contract for 'what does replying to this specific paid message actually earn me' is entirely reconstructed client-side rather than returned by any read."
+    }
+  ],
+  "actions": [
+    {
+      "name": "sendPaidDm",
+      "kind": "create",
+      "entity": "DirectMessage",
+      "payload": [
+        { "name": "creator.wawuId", "type": "string" },
+        { "name": "creator.name", "type": "string" },
+        { "name": "creator.handle", "type": "string" },
+        { "name": "text", "type": "string" },
+        { "name": "amount", "type": "number (integer Naira, equals creator.dmPrice at send time)" }
+      ],
+      "expectedResponse": { "entity": "SendPaidDmResult ({ threadId: string, result: \"success\"|\"payment_failed\"|\"error\" })", "cardinality": "single" }
+    },
+    {
+      "name": "reportDmIssue",
+      "kind": "custom",
+      "entity": "DmReport",
+      "payload": [
+        { "name": "threadId", "type": "string" }
+      ],
+      "expectedResponse": { "entity": "DmReport (no fields returned — void ack)", "cardinality": "single" },
+      "note": "STUB-8: implemented as a local component-level simulated round trip (reportMockDmIssue in DmThreadFooter.tsx) with no dm.ts/mocks-dm.ts export at all, unlike every other action on this screen — genuinely net-new endpoint, no existing pattern to mirror."
+    },
+    {
+      "name": "replyToThread",
+      "kind": "update",
+      "entity": "ThreadDetail",
+      "payload": [
+        { "name": "id", "type": "string (thread id)" },
+        { "name": "text", "type": "string (creator's answer)" }
+      ],
+      "expectedResponse": { "entity": "ThreadDetail", "cardinality": "single" },
+      "note": "Mock effect: pushes a { from: \"creator\", text } message, flips status to \"answered\", clears deadlineMinutes/deadlineLabel — implies this is also the action that 'releases the held payment' per the UI copy, though no separate payment-release read/response field exists; the split-adjusted earn amount is computed purely client-side (price * PLANS[tier].split / 100), never returned by this call."
+    },
+    {
+      "name": "sendTip",
+      "kind": "create",
+      "entity": "Tip",
+      "payload": [
+        { "name": "creator.wawuId", "type": "string" },
+        { "name": "creator.name", "type": "string" },
+        { "name": "amount", "type": "number (integer Naira, one of TIP_PRESETS: 500, 1000, 2000, 5000)" },
+        { "name": "note", "type": "string, optional" }
+      ],
+      "expectedResponse": { "entity": "TipResult ({ result: \"success\"|\"payment_failed\", amount: number })", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "user (fan) — opens/continues a paid DM thread via DmPaySheet and sendPaidDm, sends a Tip via TipSheet, reads their own DM thread detail",
+      "creator — answers paid questions via Inbox.tsx (mobile) / QuestionsDesktop.tsx + QuestionDetail.tsx (desktop), replyToThread"
+    ],
+    "note": "messages/page.tsx renders the creator-facing Inbox and QuestionsDesktop components unconditionally, with no account-type or creatorGates() check anywhere in this screen's files gating which view a session sees — a plain 'user' account visiting /messages would still be shown the creator's paid-questions inbox UI in the current code, since Inbox.tsx/QuestionsDesktop.tsx never check currentSession.accountType. Separately, both components read currentSession.creator.dmPrice/tier by direct mock-module import rather than through creatorGates() or an API call, contrary to CLAUDE.md's 'Creator gates come from creatorGates() ... never re-check inline' rule."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "specialNotes": [
+    "No polling/websocket: every fetch is on-mount only (getState/getThreads on mount, no interval/focus-refresh), matching conventions.md's 'no websockets in this build' decision.",
+    "No pagination anywhere on this screen: DM thread messages, the mobile inbox, and the desktop three-pane thread list are all fetched as complete arrays in a single call.",
+    "QuestionDetail.tsx renders a Paperclip icon button in the reply composer with no onClick handler and no upload call wired — decorative only. Buyer messages can carry a display-only ThreadMessage.attachmentName string (e.g. \"quote-two-schools.pdf\", seeded in messaging.ts) but nothing links it to a real file — no upload endpoint exists for a buyer to attach a file to a paid question, and no download/view action exists for the creator to open the named attachment."
+  ],
+  "uiStatesHandled": [
+    { "state": "inbox-loading", "entersWhen": "Inbox.tsx: state === null (initial render or after load() resets it), before messagingApi.getState() resolves — renders 4 skeleton rows", "reachable": "yes" },
+    { "state": "inbox-error", "entersWhen": "Inbox.tsx: messagingApi.getState() promise rejects, caught by .catch(() => setError(true))", "reachable": "no — mockRequest() in client.ts always resolves after a delay and never rejects, and messaging.ts's getState has no branch that throws; this catch path has no data path that can trigger it under the current mock layer" },
+    { "state": "inbox-penalty-banner", "entersWhen": "Inbox.tsx: state.penalty !== \"none\" (warned / disabled7 / disabled30)", "reachable": "yes — mock currentMessaging.penalty is hardcoded to \"warned\"" },
+    { "state": "inbox-urgent-list", "entersWhen": "Inbox.tsx: state.threads.filter(t => !t.opened).length > 0 — rows with countdown + 'Reply now'", "reachable": "yes — mock has 2 threads with opened: false (t2, t3)" },
+    { "state": "inbox-answered-list", "entersWhen": "Inbox.tsx: state.threads.filter(t => t.opened).length > 0 — rows with an 'Answered' StatusPill", "reachable": "yes — mock has 1 thread with opened: true (t1)" },
+    { "state": "inbox-static-refunded-example", "entersWhen": "Inbox.tsx lines ~170-188: unconditional — a hardcoded 'Chidi Umeh / Refunded' card rendered regardless of `state`, not sourced from MessagingState/Thread data at all", "reachable": "yes (always renders), but it is not backend-driven — MessagingState/Thread as fetched has no representation of a refunded thread anywhere; this is a static example, not a rendered read of real data" },
+    { "state": "dm-thread-not-found", "entersWhen": "[threadId]/page.tsx: getDmThread(threadId) resolves null (threadId absent from MOCK_THREADS) — renders ErrorState 'Conversation not found'", "reachable": "yes — any threadId outside the 3 seeded mock ids (t-adaeze, t-funmi, t-zainab)" },
+    { "state": "dm-thread-awaiting_response", "entersWhen": "summary.status === \"awaiting_response\" — info banner + DmThreadFooter shows 'Waiting for {name} to reply…'", "reachable": "yes — mock thread t-funmi" },
+    { "state": "dm-thread-refunded", "entersWhen": "summary.status === \"refunded\" — danger banner + DmThreadFooter offers 'Comment instead' / 'Report an issue' / 'Try again'", "reachable": "yes — mock thread t-zainab" },
+    { "state": "dm-thread-responded-default-footer", "entersWhen": "summary.status is anything other than awaiting_response/refunded (i.e. \"responded\") — footer shows plain 'Send another message · ₦price'", "reachable": "yes — mock thread t-adaeze" },
+    { "state": "dm-report-issue-idle-sending-sent", "entersWhen": "DmThreadFooter: user taps 'Report an issue' (only visible when status === refunded); reportState cycles idle → sending → sent", "reachable": "yes, but the round trip is entirely local/simulated (STUB-8) — no real endpoint, no persisted moderation record" },
+    { "state": "dm-pay-sheet-compose", "entersWhen": "DmPaySheet: sheet opened, phase defaults to \"compose\"", "reachable": "yes" },
+    { "state": "dm-pay-sheet-processing", "entersWhen": "pay() called, awaiting sendPaidDm() resolution", "reachable": "yes (transient)" },
+    { "state": "dm-pay-sheet-success", "entersWhen": "res.result === \"success\"", "reachable": "yes — sendMockPaidDm's own doc comment states it 'Always succeeds so the happy path is demoable'" },
+    { "state": "dm-pay-sheet-failure", "entersWhen": "res.result !== \"success\" (e.g. \"payment_failed\"/\"error\"), or sendPaidDm() throws", "reachable": "no — sendMockPaidDm never returns a non-success result and never throws; this coded branch has no mock-data path that reaches it" },
+    { "state": "tip-sheet-choose", "entersWhen": "TipSheet: sheet opened, phase defaults to \"choose\"", "reachable": "yes" },
+    { "state": "tip-sheet-processing", "entersWhen": "pay() called, awaiting sendTip()", "reachable": "yes (transient)" },
+    { "state": "tip-sheet-success", "entersWhen": "res.result === \"success\"", "reachable": "yes — sendMockTip always returns { result: \"success\", amount } unconditionally" },
+    { "state": "tip-sheet-failure", "entersWhen": "res.result === \"payment_failed\", or sendTip() throws", "reachable": "no — sendMockTip has zero branching logic and never throws" },
+    { "state": "questions-desktop-loading", "entersWhen": "QuestionsDesktop: threads === null", "reachable": "yes" },
+    { "state": "questions-desktop-error", "entersWhen": "messagingApi.getThreads() promise rejects", "reachable": "no — mockRequest always resolves" },
+    { "state": "questions-desktop-empty", "entersWhen": "sorted.length === 0 — EmptyState 'No paid questions yet' in both panes", "reachable": "no — the paidQuestions mock array is hardcoded with 4 permanent entries and nothing ever removes from it" },
+    { "state": "questions-desktop-select-a-question-placeholder", "entersWhen": "selected === null (selectedId doesn't match any loaded thread) — EmptyState 'Select a question'", "reachable": "no — selectedId is seeded from sorted[0]?.id as soon as data loads, and sorted is never empty, so `selected` always resolves" },
+    { "state": "question-detail-awaiting", "entersWhen": "QuestionDetail: thread.status === \"awaiting\" — shows the reply composer + red/amber countdown pill", "reachable": "yes — 3 of 4 mock threads (t1, t2, t3)" },
+    { "state": "question-detail-answered", "entersWhen": "thread.status === \"answered\" — read-only 'payment released' footer copy", "reachable": "yes — mock thread t4, and any thread after a successful replyToThread call" },
+    { "state": "question-detail-refunded", "entersWhen": "thread.status === \"refunded\" — StatusPill 'Refunded' + read-only 'payment returned automatically' footer copy", "reachable": "no — no ThreadDetail in the paidQuestions mock array is ever seeded with status \"refunded\", and the only write path (replyToThread) only ever sets status to \"answered\"; this coded/designed state has zero data path to reach it under the current mock layer" },
+    { "state": "question-detail-reply-error", "entersWhen": "QuestionDetail: onReply(text) (replyToThread) throws, caught by handleSend → setError(true), renders 'Could not send your answer. Try again.'", "reachable": "no — replyToThread only rejects when the thread id isn't found in paidQuestions, but `selected` is always drawn from the already-loaded list so its id always matches; unlike sendPaidDm/sendTip there is no simulated-failure branch at all for this call" }
+  ],
+  "uiStatesDesigned": [
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "2 · Compose and pay — deadline shown as a real time", "mapsTo": "dm-pay-sheet-compose" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "3a · Processing", "mapsTo": "dm-pay-sheet-processing" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "3b · Success", "mapsTo": "dm-pay-sheet-success" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "3c · Failed — the draft survives", "mapsTo": "dm-pay-sheet-failure" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "4 · Awaiting — countdown, and the composer rests", "mapsTo": "dm-thread-awaiting_response" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "5 · Responded — next message is priced in the composer", "mapsTo": "dm-thread-responded-default-footer" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "6 · Refunded — stated plainly, with a free route out", "mapsTo": "dm-thread-refunded" },
+    { "source": "design/screens/WAWU Paid DM.dc.html", "frame": "7 · Messages — the waiting thread sits on top", "mapsTo": "inbox-urgent-list (fan-side inbox ordering, not directly ported — this screen's Inbox.tsx is creator-side)" },
+    { "source": "design/screens/WAWU Creator DM Earnings.dc.html", "frame": "2 · Inbox — sorted by how little time is left", "mapsTo": "inbox-urgent-list / inbox-answered-list" },
+    { "source": "design/screens/WAWU Creator DM Earnings.dc.html", "frame": "3 · Replied — earned state on the message itself", "mapsTo": "inbox-answered-list" },
+    { "source": "design/screens/WAWU Marketplace Tips.dc.html", "frame": "6 · Two entry points — profile, and under a piece", "mapsTo": "TipSheet trigger points (out of this screen's own files, but the Sheet it opens is in scope)" },
+    { "source": "design/screens/WAWU Marketplace Tips.dc.html", "frame": "7 · Tip sheet — presets, custom amount, a note", "mapsTo": "tip-sheet-choose" },
+    { "source": "design/screens/WAWU Marketplace Tips.dc.html", "frame": "8 · Tip sent — no access change, said plainly", "mapsTo": "tip-sheet-success" },
+    { "source": "design/screens/desktop/WAWU Desktop Shell.dc.html", "frame": "D8 · Paid questions inbox · three panes", "mapsTo": "questions-desktop-loading / questions-desktop-* / question-detail-awaiting / question-detail-answered" }
+  ],
+  "uiStatesDesignedNotes": [
+    "Frame '1 · Entry on her profile — price and promise together' in WAWU Paid DM.dc.html, and Creator DM Earnings frames 1 (Settings), 5 (Earnings), 6 (KYC pending) are excluded here — they belong to the profile-own-and-public, messages-settings, and earnings/kyc screens respectively, not messages-dm.",
+    "No design frame anywhere in WAWU Marketplace Tips.dc.html specifies a tip-failure state — the design source only shows choose/sheet/sent (frames 6-8). TipSheet.tsx's 'failure' phase (and its accompanying copy 'Nothing was charged. Try again, or pick a different amount.') has no corresponding designed frame at all, on top of being unreachable via the current mock (see tip-sheet-failure above).",
+    "No design frame specifies a 'refunded' state for the desktop QuestionDetail/paid-questions-inbox view (D8's frame only shows awaiting + answered rows) — consistent with question-detail-refunded being coded but unreachable and unseeded in mock data."
+  ],
+  "stubsObserved": ["STUB-1", "STUB-8"]
+}

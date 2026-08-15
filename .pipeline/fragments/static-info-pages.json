@@ -1,0 +1,29 @@
+{
+  "screenId": "static-info-pages",
+  "reads": [],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "success (static render)",
+      "entersWhen": "Always — about/page.tsx, partners/page.tsx, and terms/page.tsx contain zero async calls, zero src/lib/api imports, and zero conditional branches. Each renders a fixed JSX tree (prose text, a PARTNERS.map() over a hardcoded const array, and Section components) synchronously on route mount. There is no fetch, no useState/useEffect data flow, and therefore no loading/empty/error state possible in this screen's own code.",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [],
+  "stubsObserved": [],
+  "notes": {
+    "dataProvenance": "static (per scan-map.json) — confirmed by reading all three uiFiles: about/page.tsx, partners/page.tsx, terms/page.tsx. dataFiles is empty in scan-map and no file imports anything from src/lib/api/ or src/lib/api/mocks/. All content (About's revenue-split prose, the ListRow links to /partners, /privacy/policy, /terms, mailto:hello@wawuafrica.com; Partners' PARTNERS const array of {name, role} objects, one role string using formatNaira(25000) for CAC pricing; Terms' full placeholder legal copy) is hardcoded directly in the .tsx files as literal JSX strings and one local const array — none of it is shaped as, or sourced from, a backend entity.",
+    "designSourceMatch": "No file in design/screens/*.dc.html or design/screens/desktop/WAWU Desktop Shell.dc.html corresponds to About/Partners/Terms by subject — the 24 design source titles (Auth, Communities Credits, Content Detail, Creator DM Earnings, Creator Onboarding, Creator Profile, Explore, Home Feed, Landing Page, Learn, Marketplace Tips, Nav IA Board, Nav Locked, Notifications Search, Paid DM, Profiles Verification, Publishing, Service Apply Mentors, Services, Settings States, Subscription Management, User vs Creator, Desktop Shell, Flow Canvas) do not name or obviously map to a static legal/about/partners info screen. Per task instructions, uiStatesDesigned is left empty rather than guessed or copied from uiStatesHandled.",
+    "authInference": "All three routes live under src/app/(app)/ and are rendered inside AppShell (src/components/layout/AppShell.tsx), which wraps children in SessionProvider and renders the authenticated chrome (AppHeader/DesktopHeader/BottomNav/Sidebar) unconditionally — AppShell itself performs no redirect-if-unauthenticated check. None of the three page files call useSession, creatorGates(), or any auth/session hook directly; they only render ProfileBackButton (a UI nav affordance) and static content. requiresAuth:true reflects placement in the authenticated (app) route group by convention (consistent with every other (app)-scoped screen), not an explicit gate observed in this screen's own code — no role or creator gate is checked here at all.",
+    "haltCondition": "none — scan-map's description (uiFiles present, dataFiles empty, dataProvenance:static) matched the actual files exactly; all three pages read as described."
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "screenId": "creator-studio-create",
+  "reads": [
+    {
+      "entity": "ContentItem (creator library row)",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "type", "type": "ContentType ('video'|'course'|'audio'|'pdf'|'image'|'template')", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "meta", "type": "string (pre-formatted display line, e.g. 'PDF · ₦1,500 · 34 sold')", "nullable": false },
+        { "name": "price", "type": "number (naira, 0 = free)", "nullable": false },
+        { "name": "status", "type": "ContentStatus ('live'|'review'|'rejected')", "nullable": false },
+        { "name": "earned", "type": "number (naira, lifetime earnings — paid+live items only)", "nullable": true },
+        { "name": "activity", "type": "string (sales/views summary, e.g. '34 sold', '1,204 views')", "nullable": true },
+        { "name": "isFirstUpload", "type": "boolean", "nullable": true },
+        { "name": "rejectionReason", "type": "string", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "client-side status filter tabs: all | live | review | rejected (ContentLibrary component, no server params sent)"
+      ],
+      "pagination": "none — full list fetched and held in state, no page/cursor param, no infinite scroll"
+    },
+    {
+      "entity": "ContentItem (single, for resubmit prefill)",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "type", "type": "ContentType", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "isFirstUpload", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["looked up by id from the same in-memory libraryItems array (not a distinct network call in the mock — creator-content.ts's contentApi.getLibraryItem exists but /create/new/page.tsx reads libraryItems.find() directly, not through contentApi)"],
+      "pagination": "n/a"
+    },
+    {
+      "entity": "Session.creator (gate + slot/tier state)",
+      "fields": [
+        { "name": "tier", "type": "CreatorTier ('basic'|'pro')", "nullable": false },
+        { "name": "subscriptionPaid", "type": "boolean", "nullable": false },
+        { "name": "kyc", "type": "KycStatus ('not_started'|'pending'|'approved'|'rejected')", "nullable": false },
+        { "name": "slotsUsed", "type": "number", "nullable": false },
+        { "name": "slotsTotal", "type": "number", "nullable": false },
+        { "name": "dmPrice", "type": "number", "nullable": false },
+        { "name": "dmEnabled", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "n/a — read synchronously off currentSession (in-memory mock singleton), not fetched via an async API call anywhere in this screen's files. creatorGates() derives isCreator/canUpload/canEarn/awaitingKyc/slotsRemaining from this."
+    },
+    {
+      "entity": "Plan (subscription tier pricing/slots, static config, not a network read)",
+      "fields": [
+        { "name": "tier", "type": "CreatorTier", "nullable": false },
+        { "name": "price", "type": "number (naira/year)", "nullable": false },
+        { "name": "slots", "type": "number", "nullable": false },
+        { "name": "freeSlots", "type": "number", "nullable": false },
+        { "name": "split", "type": "number (creator revenue-share percent)", "nullable": false },
+        { "name": "features", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "single (keyed by tier, from src/types/subscription.ts PLANS constant)",
+      "filtersOrSort": [],
+      "pagination": "n/a — hardcoded module constant, not fetched. Screen only ever reads PLANS.basic/PLANS.pro/PLANS[tier]; used for slot counts, upgrade-sheet copy, and the live 85%/90% earnings math in the price step."
+    }
+  ],
+  "actions": [
+    {
+      "name": "contentApi.getLibrary",
+      "kind": "custom",
+      "entity": "ContentItem",
+      "payload": [],
+      "expectedResponse": { "entity": "ContentItem", "cardinality": "list" }
+    },
+    {
+      "name": "contentApi.getLibraryItem",
+      "kind": "custom",
+      "entity": "ContentItem",
+      "payload": [{ "name": "id", "type": "string" }],
+      "expectedResponse": { "entity": "ContentItem", "cardinality": "single (or undefined if not found)" }
+    },
+    {
+      "name": "contentApi.publish",
+      "kind": "create",
+      "entity": "ContentItem",
+      "payload": [
+        { "name": "type", "type": "ContentType" },
+        { "name": "title", "type": "string" },
+        { "name": "meta", "type": "string (client-composed display string, e.g. 'PDF or book · free' or 'Video · ₦1,500')" },
+        { "name": "price", "type": "number (naira; wizard forces 0 when firstUpload is true or the Free toggle is selected)" }
+      ],
+      "expectedResponse": { "entity": "ContentItem (status forced to 'review' server-side in the mock)", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "creatorGates(currentSession).isCreator — required by all three routes (create/page, create/library/page, create/new/page); accountType must be 'creator' AND a non-null creator record must exist, else an EmptyState routes the user to /onboarding",
+      "creatorGates(currentSession).canUpload (derived from creator.subscriptionPaid) — the second, independent gate checked by all three routes after isCreator; false routes to /subscription. KYC status is explicitly NOT checked anywhere in this screen — awaitingKyc creators reach the wizard/hub/library normally.",
+      "PublishingWizard additionally reads gates.slotsUsed/gates.slotsTotal (post-isCreator/canUpload) to compute and display 'Uses slot N of T' — not a gate itself."
+    ]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": true,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "not-a-creator gate (CreatePage, LibraryPage, NewContentPage)",
+      "entersWhen": "creatorGates(currentSession).isCreator === false, i.e. currentSession.accountType !== 'creator' or creator is null",
+      "reachable": "unknown — currentSession is a single mutable mock singleton hardcoded to accountType:'creator' with a non-null creator object (src/lib/api/mocks/session.ts). The only way to flip accountType to 'user' at runtime today is the DEV-ONLY setAccountType() switch (STUB-1, stubs.json), which is not wired to any real signup/account-type-selection flow reachable from these three files. Once a real backend supplies session.accountType, this state becomes reachable in production for genuine user-account visitors; today it is reachable only via the dev switch."
+    },
+    {
+      "state": "subscription-not-paid gate (CreatePage, LibraryPage, NewContentPage)",
+      "entersWhen": "creatorGates(currentSession).canUpload === false, i.e. creator.subscriptionPaid === false",
+      "reachable": "unknown — same constraint as above: currentSession.creator.subscriptionPaid is hardcoded true and the only mutator is the DEV-ONLY setSubscriptionPaid() switch (STUB-1). CreatorOnboarding.tsx also mutates this directly rather than through subscriptionApi (STUB-3), so even the 'real' onboarding flow bypasses an API round trip. Reachable in production only once a real subscription-purchase endpoint sets this server-side."
+    },
+    {
+      "state": "CreateHub — type picker, slots available",
+      "entersWhen": "isCreator && canUpload && slotsUsed < slotsTotal (slotFree prop true)",
+      "reachable": "yes — default mock session state (pro tier, slotsUsed:4 of 7) lands here directly."
+    },
+    {
+      "state": "CreateHub — slots-full sheet",
+      "entersWhen": "user taps any content-type tile or the 'Continue with video' CTA while slotFree is false (slotsUsed >= slotsTotal); component-local useState, not derived from a fresh API read",
+      "reachable": "yes, but only by first using the DEV-ONLY tier/slot switches to push slotsUsed to slotsTotal, since the default mock session (4 of 7) starts with room. Once real usage accrues via real publishes this is naturally reachable."
+    },
+    {
+      "state": "ContentLibrary — loading (skeleton)",
+      "entersWhen": "items === null, i.e. between mount and contentApi.getLibrary() resolving",
+      "reachable": "yes — always passed through briefly since mockRequest has a simulated delay; will remain reachable with a real async GET."
+    },
+    {
+      "state": "ContentLibrary — error (ErrorState with retry)",
+      "entersWhen": "contentApi.getLibrary() promise rejects, sets error=true",
+      "reachable": "unknown in mock mode — the mock getLibrary() (mockRequest([...libraryItems])) never rejects, so this state is currently unreachable through normal use; only a real backend returning a 4xx/5xx (or a thrown network error once try-fetch is live) would trigger it. Structurally wired correctly, just never exercised today."
+    },
+    {
+      "state": "ContentLibrary — empty (implicit: filtered list renders nothing)",
+      "entersWhen": "items resolves to [] or the active status filter matches zero items",
+      "reachable": "yes for the filter case (e.g. filtering to 'rejected' when nothing is rejected is trivially reachable by picking a tab); the true empty-list case (items.length === 0) is unreachable in mock mode because libraryItems is a hardcoded non-empty array with no delete/remove action wired anywhere in this screen. Note: there is no dedicated EmptyState render for either case — the item map simply produces nothing, no explicit empty-state UI exists for this screen's library list."
+    },
+    {
+      "state": "PublishingWizard — Upload step (step 0)",
+      "entersWhen": "default wizard entry state, or after Submitted→'Upload another'",
+      "reachable": "yes"
+    },
+    {
+      "state": "PublishingWizard — Free preview step (step 1)",
+      "entersWhen": "user taps 'Set the preview' from step 0",
+      "reachable": "yes"
+    },
+    {
+      "state": "PublishingWizard — Details step (step 2)",
+      "entersWhen": "user taps 'Continue' from step 1",
+      "reachable": "yes"
+    },
+    {
+      "state": "PublishingWizard — Price step, firstUpload=true (forced free)",
+      "entersWhen": "firstUpload prop true (derived: resubmitItem.isFirstUpload, or searchParams.first==='1', or !hasPublished i.e. no library item has status 'live' yet)",
+      "reachable": "yes via direct URL (?first=1) or by reaching /create/new with a mock session/library state with zero 'live' items; the default mock library already has one 'live' item so hasPublished is true by default — reachable mainly via query param or after manipulating mock data."
+    },
+    {
+      "state": "PublishingWizard — Price step, paid toggle (Free|Paid)",
+      "entersWhen": "firstUpload=false; user has independent Free/Paid segmented control, defaults to Paid (paid=!firstUpload)",
+      "reachable": "yes"
+    },
+    {
+      "state": "PublishingWizard — publish in-flight (loading button)",
+      "entersWhen": "submit() called, publishing=true until contentApi.publish() settles",
+      "reachable": "yes"
+    },
+    {
+      "state": "PublishingWizard — publish error (ErrorState, 'Back to pricing')",
+      "entersWhen": "contentApi.publish() throws — mock throws ApiError in three cases: (a) creator is null [403, unreachable given the two gates already passed], (b) firstUpload && item.price>0 [400 — unreachable through the UI since PriceStep disables the Paid toggle whenever firstUpload is true, so price can never be nonzero here], (c) inUse >= creator.slotsTotal [409, all-slots-in-use at actual submit time, distinct from CreateHub's own pre-check]",
+      "reachable": "yes for case (c) only, via the dev slot switches or organic slot exhaustion; (a) and (b) are guarded out by the UI itself and only reachable by calling contentApi.publish() directly, bypassing the component."
+    },
+    {
+      "state": "PublishingWizard — Submitted / under-review confirmation",
+      "entersWhen": "contentApi.publish() resolves, submitted=true",
+      "reachable": "yes"
+    },
+    {
+      "state": "PublishingWizard — resubmit mode (title/type prefilled, 'Fix ·' header, 'Resubmit for review' CTA)",
+      "entersWhen": "searchParams.resubmit is set and matches a libraryItems entry, passed to PublishingWizard as the resubmit prop",
+      "reachable": "yes, from ContentLibrary's 'Fix and resubmit' action on a rejected item."
+    },
+    {
+      "state": "PublishingWizard desktop (xl breakpoint) — two-column layout with live buyer-facing preview card",
+      "entersWhen": "viewport >= xl (Tailwind breakpoint), rendered in parallel with the mobile flow via hidden/xl:flex — not a separate route or fetch",
+      "reachable": "yes, purely CSS-driven; same underlying state as the mobile step machine, just displayed differently (desktop 'step' progress is recomputed from field-completeness, not the mobile `step` index)."
+    }
+  ],
+  "uiStatesDesigned": [
+    { "frame": "1 · Type picker — grouped by how it is delivered", "matchesHandled": "CreateHub — type picker, slots available" },
+    { "frame": "2 · Stream upload — progress plus thumbnail choice", "matchesHandled": "PublishingWizard — Upload step (video/course variant)" },
+    { "frame": "3 · Download upload — file done, cover next", "matchesHandled": "PublishingWizard — Upload step (pdf/audio/image/template variant)" },
+    { "frame": "4 · Preview step — creator decides the giveaway", "matchesHandled": "PublishingWizard — Free preview step" },
+    { "frame": "5 · Details", "matchesHandled": "PublishingWizard — Details step" },
+    { "frame": "6 · Paid — earnings computed live, Pro upside stated", "matchesHandled": "PublishingWizard — Price step, paid toggle" },
+    { "frame": "6b · First upload — explained, not silently blocked", "matchesHandled": "PublishingWizard — Price step, firstUpload=true" },
+    { "frame": "7 · Slots full — upgrade, or free one up", "matchesHandled": "CreateHub — slots-full sheet" },
+    { "frame": "8 · Submitted", "matchesHandled": "PublishingWizard — Submitted / under-review confirmation" },
+    { "frame": "9 · Content list — every state, with sales", "matchesHandled": "ContentLibrary — live/review/rejected rows with earnings/activity; design shows all three status pills plus earnings on live rows, matching CreatorUploadCard" }
+  ],
+  "stubsObserved": []
+}

@@ -1,0 +1,88 @@
+{
+  "screenId": "onboarding",
+  "halt": {
+    "hit": true,
+    "reason": "scan-map.json's 'onboarding' entry (title 'Account-type / Interests Onboarding') declares dataFiles ['src/lib/auth/session-provider.tsx (setAccountType/setInterests)'], implying an account-type-and-interests picker screen. The actual route file src/app/(focused)/onboarding/page.tsx renders ONLY `<CreatorOnboarding />` (src/components/onboarding/CreatorOnboarding.tsx) — a tier-pick-and-pay subscription flow that never imports useSession/session-provider.tsx and never calls setAccountType or setInterests. Those two functions are real, but are called from a different screen entirely: src/app/(auth)/sign-up/components/SignUpFlow.tsx (scan-map id 'auth-flows'), which is out of my scope for this fragment. This fragment therefore documents the code actually reachable at the /onboarding route (CreatorOnboarding.tsx + src/lib/api/subscription.ts + src/lib/api/mocks/session.ts), not the account-type/interests picker the scan-map entry describes. This is the same real component covered by scan-map's separate 'creator-onboarding-subscription-signup' entry — the two scan-map entries appear to describe the same physical screen with different (and partially incorrect) framing."
+  },
+  "reads": [
+    {
+      "entity": "Plan",
+      "fields": [
+        { "name": "tier", "type": "\"basic\"|\"pro\"", "nullable": false },
+        { "name": "price", "type": "integer (naira, whole)", "nullable": false },
+        { "name": "slots", "type": "number", "nullable": false },
+        { "name": "freeSlots", "type": "number", "nullable": false },
+        { "name": "split", "type": "number (percent, e.g. 85 or 90)", "nullable": false },
+        { "name": "features", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["indexed by tier via PLANS[tier], a client-side constant from src/types/subscription.ts — not fetched from any API in this component"],
+      "pagination": "none"
+    }
+  ],
+  "actions": [
+    {
+      "name": "subscribe",
+      "kind": "create",
+      "entity": "Subscription",
+      "payload": [
+        { "name": "tier", "type": "\"basic\"|\"pro\"", "nullable": false }
+      ],
+      "expectedResponse": {
+        "entity": "Subscription",
+        "cardinality": "single"
+      }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": false,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "value",
+      "entersWhen": "initial mount — useState<Step>(\"value\") default; also reached via router.back()-adjacent back-nav from 'tier' (FlowHeader onBack sets step back to 'value' when step !== 'value')",
+      "reachable": "yes"
+    },
+    {
+      "state": "tier",
+      "entersWhen": "user taps 'Choose a tier' button on the 'value' step (setStep(\"tier\"))",
+      "reachable": "yes"
+    },
+    {
+      "state": "confirm",
+      "entersWhen": "user picks Basic/Pro and taps 'Continue with {tier} — {price}' on the 'tier' step (setStep(\"confirm\"))",
+      "reachable": "yes"
+    },
+    {
+      "state": "processing",
+      "entersWhen": "user taps 'Pay {price}' on the 'confirm' step; pay() sets step to 'processing' before awaiting subscriptionApi.subscribe(tier)",
+      "reachable": "yes"
+    },
+    {
+      "state": "success",
+      "entersWhen": "subscriptionApi.subscribe(tier) promise resolves (mockRequest always resolves after ~700ms, never rejects) — pay() then calls the DEV-ONLY setSubscriptionPaid(true)/setCreatorTier(tier) mock-session mutators (see stubsObserved STUB-3) and setStep(\"success\")",
+      "reachable": "yes"
+    },
+    {
+      "state": "failed",
+      "entersWhen": "user taps the 'Simulate a failed payment' link on the 'confirm' step (explicitly commented '/** DEV ONLY — remove when the session endpoint is live. */', onClick={() => setStep(\"failed\")})",
+      "reachable": "no — the only trigger into this state is a dev-only simulate link (STUB-4); subscriptionApi.subscribe() in mocks always resolves successfully via mockRequest and has no failure branch, so once a real backend/payment provider replaces the mock, this screen has NO real code path that reaches the failed state unless one is newly wired to an actual declined-charge response from subscribe()/Flutterwave verify"
+    }
+  ],
+  "uiStatesDesigned": [
+    { "state": "hero/intro — \"From user to creator, end to end\"", "source": "design/screens/WAWU Creator Onboarding.dc.html" },
+    { "state": "value — \"Get paid for what you already know\" / \"Uploading is for creators\" / Two steps explainer", "source": "design/screens/WAWU Creator Onboarding.dc.html" },
+    { "state": "tier — \"Choose your tier\" (Basic/Pro toggle, Billed yearly)", "source": "design/screens/WAWU Creator Onboarding.dc.html" },
+    { "state": "confirm — \"Confirm and pay\" (Total today, Billed yearly)", "source": "design/screens/WAWU Creator Onboarding.dc.html" },
+    { "state": "processing — \"Confirming your payment\"", "source": "design/screens/WAWU Creator Onboarding.dc.html" },
+    { "state": "success — \"You are on Pro\"", "source": "design/screens/WAWU Creator Onboarding.dc.html" },
+    { "state": "failed — \"Payment did not go through\"", "source": "design/screens/WAWU Creator Onboarding.dc.html" }
+  ],
+  "stubsObserved": ["STUB-3", "STUB-4"]
+}

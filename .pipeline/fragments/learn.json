@@ -1,0 +1,162 @@
+{
+  "screenId": "learn",
+  "reads": [
+    {
+      "entity": "LearnEntitlement",
+      "fields": [
+        { "name": "tier", "type": "\"basic\" | \"pro\" (CreatorTier)", "nullable": false },
+        { "name": "isCreator", "type": "boolean", "nullable": false },
+        { "name": "freeCoursesTotal", "type": "number", "nullable": false },
+        { "name": "freeCoursesUsed", "type": "number", "nullable": false },
+        { "name": "freeCoursesRemaining", "type": "number", "nullable": false },
+        { "name": "enrolledCourseIds", "type": "string[]", "nullable": false },
+        { "name": "progressByCourseId", "type": "Record<string, number> (0-100 per courseId, only set when known)", "nullable": false },
+        { "name": "canDownloadPlaybook", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "SEAM: GET /api/hub/learn/entitlement. tier is computed client-side from creatorGates(currentSession).tier ?? 'basic' — even when isCreator is false. freeCoursesTotal is 0 whenever isCreator is false (plain 'user' accounts get zero free-course slots, so getCourseEntitlementState always returns 'exhausted' for them). freeCoursesTotal is 1 for basic tier, 3 for pro tier per freeCoursesTotalFor(). canDownloadPlaybook is hardcoded true in the mock (never varies) — the mock never actually gates the playbook download by entitlement despite the field existing. The gate consulted is creatorGates().isCreator / .tier — NOT .canUpload or .canEarn — so an accountType:'creator' record with subscriptionPaid:false is not distinguished from one that has paid; only accountType + the stored tier value drive the free-course count here."
+    },
+    {
+      "entity": "LearnCourse",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "hours", "type": "number", "nullable": false },
+        { "name": "certificate", "type": "boolean", "nullable": false },
+        { "name": "overview", "type": "string", "nullable": false },
+        { "name": "whatItCovers", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — full list of 6 courses returned in one call, no page/cursor params, no infinite scroll",
+      "notes": "SEAM: GET /api/hub/learn/courses. Landing page (learn/page.tsx) shows courses.slice(0,3) — client-side truncation, not a server-side 'featured' filter. No price field anywhere: courses have no in-app Naira price, only a free-course-slot entitlement."
+    },
+    {
+      "entity": "LearnCourse",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "hours", "type": "number", "nullable": false },
+        { "name": "certificate", "type": "boolean", "nullable": false },
+        { "name": "overview", "type": "string", "nullable": false },
+        { "name": "whatItCovers", "type": "string[]", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "SEAM comment says 'GET /api/hub/content/:id' (both in learn.ts and mocks/learn.ts) — this looks like a copy-paste mismatch against the content-detail domain's endpoint; the actual mock function (getMockCourse) looks up MOCK_COURSES by id and returns LearnCourse | null, an entirely different shape from the Content entity used elsewhere. Flagged as a discrepancy for reconciliation, not silently treated as /api/hub/content/:id. Returns null when id is not found (drives the 'course not found' UI state)."
+    },
+    {
+      "entity": "Playbook",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "pages", "type": "number", "nullable": false },
+        { "name": "format", "type": "string (e.g. \"PDF\")", "nullable": false },
+        { "name": "description", "type": "string", "nullable": false },
+        { "name": "chapters", "type": "{ title: string; pages: string }[]", "nullable": false },
+        { "name": "downloadCount", "type": "number", "nullable": false },
+        { "name": "readingSections", "type": "{ heading: string; body: string }[]", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "notes": "SEAM: GET /api/hub/learn/playbook. There is exactly one playbook in the mock (MOCK_PLAYBOOK, id 'pb-business') — the UI never fetches a playbook by id, always the singleton. readingSections powers the in-app 'Read here' toggle view; chapters power the overview 'Inside' table of contents."
+    },
+    {
+      "entity": "LearnGuide",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "kind", "type": "\"country\" | \"article\" | \"template\"", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "updated", "type": "string (freeform label, e.g. \"Updated July\")", "nullable": false },
+        { "name": "country", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "subtitle", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "readMinutes", "type": "number", "nullable": true, "note": "when kind==='country' or 'article'" },
+        { "name": "dutyLabel", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "dutyCaption", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "borderDaysLabel", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "borderDaysCaption", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "whyFirstHeading", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "whyFirstBody", "type": "string", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "whatYouNeed", "type": "string[]", "nullable": true, "note": "only when kind==='country'" },
+        { "name": "crossSell", "type": "{ heading: string; body: string; href: string; label: string }", "nullable": true, "note": "only when kind==='country' — always the same static NEPC_CROSS_SELL object on every country guide in the mock" },
+        { "name": "summary", "type": "string", "nullable": true, "note": "only when kind==='article'" },
+        { "name": "sections", "type": "{ heading: string; body: string }[]", "nullable": true, "note": "only when kind==='article'" },
+        { "name": "fileCount", "type": "number", "nullable": true, "note": "only when kind==='template'" },
+        { "name": "description", "type": "string", "nullable": true, "note": "only when kind==='template'" }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["client-side filter by kind==='country' on the country-guides list page; client-side find-by-id on the guide-detail page — both operate on the same single GET /api/hub/learn/guides response, no server-side kind or id query param exists"],
+      "pagination": "none — 12 country guides + 1 article + 1 template returned in one call",
+      "notes": "SEAM: GET /api/hub/learn/guides. Discriminated union on `kind`. All 12 country guides in the mock share the exact same crossSell object (NEPC_CROSS_SELL) by reference."
+    }
+  ],
+  "actions": [
+    {
+      "name": "enrolInCourse",
+      "kind": "create",
+      "entity": "LearnEntitlement (course enrollment / free-slot usage)",
+      "payload": [
+        { "name": "courseId", "type": "string", "note": "sent as a path param per the SEAM comment (POST /api/hub/learn/courses/:id/enrol), not a body field" }
+      ],
+      "expectedResponse": { "entity": "LearnEntitlement", "cardinality": "single" },
+      "notes": "SEAM: POST /api/hub/learn/courses/:id/enrol. Triggered from EnrolCourseCta's CTA button, only when alreadyEnrolled is false (idempotent no-op client-side otherwise — mock is also idempotent server-side). The mock computes `cap` (freeCoursesTotalFor(tier) or 0) CLIENT-SIDE in learn.ts and passes it into enrolInCourseMock purely for local validation ('if slot available') — a real backend must derive the cap itself server-side from the creator's own tier/subscription record, never accept it from the client. After the call resolves (or is skipped because already enrolled), the CTA unconditionally opens `alisonHandoffUrl(courseId)` (a client-only string template, `https://alison.com/course/:id` — not a backend call) in a new tab. Enrolling does not touch Naira anywhere — no price, no wallet, no purchase record; it only spends a subscription-tier perk slot."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["user (accountType='user', isCreator=false, freeCoursesTotal always 0)", "creator (accountType='creator', tier='basic'|'pro', freeCoursesTotal 1 or 3)"],
+    "gateChecked": "creatorGates(currentSession).isCreator and .tier — NOT .canUpload or .canEarn. The Learn screen is reachable and browsable by any logged-in account; only the free-course entitlement math branches on isCreator/tier. Neither subscriptionPaid nor kycStatus is read directly by this screen's data layer (per CLAUDE.md's rule to always go through creatorGates(), but this screen only consumes two of its five exposed fields)."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": true,
+    "downloadsNote": "Playbook page and TemplatePack guide detail both render a DownloadButton (component out of this screen's read scope, not in uiFiles/dataFiles) for the PDF playbook and the template-pack files respectively; no download endpoint or SEAM comment exists in learn.ts/mocks/learn.ts for the actual file bytes — only playbook.downloadCount (a read-only counter) is modeled. A real download endpoint contract is implied by the UI but not documented anywhere in this screen's data layer.",
+    "externalHandoff": "Course consumption itself is 100% external: alisonHandoffUrl() opens https://alison.com/course/:id in a new tab. There is no in-app course player and no PPV unlock — enrolling only spends the WAWU-tracked entitlement slot, the actual course content lives entirely on Alison."
+  },
+  "uiStatesHandled": [
+    { "state": "landing-loading", "entersWhen": "learn/page.tsx: data === null before Promise.all([entitlement, courses, playbook, guides]) resolves", "reachable": "yes" },
+    { "state": "landing-error", "entersWhen": "learn/page.tsx: the Promise.all(...).catch() fires, setting error to 'We couldn't load Learn.'", "reachable": "no — getLearnEntitlement/getCourses/getPlaybook/getGuides are pure mock delegation (mockRequest/plain awaits) and never throw in the current mock-driven build; this path only becomes reachable once a real backend can return a network/5xx failure" },
+    { "state": "landing-success", "entersWhen": "learn/page.tsx: data is set after all four reads resolve", "reachable": "yes" },
+    { "state": "courses-list-loading", "entersWhen": "courses/page.tsx: !courses || !entitlement before Promise.all resolves", "reachable": "yes" },
+    { "state": "courses-list-error", "entersWhen": "courses/page.tsx: catch fires, setting error to 'We couldn't load courses.'", "reachable": "no — same pure-mock-delegation reasoning as landing-error" },
+    { "state": "courses-list-success", "entersWhen": "courses/page.tsx: both courses and entitlement are set", "reachable": "yes" },
+    { "state": "course-detail-loading", "entersWhen": "courses/[id]/page.tsx: course === undefined || !entitlement (initial/reload state)", "reachable": "yes" },
+    { "state": "course-detail-error", "entersWhen": "courses/[id]/page.tsx: catch fires, setting error to 'We couldn't load this course.'", "reachable": "no — getCourse/getLearnEntitlement never throw in the mock" },
+    { "state": "course-detail-not-found", "entersWhen": "courses/[id]/page.tsx: course === null, i.e. getMockCourse(id) found no match in MOCK_COURSES for the requested :id", "reachable": "yes — genuinely reachable by navigating to any id not in the 6-course mock list (stale link, typo, deleted course)" },
+    { "state": "course-detail-success", "entersWhen": "courses/[id]/page.tsx: course is a non-null LearnCourse and entitlement is loaded", "reachable": "yes" },
+    { "state": "course-entitlement-enrolled", "entersWhen": "getCourseEntitlementState: entitlement.enrolledCourseIds.includes(courseId) — surfaces as alreadyEnrolled=true, CTA reads 'Continue on Alison'", "reachable": "yes — mock seeds enrolledCourseIds=['c-bookkeeping'] at module load, so this state is hit immediately for that course on a creator account, and for any course after a successful enrolInCourse call" },
+    { "state": "course-entitlement-available", "entersWhen": "getCourseEntitlementState: courseId not enrolled AND entitlement.freeCoursesRemaining > 0", "reachable": "yes, but only for isCreator=true accounts — freeCoursesTotal is always 0 for accountType='user', so freeCoursesRemaining can never exceed 0 and this state is structurally unreachable for plain user accounts" },
+    { "state": "course-entitlement-exhausted", "entersWhen": "getCourseEntitlementState: courseId not enrolled AND entitlement.freeCoursesRemaining === 0", "reachable": "yes — the default/only reachable state for every course on a plain user account, and the state a Basic-tier creator falls into once their single free slot is spent" },
+    { "state": "enrol-cta-pending", "entersWhen": "EnrolCourseCta: pending===true, set for the duration of the enrolInCourse() await (skipped entirely if alreadyEnrolled)", "reachable": "yes" },
+    { "state": "guides-country-list-loading", "entersWhen": "guides/page.tsx: guides === null before getGuides() resolves", "reachable": "yes" },
+    { "state": "guides-country-list-error", "entersWhen": "guides/page.tsx: catch fires, setting error to 'We couldn't load country guides.'", "reachable": "no — getGuides never throws in the mock" },
+    { "state": "guides-country-list-success", "entersWhen": "guides/page.tsx: guides is set (filtered client-side to kind==='country')", "reachable": "yes" },
+    { "state": "guide-detail-loading", "entersWhen": "guides/[id]/page.tsx: guide === undefined before getGuides() resolves", "reachable": "yes" },
+    { "state": "guide-detail-error", "entersWhen": "guides/[id]/page.tsx: catch fires, setting error to 'We couldn't load this guide.'", "reachable": "no — getGuides never throws in the mock" },
+    { "state": "guide-detail-not-found", "entersWhen": "guides/[id]/page.tsx: guide === null, i.e. no entry in the fetched guides list matches params.id", "reachable": "yes — reachable via a stale/mistyped guide id" },
+    { "state": "guide-detail-country", "entersWhen": "guides/[id]/page.tsx: guide.kind === 'country'", "reachable": "yes" },
+    { "state": "guide-detail-article", "entersWhen": "guides/[id]/page.tsx: guide.kind === 'article'", "reachable": "yes" },
+    { "state": "guide-detail-template", "entersWhen": "guides/[id]/page.tsx: guide.kind === 'template'", "reachable": "yes" },
+    { "state": "playbook-loading", "entersWhen": "playbook/page.tsx: playbook === null before getPlaybook() resolves", "reachable": "yes" },
+    { "state": "playbook-error", "entersWhen": "playbook/page.tsx: catch fires, setting error to 'We couldn't load the playbook.'", "reachable": "no — getPlaybook never throws in the mock" },
+    { "state": "playbook-overview", "entersWhen": "playbook/page.tsx: mode==='overview' (default state on load, and after clicking 'Back to overview')", "reachable": "yes" },
+    { "state": "playbook-reading", "entersWhen": "playbook/page.tsx: mode==='reading', set by clicking the 'Read here' button — pure client-side toggle, no data fetch involved", "reachable": "yes" }
+  ],
+  "uiStatesDesigned": [
+    { "frame": "1 · Landing — entitlement first, then both kinds", "describes": "Learn home: entitlement banner ('1 free course available · Comes with your Basic tier' + TierBadge), Start-here Playbook card, Courses section (one row 'Use your free course' StatusPill, one row mid-progress 40% bar), Playbooks-and-guides list (Country guides / article / template rows)" },
+    { "frame": "2 · Course — entitlement, then a named handoff", "describes": "Course detail: HandoffPill('Alison'), title/meta, entitlement panel ('Covered by your tier · This uses your 1 free course' + 'Pro carries three. Basic carries one'), overview, 'What it covers' checklist, sticky 'Enrol on Alison' CTA" },
+    { "frame": "3 · Playbook — free to everyone, download or read", "describes": "Playbook overview: cover thumbnail, PriceChip(free), description, 'Inside' chapter list (5 chapters), download-count strip, side-by-side Download / Read here buttons" },
+    { "frame": "4 · Country guides — the requirement in the subtitle", "describes": "Country guides list: intro copy, ListRow per country (7 shown of 12) with a requirement-style subtitle per row, footer count '12 countries · reviewed quarterly'" },
+    { "frame": "5 · Article — reference that routes into a service", "describes": "Country guide detail (Ghana): title/meta, two StatBlocks (duty %, border days), 'Why Ghana first' section, 'What you need' checklist, NEPC cross-sell card routing to /services/nepc/apply" },
+    { "frame": "6 · Pro — 2 of 3 left, spent slot shown as enrolled", "describes": "Courses list for a Pro-tier creator: entitlement card ('2 of 3 free courses left' with a 3-segment progress bar, TierBadge('pro')), course rows showing one 'Enrolled — free' StatusPill and three 'Use a free course' StatusPills" }
+  ],
+  "uiStatesDesignedNote": "All 6 frames in design/screens/WAWU Learn.dc.html are happy-path/success states only — no loading, error, empty, or 'not found' frame is present anywhere in the design source for this screen. Every loading/error/not-found state listed under uiStatesHandled above is implementation-only, with no corresponding design frame.",
+  "stubsObserved": []
+}

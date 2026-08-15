@@ -1,0 +1,178 @@
+{
+  "screenId": "services-nepc",
+  "reads": [
+    {
+      "entity": "PartnerService",
+      "fields": [
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "icon", "type": "string (IconName)", "nullable": false },
+        { "name": "priceFrom", "type": "string", "nullable": true },
+        { "name": "turnaround", "type": "string", "nullable": true },
+        { "name": "blurb", "type": "string", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["fetched by fixed id 'nepc' (getService(\"nepc\")), hardcoded in page.tsx"],
+      "pagination": "none"
+    },
+    {
+      "entity": "CacBusinessRecord",
+      "fields": [
+        { "name": "businessName", "type": "string", "nullable": false },
+        { "name": "rcNumber", "type": "string", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["implicitly scoped to the current logged-in user (no id param) — getCacBusinessRecord() takes no arguments"],
+      "pagination": "none",
+      "note": "Whole read is nullable: getCacBusinessRecord(): Promise<CacBusinessRecord | null>. UI branches on record being null (renders a 'you need CAC first' warning banner with a link to /services/cac/apply) but the mock (getMockCacBusinessRecord) always returns MOCK_CAC_BUSINESS_RECORD and can never return null."
+    }
+  ],
+  "actions": [
+    {
+      "name": "submitNepcApplication",
+      "kind": "create",
+      "entity": "ServiceApplication (kind: nepc)",
+      "payload": [
+        { "name": "rcNumber", "type": "string", "source": "record.rcNumber (from the CacBusinessRecord read)" },
+        { "name": "exportCategory", "type": "string", "source": "selected from hardcoded EXPORT_CATEGORIES list" },
+        { "name": "mainProduct", "type": "string", "source": "free-text input, trimmed" },
+        { "name": "targetMarkets", "type": "string[]", "source": "multi-select chips from hardcoded MARKET_CANDIDATES list" },
+        { "name": "yearlyVolume", "type": "string", "source": "free-text input, trimmed (e.g. '12 tonnes' — not a typed number)" }
+      ],
+      "expectedResponse": {
+        "entity": "NepcSubmitResponse",
+        "cardinality": "single",
+        "fields": [
+          { "name": "applicationId", "type": "string" },
+          { "name": "reference", "type": "string" }
+        ]
+      }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "note": "No explicit gate check (e.g. creatorGates()) or session read appears in either file in scope. requiresAuth is inferred only from the nature of the data (getCacBusinessRecord() returns 'the applicant's OWN CAC-registered business' with no id param, implying it is resolved server-side from the caller's identity) — not from any visible auth guard in these two files."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": true,
+    "downloads": false,
+    "uploadsNote": "Step 2 ('Documents') presents two upload affordances: 'Product sample photos' (pre-seeded as already 'uploading' on mount) and 'Bank reference letter' (user-triggered via 'Take a photo' / 'Choose file' buttons, doc key reference_letter). Neither calls any function in services.ts or mocks/services.ts — both are pure client-side timers (setInterval/setTimeout) that flip local DocSlot state from empty/uploading to uploaded with a fabricated progress percentage and filename. This is STUB-7 in stubs.json: no real upload endpoint exists or is seam-tagged anywhere for either document. A backend needs a presigned-upload-style endpoint for both documents that this screen currently has no contract for at all."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "service-not-found (services/nepc/page.tsx)",
+      "entersWhen": "getService(\"nepc\") resolves to null, rendering ErrorState 'Service not found'",
+      "reachable": "no",
+      "reason": "id is hardcoded literal 'nepc' and getMockService always finds it in MOCK_SERVICES; the mock can never produce this branch."
+    },
+    {
+      "state": "cac-record loading (apply page step 1)",
+      "entersWhen": "recordState === 'loading', shown as a pulse skeleton block, from mount until getCacBusinessRecord() resolves/rejects",
+      "reachable": "yes",
+      "reason": "mock has an artificial 200ms delay(200), so the loading state is genuinely visible."
+    },
+    {
+      "state": "cac-record error (apply page step 1)",
+      "entersWhen": "getCacBusinessRecord() promise rejects, sets recordState = 'error', renders ErrorState with a Retry button wired to loadRecord()",
+      "reachable": "no",
+      "reason": "getMockCacBusinessRecord() has no throw/reject path — always resolves successfully."
+    },
+    {
+      "state": "cac-record missing (apply page step 1, 'no CAC yet' warning banner)",
+      "entersWhen": "recordState === 'ready' but record is null/falsy — renders a warning banner directing the user to /services/cac/apply, and permanently blocks detailsValid (which requires !!record)",
+      "reachable": "no",
+      "reason": "getMockCacBusinessRecord() always returns the fixed MOCK_CAC_BUSINESS_RECORD object, never null, so a creator without a CAC record can never actually be modeled by the current mock."
+    },
+    {
+      "state": "cac-record ready/found (apply page step 1, success banner)",
+      "entersWhen": "recordState === 'ready' and record is truthy",
+      "reachable": "yes",
+      "reason": "this is the only path the mock can produce."
+    },
+    {
+      "state": "step-1 validation errors (Continue blocked)",
+      "entersWhen": "user clicks Continue on step 1 with mainProduct empty, or markets.length === 0, or yearlyVolume empty (showDetailErrors flips true, per-field inline errors render)",
+      "reachable": "yes",
+      "reason": "pure client-side derived state, no backend involved."
+    },
+    {
+      "state": "document slot: empty",
+      "entersWhen": "docs[key].state === 'empty' — initial state of reference_letter only (dashed drop-zone UI)",
+      "reachable": "yes"
+    },
+    {
+      "state": "document slot: uploading (with % progress bar)",
+      "entersWhen": "sample photos start in this state on mount (INITIAL_DOCS), or reference_letter enters it after 'Take a photo'/'Choose file' is clicked",
+      "reachable": "yes",
+      "reason": "driven by a client-side timer (STUB-7), not a real upload, but the visual state is genuinely reachable in the running app."
+    },
+    {
+      "state": "document slot: uploaded",
+      "entersWhen": "the simulated timer/timeout completes (sample photos reach 100% progress via setInterval; reference_letter resolves after a fixed 600ms setTimeout)",
+      "reachable": "yes",
+      "reason": "same caveat as above — reachable, but backed by a stub, not a real upload confirmation."
+    },
+    {
+      "state": "step-2 Continue disabled",
+      "entersWhen": "!allDocsUploaded (any doc slot not yet in 'uploaded' state)",
+      "reachable": "yes"
+    },
+    {
+      "state": "step-3 review",
+      "entersWhen": "step === 3, no submitError yet — shows editable ReviewRow summary of all entered fields",
+      "reachable": "yes"
+    },
+    {
+      "state": "submit in-flight (loading spinner on Submit button)",
+      "entersWhen": "submitting === true, between clicking 'Submit application' and the promise settling",
+      "reachable": "yes",
+      "reason": "mock has a 700ms delay(700), so this is genuinely visible."
+    },
+    {
+      "state": "submit error (ErrorState 'Couldn't submit', with Retry wired to submit())",
+      "entersWhen": "submitNepcApplication() throws, caught in the try/catch, sets submitError",
+      "reachable": "no",
+      "reason": "submitMockNepcApplication() has no throw/reject path — always resolves successfully."
+    },
+    {
+      "state": "submit success ('You're in the queue', reference shown, Track it / Back to services buttons)",
+      "entersWhen": "result is set from a successful submitNepcApplication() response",
+      "reachable": "yes",
+      "reason": "the only path the mock can produce."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "NEPC apply step 1 — Export details, CAC record pre-filled/found",
+      "source": "design/screens/WAWU Service Apply Mentors.dc.html, frame labeled '2 · NEPC — same pattern, export fields, CAC prefilled'",
+      "note": "This is the only frame in the design sources that is explicitly NEPC-specific. It matches the code's step-1 success-banner render (record found) closely."
+    },
+    {
+      "state": "Documents step — mixed upload states (one done, one uploading, one waiting)",
+      "source": "design/screens/WAWU Service Apply Mentors.dc.html, frame '1b · Documents — one done, one uploading, one waiting'",
+      "note": "Rendered with CAC content (signature.png) rather than NEPC content, but the file's own intro text states CAC and NEPC 'keep the step order they already have — details, documents, review, submit — with one shared progress bar pattern', i.e. this frame is meant to represent the shared documents-step pattern both flows use, not a NEPC-only design."
+    },
+    {
+      "state": "Review step — every row editable",
+      "source": "design/screens/WAWU Service Apply Mentors.dc.html, frame '1c · Review — every row editable'",
+      "note": "Same caveat as above: CAC content shown, declared as the shared step-order pattern with NEPC."
+    },
+    {
+      "state": "Validation errors on step 1/details",
+      "source": "design/screens/WAWU Service Apply Mentors.dc.html, frame '3 · Validation — each error says what to do'",
+      "note": "Shown entirely with CAC-specific field errors (business-name choices), not NEPC's fields (mainProduct/targetMarkets/yearlyVolume). No NEPC-specific validation-error frame exists."
+    },
+    {
+      "state": "Submitted / success screen",
+      "source": "design/screens/WAWU Service Apply Mentors.dc.html, frame '4 · Submitted — reference, cost, and the refund rule'",
+      "note": "This designed frame is CAC-specific and shows a Reference/Paid ₦25,000/Certificate-expected card plus a refund-rule note — none of which apply to NEPC (free to start, no payment, no refund rule; the actual code's success screen only shows a Reference row and a 3–5 day reply promise). No NEPC-specific submitted-state frame exists in the design sources; the code's simpler success screen has no matching designed counterpart."
+    },
+    {
+      "state": "Service detail / landing page before apply (services/nepc/page.tsx)",
+      "source": "design/screens/WAWU Services.dc.html, frame '2 · Live service — apply, review, access'",
+      "note": "Same generic 'live service detail' pattern reused for both CAC and NEPC, but the frame's literal content is CAC's ('How it goes': Apply/Review/Access, StatBlocks for price+turnaround, 'What you get' checklist). The actual services-nepc/page.tsx code renders different copy (a custom 'How it works' 3-step list: 'Tell us what you make' / 'Share where you sell' / 'Talk to the export desk') and omits the StatBlock price/turnaround row and the 'What you get' checklist entirely — so this is the closest matching design frame by structure, not a literal match by content."
+    }
+  ],
+  "stubsObserved": ["STUB-7"]
+}

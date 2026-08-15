@@ -1,0 +1,124 @@
+{
+  "screenId": "purchases",
+  "reads": [
+    {
+      "entity": "Purchase",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "contentId", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "ContentType (\"video\"|\"course\"|\"audio\"|\"pdf\"|\"image\"|\"template\")", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "creatorName", "type": "string", "nullable": false },
+        { "name": "price", "type": "integer (₦, 0 = free)", "nullable": false },
+        { "name": "purchasedAt", "type": "string (ISO-8601 timestamp)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "Client-side only: mobile FILTERS pills (all/video/course/audio/pdf/template/image) filter the already-fetched `items` array in-memory by `contentType` via useMemo — no filter/sort query params are ever sent to the API. No sort control exists; list order is whatever the response returns (mock data is reverse-chronological by purchasedAt, not explicitly re-sorted client-side)."
+      ],
+      "pagination": "None. GET /api/hub/content/purchases returns the full purchases array in one response (PurchasesResponse.items); no page/cursor param, no infinite scroll, no 'load more' — matches conventions.md's offset-pagination default but this screen's mock/seam never exercises it."
+    },
+    {
+      "entity": "ServiceApplication",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "statusLabel", "type": "string (display label, e.g. \"In review\")", "nullable": false },
+        { "name": "reference", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "Desktop-only 'Also tracked' panel calls getOtherApplications(\"\") — an empty excludeId that (per the code's own comment) never matches a real application id, so it degrades into 'return every tracked application', reusing the same mock read the applications-detail page uses for its own 'other applications' rail. No genuine filter is applied for this screen's purpose."
+      ],
+      "pagination": "None observed."
+    },
+    {
+      "entity": "DmThreadSummary",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "creatorName", "type": "string", "nullable": false },
+        { "name": "amount", "type": "integer (₦, DM price snapshot)", "nullable": false },
+        { "name": "status", "type": "DmStatus (\"awaiting_response\"|\"responded\"|\"refunded\")", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "Desktop-only 'Also tracked' panel calls getDmThreads() (full inbox) then filters client-side to status === \"responded\" only — awaiting_response and refunded threads are excluded from this screen entirely; no server-side filter param is sent."
+      ],
+      "pagination": "None observed."
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "Any authenticated account (getPurchases() is called with { authed: true } in the client, i.e. requires a logged-in session)",
+      "No creatorGates() check anywhere on this screen — not creator-specific, not gated by subscriptionPaid or kycStatus"
+    ]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading (initial fetch, mobile skeleton rows + desktop skeleton grid)",
+      "entersWhen": "items === null (before getPurchases() resolves, on mount or after a retry from load())",
+      "reachable": "yes"
+    },
+    {
+      "state": "error",
+      "entersWhen": "getPurchases() promise rejects, caught by the page's own .catch(() => setError(...))",
+      "reachable": "no — src/lib/api/purchases.ts wraps apiFetch in its own try/catch and falls back to mockPurchases (a resolved success) on any failure, so the page-level .catch never fires while the mock fallback exists; in mock mode (USE_MOCKS=true, the current default) apiFetch throws a MockModeError immediately and is swallowed internally before it ever reaches the page. Even once a real backend is wired, this try-fetch-then-mock-fallback pattern means a real backend outage would still silently resolve to stale mock data instead of surfacing this error state, unless the mock fallback is stripped."
+    },
+    {
+      "state": "empty (no purchases matching the current filter, including zero purchases total for a new user)",
+      "entersWhen": "items resolved (non-null) AND filtered.length === 0 — filtered is `items` when filter==='all', else items.filter(contentType match)",
+      "reachable": "yes"
+    },
+    {
+      "state": "success / populated list (mobile ListRow stack; desktop 3-col ContentCard grid)",
+      "entersWhen": "items resolved (non-null) AND filtered.length > 0",
+      "reachable": "yes"
+    },
+    {
+      "state": "'Also tracked' panel loading (desktop-only skeleton, 2 rows)",
+      "entersWhen": "applications === null || questions === null, i.e. before both getOtherApplications(\"\") and getDmThreads() resolve",
+      "reachable": "yes"
+    },
+    {
+      "state": "'Also tracked' panel hidden (renders null, no card at all)",
+      "entersWhen": "applications !== null && questions !== null && applications.length === 0 && questions.length === 0",
+      "reachable": "yes"
+    },
+    {
+      "state": "'Also tracked' panel populated (desktop-only, ListRows for tracked applications + answered paid questions)",
+      "entersWhen": "applications !== null && questions !== null && (applications.length > 0 || questions.length > 0); only rendered at all when filter === 'all'",
+      "reachable": "yes"
+    },
+    {
+      "state": "desktop category-tab filter switch (Content/Courses/Products/Services/Questions)",
+      "entersWhen": "user clicks a DESKTOP_TABS label other than the hardcoded-active 'Content'",
+      "reachable": "no — STUB-9: DESKTOP_TABS is explicitly self-documented in the code as decorative only, 'Content' fixed active, not wired to `filter` state; clicking any other tab does nothing."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "source": "design/screens/WAWU Content Detail.dc.html, frame 7 'My purchases — the verb matches the type' (mobile, 430x932)",
+      "state": "populated list: header (back + title + search icon), filter pill row (All 6/Video/Course/Audio/PDF — note: only 4 type pills shown, design omits Template and Image/Art pills that the shipped FILTERS array includes), ListRow stack (icon, title, 'creator · type' subtitle, verb meta, chevron), and a permanent-ownership info banner ('Everything here is yours permanently, even if the creator takes it down')."
+    },
+    {
+      "source": "design/screens/desktop/WAWU Desktop Shell.dc.html, frame D5 'My purchases' (desktop, 1440x900)",
+      "state": "sticky header (title + search), decorative category tab row (Content/Courses/Products/Services/Questions — 'Content' active), 3-column ContentCard grid with a caption line (price · date · creator) under each card, and a full-width 'Also bought' panel with three ListRows: a service application in review, an answered paid question, AND a WAWUBasket-delivered order ('Lash tray · 20 pairs', 'Delivered by WAWUBasket · 28 Jul', Package icon)."
+    },
+    {
+      "source": "design/screens/WAWU Nav IA Board.dc.html, WAWU User vs Creator.dc.html, WAWU Creator Onboarding.dc.html, WAWU Profiles Verification.dc.html",
+      "state": "nav-entry-point only: 'My purchases' ListRow inside Profile, with a subtitle/meta count of unlocked pieces (e.g. '6 pieces unlocked', meta='6') — establishes the entry affordance and badge count but is not itself a purchases-screen state."
+    }
+  ],
+  "gapNotes": [
+    "The desktop design's 'Also bought' panel includes a WAWUBasket order row, but the shipped code's AlsoTracked component deliberately omits WAWUBasket/WAWUBeauty items — the code's own comment states 'those are handoff-only external apps (CLAUDE.md) with no order-tracking data model here.' This is a genuine designed-vs-handled gap, not a mock/backend gap: no order-tracking entity for external marketplace purchases exists anywhere in this screen's data layer, and per CLAUDE.md's WAWUBasket/WAWUBeauty handoff-only rule, building one would likely be out of scope rather than a missing backend contract.",
+    "No loading, empty, or error frame exists in either design source for this screen — both frames only depict the fully-populated success state; loading/empty/error handling in the shipped code has no design-source backing to verify against, it is purely a code-level UI-states convention (per conventions.md's 'required UI states: loading/empty/error-with-retry/success on every data surface')."
+  ],
+  "stubsObserved": ["STUB-9"]
+}

@@ -1,0 +1,151 @@
+{
+  "screenId": "services-cac",
+  "reads": [
+    {
+      "entity": "PartnerService",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "tagline", "type": "string", "nullable": false },
+        { "name": "blurb", "type": "string", "nullable": false },
+        { "name": "icon", "type": "string (IconName)", "nullable": false },
+        { "name": "status", "type": "\"live\" | \"coming\"", "nullable": false },
+        { "name": "turnaround", "type": "string, e.g. \"7–14 days\"", "nullable": true },
+        { "name": "priceFrom", "type": "string, e.g. \"From ₦25,000\" (pre-formatted via formatNaira)", "nullable": true },
+        { "name": "partner", "type": "string, e.g. \"CAC\"", "nullable": true },
+        { "name": "cta", "type": "{ label: string; href: string }", "nullable": true },
+        { "name": "comingNote", "type": "string", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["fetched by fixed id \"cac\" — getService(\"cac\")"],
+      "pagination": "none"
+    },
+    {
+      "entity": "ServiceApplicationTimeline",
+      "fields": [
+        { "name": "stage", "type": "string", "nullable": false },
+        { "name": "status", "type": "\"done\" | \"current\" | \"upcoming\"", "nullable": false },
+        { "name": "note", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["fixed to the CAC service's generic timeline template — getCacTimeline() takes no id/params, so this is not per-application, just the four canned stages shown on the service detail page before applying"],
+      "pagination": "none"
+    }
+  ],
+  "actions": [
+    {
+      "name": "payCacApplication",
+      "kind": "custom",
+      "entity": "ServiceApplication",
+      "payload": [
+        { "name": "registrationType", "type": "\"business_name\" | \"limited_company\"" },
+        { "name": "names", "type": "[string, string, string] (three ranked business-name choices)" },
+        { "name": "nature", "type": "string (one of the client-side NATURE_OPTIONS list)" }
+      ],
+      "expectedResponse": {
+        "entity": "CacPaymentResponse",
+        "cardinality": "single",
+        "fields": [
+          { "name": "result", "type": "\"success\" | \"payment_failed\"" },
+          { "name": "applicationId", "type": "string" },
+          { "name": "reference", "type": "string, e.g. \"WA-CAC-40912\"" },
+          { "name": "amountPaid", "type": "integer (₦)" },
+          { "name": "certificateExpectedBy", "type": "string, display date" }
+        ]
+      }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "note": "Neither file in scope calls creatorGates() or checks accountType/subscriptionPaid/kyc — this flow is presented as available to any authenticated user (creator or otherwise), not gated behind a creator-only check. Auth itself is assumed (no anonymous/logged-out branch rendered), consistent with the app-wide (app) route group."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": true,
+    "downloads": false,
+    "uploadsNote": "apply/page.tsx has three document slots (Valid ID, Signature, Passport photograph). 'Take a photo' / 'Choose file' buttons call addPassportPhoto(), which never opens a real file picker or reads real bytes — it just flips doc state to 'uploading' then 'uploaded' after a setTimeout with a hardcoded filename/size. The signature doc similarly auto-completes via a setInterval progress simulation (STUB-6). No real upload endpoint exists anywhere in services.ts/mocks/services.ts for these three documents — only the final payCacApplication payload (names/nature/registrationType) is SEAM-tagged; the documents themselves are never sent to the mock API layer at all."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "service_not_found",
+      "entersWhen": "getService(\"cac\") resolves to null on the CAC detail page, rendering ErrorState",
+      "reachable": "no",
+      "note": "The route is hardcoded to id \"cac\" and MOCK_SERVICES always contains a \"cac\" entry, so this branch cannot currently occur; only reachable in production if a real backend's /api/hub/services/:id ever omitted the cac service."
+    },
+    {
+      "state": "service_detail_loaded",
+      "entersWhen": "both getService(\"cac\") and getCacTimeline() resolve successfully (default/only path on the server-rendered detail page)",
+      "reachable": "yes"
+    },
+    {
+      "state": "timeline_step_done",
+      "entersWhen": "a ServiceApplicationTimeline entry has status 'done' (renders a filled check circle)",
+      "reachable": "no",
+      "note": "MOCK_CAC_TIMELINE's four entries are status 'current' then three 'upcoming' — no entry is ever 'done', so the done-styled branch in page.tsx is dead code against current mock data."
+    },
+    {
+      "state": "timeline_step_current",
+      "entersWhen": "a ServiceApplicationTimeline entry has status 'current' (shows the 'In progress' StatusPill)",
+      "reachable": "yes"
+    },
+    {
+      "state": "timeline_step_upcoming",
+      "entersWhen": "a ServiceApplicationTimeline entry has status 'upcoming' (numbered, muted)",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply_step1_details",
+      "entersWhen": "default state on entering /services/cac/apply, or navigating back via step rail/Edit",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply_step1_validation_error",
+      "entersWhen": "user clicks Continue on step 1 while validateNames() returns >=1 error (empty name, 'Ltd' on a business_name registration, restricted words, duplicate names)",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply_step2_documents",
+      "entersWhen": "step === 2; each of the three doc slots independently renders empty / uploading (with % + progress bar) / uploaded",
+      "reachable": "yes",
+      "note": "Reachable, but the underlying upload itself is simulated end-to-end (see special.uploadsNote / STUB-6) — no doc state ever reflects a real network call."
+    },
+    {
+      "state": "apply_step2_continue_disabled",
+      "entersWhen": "!allDocsUploaded (at least one of the three docs is not yet in 'uploaded' state)",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply_step3_review",
+      "entersWhen": "step === 3; recap of type/names/nature/doc-count with per-row Edit links back to step 1 or 2",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply_pay_processing",
+      "entersWhen": "confirmed === true and payAndSubmit() is called; payPhase set to 'processing' while payCacApplication() is in flight (button shows loading)",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply_pay_failed",
+      "entersWhen": "payCacApplication() resolves with result !== 'success', or the call throws",
+      "reachable": "no",
+      "note": "payMockCacApplication() in mocks/services.ts is hardcoded to always return { result: \"success\", ... } after a fixed delay and never throws — the ServicePaymentResult union includes 'payment_failed' and the UI fully renders a retry banner ('Your bank didn't confirm the payment...') for it, but nothing in the mock data layer can currently produce that outcome."
+    },
+    {
+      "state": "apply_submitted_success",
+      "entersWhen": "payCacApplication() resolves with result === 'success'; shows reference/amountPaid/certificateExpectedBy and Track it / Back to services actions",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    { "state": "Service detail — live service (apply, review, access)", "source": "design/screens/WAWU Services.dc.html frame 2" },
+    { "state": "Tracking an application (submitted done / under review current / certificate ready upcoming)", "source": "design/screens/WAWU Services.dc.html frame 4" },
+    { "state": "Apply step 1 — Business details", "source": "design/screens/WAWU Service Apply Mentors.dc.html frame 1a" },
+    { "state": "Apply step 2 — Documents (one done, one uploading, one waiting)", "source": "design/screens/WAWU Service Apply Mentors.dc.html frame 1b" },
+    { "state": "Apply step 3 — Review and submit, every row editable", "source": "design/screens/WAWU Service Apply Mentors.dc.html frame 1c" },
+    { "state": "Apply step 1 — Validation errors (each error says what to do)", "source": "design/screens/WAWU Service Apply Mentors.dc.html frame 3" },
+    { "state": "Apply submitted — reference, cost, refund rule (success)", "source": "design/screens/WAWU Service Apply Mentors.dc.html frame 4" }
+  ],
+  "uiStatesDesignedNote": "No design frame depicts a payment-failed/retry state for CAC apply, and none depicts the CAC service-not-found error state — both exist only in the code (apply_pay_failed, service_not_found), consistent with those being the two states also marked reachable:\"no\" above.",
+  "stubsObserved": ["STUB-6"]
+}

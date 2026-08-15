@@ -1,0 +1,121 @@
+{
+  "screenId": "kyc",
+  "reads": [
+    {
+      "entity": "Session.creator",
+      "fields": [
+        { "name": "kyc", "type": "KycStatus (\"not_started\"|\"pending\"|\"approved\"|\"rejected\")", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "Read via creatorGates(currentSession).kycStatus in src/app/(focused)/kyc/page.tsx (server component, synchronous, no network call in mock mode) and passed to KycFlow as initialStatus. This — not kycApi.getStatus() — is what actually determines which view (form/pending/approved/rejected) the screen opens on."
+    },
+    {
+      "entity": "KycSubmission",
+      "fields": [
+        { "name": "country", "type": "string", "nullable": false },
+        { "name": "bvn", "type": "string", "nullable": true },
+        { "name": "nin", "type": "string", "nullable": true },
+        { "name": "nationalIdEquivalent", "type": "string", "nullable": true },
+        { "name": "idDocumentType", "type": "\"passport\"|\"national_id_card\"|\"drivers_licence\"", "nullable": false },
+        { "name": "idDocumentUrl", "type": "string", "nullable": true },
+        { "name": "payoutBankName", "type": "string", "nullable": false },
+        { "name": "payoutAccountNumber", "type": "string", "nullable": false },
+        { "name": "status", "type": "KycStatus", "nullable": false },
+        { "name": "rejectionReason", "type": "string", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "SEAM: GET /api/hub/creator/kyc, defined as kycApi.getStatus() in src/lib/api/kyc.ts. Grepped across src/ — this function is never called anywhere in the app (not by KycFlow.tsx, not by page.tsx). It is dead/unused code in the data layer; the screen's real source of initial status is Session.creator.kyc above, not this endpoint. Flagged as a gap: a future backend implementing GET /api/hub/creator/kyc has no client caller to validate against from this screen."
+    }
+  ],
+  "actions": [
+    {
+      "name": "submit",
+      "kind": "create",
+      "entity": "KycSubmission",
+      "payload": [
+        { "name": "country", "value": "\"Nigeria\" (hardcoded literal)" },
+        { "name": "bvn", "value": "\"22123456789\" (hardcoded literal)" },
+        { "name": "nin", "value": "\"98765432101\" (hardcoded literal)" },
+        { "name": "idDocumentType", "value": "\"passport\" (hardcoded literal)" },
+        { "name": "payoutBankName", "value": "\"Guaranty Trust Bank\" (hardcoded literal)" },
+        { "name": "payoutAccountNumber", "value": "\"0123456789\" (hardcoded literal)" },
+        { "name": "status", "value": "\"pending\" (hardcoded literal)" }
+      ],
+      "note": "SEAM: POST /api/hub/creator/kyc, kycApi.submit() in src/lib/api/kyc.ts, called from KycFlow's ReviewStep 'Submit for verification' button. The payload is entirely hardcoded literals in KycFlow.submit() — the visible BVN/NIN <Input defaultValue=...> fields, the doc-type chip row, and the payout bank/account <Input defaultValue=...> fields are all uncontrolled/display-only (defaultValue with no onChange/state wiring), so nothing the user actually types or selects on screen reaches this payload. idDocumentUrl, nationalIdEquivalent, and rejectionReason (all present on the KycSubmission type) are never populated or sent. A real backend integration needs the form actually wired to state before this payload shape is trustworthy evidence of real user input — right now it's a fixed submission regardless of what's on screen. Side effect: kycApi.submit() also calls setKycStatus(updated.status) against src/lib/api/mocks/session.ts so currentSession.creator.kyc stays in sync (this is how creatorGates() elsewhere, e.g. the dashboard, sees 'pending' after submit) — a real backend needs an equivalent mechanism (e.g. the session/user-me endpoint reflecting updated kycStatus) since there is no separate 'update session' call from this screen.",
+      "expectedResponse": { "entity": "KycSubmission", "cardinality": "single" }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["creator"],
+    "note": "Implicit only. src/app/(focused)/kyc/page.tsx reads creatorGates(currentSession).kycStatus but never checks creatorGates().isCreator, .canUpload, or accountType before rendering — there is no redirect/guard for a non-creator ('user' account type) session reaching this route. The screen assumes creator context rather than asserting it."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": true,
+    "downloads": false,
+    "note": "Document-capture UI ('Take a photo' / 'Choose file' buttons in DocumentStep, plus the review-step 'photo' preview block) implies file upload, but no real upload is wired: onCaptured only flips a local docUploaded boolean, no File object is read, selected, or sent, and idDocumentUrl is never populated in the submit payload. Matches the pattern flagged elsewhere (STUB-6, STUB-7) though not itself listed in stubs.json — a real KYC document-upload endpoint (likely the presigned-URL pattern per conventions.md) is needed with no current client-side plumbing toward it."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "form step 1 — national ID (BVN/NIN)",
+      "entersWhen": "view === 'form' && step === 1. view resolves to 'form' when initialStatus is anything other than 'approved'/'rejected'/'pending' (i.e. 'not_started'), OR the user clicks 'Resubmit KYC' from the rejected state (setView('form') directly, independent of session.kyc, step defaults back to 1 only via fresh mount — resubmit does not explicitly reset step, it stays whatever it last was).",
+      "reachable": "yes"
+    },
+    {
+      "state": "form step 2 — document capture",
+      "entersWhen": "view === 'form' && step === 2 && !docUploaded, reached via 'Continue' from step 1.",
+      "reachable": "yes"
+    },
+    {
+      "state": "form step 2 — check your photo",
+      "entersWhen": "view === 'form' && step === 2 && docUploaded, reached by clicking 'Take a photo' or 'Choose file' in the previous state (onCaptured sets docUploaded = true, no real capture occurs).",
+      "reachable": "yes"
+    },
+    {
+      "state": "form step 3 — payout details",
+      "entersWhen": "view === 'form' && step === 3, reached via 'Looks good' in the check-photo state.",
+      "reachable": "yes"
+    },
+    {
+      "state": "form review — review and submit",
+      "entersWhen": "view === 'form' && step === 'review', reached via 'Review' in the payout-details state.",
+      "reachable": "yes"
+    },
+    {
+      "state": "pending",
+      "entersWhen": "view === 'pending'. Entered either as the initial view when initialStatus === 'pending' (the mock session's default currentSession.creator.kyc IS 'pending'), or after kycApi.submit() resolves from the review step.",
+      "reachable": "yes"
+    },
+    {
+      "state": "approved",
+      "entersWhen": "view === 'approved', which only happens when initialStatus === 'approved', i.e. Session.creator.kyc === 'approved'.",
+      "reachable": "no",
+      "note": "No code path in this mock app ever sets kyc to 'approved' except the DEV ONLY preview switcher (devSetKycStatus, stubs.json STUB-2) and the underlying session mutator (setKycStatus, STUB-1). kycApi.submit() always writes status: 'pending', never 'approved'. Manual off-platform KYC review (the real approval mechanism per CLAUDE.md/product-truths T-23) has no simulated or seam-tagged event in this codebase that flips the session's kyc field — once the dev-only switcher is stripped for production, this state becomes unreachable until a real backend/session-refresh path is built to carry an approved status back to the client.",
+      "stubsObserved": ["STUB-1", "STUB-2"]
+    },
+    {
+      "state": "rejected",
+      "entersWhen": "view === 'rejected', which only happens when initialStatus === 'rejected', i.e. Session.creator.kyc === 'rejected'.",
+      "reachable": "no",
+      "note": "Same gap as 'approved' — the only code path that ever sets kyc to 'rejected' is the DEV ONLY preview switcher (devSetKycStatus / setKycStatus, STUB-2 / STUB-1). No production code path produces this state. The hardcoded rejection reason ('The name on your passport does not match the name on your bank account.') is also static display copy, not read from any rejectionReason field on the actual KycSubmission object in scope, even though the type defines one.",
+      "stubsObserved": ["STUB-1", "STUB-2"]
+    }
+  ],
+  "uiStatesDesigned": [
+    { "state": "National ID — fields follow the signup country", "source": "design/screens/WAWU Creator Onboarding.dc.html, section '5 · KYC — collected, then reviewed'" },
+    { "state": "Document — camera or file picker", "source": "design/screens/WAWU Creator Onboarding.dc.html, section 5" },
+    { "state": "Readability confirm (check photo)", "source": "design/screens/WAWU Creator Onboarding.dc.html, section 5" },
+    { "state": "Payout details", "source": "design/screens/WAWU Creator Onboarding.dc.html, section 5" },
+    { "state": "Review and submit", "source": "design/screens/WAWU Creator Onboarding.dc.html, section 5" },
+    { "state": "Pending — the state most creators live in for days", "source": "design/screens/WAWU Creator Onboarding.dc.html, section '6–7 · Pending, approved, rejected'" },
+    { "state": "Approved", "source": "design/screens/WAWU Creator Onboarding.dc.html, section 6–7" },
+    { "state": "Rejected — reason plus resubmit, selling unaffected", "source": "design/screens/WAWU Creator Onboarding.dc.html, section 6–7" }
+  ],
+  "uiStatesDesignedNote": "No design file named for 'kyc' directly exists under design/screens/*.dc.html — the KYC flow is embedded as steps 5–7 inside 'WAWU Creator Onboarding.dc.html' (confirmed by matching header copy 'Verify your identity', 'Your national ID', BVN/NIN inputs, and identical pending/approved/rejected frames verbatim against the implemented KycFlow.tsx). All 8 designed frames correspond 1:1 to the 8 uiStatesHandled entries above — no extra designed states were dropped, and no extra handled states lack design backing.",
+  "stubsObserved": ["STUB-1", "STUB-2"]
+}

@@ -1,0 +1,72 @@
+{
+  "screenId": "app-shell-header-nav",
+  "reads": [
+    {
+      "entity": "SessionUser",
+      "fields": [
+        { "name": "accountType", "type": "AccountType (\"user\" | \"creator\")", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "Not fetched by this screen's own files (uiFiles has no dataFiles; dataProvenance: static). AppHeader.tsx reads accountType only via useSession() (src/lib/auth/session-provider.tsx), which sources it from the in-memory sessionStorage module (src/lib/auth/session-storage.ts) populated at sign-in/sign-up elsewhere in the app — out of scope for this fragment's uiFiles. usePathname() is also read for route matching but is client-side routing state, not a backend entity."
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["user", "creator"]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "hidden (route owns its own header)",
+      "entersWhen": "hasOwnHeader(pathname) is true — pathname exactly matches or starts with one of OWN_HEADER_ROUTES: /search, /notifications, /content, /purchases, /services, /subscription, /create/new, /messages, /settings, /marketplace. Component returns null.",
+      "reachable": "yes"
+    },
+    {
+      "state": "elevated (sticky, blurred backdrop header)",
+      "entersWhen": "the `elevated` prop is passed true by whichever screen renders <AppHeader elevated />",
+      "reachable": "unknown — no caller passing `elevated` is inside this screen's scanned uiFiles (only src/app/layout.tsx and src/components/layout/AppHeader.tsx were read); layout.tsx does not render AppHeader at all, so the actual call site(s) that pass this prop live in an out-of-scope file (e.g. the home feed screen) and were not inspected for this fragment."
+    },
+    {
+      "state": "default (bordered, non-elevated header)",
+      "entersWhen": "the `elevated` prop is omitted or false (default value)",
+      "reachable": "yes"
+    },
+    {
+      "state": "creator Explore-browse icon shown in header",
+      "entersWhen": "useSession().accountType === \"creator\"",
+      "reachable": "yes — accountType is set via the real sign-up/account-type-selection path (SignUpPayload.accountType -> SessionUser.accountType -> sessionStorage.setAccountType in src/lib/auth/session-storage.ts), which is a distinct module from the dev-only STUB-1 mutators in src/lib/api/mocks/session.ts (that stub covers creatorTier/kycStatus/subscriptionPaid/account-type overrides for KYC/onboarding preview switching, not this base session mechanism)."
+    },
+    {
+      "state": "creator Explore-browse icon hidden",
+      "entersWhen": "useSession().accountType !== \"creator\" (i.e. \"user\", or null when unauthenticated)",
+      "reachable": "yes"
+    },
+    {
+      "state": "unread-notification dot on the bell icon",
+      "entersWhen": "unconditional — the dot span always renders on every render pass; there is no unread-count field, flag, or API read anywhere in AppHeader.tsx driving it",
+      "reachable": "yes (it always renders in production), but it is not backed by any real unread-notification state — a gap: the design annotation for this same element (design/screens/WAWU Nav Locked.dc.html, \"Notifications — dot when unread\") specifies it should be conditional on unread state, but the implementation has no such condition."
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "frame": "WAWU Nav Locked.dc.html — \"User account — slot 3 is Explore\" mobile frame",
+      "state": "Header: WAWU mark, search pill (\"Search creators and content\"), bell with unread dot; no Explore/browse icon per the accompanying annotation panel (\"Explore — creator accounts only\"), though the frame's own rendered markup shows the icon on both frames (design mockup inconsistency, not authoritative over the annotation text)."
+    },
+    {
+      "frame": "WAWU Nav Locked.dc.html — \"Creator account — slot 3 is Create\" mobile frame",
+      "state": "Header: same as above plus the accent-tinted LayoutGrid \"Explore\" browse icon, per annotation \"Explore — creator accounts only, since their slot 3 is Create\"."
+    },
+    {
+      "frame": "WAWU Nav Locked.dc.html — \"Header, every screen\" annotation panel",
+      "state": "Documents three persistent header elements: search (content/creators/communities), notifications (\"dot when unread\" — implies a conditional, not an always-on dot), and the creator-only Explore icon."
+    }
+  ],
+  "stubsObserved": []
+}

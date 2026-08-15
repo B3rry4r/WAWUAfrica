@@ -1,0 +1,118 @@
+{
+  "screenId": "messages-settings",
+  "reads": [
+    {
+      "entity": "MessagingState",
+      "fields": [
+        { "name": "penalty", "type": "PenaltyKind (\"none\"|\"warned\"|\"disabled7\"|\"disabled30\")", "nullable": false },
+        { "name": "responseStats", "type": "{ responded: number, total: number, rate: number }", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single GET on mount via messagingApi.getState(), no threads list consumed by this screen (MessagingState.threads is fetched but never read/rendered here)"
+    },
+    {
+      "entity": "Session.creator",
+      "fields": [
+        { "name": "creator.tier", "type": "CreatorTier (\"basic\"|\"pro\")", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — read synchronously from the singleton mock session store (currentSession), not fetched. creator is nullable on Session; component falls back to tier ?? \"basic\" if creator is null."
+    },
+    {
+      "entity": "Plan",
+      "fields": [
+        { "name": "split", "type": "number (revenue-share percent kept by creator)", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": ["keyed by creator.tier (basic|pro)"],
+      "pagination": "none — static import PLANS[tier] from src/types/subscription.ts, not an API call"
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": ["creator"]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "accepting-enabled (not locked)",
+      "entersWhen": "!locked && enabled — enabled is local useState(true) default, locked = penalty is \"disabled7\"/\"disabled30\"; togglable by clicking the switch, which only flips local state (no API call)",
+      "reachable": "yes"
+    },
+    {
+      "state": "accepting-disabled-by-user (not locked)",
+      "entersWhen": "!locked && !enabled — user clicks the accept-toggle button to turn it off",
+      "reachable": "yes"
+    },
+    {
+      "state": "price-input-visible",
+      "entersWhen": "penalty === \"none\" && enabled",
+      "reachable": "yes as a client-side override (see next state's note) but never as the outcome of a real fetch — mock messagingApi.getState() always resolves penalty:\"warned\" (hardcoded literal in mocks/messaging.ts), so penalty never legitimately becomes \"none\" from data; it is only reachable by clicking the unguarded \"Good\" preview pill at the top of the screen, which calls setPenalty(\"none\") directly with no gate, no SEAM tag, and no dev-only marker (unlike the tagged switches in mocks/session.ts / STUB-1, STUB-2)."
+    },
+    {
+      "state": "good-standing (penalty none, StatusPill success)",
+      "entersWhen": "penalty === \"none\" || penalty === \"warned\" renders the reply-record card; \"none\" specifically shows the success pill",
+      "reachable": "same caveat as above — reachable only via the untagged pill selector, not via fetched mock data"
+    },
+    {
+      "state": "warning (penalty warned)",
+      "entersWhen": "penalty === \"warned\" — shows warning banner, standing gauge, \"Raise the price\"/\"Switch off\" buttons (both local-state-only, no API call), and the reply-record warning pill",
+      "reachable": "yes — this is the literal value mocks/messaging.ts's currentMessaging.penalty is hardcoded to, so it is what actually renders after the real fetch resolves; also directly selectable via the \"Warning\" pill"
+    },
+    {
+      "state": "locked-off-7-days (penalty disabled7)",
+      "entersWhen": "penalty === \"disabled7\" — toggle rendered inert/greyed, price input hidden, danger banner, countdown card, Save button disabled",
+      "reachable": "no from real/fetched data — mock getState() never returns this value; reachable only by clicking the untagged \"Off 7d\" preview pill, which is a client-side-only override with no backend authority behind it"
+    },
+    {
+      "state": "locked-off-30-days (penalty disabled30)",
+      "entersWhen": "penalty === \"disabled30\" — same layout as disabled7 with 30-day copy/progress",
+      "reachable": "no from real/fetched data, same reasoning as disabled7 — reachable only via the untagged \"Off 30d\" preview pill"
+    },
+    {
+      "state": "loading",
+      "entersWhen": "N/A — not coded. While messagingApi.getState() promise is pending, the component simply shows its default useState values (price=300, penalty=\"none\", rate=4, enabled=true); there is no spinner/skeleton and no isLoading flag anywhere in the file.",
+      "reachable": "no — no such state exists in the code to be reached"
+    },
+    {
+      "state": "error",
+      "entersWhen": "N/A — not coded. messagingApi.getState().then(...) has no .catch; mockRequest never rejects in the mock, and the component has no error UI or error state variable.",
+      "reachable": "no — no such state exists in the code to be reached"
+    },
+    {
+      "state": "save-submitted / save-success",
+      "entersWhen": "N/A — the Save button (<Button full size=\"lg\" disabled={locked}>Save</Button>) has no onClick handler at all. Clicking it (when not locked) does nothing; none of price/penalty/enabled ever gets persisted anywhere, and messagingApi has no update/save method for settings (only getState, getStats, getPenalty, getThreads, getThread, replyToThread).",
+      "reachable": "no — there is no code path that performs a save"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "frame": "1 · Settings — the deal stated before you switch it on",
+      "source": "design/screens/WAWU Creator DM Earnings.dc.html",
+      "notes": "Accept-toggle ON (accent border, \"On since 2 August\"), NairaInput price field, \"What you agree to\" card, reply-record card showing \"4% missed\" / StatusPill kind=\"success\" \"Good standing\", enabled Save button. Matches the code's !locked && enabled && penalty===\"none\" combination."
+    },
+    {
+      "frame": "4a · Warning — 10 to 30%",
+      "source": "design/screens/WAWU Creator DM Earnings.dc.html",
+      "notes": "Matches penalty===\"warned\" branch in code (warning banner + standing gauge)."
+    },
+    {
+      "frame": "4b · Off for 7 days — 30 to 50%",
+      "source": "design/screens/WAWU Creator DM Earnings.dc.html",
+      "notes": "Matches penalty===\"disabled7\" branch — toggle shown locked/greyed with \"Locked until 21 August\"."
+    },
+    {
+      "frame": "4c · Off for 30 days — over 50%",
+      "source": "design/screens/WAWU Creator DM Earnings.dc.html",
+      "notes": "Matches penalty===\"disabled30\" branch."
+    }
+  ],
+  "stubsObserved": []
+}

@@ -1,0 +1,154 @@
+{
+  "screenId": "services-mentors",
+  "reads": [
+    {
+      "entity": "Mentor",
+      "fields": [
+        {"name": "id", "type": "string", "nullable": false},
+        {"name": "name", "type": "string", "nullable": false},
+        {"name": "handle", "type": "string", "nullable": false},
+        {"name": "field", "type": "string", "nullable": false},
+        {"name": "category", "type": "string", "nullable": false},
+        {"name": "tagline", "type": "string", "nullable": false},
+        {"name": "bio", "type": "string", "nullable": false},
+        {"name": "topics", "type": "string[]", "nullable": false},
+        {"name": "verification", "type": "VerificationLevel (enum: basic|verified_user|verified_business|certified_professional|trusted_partner)", "nullable": false},
+        {"name": "availability", "type": "string (free-form schedule text)", "nullable": false},
+        {"name": "openForRequests", "type": "boolean", "nullable": false},
+        {"name": "fullUntil", "type": "string", "nullable": true, "note": "present only when openForRequests is false, e.g. 'September'"},
+        {"name": "yearsExperience", "type": "number", "nullable": false},
+        {"name": "sessions", "type": "number", "nullable": false},
+        {"name": "languages", "type": "string[]", "nullable": false}
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["category (query param ?category=, re-fetched via getMentors(category); also re-derived client-side as the union of categories present in the unfiltered getMentors() call to build the chip row)"],
+      "pagination": "none — full list returned in one response, no page controls or infinite scroll in the UI"
+    },
+    {
+      "entity": "Mentor",
+      "fields": [
+        {"name": "id", "type": "string", "nullable": false},
+        {"name": "name", "type": "string", "nullable": false},
+        {"name": "handle", "type": "string", "nullable": false},
+        {"name": "field", "type": "string", "nullable": false},
+        {"name": "category", "type": "string", "nullable": false},
+        {"name": "tagline", "type": "string", "nullable": false},
+        {"name": "bio", "type": "string", "nullable": false},
+        {"name": "topics", "type": "string[]", "nullable": false},
+        {"name": "verification", "type": "VerificationLevel", "nullable": false},
+        {"name": "availability", "type": "string", "nullable": false},
+        {"name": "openForRequests", "type": "boolean", "nullable": false},
+        {"name": "fullUntil", "type": "string", "nullable": true},
+        {"name": "yearsExperience", "type": "number", "nullable": false},
+        {"name": "sessions", "type": "number", "nullable": false},
+        {"name": "languages", "type": "string[]", "nullable": false}
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "n/a — single record fetched by id (getMentor(id) resolves to Mentor | null, no matching id renders a not-found UI state)"
+    }
+  ],
+  "actions": [
+    {
+      "name": "requestMentor",
+      "kind": "create",
+      "entity": "MentorRequest",
+      "payload": [
+        {"name": "mentorId", "type": "string", "note": "route-derived (mentor.id), passed as the function's first argument / path segment, not part of the JSON body"},
+        {"name": "topics", "type": "string[]", "note": "multi-select subset of mentor.topics the requester picked; UI requires at least 1 selected"},
+        {"name": "note", "type": "string", "note": "free-text problem description; UI requires non-empty trimmed text"},
+        {"name": "slot", "type": "string", "note": "client-composed label, e.g. 'Tue 19, evening' — built from a selected upcoming-weekday date plus a morning|evening choice; not sent as separate date/time fields"}
+      ],
+      "expectedResponse": {
+        "entity": "MentorRequest",
+        "cardinality": "single",
+        "fields": [
+          {"name": "id", "type": "string", "nullable": false},
+          {"name": "status", "type": "\"sent\" (literal)", "nullable": false}
+        ],
+        "note": "response is a thin ack shape ({id,status}); the richer MentorRequest type in src/types/mentors.ts (mentorId, topics, note, slot, sentAt) is defined but not what this action actually returns — the sheet's confirmation screen re-displays the values it already held client-side (mentor name/topics/slotLabel), not fields from the response"
+      }
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "note": "none of this screen's own files (mentors/page.tsx, mentors/[id]/page.tsx, MentorRequestSheet.tsx, MentorBookButton.tsx, mentors.ts, mocks/mentors.ts) call creatorGates(), a session hook, or any account-type/tier check — the screen renders and lets any visitor request a session with no gate observed in-scope. requiresAuth:true is an assumption from the screen living under the (app)/ route group (session/auth wrapping, if any, is enforced in src/app/(app)/layout.tsx and src/app/(app)/components/SessionGate.tsx, both out of this screen's scope per scan-map.json) rather than something this screen's own code enforces or checks."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false,
+    "pollingOrRefresh": "none — fetch-on-navigation only, no setInterval/polling anywhere in scope",
+    "notes": "MentorRequestSheet computes 'the next 3 upcoming weekdays' entirely client-side (upcomingWeekdays()) using the browser's local Date — not a backend read."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "browse: list success",
+      "entersWhen": "getMentors()/getMentors(category) resolves with a non-empty array",
+      "reachable": "yes"
+    },
+    {
+      "state": "browse: empty (no mentors in category)",
+      "entersWhen": "mentors.length === 0 after filtering by category — reachable both by picking a chip that legitimately empties (not possible today since chips are derived from the unfiltered list, so every chip has ≥1 result) and by a user hand-editing the URL to an arbitrary ?category= value not present in the data",
+      "reachable": "yes"
+    },
+    {
+      "state": "browse: error (couldn't load mentors)",
+      "entersWhen": "getMentors()/getMentors(category) throws inside the page's try/catch, rendering ErrorState",
+      "reachable": "no",
+      "note": "src/lib/api/mocks/mentors.ts's getMockMentors() never throws under any input — pure array filter with a fixed delay. This path is currently dead code exercised by no reachable mock condition; it only becomes reachable once a real backend can return a network/5xx error."
+    },
+    {
+      "state": "browse: no explicit loading UI",
+      "entersWhen": "the 250-280ms mock delay() while getMentors() is in flight",
+      "reachable": "unknown",
+      "note": "MentorsPage is an async server component with no sibling loading.tsx in src/app/(app)/services/mentors/ — there is no skeleton/spinner state defined by this screen's own code at all, mock or real. Whether a loading state is ever shown to the user depends on Next.js's default streaming/suspense behavior at a layout this screen doesn't own, not on anything in scope here."
+    },
+    {
+      "state": "detail: success",
+      "entersWhen": "getMentor(id) resolves to a non-null Mentor",
+      "reachable": "yes"
+    },
+    {
+      "state": "detail: not found",
+      "entersWhen": "getMentor(id) resolves to null (MOCK_MENTORS.find() finds no match for the id) — rendered via ErrorState 'Mentor not found'",
+      "reachable": "yes",
+      "note": "reachable today simply by navigating to /services/mentors/<any-unknown-id>; no try/catch wraps getMentor(id) itself, so a thrown error (vs. a null result) is not handled by this screen's own code."
+    },
+    {
+      "state": "detail: booking disabled (mentor full)",
+      "entersWhen": "mentor.openForRequests === false — MentorBookButton renders a disabled Button showing 'Full until {fullUntil}' or 'Not taking requests right now' instead of opening the sheet",
+      "reachable": "yes"
+    },
+    {
+      "state": "request sheet: idle (form)",
+      "entersWhen": "sheet opened via MentorBookButton, or after reset() from 'Done'/'Browse other mentors'",
+      "reachable": "yes"
+    },
+    {
+      "state": "request sheet: processing",
+      "entersWhen": "canSend is true and send() is called; phase set to 'processing' while requestMentor() is in flight",
+      "reachable": "yes"
+    },
+    {
+      "state": "request sheet: done (request sent)",
+      "entersWhen": "requestMentor() resolves successfully; phase set to 'done'",
+      "reachable": "yes"
+    },
+    {
+      "state": "request sheet: send failure (silent revert, no error message)",
+      "entersWhen": "requestMentor() throws inside send()'s catch block, which just calls setPhase('idle') with no toast/error UI shown to the user",
+      "reachable": "no",
+      "note": "src/lib/api/mocks/mentors.ts's requestMockMentor() never throws — always resolves after a fixed 500ms delay. This failure path exists in the component but has no mock condition that can trigger it today; once wired to a real backend it becomes reachable, and currently gives the user zero feedback that anything went wrong (the sheet just silently returns to the empty form)."
+    }
+  ],
+  "uiStatesDesigned": [
+    {"frame": "5 · Browse — availability on the card", "source": "design/screens/WAWU Service Apply Mentors.dc.html"},
+    {"frame": "6 · Mentor — what to ask, when, and that it is free", "source": "design/screens/WAWU Service Apply Mentors.dc.html"},
+    {"frame": "7 · Request — topic, the real problem, a date", "source": "design/screens/WAWU Service Apply Mentors.dc.html"},
+    {"frame": "7b · Confirmed — awaiting his acceptance", "source": "design/screens/WAWU Service Apply Mentors.dc.html"}
+  ],
+  "uiStatesDesignedNote": "Matched via design/screens/WAWU Service Apply Mentors.dc.html, frames 5-7b (labeled '5–7 · Mentors' in the file's own section header). The design source depicts only success-path frames for browse, detail, the request sheet, and the post-send confirmation — it does NOT define loading, empty, error/not-found, disabled-booking (full mentor), or an in-flight/processing frame for the request sheet; those states exist only in uiStatesHandled above, as code-only additions beyond what the design specifies.",
+  "stubsObserved": []
+}

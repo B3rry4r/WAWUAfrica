@@ -1,0 +1,114 @@
+{
+  "screenId": "saved",
+  "reads": [
+    {
+      "entity": "SavedItem",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "kindLabel", "type": "string", "nullable": false },
+        { "name": "creator", "type": "string", "nullable": false },
+        { "name": "savedAt", "type": "string", "nullable": false },
+        { "name": "kind", "type": "\"content\" | \"guide\" | \"product\" (SavedItemKind)", "nullable": false },
+        { "name": "content", "type": "ContentPiece (nested, see below)", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [
+        "Client-side only: filter pills 'All' | 'Content' | 'Guides' | 'Products' (FILTERS array, id: SavedItemKind | 'all') filter the already-fetched `items` array in memory via items.filter(i => i.kind === filter) — no filter/sort param is ever sent to getSavedItems(); the call takes no arguments.",
+        "'All' pill label shows a live count (`All ${items.length}`) once items have loaded, otherwise the static label 'All'."
+      ],
+      "pagination": "None observed. getSavedItems() takes no page/cursor argument and returns the full SavedItem[] in one call; no infinite scroll, load-more button, or page control renders on this screen."
+    },
+    {
+      "entity": "ContentPiece",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "slug", "type": "string", "nullable": false },
+        { "name": "contentType", "type": "\"video\"|\"course\"|\"audio\"|\"pdf\"|\"image\"|\"template\"", "nullable": false },
+        { "name": "title", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": false },
+        { "name": "category", "type": "string", "nullable": false },
+        { "name": "accessType", "type": "\"free\"|\"paid\"", "nullable": false },
+        { "name": "price", "type": "number (integer Naira)", "nullable": false },
+        { "name": "creator", "type": "CreatorProfile { wawuId, fullName, handle, headline?, location?, verificationLevel, isPro? }", "nullable": false },
+        { "name": "durationLabel", "type": "string", "nullable": true },
+        { "name": "pageCount", "type": "number", "nullable": true },
+        { "name": "lessonCount", "type": "number", "nullable": true },
+        { "name": "views", "type": "number", "nullable": false },
+        { "name": "ratingPct", "type": "number", "nullable": true },
+        { "name": "commentCount", "type": "number", "nullable": false },
+        { "name": "likes", "type": "number", "nullable": false },
+        { "name": "saved", "type": "boolean", "nullable": false },
+        { "name": "createdAt", "type": "string", "nullable": false },
+        { "name": "previewAssetUrl", "type": "string", "nullable": false },
+        { "name": "fullAssetUrl", "type": "string", "nullable": true, "note": "Present only when the requester is entitled (free piece or completed purchase); the mock builder for /saved's items never strips this per-viewer, unlike the live content-detail seam which explicitly gates it — flag for reconciliation." },
+        { "name": "fullAssetLocked", "type": "boolean", "nullable": false },
+        { "name": "courseLessons", "type": "CourseLesson[] { id, index, title, durationLabel, free }", "nullable": true },
+        { "name": "purchased", "type": "boolean", "nullable": true }
+      ],
+      "cardinality": "single (embedded one-per-SavedItem, not fetched independently by this screen)",
+      "filtersOrSort": [],
+      "pagination": "N/A — nested in the SavedItem list response, not separately paginated."
+    }
+  ],
+  "actions": [],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [],
+    "note": "No explicit gate check (no creatorGates() call, no role branch) appears in src/app/(app)/saved/page.tsx itself — the screen assumes a logged-in user only implicitly, via living under the (app) route group and returning a per-user saved list. No stub or session check within this screen's own scope proves the gate is enforced here; it is presumably enforced by the (app) layout/SessionGate wrapper, which is outside this screen's scan-map file list and was not read."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false,
+    "note": "No polling/interval, no file upload or download affordance anywhere in this screen's code. Data is fetched once on mount (useEffect(load, [load])) and again only if the user presses the ErrorState's retry action."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "loading",
+      "entersWhen": "items === null — true on initial mount before getSavedItems() resolves, and again briefly on every load() re-invocation (retry) since load() resets items to null before refetching. Renders GridSkeleton (4 placeholder cards).",
+      "reachable": "yes"
+    },
+    {
+      "state": "error",
+      "entersWhen": "getSavedItems() promise rejects; catch sets error to e.message (or a fallback string) and renders ErrorState with an onRetry that calls load() again.",
+      "reachable": "no",
+      "reachabilityNote": "getMockSavedItems() (src/lib/api/mocks/settings.ts) unconditionally awaits a delay and returns MOCK_SAVED_ITEMS — there is no code path in the mock that ever throws or rejects, and settings.ts's getSavedItems() calls it directly with no try/fetch fallback (pure mock delegation, not the try-fetch-then-mock pattern). So in the current mock-driven app this state can never actually be entered by any user action; it only becomes reachable once a real backend replaces the mock and can return a network/5xx failure."
+    },
+    {
+      "state": "empty (nothing saved yet)",
+      "entersWhen": "items resolved successfully and items.length === 0. Renders EmptyState icon='Bookmark', title='Nothing saved yet', caption='Bookmark courses, guides and products and they'll line up here.', action='Explore content' -> router.push('/').",
+      "reachable": "no",
+      "reachabilityNote": "MOCK_SAVED_ITEMS is a module-level constant built from the fixed SAVED_AT_BY_ID map (10 entries), each resolved via mockContentById against the fixed mock content catalog; all 10 ids currently resolve successfully, so items.length is always 10 at runtime today. This state has no live trigger under the current mock data — it would only become reachable if a real backend returns a user with zero saved items, or if the mock data were edited to remove entries."
+    },
+    {
+      "state": "empty (filtered — nothing here yet)",
+      "entersWhen": "items.length > 0 but the currently selected filter pill (content/guide/product) matches zero items in items.filter(i => i.kind === filter). Renders EmptyState icon='Bookmark', title='Nothing here yet', caption='Try another filter, or browse everything you've saved.', action='Show all' -> setFilter('all').",
+      "reachable": "no",
+      "reachabilityNote": "Checked the current mock content catalog against kindForContentType's mapping for the 10 fixed SAVED_AT_BY_ID ids: 7 map to 'content' (course/video/audio types), 1 to 'guide' (pdf), 2 to 'product' (template/image). Every one of the three named filter pills therefore has at least one match under today's fixed mock data, so this branch of the empty-state ternary is currently unreachable by any filter selection — it only becomes reachable once saved-item kinds vary per real user (e.g. a user who has saved zero guides)."
+    },
+    {
+      "state": "success (populated grid)",
+      "entersWhen": "items resolved with length > 0 and the filtered array (by current pill) also has length > 0 — the default 'all' state on first successful load. Renders a 2-column grid of ContentCard per filtered SavedItem, keyed by item.id, passed item.content.",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "populated grid",
+      "source": "design/screens/WAWU Settings States.dc.html, frame 5 ('Saved — content, guides and products together'), line ~355-393",
+      "detail": "Header 'Saved' + back chevron + SlidersHorizontal icon; filter pill row 'All 14' (active) / Content / Guides / Products; 2-column ContentCard grid mixing locked (priced) and free cards across video/pdf/template/audio content types."
+    },
+    {
+      "state": "empty",
+      "source": "design/screens/WAWU Settings States.dc.html, section 7 'Global states', line ~518-523",
+      "detail": "Generic EmptyState frame using icon='Bookmark', title='Nothing saved yet', caption='Tap save on any drop and it lands here.', action='Browse content' — a shared global-states frame, not a saved-specific mockup, but the Bookmark icon/copy pairing is clearly the /saved empty state. Caption text differs slightly from the implementation's copy ('Bookmark courses, guides and products and they'll line up here.'). No separate 'filtered empty / nothing here yet' frame appears anywhere in this design file."
+    },
+    {
+      "state": "error",
+      "source": "design/screens/WAWU Settings States.dc.html, section 7 'Global states', line ~525-529",
+      "detail": "Generic ErrorState frame with on-retry — also a shared global-states frame, not saved-specific, but implies the same ErrorState component the code renders."
+    }
+  ],
+  "stubsObserved": []
+}

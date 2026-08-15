@@ -1,0 +1,178 @@
+{
+  "screenId": "profile-verification",
+  "reads": [
+    {
+      "entity": "VerificationLevelEntry",
+      "fields": [
+        { "name": "tier", "type": "VerificationLevel (\"basic\"|\"verified_user\"|\"verified_business\"|\"certified_professional\"|\"trusted_partner\")", "nullable": false },
+        { "name": "status", "type": "VerificationLadderStatus (\"done\"|\"yours\"|\"next\"|\"locked\")", "nullable": false },
+        { "name": "copy", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["none observed — fixed 5-entry ladder returned and rendered in server order; page.tsx derives `current` via .find(status===\"yours\") and `next` via .find(status===\"next\") client-side, no server-side filter param sent"],
+      "pagination": "none — fixed-size list (5 levels), no page controls, no infinite scroll"
+    },
+    {
+      "entity": "VerificationSubmission",
+      "fields": [
+        { "name": "tier", "type": "VerificationLevel", "nullable": false },
+        { "name": "status", "type": "VerificationSubmissionStatus (\"in_review\"|\"approved\"|\"rejected\")", "nullable": false },
+        { "name": "submittedAt", "type": "string (freeform display date, e.g. \"12 August\", \"Today\")", "nullable": true },
+        { "name": "reviewedAt", "type": "string (freeform display date)", "nullable": true },
+        { "name": "reason", "type": "string (rejection reason, shown only when status===\"rejected\")", "nullable": true }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": ["mock comment states \"newest first\"; new submissions are unshifted to the front by submitMockVerification, but no explicit sort param/field exists on the read call — ordering is entirely server/mock-determined"],
+      "pagination": "none — full list returned and rendered under \"Recent\", no page controls"
+    },
+    {
+      "entity": "OwnProfile",
+      "fields": [],
+      "cardinality": "single",
+      "filtersOrSort": ["N/A"],
+      "pagination": "N/A — single record, keyed to the caller's own session, no id/param passed"
+    }
+  ],
+  "actions": [
+    {
+      "name": "submitVerification",
+      "kind": "create",
+      "entity": "VerificationSubmission",
+      "payload": [
+        { "name": "tier", "type": "VerificationLevel", "nullable": false, "note": "Only the tier is sent. The documents the user 'adds' in VerificationApplyForm (uploaded: string[], fake filenames like \"Document 1.pdf\") are never included in this call's payload or in any separate upload call — they exist purely as local UI state to gate the Submit button (disabled while uploaded.length===0) and are discarded on submit." }
+      ],
+      "expectedResponse": { "entity": "VerificationSubmission", "cardinality": "single" }
+    },
+    {
+      "name": "resubmitVerification",
+      "kind": "create",
+      "entity": "VerificationSubmission",
+      "payload": [
+        { "name": "tier", "type": "VerificationLevel", "nullable": false, "note": "Triggered from the 'Resubmit' button on a rejected submission card, and hardcoded in VerificationApplyForm as `isResubmit = tier === \"certified_professional\"` rather than being derived from an actual prior-rejection lookup — a fragile, mock-data-shaped assumption, not a real resubmit-vs-first-submit determination." }
+      ],
+      "expectedResponse": { "entity": "VerificationSubmission", "cardinality": "single" },
+      "note": "Both submitVerification and resubmitVerification are SEAM-tagged to the SAME endpoint, POST /api/hub/verification/submit — the mock's resubmitMockVerification literally calls submitMockVerification. Kept as two actions here because they are two distinct user-triggered entry points in the UI (apply-to-next-tier vs resubmit-after-rejection), not two backend operations."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": [
+      "Any authenticated account (user or creator) — no creatorGates() call and no accountType branch anywhere in this screen's code. getOwnProfile/getVerificationLadder/getVerificationSubmissions all take no user-id argument, implicitly meaning 'the caller's own session'. The verification ladder is explicitly account-type-agnostic per its own copy ('Verification is separate from your paid plan and your KYC status')."
+    ]
+  },
+  "special": {
+    "realtime": false,
+    "uploads": true,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "ladder-page: loading",
+      "entersWhen": "No dedicated loading.tsx/skeleton exists for either /profile/verification or /profile/verification/[tier]; VerificationPage is an async server component that awaits Promise.all([getVerificationLadder(), getVerificationSubmissions()]) before returning any markup.",
+      "reachable": "unknown — no designed loading UI exists to reach; the mock's 300ms delay is fast enough that a real network-latency loading skeleton was likely never designed for, not confirmed reachable or unreachable without a real backend's actual latency"
+    },
+    {
+      "state": "ladder-page: error",
+      "entersWhen": "getVerificationLadder() or getVerificationSubmissions() rejects inside the try/catch in VerificationPage, rendering <ErrorState title={message}/>.",
+      "reachable": "no — both mock functions (getMockLadder, getMockVerificationSubmissions) always resolve after a fixed delay; no code path in the current mock layer ever throws"
+    },
+    {
+      "state": "ladder-page: success (ladder + submissions loaded)",
+      "entersWhen": "Both promises resolve.",
+      "reachable": "yes — the only path reachable given the current mock layer"
+    },
+    {
+      "state": "ladder-page: current-badge banner shown",
+      "entersWhen": "ladder.find(l => l.status === \"yours\") returns a match.",
+      "reachable": "yes — MOCK_VERIFICATION_LADDER always includes exactly one \"yours\" entry (verified_user)"
+    },
+    {
+      "state": "ladder-page: current-badge banner hidden",
+      "entersWhen": "No ladder entry has status \"yours\" (banner is guarded by `{current && (...)}`, silently omitted).",
+      "reachable": "no — no code path removes the sole \"yours\" entry from mock data"
+    },
+    {
+      "state": "ladder-page: submissions list empty (silent, no empty-state copy)",
+      "entersWhen": "getVerificationSubmissions() resolves to an empty array — the \"Recent\" section would render its heading with zero cards underneath; there is no dedicated \"no submissions yet\" message/illustration in the code.",
+      "reachable": "no — MOCK_VERIFICATION_SUBMISSIONS is seeded with 3 entries and is only ever appended to (unshift on submit), never cleared, so an empty list is unreachable via any UI action in the current mock app"
+    },
+    {
+      "state": "ladder-page: submission card — in_review",
+      "entersWhen": "A submission entry has status === \"in_review\"; renders StatusPill kind=\"warning\" \"In review\".",
+      "reachable": "yes — mock seeds one (verified_business, submitted 12 August)"
+    },
+    {
+      "state": "ladder-page: submission card — approved",
+      "entersWhen": "A submission entry has status === \"approved\"; renders StatusPill kind=\"success\" \"Approved\".",
+      "reachable": "yes — mock seeds one (verified_user)"
+    },
+    {
+      "state": "ladder-page: submission card — rejected (+ Resubmit CTA)",
+      "entersWhen": "A submission entry has status === \"rejected\"; renders StatusPill kind=\"danger\" \"Needs changes\", the reason text, and a \"Resubmit\" button linking to /profile/verification/[tier].",
+      "reachable": "yes — mock seeds one (certified_professional, with a reason string)"
+    },
+    {
+      "state": "apply-page: invalid tier param",
+      "entersWhen": "URL param :tier is not one of the five VerificationLevel keys (Object.keys(VERIFY_TIER_LABELS)); renders <ErrorState title=\"That verification level doesn't exist.\" onRetry={() => router.push(\"/profile/verification\")}/>.",
+      "reachable": "yes — reachable via any stale/mistyped/manually-edited URL, e.g. /profile/verification/foo"
+    },
+    {
+      "state": "apply-page: valid tier — form shown",
+      "entersWhen": "URL param :tier matches a VerificationLevel key.",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply-form: default (no documents added)",
+      "entersWhen": "VerificationApplyForm mounts with uploaded=[]; Submit button is disabled (uploaded.length===0 || submitting).",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply-form: document(s) added",
+      "entersWhen": "User clicks \"Add files\" one or more times; addFile() pushes a synthetic filename (`Document N.pdf`) into local state. There is no real <input type=\"file\">, no file picker dialog, and no upload request of any kind — purely a client-side list used only to unlock the Submit button.",
+      "reachable": "yes — but it is a UI stub with no backing upload mechanism at all (not even a SEAM-tagged mock delay), unlike the CAC/NEPC apply flows' explicitly-flagged 'simulate upload finishing' stubs (STUB-6/STUB-7 in stubs.json). This screen's fake-upload has no equivalent stub entry."
+    },
+    {
+      "state": "apply-form: submitting",
+      "entersWhen": "User clicks \"Submit application\" with uploaded.length > 0; submitting=true, button text becomes \"Submitting…\", button disabled.",
+      "reachable": "yes"
+    },
+    {
+      "state": "apply-form: submit error",
+      "entersWhen": "submitVerification()/resubmitVerification() throws inside the try/catch; sets and displays `error` text under the Documents section.",
+      "reachable": "no — submitMockVerification/resubmitMockVerification always resolve after a fixed delay, no mock code path ever throws"
+    },
+    {
+      "state": "apply-form: submitted / done",
+      "entersWhen": "submitVerification()/resubmitVerification() resolves; done=true, renders the full-screen success confirmation (checkmark, \"Application submitted\", 2–5 working days copy, \"Back to verification\" button).",
+      "reachable": "yes — the only reachable terminal state given the mock never throws"
+    },
+    {
+      "state": "ladder-list (desktop, xl breakpoint): inline expand of apply form on the 'next' tier row",
+      "entersWhen": "Viewport ≥ xl AND user clicks the \"Start\"/\"Close\" toggle button on the ladder row with status===\"next\" (mobile instead navigates to /profile/verification/[tier] via a Link, hidden at xl).",
+      "reachable": "yes — pure client state (expandedTier), no data dependency"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "ladder-five-levels (design frame 4, 'Account verification')",
+      "detail": "All five levels shown in one list: done (checkmark circle icon + StatusPill 'Done'), yours (badge + StatusPill 'Yours', note: differs from code's checkmark-only/no-pill 'done' row and badge+'You're here'-info-pill 'yours' row), next (badge + StatusPill 'Next' + an 'Apply' button — code labels this button 'Start'), and two locked rows at reduced opacity with no CTA. A footer info row explicitly disclaims: 'A badge is not a creator tier and not the ID check for payouts.'"
+    },
+    {
+      "state": "tier-submission-form (design frame 5, one level's apply screen — shown for verified_business)",
+      "detail": "A per-tier STRUCTURED form: intro card, then named text inputs ('Registered business name', 'RC or BN number'), a labeled document row ('CAC certificate', filename + file size + a completed checkmark), a 'Where you can be found' section with a website link row and a social link row, a manual-review disclaimer ('two to four days, never an automated check'), and a sticky footer 'Submit for review' button. This is materially richer than the code's implementation, which is ONE generic form shared across all five tiers (a bullet list of textual requirements from a hardcoded REQUIREMENTS map, plus a single generic 'Add files' control with fake filenames) — no per-tier structured fields (business name, RC/BN number, website, socials) exist in the code at all."
+    },
+    {
+      "state": "submission-in-review (design frame 6, card 1)",
+      "detail": "Amber/warning-tinted card with a Clock icon in a rounded icon well, title '{Tier} — in review', subtitle 'Submitted {date} · two to four days', and body copy reassuring the user their current badge stays up while pending."
+    },
+    {
+      "state": "submission-approved (design frame 6, card 2)",
+      "detail": "Green/success-tinted card with a Check icon, title '{Tier} — approved', subtitle '{date} · badge is on your profile'."
+    },
+    {
+      "state": "submission-rejected (design frame 6, card 3)",
+      "detail": "Red/danger-tinted card with a CircleAlert icon, title '{Tier} — not approved', subtitle 'Reviewed {date}', a labeled 'Reason' block, and TWO CTAs side by side: 'Send it again' and 'Ask support'. Code instead renders a plain-bordered card (no tinted background, no leading icon) with a StatusPill, the reason text, and only ONE button ('Resubmit') — 'Ask support' has no equivalent anywhere in the implemented screen."
+    }
+  ],
+  "stubsObserved": []
+}

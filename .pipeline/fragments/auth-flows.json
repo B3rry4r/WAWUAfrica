@@ -1,0 +1,286 @@
+{
+  "screenId": "auth-flows",
+  "reads": [
+    {
+      "entity": "SessionUser",
+      "fields": [
+        { "name": "wawuId", "type": "string", "nullable": false },
+        { "name": "fullName", "type": "string", "nullable": false },
+        { "name": "email", "type": "string", "nullable": false },
+        { "name": "accountType", "type": "\"user\" | \"creator\"", "nullable": false },
+        { "name": "interests", "type": "string[]", "nullable": false },
+        { "name": "verification", "type": "\"basic\" | \"verified_user\" | \"verified_business\" | \"certified_professional\" | \"trusted_partner\"", "nullable": false },
+        { "name": "creator", "type": "CreatorState", "nullable": true }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none"
+    },
+    {
+      "entity": "CreatorState",
+      "fields": [
+        { "name": "tier", "type": "\"basic\" | \"pro\"", "nullable": false },
+        { "name": "subscriptionPaid", "type": "boolean", "nullable": false },
+        { "name": "kyc", "type": "\"not_started\" | \"pending\" | \"approved\" | \"rejected\"", "nullable": false },
+        { "name": "slotsUsed", "type": "number", "nullable": false },
+        { "name": "slotsTotal", "type": "number", "nullable": false },
+        { "name": "dmPrice", "type": "number", "nullable": false },
+        { "name": "dmEnabled", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none",
+      "note": "Nested inside SessionUser.creator, null for account type 'user'. Not independently fetched anywhere in this screen's code — it only arrives embedded in the AuthResponse.user object returned by signUp/verifyOtp/signIn's mock branch. In the mock fallback it is never actually populated (mock SessionUser literals in auth.ts always set creator: null), so this screen never exercises a non-null CreatorState in practice."
+    }
+  ],
+  "actions": [
+    {
+      "name": "signUp",
+      "kind": "create",
+      "entity": "SessionUser",
+      "payload": [
+        { "name": "fullName", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "password", "type": "string" },
+        { "name": "phone", "type": "string" },
+        { "name": "phoneCountryCode", "type": "string" },
+        { "name": "country", "type": "string" },
+        { "name": "region", "type": "string | null" },
+        { "name": "occupation", "type": "string" },
+        { "name": "gender", "type": "\"female\" | \"male\" | \"unspecified\" | null" },
+        { "name": "acceptedTerms", "type": "boolean" },
+        { "name": "accountType", "type": "\"user\" | \"creator\"" }
+      ],
+      "expectedResponse": { "entity": "AuthResponse { token: string, user: SessionUser }", "cardinality": "single" },
+      "seam": "POST /api/hub/auth/signup",
+      "note": "Mock fallback fabricates wawuId as `wawu_${email local-part}`, sets interests: [], verification: 'basic', creator: null unconditionally regardless of accountType — a creator signup never gets a non-null CreatorState back from this call in mock mode."
+    },
+    {
+      "name": "verifyOtp",
+      "kind": "custom",
+      "entity": "SessionUser",
+      "payload": [
+        { "name": "email", "type": "string" },
+        { "name": "code", "type": "string (6 digits)" }
+      ],
+      "expectedResponse": { "entity": "AuthResponse { token: string, user: SessionUser }", "cardinality": "single" },
+      "seam": "POST /api/hub/auth/otp/verify",
+      "note": "Mock fallback returns fullName: '' and accountType: 'user' unconditionally; SignUpFlow.tsx immediately overwrites both client-side by spreading otpState (the fullName/accountType captured at signup time) over the response before calling signInUser — i.e. the UI does not trust the mock verify response for these two fields and patches them locally. A real backend response is expected to return the correct fullName/accountType itself."
+    },
+    {
+      "name": "signIn",
+      "kind": "custom",
+      "entity": "SessionUser",
+      "payload": [
+        { "name": "email", "type": "string" },
+        { "name": "password", "type": "string" }
+      ],
+      "expectedResponse": { "entity": "AuthResponse { token: string, user: SessionUser }", "cardinality": "single" },
+      "seam": "POST /api/hub/auth/signin",
+      "note": "Mock fallback reads any previously-set sessionStorage.getUser() as a fallback identity source before fabricating one — an artifact of pure client-side mock state, not a real contract behavior."
+    },
+    {
+      "name": "requestPasswordReset",
+      "kind": "custom",
+      "entity": "n/a",
+      "payload": [
+        { "name": "email", "type": "string" }
+      ],
+      "expectedResponse": { "entity": "void", "cardinality": "single" },
+      "seam": "POST /api/hub/auth/reset"
+    },
+    {
+      "name": "saveNewPassword",
+      "kind": "update",
+      "entity": "n/a",
+      "payload": [
+        { "name": "password", "type": "string" },
+        { "name": "confirmPassword", "type": "string" }
+      ],
+      "expectedResponse": { "entity": "void", "cardinality": "single" },
+      "seam": "POST /api/hub/auth/reset/confirm",
+      "note": "ResetPasswordForm's copy ('You will be signed in on this device once it is saved') implies the real endpoint should also return/establish a session token on success, but the payload/response as coded never sends or returns a token or reset-token/code identifying which account is being reset — the UI has no field capturing a reset token from the emailed link (no [token] route param, no query-string read) anywhere in reset-password/page.tsx. This is a contract gap: the client-side flow cannot actually identify which user's password to change."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": false,
+    "rolesObserved": [],
+    "note": "This screen is the pre-auth surface itself (sign-in/sign-up/forgot/reset) — no route or component here checks isAuthenticated, creatorGates(), or any role/gate. SignInForm/SignUpFlow/ResetPasswordForm call session-provider's signInUser() to ESTABLISH a session but consume no gated data themselves. Sign-up lets the user pick accountType ('user'|'creator') client-side with no server-side validation visible at this layer; CreatorState fields (subscriptionPaid, kyc) are never read or written by any of these five actions — creator onboarding (a separate screen) owns that."
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false,
+    "polling": false,
+    "note": "OTP resend countdown (resendSeconds, starts at 42) is a pure client-side setInterval timer in SignUpFlow.tsx with no visible resend-OTP API call wired to the 'Resend the code' UI — pressing 'resend' has no handler in the read code (only the countdown display exists); no polling of verification status either. Reset-password flow has no token/code capture from the emailed link at all (see saveNewPassword note above)."
+  },
+  "uiStatesHandled": [
+    {
+      "state": "sign-in: form (idle/empty)",
+      "entersWhen": "default render of SignInForm before submission",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-in: validation-disabled (Continue disabled)",
+      "entersWhen": "emailValid is false (fails email regex) or password.length < 8",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-in: submitting",
+      "entersWhen": "onSubmit called and canSubmit true; submitting=true until signIn() resolves/rejects",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-in: error",
+      "entersWhen": "signIn() throws — in mock mode the try{apiFetch}catch{...} pattern means the mock branch always succeeds (never throws) once apiFetch's MockModeError is caught internally, so this error UI is only reachable if the mock fallback itself throws, which it does not; real reachability depends entirely on a live backend returning a non-2xx or ApiError",
+      "reachable": "unknown"
+    },
+    {
+      "state": "sign-up: type (account-type picker)",
+      "entersWhen": "initial step, or ?type=creator query param sets accountType='creator' via useEffect",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: identity (step 1 of 3)",
+      "entersWhen": "user clicks Continue from the type step",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: identity validation errors (bad email format / short password / summary banner)",
+      "entersWhen": "identity.email present and fails regex, or identity.password present and length<8 — identitySummary aggregates count of invalid fields into a banner",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: details (step 1 of 3, second half)",
+      "entersWhen": "onContinueIdentity passes (no identityError, fullName and phone non-empty)",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: details region-empty",
+      "entersWhen": "details.country selected has an empty COUNTRIES[] array (e.g. 'Ghana' — hardcoded in SignUpFlow.tsx, not fetched)",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: details terms-unaccepted (Create account disabled + warning line)",
+      "entersWhen": "details.acceptedTerms is false",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: details submitting",
+      "entersWhen": "onCreateAccount fires with acceptedTerms=true; submitting=true until signUp() resolves/rejects",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: details submit error",
+      "entersWhen": "signUp() throws",
+      "reachable": "unknown",
+      "note": "same try{apiFetch}catch{mock-always-succeeds} shape as sign-in error — unreachable in pure mock mode, real reachability depends on live backend error responses"
+    },
+    {
+      "state": "sign-up: otp (step 2 of 3)",
+      "entersWhen": "signUp() resolves; otpState set, step becomes 'otp'",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: otp resend countdown",
+      "entersWhen": "step === 'otp'; a setInterval ticks resendSeconds down from 42 to 0 every second",
+      "reachable": "yes",
+      "note": "countdown display only — no resend action is wired to any handler once it hits 0"
+    },
+    {
+      "state": "sign-up: otp error",
+      "entersWhen": "otp.length===6 and verifyOtp() throws",
+      "reachable": "unknown",
+      "note": "same try{apiFetch}catch{mock-always-succeeds} shape — unreachable in pure mock mode"
+    },
+    {
+      "state": "sign-up: otp submit-disabled",
+      "entersWhen": "otp.length < 6 or submitting",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: done (email verified success screen)",
+      "entersWhen": "verifyOtp() resolves; signInUser() called, step becomes 'done'",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: interests (step 3 of 3)",
+      "entersWhen": "user taps 'Pick your interests' from the done screen",
+      "reachable": "yes"
+    },
+    {
+      "state": "sign-up: interests submit-disabled (below minimum)",
+      "entersWhen": "interests.length < INTERESTS_MIN (5)",
+      "reachable": "yes"
+    },
+    {
+      "state": "forgot-password: form (idle)",
+      "entersWhen": "default render before submission",
+      "reachable": "yes"
+    },
+    {
+      "state": "forgot-password: submit-disabled",
+      "entersWhen": "emailValid is false, or submitting, or already sent",
+      "reachable": "yes"
+    },
+    {
+      "state": "forgot-password: submitting",
+      "entersWhen": "onSubmit fires with canSubmit true",
+      "reachable": "yes"
+    },
+    {
+      "state": "forgot-password: error",
+      "entersWhen": "requestPasswordReset() throws",
+      "reachable": "unknown",
+      "note": "try{apiFetch}catch{mock returns void unconditionally} — unreachable in pure mock mode"
+    },
+    {
+      "state": "forgot-password: sent (check your email)",
+      "entersWhen": "requestPasswordReset() resolves; sent=true",
+      "reachable": "yes",
+      "note": "Not represented as its own frame in design/screens/WAWU Auth.dc.html — only the pre-submit 'Reset it by email' form frame is designed; this confirmation state has no matching design frame."
+    },
+    {
+      "state": "reset-password: form (idle)",
+      "entersWhen": "default render before submission",
+      "reachable": "yes"
+    },
+    {
+      "state": "reset-password: mismatch / validation errors",
+      "entersWhen": "password.length<8 shows length error; confirm non-empty and confirm !== password shows 'Passwords do not match.'",
+      "reachable": "yes"
+    },
+    {
+      "state": "reset-password: submitting",
+      "entersWhen": "onSubmit fires with canSubmit true",
+      "reachable": "yes"
+    },
+    {
+      "state": "reset-password: error",
+      "entersWhen": "saveNewPassword() throws",
+      "reachable": "unknown",
+      "note": "try{apiFetch}catch{mock returns void unconditionally} — unreachable in pure mock mode"
+    },
+    {
+      "state": "reset-password: done (password updated)",
+      "entersWhen": "saveNewPassword() resolves; done=true",
+      "reachable": "yes",
+      "note": "Not represented as its own frame in the design source — only the pre-submit mismatch-state frame is designed for this screen; the success confirmation has no matching design frame. Also: the flow never captures a reset token/code from the emailed link, so in a real backend this screen as coded cannot actually identify whose password to change (see saveNewPassword action note)."
+    }
+  ],
+  "uiStatesDesigned": [
+    { "frame": "Entry choice — user vs creator account type picker", "source": "design/screens/WAWU Auth.dc.html, section '1 · Signing up as a user, or as a creator'" },
+    { "frame": "Sign up part 1 — identity, filled", "source": "design/screens/WAWU Auth.dc.html, section '2 · Sign up'" },
+    { "frame": "Sign up part 1 — validation: short password, incomplete email", "source": "design/screens/WAWU Auth.dc.html, section '2 · Sign up'" },
+    { "frame": "Sign up part 2 — location and about you, filled", "source": "design/screens/WAWU Auth.dc.html, section '2 · Sign up'" },
+    { "frame": "Sign up part 2 — region-empty state and unaccepted terms", "source": "design/screens/WAWU Auth.dc.html, section '2 · Sign up'" },
+    { "frame": "OTP — destination shown back, resend on a timer", "source": "design/screens/WAWU Auth.dc.html, section '3 · Verify'" },
+    { "frame": "Success moment — email verified", "source": "design/screens/WAWU Auth.dc.html, section '3 · Verify'" },
+    { "frame": "Interests — button stays locked until the minimum is met", "source": "design/screens/WAWU Auth.dc.html, section '4 · Interests'" },
+    { "frame": "Sign in", "source": "design/screens/WAWU Auth.dc.html, section '5 · Coming back'" },
+    { "frame": "Forgot password (pre-submit form only)", "source": "design/screens/WAWU Auth.dc.html, section '5 · Coming back'" },
+    { "frame": "Reset password — mismatch state (disabled submit)", "source": "design/screens/WAWU Auth.dc.html, section '5 · Coming back'" }
+  ],
+  "designIntentNote": "design/screens/WAWU Auth.dc.html's own caption (line 35) states outright: 'Auth stays with WAWU ID — these screens collect and hand off, they do not replace it. ... No ID upload or document capture here; that belongs to creator onboarding.' This matches conventions.md's architecture decision that WAWU ID is a separately-deployed external identity provider and this backend is a pure resource server that never issues its own login/signup/OTP/refresh tokens. The five SEAM-tagged endpoints in src/lib/api/auth.ts (POST /api/hub/auth/signup, /auth/otp/verify, /auth/signin, /auth/reset, /auth/reset/confirm) as currently coded imply this backend itself owns password storage and auth issuance, which conflicts with that architecture — flagging for reconciliation, not resolving here.",
+  "stubsObserved": []
+}

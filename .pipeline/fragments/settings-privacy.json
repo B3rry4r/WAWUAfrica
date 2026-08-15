@@ -1,0 +1,148 @@
+{
+  "screenId": "settings-privacy",
+  "reads": [
+    {
+      "entity": "PrivacySettings",
+      "fields": [
+        { "name": "showPurchases", "type": "boolean", "nullable": false },
+        { "name": "showSavedItems", "type": "boolean", "nullable": false },
+        { "name": "showFollowing", "type": "boolean", "nullable": false },
+        { "name": "showInMemberLists", "type": "boolean", "nullable": false }
+      ],
+      "cardinality": "single",
+      "filtersOrSort": [],
+      "pagination": "none — single settings object per user, no list"
+    },
+    {
+      "entity": "BlockedAccount",
+      "fields": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "handle", "type": "string", "nullable": false },
+        { "name": "blockedAt", "type": "string", "nullable": false }
+      ],
+      "cardinality": "list",
+      "filtersOrSort": [],
+      "pagination": "none — full list fetched at once, no page/cursor params, no infinite scroll. blockedAt is a pre-formatted display label in the mock (e.g. '3 weeks ago', '2 months ago'), not an ISO timestamp — UI never formats it, so the real endpoint's field shape (raw timestamp vs pre-formatted string) is an open reconciliation question. Also read by privacy/page.tsx solely for its .length to render a count badge next to the 'Blocked accounts' row."
+    }
+  ],
+  "actions": [
+    {
+      "name": "savePrivacySettings",
+      "kind": "update",
+      "entity": "PrivacySettings",
+      "payload": [
+        { "name": "showPurchases", "type": "boolean" },
+        { "name": "showSavedItems", "type": "boolean" },
+        { "name": "showFollowing", "type": "boolean" },
+        { "name": "showInMemberLists", "type": "boolean" }
+      ],
+      "expectedResponse": { "entity": "PrivacySettings", "cardinality": "single" },
+      "notes": "Client sends the ENTIRE PrivacySettings object on every toggle (optimistic local flip of one key, then the whole object is PUT), not a single-field patch. Fire-and-forget: the UI does not await the response or reconcile against it (void savePrivacySettings(next)), and does not handle a save failure — if the write fails server-side the toggle stays visually flipped with no rollback/error UI."
+    },
+    {
+      "name": "unblockAccount",
+      "kind": "delete",
+      "entity": "BlockedAccount",
+      "payload": [{ "name": "id", "type": "string" }],
+      "expectedResponse": { "entity": "boolean", "cardinality": "single" },
+      "notes": "Mock returns Promise<boolean> (always true) and the caller only uses success to splice the id out of local list state — response body has no other shape to reconcile against."
+    },
+    {
+      "name": "requestDataExport",
+      "kind": "custom",
+      "entity": "DataExportRequest",
+      "payload": [],
+      "expectedResponse": { "entity": "DataExportRequest", "cardinality": "single" },
+      "notes": "No parameters sent — implicitly scoped to the authenticated user. Mock resolves { requestedAt: ISOString }. This is an email-delivery request, not an in-browser file download: UI never receives/streams a file, it only shows a confirmation sheet stating the data will be emailed within 48 hours."
+    }
+  ],
+  "authContext": {
+    "requiresAuth": true,
+    "rolesObserved": []
+  },
+  "special": {
+    "realtime": false,
+    "uploads": false,
+    "downloads": false
+  },
+  "uiStatesHandled": [
+    {
+      "state": "privacy:loading",
+      "entersWhen": "privacy/page.tsx — settings === null on mount/reload (before Promise.all([getPrivacySettings(), getBlockedAccounts()]) resolves); renders 3 skeleton bars",
+      "reachable": "yes"
+    },
+    {
+      "state": "privacy:error",
+      "entersWhen": "privacy/page.tsx — Promise.all([...]).catch fires, setError(true); renders ErrorState with retry",
+      "reachable": "no — getMockPrivacySettings and getMockBlockedAccounts (mocks/settings.ts) never throw or reject under any input; this catch branch has no live path to trigger it while mocks are the data source"
+    },
+    {
+      "state": "privacy:loaded",
+      "entersWhen": "privacy/page.tsx — settings !== null && !error; renders the toggle groups + 'Your data' row group",
+      "reachable": "yes"
+    },
+    {
+      "state": "privacy:export-confirm",
+      "entersWhen": "privacy/page.tsx — user taps 'Download my data' row, setExportState('confirm'); opens Sheet asking to confirm the request",
+      "reachable": "yes"
+    },
+    {
+      "state": "privacy:export-loading",
+      "entersWhen": "privacy/page.tsx — user taps 'Request my data' in the confirm sheet, runExport() sets exportState('loading') while requestDataExport() is in flight; Sheet's onClose is disabled during this state",
+      "reachable": "yes"
+    },
+    {
+      "state": "privacy:export-success",
+      "entersWhen": "privacy/page.tsx — requestDataExport() resolves, setExportState('success'); shows checkmark + 'emailed within 48 hours' copy",
+      "reachable": "yes"
+    },
+    {
+      "state": "privacy:export-error",
+      "entersWhen": "privacy/page.tsx — requestDataExport() rejects, setExportState('error'); shows 'that didn't go through, try again'",
+      "reachable": "no — requestMockDataExport (mocks/settings.ts) unconditionally resolves after a delay with no rejection path; this catch branch has no live trigger under the current mock"
+    },
+    {
+      "state": "blocked:loading",
+      "entersWhen": "privacy/blocked/page.tsx — accounts === null on mount/reload (before getBlockedAccounts() resolves); renders 2 skeleton rows",
+      "reachable": "yes"
+    },
+    {
+      "state": "blocked:error",
+      "entersWhen": "privacy/blocked/page.tsx — getBlockedAccounts().catch fires, setError(true); renders ErrorState with retry",
+      "reachable": "no — getMockBlockedAccounts never throws; this catch branch has no live path under the current mock"
+    },
+    {
+      "state": "blocked:empty",
+      "entersWhen": "privacy/blocked/page.tsx — accounts !== null && accounts.length === 0; renders EmptyState 'No blocked accounts'",
+      "reachable": "yes — MOCK_BLOCKED_ACCOUNTS starts with 2 seed rows, but unblockMockAccount splices the module-level array in place, so within a single session a user can unblock both seeded accounts and reach a genuine empty list (resets to 2 only on a full page/module reload, since there is no persistence layer)"
+    },
+    {
+      "state": "blocked:loaded",
+      "entersWhen": "privacy/blocked/page.tsx — accounts !== null && accounts.length > 0; renders the blocked-account rows with per-row Unblock buttons",
+      "reachable": "yes"
+    },
+    {
+      "state": "blocked:unblock-pending",
+      "entersWhen": "privacy/blocked/page.tsx — pendingId === row.id after tapping 'Unblock' on that row and before unblockAccount(id) settles; that row's Button shows a loading spinner",
+      "reachable": "yes"
+    },
+    {
+      "state": "policy:static",
+      "entersWhen": "privacy/policy/page.tsx — always; no data fetch, no loading/empty/error variants exist in the code at all, purely static prose",
+      "reachable": "yes"
+    }
+  ],
+  "uiStatesDesigned": [
+    {
+      "state": "Privacy — toggles + Your data group (frame 3, 'WAWU Settings States.dc.html')",
+      "detail": "Single steady-state frame: 'Show what I have bought' (off, with 'nobody sees your purchases' caption), 'Show my saved items' (off, no caption in design vs code which also has none), 'Show who I follow' (on), Communities group 'Show me in member lists' (on, with 'messages are visible either way' caption), then a Your-data group of three ListRows — Blocked accounts (meta='2'), Download my data (subtitle 'Sent to your email'), Privacy policy (trailing='external') — plus the BVN/NIN reassurance footer. Matches the code's default MOCK_PRIVACY_SETTINGS values and row structure closely."
+    },
+    {
+      "state": "Global Empty / Error / Offline / 404 (frame 7, generic app-wide states, same file)",
+      "detail": "Frame 7 shows a generic EmptyState/ErrorState/Offline-banner/404 pattern shared across the app (its Empty example is captioned for the Saved screen, not privacy/blocked specifically) — no privacy- or blocked-accounts-specific loading/error/empty frame exists in the design file. The code's blocked:empty ('No blocked accounts') and privacy:error/blocked:error ErrorState usage follow this generic pattern but have no screen-specific design frame of their own."
+    }
+  ],
+  "designNotes": "No frame in 'WAWU Settings States.dc.html' (or elsewhere in design/screens/*.dc.html) depicts the Blocked-accounts list screen itself (loaded/empty/error), the data-export confirm/loading/success/error sheet sequence, or the static Privacy-policy page — only the top-level Privacy toggle screen (frame 3) and the app-wide generic states (frame 7) are designed. These three gaps are not fabricated as designed states above.",
+  "stubsObserved": []
+}
