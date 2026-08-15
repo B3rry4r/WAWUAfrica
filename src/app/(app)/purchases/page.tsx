@@ -37,6 +37,16 @@ const TYPE_VERB: Record<ContentType, string> = {
   template: "Use",
 };
 
+/**
+ * D5's desktop header carries a category tab row (Content/Courses/Products/
+ * Services/Questions) that doesn't map onto this screen's ContentType filter
+ * (video/course/audio/pdf/template/image plus tracked applications and
+ * questions bundled in "Also tracked"). Rendered visually per design, "Content"
+ * fixed active — not wired to `filter` state. Rewiring the desktop screen to
+ * this taxonomy is a larger change than this header fix.
+ */
+const DESKTOP_TABS = ["Content", "Courses", "Products", "Services", "Questions"];
+
 export default function MyPurchasesPage() {
   const [items, setItems] = useState<Purchase[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,15 +65,42 @@ export default function MyPurchasesPage() {
   const filtered = useMemo(() => (filter === "all" ? (items ?? []) : (items ?? []).filter((p) => p.contentType === filter)), [items, filter]);
 
   return (
+    <>
+      {/* D5 desktop-only sticky header + category tabs — suppresses the global DesktopHeader (see hasOwnHeader) so this route shows exactly one header at xl. */}
+      <div
+        className="sticky top-0 z-20 hidden h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur xl:flex"
+        style={{ backdropFilter: "var(--blur-chrome)" }}
+      >
+        <span className="text-[19px] font-semibold tracking-[-0.02em] text-text-primary">My purchases</span>
+        <span className="flex-1" />
+        <div className="flex h-10 items-center gap-2.5 rounded-full border border-hairline bg-input px-3.5">
+          <Icon name="Search" size={16} color="var(--text-muted)" />
+          <span className="text-[14px] text-text-muted">Search purchases</span>
+        </div>
+      </div>
+      <div className="sticky top-[68px] z-20 hidden h-[54px] shrink-0 items-center gap-[26px] border-b border-hairline bg-page px-[26px] xl:flex">
+        {DESKTOP_TABS.map((t) => (
+          <span
+            key={t}
+            className={`relative flex h-full items-center text-[14.5px] ${
+              t === "Content" ? "font-semibold text-text-primary" : "text-text-muted"
+            }`}
+          >
+            {t}
+            {t === "Content" ? <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent" /> : null}
+          </span>
+        ))}
+      </div>
+
     <div className="flex flex-col gap-4 px-4 pb-8 pt-2 xl:px-[26px] xl:pb-[26px] xl:pt-[22px]">
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 xl:hidden">
         <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em]">My purchases</h1>
         <p className="m-0 text-[13px] text-text-muted">
           {items ? `${items.length} ${items.length === 1 ? "item" : "items"} · yours permanently, even if the creator takes it down` : " "}
         </p>
       </div>
 
-      <div className="wawu-no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5">
+      <div className="wawu-no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 xl:hidden">
         {FILTERS.map((t) => (
           <button
             key={t.id}
@@ -107,6 +144,7 @@ export default function MyPurchasesPage() {
         </>
       )}
     </div>
+    </>
   );
 }
 
