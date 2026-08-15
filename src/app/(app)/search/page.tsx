@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
+import { ContentCard } from "@/components/content/ContentCard";
 import { searchAll, getPopularSearches, getSuggestedCreators, getClosestResults, getRecentSearches } from "@/lib/api/search";
 import type { ContentPiece, ContentType } from "@/types/content";
 import type { SearchCommunityResult, SearchCreatorResult, SearchResults, SearchTab } from "@/types/search";
@@ -85,10 +86,10 @@ export default function SearchPage() {
   const words = query.trim().split(/\s+/).filter(Boolean);
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-page">
+    <div className="flex min-h-screen flex-col bg-surface-page xl:mx-auto xl:w-full xl:max-w-[700px]">
       {/* Search header */}
-      <div className="flex items-center gap-3 border-b border-hairline px-4 py-3.5">
-        <div className="flex h-[42px] flex-1 items-center gap-2.5 rounded-full border border-hairline bg-input px-4">
+      <div className="flex items-center gap-3 border-b border-hairline px-4 py-3.5 xl:sticky xl:top-0 xl:z-10 xl:h-[68px] xl:bg-page xl:px-6 xl:py-0">
+        <div className="flex h-[42px] flex-1 items-center gap-2.5 rounded-full border border-hairline bg-input px-4 xl:h-10">
           <Icon name="Search" size={16} color="var(--text-muted)" />
           <input
             value={query}
@@ -238,22 +239,7 @@ export default function SearchPage() {
 
           {(tab === "all" || tab === "content") && results.content.length ? (
             <section className="flex flex-col gap-2">
-              {(tab === "all" ? results.content.slice(0, 3) : results.content).map((c) => (
-                <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5">
-                  <span
-                    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
-                  >
-                    <Icon name={typeIcon(c.contentType)} size={20} />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="truncate text-[14.5px] font-semibold">{c.title}</span>
-                    <span className="truncate text-[12.5px] text-text-muted">
-                      {c.creator.fullName} · {typeLabel[c.contentType]}
-                    </span>
-                  </span>
-                  <Icon name="ChevronRight" size={16} color="var(--text-muted)" />
-                </Link>
-              ))}
+              <ContentResults items={tab === "all" ? results.content.slice(0, 3) : results.content} />
             </section>
           ) : null}
 
@@ -315,22 +301,7 @@ export default function SearchPage() {
           {closest.length ? (
             <section className="flex flex-col gap-2">
               <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-text-muted">Closest things we have</span>
-              {closest.slice(0, 3).map((c) => (
-                <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5">
-                  <span
-                    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
-                  >
-                    <Icon name={typeIcon(c.contentType)} size={20} />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="truncate text-[14.5px] font-semibold">{c.title}</span>
-                    <span className="truncate text-[12.5px] text-text-muted">
-                      {c.creator.fullName} · {typeLabel[c.contentType]}
-                    </span>
-                  </span>
-                  <Icon name="ChevronRight" size={16} color="var(--text-muted)" />
-                </Link>
-              ))}
+              <ContentResults items={closest.slice(0, 3)} />
             </section>
           ) : null}
         </div>
@@ -368,4 +339,39 @@ function typeIcon(type: ContentType): IconName {
     template: "LayoutTemplate",
   };
   return icons[type];
+}
+
+/**
+ * Content-type search results (design D15: "cards for content, rows for
+ * people and things"). Mobile keeps its compact icon rows; desktop swaps to
+ * the shared ContentCard grid used across feed/profile/purchases.
+ */
+function ContentResults({ items }: { items: ContentPiece[] }) {
+  return (
+    <>
+      <div className="flex flex-col gap-2 xl:hidden">
+        {items.map((c) => (
+          <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5">
+            <span
+              className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
+            >
+              <Icon name={typeIcon(c.contentType)} size={20} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="truncate text-[14.5px] font-semibold">{c.title}</span>
+              <span className="truncate text-[12.5px] text-text-muted">
+                {c.creator.fullName} · {typeLabel[c.contentType]}
+              </span>
+            </span>
+            <Icon name="ChevronRight" size={16} color="var(--text-muted)" />
+          </Link>
+        ))}
+      </div>
+      <div className="hidden grid-cols-2 gap-4 xl:grid">
+        {items.map((c) => (
+          <ContentCard key={c.id} content={c} ratio="16 / 9" />
+        ))}
+      </div>
+    </>
+  );
 }
