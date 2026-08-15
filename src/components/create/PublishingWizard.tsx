@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
 import { PLANS } from "@/types/subscription";
 import { currentSession } from "@/lib/api/mocks/session";
+import { creatorGates } from "@/lib/auth/gates";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,7 @@ import { Input } from "@/components/ui/Input";
 import { NairaInput } from "@/components/ui/NairaInput";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ErrorState } from "@/components/ui/Feedback";
+import { ContentGridCard } from "@/components/ui/ContentCard";
 
 const stepIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -21,6 +23,15 @@ const stepIcons: Record<ContentType, IconName> = {
   pdf: "BookOpen",
   image: "Image",
   template: "LayoutTemplate",
+};
+
+const previewRatio: Record<ContentType, string> = {
+  video: "16 / 9",
+  course: "16 / 9",
+  audio: "16 / 9",
+  pdf: "3 / 4",
+  image: "1 / 1",
+  template: "3 / 4",
 };
 
 const uploadMeta: Record<ContentType, { file: string; meta: string; note: string; cover?: string }> = {
@@ -75,6 +86,10 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  // D7 desktop only — the mobile flow doesn't step through a dedicated free
+  // preview screen for non-PDF types, but the desktop right rail shows the
+  // choice inline, so it needs its own bit of state.
+  const [previewChoice, setPreviewChoice] = useState<"90s" | "3min" | "none">("90s");
 
   const steps = ["Upload", "Free preview", "Details", "Price"];
   const stepLabel = `Step ${step + 1} of 4`;
@@ -85,6 +100,9 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const youEarn = Math.round((price * keep) / 100);
   const wawuTakes = price - youEarn;
   const proEarn = Math.round(price * 0.9);
+  const gates = creatorGates(currentSession);
+  // The slot this upload would land in, ahead of publishing.
+  const nextSlot = Math.min(gates.slotsUsed + 1, gates.slotsTotal);
 
   const submit = async () => {
     if (publishing) return;
@@ -104,8 +122,11 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
     return <Submitted type={type} title={title} price={paid && !firstUpload ? price : 0} />;
   }
 
+  const desktopPrice = paid && !firstUpload ? price : 0;
+
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+    <>
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
       <FlowHeader title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepLabel}</span>} />
 
       <div className="flex-1 py-[18px] px-[16px] flex flex-col gap-[18px]">
@@ -175,6 +196,205 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
         ) : null}
       </div>
     </div>
+
+    {/* D7 · Publishing, desktop — the mobile 5-step wizard collapses into two
+        columns: upload + details on the left, price + a live buyer-facing
+        preview on the right, updating as the form fills in. */}
+    <div className="hidden xl:flex xl:h-full xl:min-h-0 xl:flex-col">
+      <div className="flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center gap-[9px] border-none bg-transparent p-0 text-[14px] font-semibold text-text-secondary cursor-pointer"
+        >
+          <Icon name="X" size={18} color="var(--text-secondary)" />
+          Discard
+        </button>
+        <span className="flex-1" />
+        {publishError ? (
+          <span className="text-[13px] text-danger">{publishError}</span>
+        ) : null}
+        <Button size="sm" variant="secondary">
+          Save draft
+        </Button>
+        <Button size="sm" iconRight="ArrowRight" loading={publishing} onClick={submit}>
+          {resubmit ? "Resubmit for review" : firstUpload ? "Publish free" : "Publish"}
+        </Button>
+      </div>
+
+      <div className="grid min-h-0 flex-1 grid-cols-[1fr_420px] gap-[26px] overflow-y-auto p-[26px]">
+        <div className="flex min-w-0 flex-col gap-[20px]">
+          <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
+            <div className="flex items-center gap-[14px]">
+              <div className="grid h-[96px] w-[150px] shrink-0 place-items-center rounded-[var(--radius-media)] border border-hairline bg-elevated">
+                <Icon name={stepIcons[type]} size={22} color="var(--text-muted)" />
+              </div>
+              <div className="flex flex-1 flex-col gap-[9px]">
+                <div className="flex justify-between text-[13.5px]">
+                  <span className="font-semibold text-text-primary">{file.file}</span>
+                  <span className="text-text-muted [font-feature-settings:var(--font-feature-tabular)]">{file.meta}</span>
+                </div>
+                <div className="h-[6px] rounded-full bg-tag">
+                  <div className="h-full w-[68%] rounded-full bg-[linear-gradient(90deg,#5A0B7D,var(--accent))]" />
+                </div>
+                <span className="text-[12.5px] text-text-muted">
+                  Keep this tab open until it finishes. You can fill in the details now.
+                </span>
+              </div>
+            </div>
+            {type === "video" ? (
+              <div className="flex gap-[10px] border-t border-hairline pt-[14px]">
+                <div className="h-[64px] w-[104px] rounded-xl border-[1.5px] border-accent bg-elevated" />
+                <div className="h-[64px] w-[104px] rounded-xl border border-hairline bg-elevated" />
+                <div className="h-[64px] w-[104px] rounded-xl border border-hairline bg-elevated" />
+                <div className="flex flex-1 items-center pl-[6px]">
+                  <span className="text-[12.5px] text-text-muted">Pick the cover frame — or upload your own</span>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Details</span>
+            <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <div className="flex flex-col gap-2">
+              <span className="text-[13px] font-semibold text-text-secondary">Description</span>
+              <div className="flex min-h-[74px] rounded-input border border-hairline bg-input px-4 py-[14px] text-[14.5px] leading-[1.5] text-text-primary">
+                What will someone be able to do after watching?
+              </div>
+            </div>
+            <div className="flex flex-col gap-[9px]">
+              <span className="text-[12.5px] font-semibold text-text-secondary">Category</span>
+              <span className="text-[12px] leading-[1.5] text-text-muted">
+                Learn and Question are temporarily disabled due to misuse. They will return soon. Opportunity, Event
+                and Research publish after an admin check.
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-accent px-[14px] py-2 text-[13px] font-semibold text-on-accent">
+                  Construction
+                </span>
+                {["Sell", "Event · admin review", "Opportunity · admin review", "Research · admin review"].map((c) => (
+                  <span key={c} className="rounded-full bg-tag px-[14px] py-2 text-[13px] text-text-secondary">
+                    {c}
+                  </span>
+                ))}
+                {["Learn", "Question"].map((c) => (
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-[7px] rounded-full border border-dashed border-hairline bg-tag px-[14px] py-2 text-[13px] text-text-muted"
+                  >
+                    <Icon name="Ban" size={14} color="var(--text-muted)" />
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-[16px]">
+          <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-accent bg-card p-[22px]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Price</span>
+            {firstUpload ? (
+              <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-accent bg-elevated p-[16px]">
+                <span className="text-[15px] font-semibold text-text-primary">Your first one is free</span>
+                <p className="m-0 text-[13px] leading-[1.5] text-text-secondary">
+                  Nobody has bought from you yet. Give this one away, then price everything after it.
+                </p>
+                <div className="flex">
+                  <StatusPill kind="info">Free · set for you</StatusPill>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-1 rounded-full border border-hairline bg-tag p-1">
+                  {["Free", "Paid"].map((label) => {
+                    const active = (label === "Paid") === paid;
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setPaid(label === "Paid")}
+                        className={`h-[38px] flex-1 rounded-full border-none text-[13.5px] font-semibold ${
+                          active ? "bg-accent text-on-accent" : "bg-transparent text-text-secondary"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {paid ? (
+                  <>
+                    <NairaInput
+                      label="What buyers pay"
+                      value={price}
+                      onChange={setPrice}
+                      presets={[500, 1000, 1500, 2500]}
+                      hint={`Most pieces in this category sell between ${formatNaira(500)} and ${formatNaira(2500)}.`}
+                    />
+                    <div className="flex flex-col gap-[9px] border-t border-hairline pt-[14px]">
+                      <div className="flex justify-between text-[13.5px] text-text-secondary">
+                        <span>You keep {keep}% on {tierIsPro ? "Pro" : "Basic"}</span>
+                        <span className="font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
+                          {formatNaira(youEarn)}
+                        </span>
+                      </div>
+                      {!tierIsPro ? (
+                        <div className="flex justify-between text-[13px] text-text-muted">
+                          <span>On Pro you would keep</span>
+                          <span className="[font-feature-settings:var(--font-feature-tabular)]">{formatNaira(proEarn)}</span>
+                        </div>
+                      ) : null}
+                      <div className="flex items-center gap-[9px] pt-1">
+                        <Icon name="Info" size={15} color="var(--warning)" />
+                        <span className="text-[12.5px] text-[#FFD37A]">
+                          Uses slot {nextSlot} of {gates.slotsTotal} · resets on renewal
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+              </>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Free preview</span>
+            <span className="text-[13.5px] leading-[1.5] text-text-secondary">
+              You choose the giveaway. First 90 seconds is the default.
+            </span>
+            <div className="flex gap-2">
+              {(["90s", "3min", "none"] as const).map((choice) => (
+                <button
+                  key={choice}
+                  type="button"
+                  onClick={() => setPreviewChoice(choice)}
+                  className={`rounded-full px-[14px] py-2 text-[13px] font-semibold ${
+                    previewChoice === choice ? "bg-accent text-on-accent" : "bg-tag text-text-secondary"
+                  }`}
+                >
+                  {choice === "90s" ? "90s" : choice === "3min" ? "3 min" : "None"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-auto flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-hairline bg-card p-[18px]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview as a buyer</span>
+            <ContentGridCard
+              state={desktopPrice > 0 ? "locked" : "free"}
+              title={title || meta.label}
+              price={desktopPrice > 0 ? desktopPrice : undefined}
+              contentType={type}
+              count={meta.label}
+              ratio={previewRatio[type]}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    </>
   );
 }
 
