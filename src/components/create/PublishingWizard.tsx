@@ -67,7 +67,7 @@ export function PublishingWizard({ type, firstUpload }: PublishingWizardProps) {
   const meta = CONTENT_TYPE_META[type];
   const file = uploadMeta[type];
   const [step, setStep] = useState(0);
-  const [paid, setPaid] = useState(true);
+  const [paid, setPaid] = useState(!firstUpload);
   const [price, setPrice] = useState(1500);
   const [title, setTitle] = useState(firstUpload ? "" : "The trader's playbook");
   const [submitted, setSubmitted] = useState(false);

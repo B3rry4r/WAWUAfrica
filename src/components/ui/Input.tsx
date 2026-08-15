@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { useState } from "react";
+import { formatNaira } from "@/lib/format";
 
 export interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "defaultValue" | "children"> {
@@ -155,7 +156,7 @@ export function NairaInput({
                   cursor: "pointer",
                 }}
               >
-                ₦{p.toLocaleString("en-NG")}
+                {formatNaira(p)}
               </button>
             );
           })}

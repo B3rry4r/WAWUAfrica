@@ -17,13 +17,14 @@ import { formatNaira } from "@/lib/format";
 interface StreamRow {
   icon: IconName;
   label: string;
-  amount: string;
+  amount: number;
+  status?: string;
   pct?: number;
   dim?: boolean;
 }
 
 export function EarningsDashboard() {
-  const [approved, setApproved] = useState(false);
+  const [approved, setApproved] = useState(currentSession.creator?.kyc === "approved");
 
   const tier = currentSession.creator?.tier ?? "basic";
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
@@ -32,26 +33,26 @@ export function EarningsDashboard() {
 
   const streams: StreamRow[] = approved
     ? [
-        { icon: "Play", label: "Content sales", amount: "₦123,300", pct: 67 },
-        { icon: "MessageCircle", label: "Paid messages", amount: "₦31,050", pct: 17 },
-        { icon: "Ticket", label: "Community credits", amount: "₦21,600", pct: 12 },
-        { icon: "HandCoins", label: "Tips", amount: "₦8,550", pct: 5 },
+        { icon: "Play", label: "Content sales", amount: 123300, pct: 67 },
+        { icon: "MessageCircle", label: "Paid messages", amount: 31050, pct: 17 },
+        { icon: "Ticket", label: "Community credits", amount: 21600, pct: 12 },
+        { icon: "HandCoins", label: "Tips", amount: 8550, pct: 5 },
       ]
     : [
-        { icon: "BookOpen", label: "Content sales", amount: "₦12,750" },
-        { icon: "MessageCircle", label: "Paid messages", amount: "Not on yet", dim: true },
-        { icon: "Ticket", label: "Community credits", amount: "No community yet", dim: true },
+        { icon: "BookOpen", label: "Content sales", amount: 12750 },
+        { icon: "MessageCircle", label: "Paid messages", amount: 0, status: "Not on yet", dim: true },
+        { icon: "Ticket", label: "Community credits", amount: 0, status: "No community yet", dim: true },
       ];
 
   const recent = approved
     ? [
-        { title: "CAC in 7 days", subtitle: "3 unlocks today", icon: "GraduationCap" as IconName, meta: "₦6,750" },
-        { title: "Paid message", subtitle: "Emeka Obi", icon: "MessageCircle" as IconName, meta: "₦270" },
-        { title: "Tip", subtitle: "Ngozi Eze", icon: "HandCoins" as IconName, meta: "₦1,000" },
+        { title: "CAC in 7 days", subtitle: "3 unlocks today", icon: "GraduationCap" as IconName, meta: formatNaira(6750) },
+        { title: "Paid message", subtitle: "Emeka Obi", icon: "MessageCircle" as IconName, meta: formatNaira(270) },
+        { title: "Tip", subtitle: "Ngozi Eze", icon: "HandCoins" as IconName, meta: formatNaira(1000) },
       ]
     : [
-        { title: "Pricing sheet", subtitle: "15 unlocks · ₦1,000", icon: "FileText" as IconName, meta: "₦12,750" },
-        { title: "Trader's playbook", subtitle: "Free · 212 views", icon: "BookOpen" as IconName, meta: "₦0" },
+        { title: "Pricing sheet", subtitle: `15 unlocks · ${formatNaira(1000)}`, icon: "FileText" as IconName, meta: formatNaira(12750) },
+        { title: "Trader's playbook", subtitle: "Free · 212 views", icon: "BookOpen" as IconName, meta: formatNaira(0) },
       ];
 
   return (
@@ -205,7 +206,7 @@ export function EarningsDashboard() {
                       fontFeatureSettings: "var(--font-feature-tabular)",
                     }}
                   >
-                    {s.amount}
+                    {s.status ?? formatNaira(s.amount)}
                   </span>
                 </div>
                 {s.pct !== undefined ? (

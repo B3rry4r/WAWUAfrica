@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
+import { PLANS } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
@@ -26,7 +27,7 @@ export function CreatorOnboarding() {
   const [tier, setTier] = useState<CreatorTier>("pro");
   const [proSelected, setProSelected] = useState(true);
 
-  const price = tier === "pro" ? 18999 : 5999;
+  const price = PLANS[tier].price;
   const title = step === "value" ? "Become a creator" : step === "tier" ? "Choose your tier" : step === "confirm" ? "Confirm and pay" : step === "failed" ? "Confirm and pay" : step === "processing" ? "Confirm and pay" : "";
 
   const pay = () => {

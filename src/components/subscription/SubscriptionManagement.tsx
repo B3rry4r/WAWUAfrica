@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatNaira } from "@/lib/format";
+import { PLANS } from "@/types/subscription";
 import { subscriptionApi } from "@/lib/api/subscription";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
@@ -54,6 +55,12 @@ export function SubscriptionManagement() {
   const [showPaid, setShowPaid] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [paying, setPaying] = useState(false);
+
+  const monthlySales = 45000;
+  const kept = Math.round((monthlySales * PLANS.basic.split) / 100);
+  const proKept = Math.round((monthlySales * PLANS.pro.split) / 100);
+  const proCredit = 2750;
+  const dueToday = PLANS.pro.price - proCredit;
 
   const payAndGoPro = () => {
     setPaying(true);
@@ -120,17 +127,17 @@ export function SubscriptionManagement() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 9, paddingTop: 14, borderTop: "1px solid var(--border-hairline)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ flex: 1, fontSize: 13, color: "var(--text-secondary)" }}>On last month's ₦45,000 of sales</span>
+                  <span style={{ flex: 1, fontSize: 13, color: "var(--text-secondary)" }}>On last month's {formatNaira(monthlySales)} of sales</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ flex: 1, fontSize: 13.5, color: "var(--text-secondary)" }}>You kept</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-muted)", fontFeatureSettings: "var(--font-feature-tabular)" }}>₦38,250</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-muted)", fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(kept)}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>You would have kept</span>
-                  <span style={{ fontSize: 16, fontWeight: 700, fontFeatureSettings: "var(--font-feature-tabular)" }}>₦40,500</span>
+                  <span style={{ fontSize: 16, fontWeight: 700, fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(proKept)}</span>
                 </div>
-                <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>₦2,250 more, on that month alone.</span>
+                <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{formatNaira(proKept - kept)} more, on that month alone.</span>
               </div>
             </div>
 
@@ -145,15 +152,15 @@ export function SubscriptionManagement() {
             <Card>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ flex: 1, fontSize: 13.5, color: "var(--text-secondary)" }}>Pro, one year</span>
-                <span style={{ fontSize: 13.5, fontWeight: 600, fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(18999)}</span>
+                <span style={{ fontSize: 13.5, fontWeight: 600, fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(PLANS.pro.price)}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ flex: 1, fontSize: 13.5, color: "var(--text-secondary)" }}>Credit for the rest of your Basic year</span>
-                <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--success)", fontFeatureSettings: "var(--font-feature-tabular)" }}>−₦2,750</span>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--success)", fontFeatureSettings: "var(--font-feature-tabular)" }}>−{formatNaira(proCredit)}</span>
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10, paddingTop: 11, borderTop: "1px solid var(--border-hairline)" }}>
                 <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>Due today</span>
-                <span style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>₦16,249</span>
+                <span style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(dueToday)}</span>
               </div>
             </Card>
           </>
@@ -170,7 +177,7 @@ export function SubscriptionManagement() {
           {view === "upgrade" ? (
             <>
               <Button full size="lg" loading={paying} onClick={payAndGoPro}>
-                Pay ₦16,249 and go Pro
+                Pay {formatNaira(dueToday)} and go Pro
               </Button>
               <span style={{ alignSelf: "center", fontSize: 12, color: "var(--text-muted)" }}>Your 90/10 split starts on the next sale.</span>
             </>
@@ -195,10 +202,10 @@ export function SubscriptionManagement() {
           <div style={{ display: "flex", flexDirection: "column", gap: 9, width: "100%", padding: "15px 16px", borderRadius: "var(--radius-input)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", textAlign: "left" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ flex: 1, fontSize: 13, color: "var(--text-secondary)" }}>Paid today</span>
-              <span style={{ fontSize: 13.5, fontWeight: 700, fontFeatureSettings: "var(--font-feature-tabular)" }}>₦16,249</span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(dueToday)}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ flex: 1, fontSize: 13, color: "var(--text-secondary)" }}>Renews at ₦18,999</span>
+              <span style={{ flex: 1, fontSize: 13, color: "var(--text-secondary)" }}>Renews at {formatNaira(PLANS.pro.price)}</span>
               <span style={{ fontSize: 13.5, fontWeight: 600, fontFeatureSettings: "var(--font-feature-tabular)" }}>14 Aug 2027</span>
             </div>
           </div>
@@ -232,11 +239,11 @@ export function SubscriptionManagement() {
             <CheckRow ok>Buyers keep everything they bought from you.</CheckRow>
             <CheckRow ok>Money you have already earned is still yours.</CheckRow>
           </Card>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: "var(--radius-input)", background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }}>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-              <span style={{ fontSize: 13.5, fontWeight: 600 }}>Basic is ₦5,999</span>
-              <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Keeps 3 uploads and open communities</span>
-            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: "var(--radius-input)", background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600 }}>Basic is {formatNaira(PLANS.basic.price)}</span>
+                <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Keeps 3 uploads and open communities</span>
+              </div>
             <Button size="sm" variant="secondary" onClick={() => setShowCancel(false)}>
               Move to Basic
             </Button>
@@ -266,6 +273,8 @@ function CurrentView({
 }) {
   const expired = view === "expired";
   const pastdue = view === "pastdue";
+  const proPrice = PLANS.pro.price;
+  const basicPrice = PLANS.basic.price;
 
   return (
     <>
@@ -284,7 +293,7 @@ function CurrentView({
             We will try twice more. You have <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>11 days</span> before Pro lapses.
           </p>
           <Button full size="lg" onClick={() => onUpgrade()}>
-            Pay ₦18,999 now
+            Pay {formatNaira(proPrice)} now
           </Button>
         </div>
       ) : null}
@@ -308,7 +317,7 @@ function CurrentView({
             <StatusPill kind="success">Active</StatusPill>
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
-            <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>₦5,999</span>
+            <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(basicPrice)}</span>
             <span style={{ fontSize: 14, color: "var(--text-muted)" }}>a year</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 13, borderTop: "1px solid var(--border-hairline)" }}>

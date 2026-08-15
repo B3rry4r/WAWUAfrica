@@ -32,7 +32,6 @@ export function BottomNav({ accountType }: BottomNavProps) {
     label: accountType === "creator" ? "Create" : "Explore",
     icon: accountType === "creator" ? ("Plus" as IconName) : ("Compass" as IconName),
   };
-  const isCreate = pathname.startsWith(createSlot.href);
 
   const slots = [...baseSlots.slice(0, 2), createSlot, ...tailSlots];
 
@@ -59,8 +58,7 @@ export function BottomNav({ accountType }: BottomNavProps) {
       }}
     >
       {slots.map((slot) => {
-        const active =
-          slot.href === "/" ? pathname === "/" : pathname.startsWith(slot.href) || isCreate;
+        const active = slot.href === "/" ? pathname === "/" : pathname.startsWith(slot.href);
         const accent = active && slot.label !== "Create";
 
         return (

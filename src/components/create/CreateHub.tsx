@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Sheet } from "@/components/ui/Sheet";
 import { TierBadge } from "@/components/ui/Badge";
+import { formatNaira } from "@/lib/format";
 
 const typeIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -159,8 +160,8 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
       <Sheet
         open={slotsFull}
         onClose={() => setSlotsFull(false)}
-        title="All 3 slots are in use"
-        caption="Basic includes 3 uploads — 1 free and 2 paid."
+        title={`All ${slotsTotal} slots are in use`}
+        caption="Free up a slot by removing a piece — or move up a tier for more."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div
@@ -205,7 +206,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <TierBadge tier="pro" />
               <span style={{ flex: 1, fontSize: 13, color: "var(--text-muted)" }}>
-                {formatNairaPrice(proPrice)} a year
+                {formatNaira(proPrice)} a year
               </span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
@@ -239,8 +240,4 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
       </Sheet>
     </div>
   );
-}
-
-function formatNairaPrice(amount: number): string {
-  return `₦${amount.toLocaleString("en-NG")}`;
 }
