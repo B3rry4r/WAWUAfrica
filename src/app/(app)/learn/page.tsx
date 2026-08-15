@@ -1,47 +1,73 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { LearnCourse, LearnEntitlement, LearnGuide, Playbook } from "@/types/learn";
-import { getCourses, getGuides, getLearnEntitlement, getPlaybook } from "@/lib/api/learn";
-import { formatNaira } from "@/lib/format";
-import { TierBadge } from "@/components/ui/TierBadge";
+import { getCourseEntitlementState, getCourses, getGuides, getLearnEntitlement, getPlaybook } from "@/lib/api/learn";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { ListRow } from "@/components/ui/ListRow";
+import { EntitlementBanner } from "@/components/learn/EntitlementBanner";
+import { CourseRow } from "@/components/learn/CourseRow";
 
 const eyebrow = "text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]";
 const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]";
 
-export default async function LearnPage() {
-  let entitlement: LearnEntitlement;
-  let courses: LearnCourse[];
-  let playbook: Playbook;
-  let guides: LearnGuide[];
-  try {
-    [entitlement, courses, playbook, guides] = await Promise.all([getLearnEntitlement(), getCourses(), getPlaybook(), getGuides()]);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title={message ?? "We couldn't load Learn."} />;
-  }
+interface LearnData {
+  entitlement: LearnEntitlement;
+  courses: LearnCourse[];
+  playbook: Playbook;
+  guides: LearnGuide[];
+}
+
+export default function LearnPage() {
+  const [data, setData] = useState<LearnData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    setData(null);
+    setError(null);
+    Promise.all([getLearnEntitlement(), getCourses(), getPlaybook(), getGuides()])
+      .then(([entitlement, courses, playbook, guides]) => setData({ entitlement, courses, playbook, guides }))
+      .catch(() => setError("We couldn't load Learn."));
+  }, []);
+
+  useEffect(load, [load]);
+
+  if (error) return <ErrorState title={error} onRetry={load} />;
+  if (!data) return <LandingSkeleton />;
+
+  const { entitlement, courses, playbook, guides } = data;
+  const countryGuideCount = guides.filter((g) => g.kind === "country").length;
+  const article = guides.find((g) => g.kind === "article");
+  const template = guides.find((g) => g.kind === "template");
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 p-[16px_16px_96px]">
       <EntitlementBanner entitlement={entitlement} />
 
       <section className="flex flex-col gap-2.5">
         <span className={`px-[2px] ${eyebrow}`}>Start here</span>
         <Link href="/learn/playbook" className="no-underline block">
-          <div className="flex gap-3.5 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-4">
-            <span className="grid h-[72px] w-[56px] shrink-0 place-items-center rounded-[10px] bg-[var(--accent)] text-[12px] font-extrabold uppercase tracking-[0.02em] text-[var(--text-on-accent)]">
-              WAWU
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
-              <span className="text-[16px] font-bold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">
+          <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)]">
+            <div className="relative aspect-video w-full bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]">
+              <span className="absolute left-3 top-3 inline-flex h-[26px] items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.16)] bg-[rgba(11,10,13,0.62)] px-2.5 text-[11.5px] font-bold text-white backdrop-blur-[10px]">
+                <Icon name="BookOpen" size={12} color="#fff" strokeWidth={2.2} />
+                Playbook
+              </span>
+            </div>
+            <div className="flex flex-col gap-[9px] p-4">
+              <span className="text-[18px] font-semibold leading-[1.25] tracking-[-0.015em] text-[var(--text-primary)]">
                 {playbook.title}
               </span>
-              <span className="text-[12.5px] text-[var(--text-muted)]">
-                {playbook.pages} pages · {playbook.format} · Free download
-              </span>
-              <div className="flex">
-                <span className="inline-flex h-[30px] items-center gap-1.5 rounded-[var(--radius-chip)] border border-[var(--border-accent)] bg-[var(--accent-tint)] px-3 text-[12.5px] font-bold text-[var(--accent)]">
-                  <Icon name="Download" size={14} strokeWidth={2.4} />
+              <span className="text-[13px] leading-[1.45] text-[var(--text-secondary)]">{playbook.description}</span>
+              <div className="flex items-center gap-2.5 pt-2.5">
+                <span className="flex-1 text-[12.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+                  {playbook.pages} pages · {playbook.format}
+                </span>
+                <span className="inline-flex h-[38px] items-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent)] px-4 text-[13.5px] font-semibold text-[var(--text-on-accent)]">
+                  <Icon name="Download" size={16} color="var(--text-on-accent)" strokeWidth={2.2} />
                   Free download
                 </span>
               </div>
@@ -53,90 +79,57 @@ export default async function LearnPage() {
       <section className="flex flex-col gap-[11px]">
         <div className="flex items-center gap-2.5 px-[2px]">
           <span className={`flex-1 ${eyebrow}`}>Courses</span>
-          <Link href="/learn/courses" className={seeAll}>See all {entitlement.totalCourses}</Link>
+          <Link href="/learn/courses" className={seeAll}>See all {courses.length}</Link>
         </div>
         <div className="flex flex-col gap-2.5">
           {courses.slice(0, 3).map((c) => (
-            <CourseRow key={c.id} course={c} />
+            <CourseRow key={c.id} course={c} state={getCourseEntitlementState(c.id, entitlement)} freeCoursesTotal={entitlement.freeCoursesTotal} />
           ))}
         </div>
       </section>
 
       <section className="flex flex-col gap-[11px]">
         <div className="flex items-center gap-2.5 px-[2px]">
-          <span className={`flex-1 ${eyebrow}`}>Country guides</span>
-          <Link href="/learn/guides" className={seeAll}>See all {guides.length}</Link>
+          <span className={`flex-1 ${eyebrow}`}>Playbooks and guides</span>
+          <Link href="/learn/guides" className={seeAll}>See all</Link>
         </div>
-        <div className="flex flex-wrap gap-2 px-[2px]">
-          {guides.slice(0, 6).map((g) => (
-            <Link
-              key={g.id}
-              href={`/learn/guides/${g.id}`}
-              className="inline-flex h-[34px] items-center gap-[7px] rounded-[999px] border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-3.5 text-[13px] font-semibold text-[var(--text-secondary)] no-underline"
-            >
-              <Icon name="Globe" size={14} color="var(--text-muted)" />
-              {g.country}
-            </Link>
-          ))}
+        <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
+          <ListRow
+            title="Country guides"
+            subtitle={`Trade rules by market · ${countryGuideCount} countries`}
+            icon="Globe"
+            href="/learn/guides"
+          />
+          {article ? (
+            <ListRow title={article.title} subtitle={`Guide · ${article.readMinutes} min read`} icon="FileText" href={`/learn/guides/${article.id}`} />
+          ) : null}
+          {template ? (
+            <ListRow title={template.title} subtitle={`Download · ${template.fileCount} files`} icon="LayoutTemplate" href={`/learn/guides/${template.id}`} />
+          ) : null}
         </div>
       </section>
     </div>
   );
 }
 
-function EntitlementBanner({ entitlement }: { entitlement: LearnEntitlement }) {
-  const free = entitlement.freeCourses;
+function LandingSkeleton() {
   return (
-    <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[13px]">
-      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-        <Icon name="GraduationCap" size={17} color="var(--accent)" />
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="flex items-center gap-2 text-[14.5px] font-semibold text-[var(--text-primary)]">
-          {free} free course{free === 1 ? "" : "s"} available
-          <TierBadge tier={entitlement.tier} />
-        </span>
-        <span className="text-[12.5px] text-[var(--text-secondary)]">
-          {entitlement.tier === "basic"
-            ? "Upgrade to Pro to unlock the full catalogue."
-            : "Pro unlocks every course."}
-        </span>
+    <div className="flex flex-col gap-5 p-[16px_16px_96px]">
+      <Skeleton variant="row" className="h-[64px]" />
+      <div className="flex flex-col gap-2.5">
+        <Skeleton className="h-3 w-24 rounded" />
+        <Skeleton className="aspect-video w-full rounded-[var(--radius-card)]" />
       </div>
-      <Link href="/learn/courses" className={seeAll}>Browse</Link>
+      <div className="flex flex-col gap-2.5">
+        <Skeleton className="h-3 w-20 rounded" />
+        <Skeleton variant="row" className="h-[90px]" />
+        <Skeleton variant="row" className="h-[90px]" />
+        <Skeleton variant="row" className="h-[90px]" />
+      </div>
+      <div className="flex flex-col gap-2.5">
+        <Skeleton className="h-3 w-40 rounded" />
+        <Skeleton className="h-[200px] w-full rounded-[var(--radius-card)]" />
+      </div>
     </div>
-  );
-}
-
-function CourseRow({ course }: { course: LearnCourse }) {
-  return (
-    <Link
-      href={`/learn/courses/${course.id}`}
-      className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline"
-    >
-      <span className="grid h-[54px] w-[48px] shrink-0 place-items-center rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
-        <Icon name="Play" size={18} color="var(--accent)" />
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--text-muted)]">
-          {course.category}
-          <span className="text-[var(--accent)]">★ {course.rating.toFixed(1)}</span>
-        </span>
-        <span className="text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">
-          {course.title}
-        </span>
-        <span className="text-[12px] text-[var(--text-muted)]">
-          {course.lessons} lessons · {course.minutes} min · {course.host.name}
-        </span>
-      </div>
-      <div className="flex items-start">
-        {course.price === 0 ? (
-          <span className="text-[12.5px] font-bold text-[var(--success)]">Free</span>
-        ) : (
-          <span className="text-[13px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
-            {formatNaira(course.price)}
-          </span>
-        )}
-      </div>
-    </Link>
   );
 }
