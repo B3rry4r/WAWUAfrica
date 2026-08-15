@@ -27,11 +27,11 @@ export function PriceChip({ free, amount, label, tone = "plain", size = "sm" }: 
     <span
       className={[
         "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-[9px]",
+        "[font-feature-settings:var(--font-feature-tabular)]",
         height,
         text,
         toneClass,
       ].join(" ")}
-      style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}
     >
       {free ? "Free" : formatNaira(amount ?? 0)}
       {label ? <span className="opacity-70">{label}</span> : null}

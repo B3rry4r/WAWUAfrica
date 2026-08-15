@@ -34,8 +34,7 @@ export function Sheet({ open = true, onClose, title, caption, children }: SheetP
         onClick={onClose}
       />
       <div
-        className="relative z-10 flex max-h-[88vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-sheet border-t border-x border-strong bg-elevated shadow-sheet"
-        style={{ animation: "wawuSheetIn var(--dur-slow) var(--ease-soft)" }}
+        className="relative z-10 flex max-h-[88vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-sheet border-t border-x border-strong bg-elevated shadow-sheet [animation:wawuSheetIn_var(--dur-slow)_var(--ease-soft)]"
       >
         <div className="flex items-center gap-3 px-5 pt-3">
           <span className="h-1 w-9 shrink-0 rounded-full bg-tag" aria-hidden="true" />

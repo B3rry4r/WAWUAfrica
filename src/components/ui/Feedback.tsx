@@ -61,7 +61,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-[6px] inline-flex items-center gap-[7px] h-[44px] py-0 px-[20px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[14px] font-semibold cursor-pointer" style={{fontFamily: "var(--font-sans)"}}
+          className="mt-[6px] inline-flex items-center gap-[7px] h-[44px] py-0 px-[20px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[14px] font-semibold cursor-pointer [font-family:var(--font-sans)]"
         >
           <Icon name="RotateCcw" size={15} strokeWidth={2.2} color="currentColor" />
           Try again
@@ -81,7 +81,8 @@ export interface SkeletonProps {
 export function Skeleton({ width = "100%", height = 14, radius = 8, circle = false }: SkeletonProps) {
   return (
     <div
-      className="bg-[linear-gradient(110deg,_var(--surface-tag)_25%,_var(--surface-elevated)_50%,_var(--surface-tag)_75%)] shrink-0" style={{borderRadius: circle ? "50%" : radius, backgroundSize: "200% 100%", animation: "wawuShimmer 1.6s ease-in-out infinite"}}
+      className="bg-[linear-gradient(110deg,_var(--surface-tag)_25%,_var(--surface-elevated)_50%,_var(--surface-tag)_75%)] shrink-0 [background-size:200%_100%] [animation:wawuShimmer_1.6s_ease-in-out_infinite]"
+      style={{ borderRadius: circle ? "50%" : radius }}
     />
   );
 }

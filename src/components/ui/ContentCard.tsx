@@ -10,10 +10,10 @@ const statusPill: Record<ContentItem["status"], { kind: StatusKind; label: strin
   rejected: { kind: "error", label: "Rejected" },
 };
 
-const borderTint: Record<ContentItem["status"], string | undefined> = {
-  live: undefined,
-  review: "rgba(255,183,3,0.28)",
-  rejected: "rgba(255,92,92,0.28)",
+const borderClass: Record<ContentItem["status"], string> = {
+  live: "border-hairline",
+  review: "border-[rgba(255,183,3,0.28)]",
+  rejected: "border-[rgba(255,92,92,0.28)]",
 };
 
 export interface ContentCardProps {
@@ -24,13 +24,12 @@ export interface ContentCardProps {
 
 export function ContentCard({ item, onClick, onFix }: ContentCardProps) {
   const pill = statusPill[item.status];
-  const tint = borderTint[item.status];
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full" style={{border: `1px solid ${tint ?? "var(--border-hairline)"}`, cursor: onClick ? "pointer" : "default", fontFamily: "var(--font-sans)"}}
+      className={`flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full border [font-family:var(--font-sans)] ${borderClass[item.status]} ${onClick ? "cursor-pointer" : "cursor-default"}`}
     >
       <span
         className="w-[56px] h-[70px] rounded-[10] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]"
@@ -50,7 +49,7 @@ export function ContentCard({ item, onClick, onFix }: ContentCardProps) {
         </span>
 
         <span
-          className="text-[12.5px] text-[var(--text-secondary)] leading-[1.4]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
+          className="text-[12.5px] text-[var(--text-secondary)] leading-[1.4] [font-feature-settings:var(--font-feature-tabular)]"
         >
           {item.meta}
         </span>
@@ -67,7 +66,7 @@ export function ContentCard({ item, onClick, onFix }: ContentCardProps) {
 
         {item.status === "live" && item.earned !== undefined ? (
           <span
-            className="text-[13.5px] font-bold text-[var(--text-primary)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
+            className="text-[13.5px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]"
           >
             {formatNaira(item.earned)} earned
           </span>
@@ -107,14 +106,14 @@ export function ContentGridCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col gap-[10px] p-0 border-[none] bg-transparent text-left" style={{cursor: onClick ? "pointer" : "default", fontFamily: "var(--font-sans)"}}
+      className={`flex flex-col gap-[10px] p-0 border-[none] bg-transparent text-left [font-family:var(--font-sans)] ${onClick ? "cursor-pointer" : "cursor-default"}`}
     >
       <span
         className="relative rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)] overflow-hidden w-full" style={{aspectRatio: ratio}}
       >
         {locked ? (
           <span
-            className="absolute bg-[var(--locked-veil)] grid place-items-center" style={{inset: 0}}
+            className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center"
           >
             <Icon name="Lock" size={16} strokeWidth={2.2} color="#fff" />
           </span>

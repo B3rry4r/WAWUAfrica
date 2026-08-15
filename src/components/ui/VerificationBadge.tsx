@@ -6,12 +6,12 @@ interface VerificationBadgeProps {
   size?: number;
 }
 
-const colorByTier: Record<VerificationLevel, string> = {
-  basic: "var(--text-disabled)",
-  verified_user: "var(--info)",
-  verified_business: "var(--success)",
-  certified_professional: "var(--accent)",
-  trusted_partner: "var(--brand-yellow)",
+const colorClass: Record<VerificationLevel, string> = {
+  basic: "text-text-disabled",
+  verified_user: "text-info",
+  verified_business: "text-success",
+  certified_professional: "text-accent",
+  trusted_partner: "text-brand-yellow",
 };
 
 /**
@@ -20,12 +20,11 @@ const colorByTier: Record<VerificationLevel, string> = {
  */
 export function VerificationBadge({ tier, size = 16 }: VerificationBadgeProps) {
   if (tier === "basic") return null;
-  const color = colorByTier[tier];
   const Icon = tier === "trusted_partner" ? ShieldCheck : tier === "certified_professional" ? BadgeCheck : Check;
   return (
     <span
-      className="inline-grid shrink-0 place-items-center rounded-full"
-      style={{ width: size, height: size, color, background: "color-mix(in srgb, currentColor 12%, transparent)" }}
+      className={`inline-grid shrink-0 place-items-center rounded-full ${colorClass[tier]} bg-[color-mix(in_srgb,currentColor_12%,transparent)]`}
+      style={{ width: size, height: size }}
       title={tier.replaceAll("_", " ")}
       aria-label={`${tier.replaceAll("_", " ")} verified`}
     >
