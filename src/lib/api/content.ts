@@ -50,10 +50,12 @@ export interface ContentApi {
 }
 
 export const contentApi: ContentApi = {
+  // SEAM: replace with GET /api/hub/content/mine
   getLibrary: () => mockRequest([...libraryItems]),
 
   getLibraryItem: async (id) => {
     const item = libraryItems.find((i) => i.id === id);
+    // SEAM: replace with GET /api/hub/content/:id
     return mockRequest(item ? { ...item } : undefined, 150);
   },
 
@@ -76,6 +78,7 @@ export const contentApi: ContentApi = {
     const created: ContentItem = { ...item, id: `c${Date.now()}`, status: "review" };
     libraryItems.unshift(created);
     creator.slotsUsed = inUse + 1;
+    // SEAM: replace with POST /api/hub/content
     return mockRequest({ ...created }, 800);
   },
 };

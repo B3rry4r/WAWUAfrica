@@ -30,44 +30,19 @@ export function ContentCard({ item, onClick, onFix }: ContentCardProps) {
     <button
       type="button"
       onClick={onClick}
-      style={{
-        display: "flex",
-        gap: 13,
-        padding: 14,
-        borderRadius: "var(--radius-card)",
-        background: "var(--surface-card)",
-        border: `1px solid ${tint ?? "var(--border-hairline)"}`,
-        cursor: onClick ? "pointer" : "default",
-        textAlign: "left",
-        fontFamily: "var(--font-sans)",
-        width: "100%",
-      }}
+      className="flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full" style={{border: `1px solid ${tint ?? "var(--border-hairline)"}`, cursor: onClick ? "pointer" : "default", fontFamily: "var(--font-sans)"}}
     >
       <span
-        style={{
-          width: 56,
-          height: 70,
-          borderRadius: 10,
-          flexShrink: 0,
-          background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)",
-          border: "1px solid var(--border-hairline)",
-        }}
+        className="w-[56px] h-[70px] rounded-[10] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]"
       />
-      <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-        <span style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+      <span className="flex-1 min-w-0 flex flex-col gap-[6px]">
+        <span className="flex items-start gap-[8px]">
           <span
-            style={{
-              flex: 1,
-              minWidth: 0,
-              fontSize: 14.5,
-              fontWeight: 600,
-              lineHeight: 1.3,
-              color: "var(--text-primary)",
-            }}
+            className="flex-1 min-w-0 text-[14.5px] font-semibold leading-[1.3] text-[var(--text-primary)]"
           >
             {item.title}
           </span>
-          <span style={{ display: "flex", flexShrink: 0 }}>
+          <span className="flex shrink-0">
             <StatusPill kind={pill.kind} size="xs">
               {pill.label}
             </StatusPill>
@@ -75,41 +50,31 @@ export function ContentCard({ item, onClick, onFix }: ContentCardProps) {
         </span>
 
         <span
-          style={{
-            fontSize: 12.5,
-            color: "var(--text-secondary)",
-            lineHeight: 1.4,
-            fontFeatureSettings: "var(--font-feature-tabular)",
-          }}
+          className="text-[12.5px] text-[var(--text-secondary)] leading-[1.4]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
         >
           {item.meta}
         </span>
 
         {item.status === "rejected" && item.rejectionReason ? (
-          <span style={{ fontSize: 12.5, lineHeight: 1.45, color: "var(--text-secondary)" }}>
+          <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
             {item.rejectionReason}
           </span>
         ) : null}
 
         {item.status === "rejected" && onFix ? (
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--accent)" }}>Fix and resubmit</span>
+          <span className="text-[12.5px] font-semibold text-[var(--accent)]">Fix and resubmit</span>
         ) : null}
 
         {item.status === "live" && item.earned !== undefined ? (
           <span
-            style={{
-              fontSize: 13.5,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              fontFeatureSettings: "var(--font-feature-tabular)",
-            }}
+            className="text-[13.5px] font-bold text-[var(--text-primary)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
           >
             {formatNaira(item.earned)} earned
           </span>
         ) : null}
 
         {item.isFirstUpload ? (
-          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Your first upload</span>
+          <span className="text-[13px] text-[var(--text-muted)]">Your first upload</span>
         ) : null}
       </span>
     </button>
@@ -142,59 +107,27 @@ export function ContentGridCard({
     <button
       type="button"
       onClick={onClick}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        padding: 0,
-        border: "none",
-        background: "transparent",
-        cursor: onClick ? "pointer" : "default",
-        textAlign: "left",
-        fontFamily: "var(--font-sans)",
-      }}
+      className="flex flex-col gap-[10px] p-0 border-[none] bg-transparent text-left" style={{cursor: onClick ? "pointer" : "default", fontFamily: "var(--font-sans)"}}
     >
       <span
-        style={{
-          position: "relative",
-          aspectRatio: ratio,
-          borderRadius: "var(--radius-media)",
-          background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)",
-          border: "1px solid var(--border-hairline)",
-          overflow: "hidden",
-          width: "100%",
-        }}
+        className="relative rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)] overflow-hidden w-full" style={{aspectRatio: ratio}}
       >
         {locked ? (
           <span
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "var(--locked-veil)",
-              display: "grid",
-              placeItems: "center",
-            }}
+            className="absolute bg-[var(--locked-veil)] grid place-items-center" style={{inset: 0}}
           >
             <Icon name="Lock" size={16} stroke={2.2} color="#fff" />
           </span>
         ) : null}
       </span>
-      <span style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <span className="flex flex-col gap-[3px]">
         <span
-          style={{
-            fontSize: 14.5,
-            fontWeight: 600,
-            lineHeight: 1.3,
-            color: "var(--text-primary)",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
+          className="text-[14.5px] font-semibold leading-[1.3] text-[var(--text-primary)] whitespace-nowrap overflow-hidden text-ellipsis"
         >
           {title}
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <span style={{ fontSize: 12.5, color: "var(--text-muted)", fontWeight: 500 }}>
+        <span className="flex items-center gap-[7px]">
+          <span className="text-[12.5px] text-[var(--text-muted)] font-medium">
             {count ?? contentType}
           </span>
           <PriceChip amount={price} free={!locked && price === undefined} />

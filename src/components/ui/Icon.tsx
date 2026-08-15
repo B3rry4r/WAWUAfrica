@@ -457,8 +457,8 @@ export function Icon({
 }: IconProps) {
   return (
     <svg
-      className={className}
-      style={{ width: size, height: size, flexShrink: 0, ...style }}
+      className={`shrink-0 ${className ?? ""}`}
+      style={{ width: size, height: size, ...style }}
       viewBox="0 0 24 24"
       fill={fill}
       stroke={color}

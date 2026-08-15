@@ -11,33 +11,18 @@ export interface EmptyStateProps {
 export function EmptyState({ icon = "Inbox", title, description, action }: EmptyStateProps) {
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-        padding: "48px 28px",
-        textAlign: "center",
-      }}
+      className="flex flex-col items-center gap-[12px] py-[48px] px-[28px] text-center"
     >
       <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 64,
-          height: 64,
-          borderRadius: 999,
-          background: "var(--surface-tag)",
-          border: "1px solid var(--border-hairline)",
-        }}
+        className="grid place-items-center w-[64px] h-[64px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)]"
       >
         <Icon name={icon} size={26} stroke={1.8} color="var(--text-muted)" />
       </span>
-      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)" }}>
+      <h3 className="m-0 text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
         {title}
       </h3>
       {description ? (
-        <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "var(--text-secondary)", maxWidth: 300 }}>
+        <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-w-[300px]">
           {description}
         </p>
       ) : null}
@@ -59,54 +44,24 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-        padding: "48px 28px",
-        textAlign: "center",
-      }}
+      className="flex flex-col items-center gap-[12px] py-[48px] px-[28px] text-center"
     >
       <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 64,
-          height: 64,
-          borderRadius: 999,
-          background: "var(--danger-tint)",
-          border: "1px solid var(--border-hairline)",
-        }}
+        className="grid place-items-center w-[64px] h-[64px] rounded-[999] bg-[var(--danger-tint)] border border-[var(--border-hairline)]"
       >
         <Icon name="TriangleAlert" size={26} stroke={1.8} color="var(--danger)" />
       </span>
-      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)" }}>
+      <h3 className="m-0 text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
         {title}
       </h3>
-      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "var(--text-secondary)", maxWidth: 300 }}>
+      <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-w-[300px]">
         {description}
       </p>
       {onRetry ? (
         <button
           type="button"
           onClick={onRetry}
-          style={{
-            marginTop: 6,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 7,
-            height: 44,
-            padding: "0 20px",
-            borderRadius: 999,
-            background: "var(--surface-tag)",
-            border: "1px solid var(--border-hairline)",
-            color: "var(--text-primary)",
-            fontSize: 14,
-            fontWeight: 600,
-            fontFamily: "var(--font-sans)",
-            cursor: "pointer",
-          }}
+          className="mt-[6px] inline-flex items-center gap-[7px] h-[44px] py-0 px-[20px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[14px] font-semibold cursor-pointer" style={{fontFamily: "var(--font-sans)"}}
         >
           <Icon name="RotateCcw" size={15} stroke={2.2} color="currentColor" />
           Try again
@@ -126,16 +81,7 @@ export interface SkeletonProps {
 export function Skeleton({ width = "100%", height = 14, radius = 8, circle = false }: SkeletonProps) {
   return (
     <div
-      style={{
-        width,
-        height,
-        borderRadius: circle ? "50%" : radius,
-        background:
-          "linear-gradient(110deg, var(--surface-tag) 25%, var(--surface-elevated) 50%, var(--surface-tag) 75%)",
-        backgroundSize: "200% 100%",
-        animation: "wawuShimmer 1.6s ease-in-out infinite",
-        flexShrink: 0,
-      }}
+      className="bg-[linear-gradient(110deg,_var(--surface-tag)_25%,_var(--surface-elevated)_50%,_var(--surface-tag)_75%)] shrink-0" style={{borderRadius: circle ? "50%" : radius, backgroundSize: "200% 100%", animation: "wawuShimmer 1.6s ease-in-out infinite"}}
     />
   );
 }

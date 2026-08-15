@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { currentSession } from "@/lib/api/mocks/session";
+import { creatorGates } from "@/lib/auth/gates";
 import { currentEarnings } from "@/lib/api/earnings";
 import { PLANS } from "@/types/subscription";
 import { Button } from "@/components/ui/Button";
@@ -24,7 +25,8 @@ interface StreamRow {
 }
 
 export function EarningsDashboard() {
-  const [approved, setApproved] = useState(currentSession.creator?.kyc === "approved");
+  const gates = creatorGates(currentSession);
+  const [approved, setApproved] = useState(gates.canEarn);
 
   const tier = currentSession.creator?.tier ?? "basic";
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
@@ -60,58 +62,39 @@ export function EarningsDashboard() {
       <FlowHeader
         title="Earnings"
         right={
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)" }}>August</span>
+          <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">August</span>
         }
       />
 
-      <div style={{ display: "flex", justifyContent: "center", gap: 4, padding: "10px 16px 0" }}>
+      <div className="flex justify-center gap-[4px] pt-[10px] px-[16px] pb-0">
         {[false, true].map((v) => (
           <button
             key={String(v)}
             type="button"
             onClick={() => setApproved(v)}
-            style={{
-              height: 30,
-              padding: "0 14px",
-              borderRadius: 999,
-              border: approved === v ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)",
-              background: approved === v ? "var(--accent-tint)" : "var(--surface-tag)",
-              color: approved === v ? "var(--accent)" : "var(--text-muted)",
-              fontSize: 11.5,
-              fontWeight: 600,
-              fontFamily: "var(--font-sans)",
-              cursor: "pointer",
-            }}
+            className="h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer" style={{border: approved === v ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", background: approved === v ? "var(--accent-tint)" : "var(--surface-tag)", color: approved === v ? "var(--accent)" : "var(--text-muted)", fontFamily: "var(--font-sans)"}}
           >
             {v ? "KYC approved" : "KYC pending"}
           </button>
         ))}
       </div>
 
-      <div style={{ padding: "16px 16px 32px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
         {!approved ? (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              padding: 18,
-              borderRadius: "var(--radius-card)",
-              background: "var(--warning-tint)",
-              border: "1px solid rgba(255,183,3,0.32)",
-            }}
+            className="flex flex-col gap-[14px] p-[18px] rounded-[var(--radius-card)] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.32)]"
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 13, background: "rgba(255,183,3,0.16)", border: "1px solid rgba(255,183,3,0.3)", flexShrink: 0 }}>
+            <div className="flex items-center gap-[12px]">
+              <span className="grid place-items-center w-[40px] h-[40px] rounded-[13] bg-[rgba(255,183,3,0.16)] border border-[rgba(255,183,3,0.3)] shrink-0">
                 <Icon name="Clock" size={18} color="var(--warning)" stroke={2.2} />
               </span>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-                <span style={{ fontSize: 15.5, fontWeight: 600, color: "var(--text-primary)" }}>Finish verification to get paid</span>
-                <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Two steps left · takes 1 to 3 days</span>
+              <div className="flex-1 flex flex-col gap-[3px]">
+                <span className="text-[15.5px] font-semibold text-[var(--text-primary)]">Finish verification to get paid</span>
+                <span className="text-[12.5px] text-[var(--text-secondary)]">Two steps left · takes 1 to 3 days</span>
               </div>
             </div>
-            <Link href="/kyc" style={{ textDecoration: "none" }}>
-              <Button full iconRight="ArrowRight" style={{ height: 48 }}>
+            <Link href="/kyc" className="no-underline">
+              <Button full iconRight="ArrowRight" className="h-[48px]">
                 Complete verification
               </Button>
             </Link>
@@ -119,48 +102,22 @@ export function EarningsDashboard() {
         ) : null}
 
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            padding: 20,
-            borderRadius: "var(--radius-card)",
-            background: "var(--surface-card)",
-            border: "1px solid var(--border-hairline)",
-          }}
+          className="flex flex-col gap-[12px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
         >
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
             Earned this month
           </span>
           <span
-            style={{
-              fontSize: 38,
-              fontWeight: 700,
-              letterSpacing: "-0.035em",
-              lineHeight: 1,
-              color: approved ? "var(--text-primary)" : "var(--text-secondary)",
-              fontFeatureSettings: "var(--font-feature-tabular)",
-            }}
+            className="text-[38px] font-bold tracking-[-0.035em] leading-[1]" style={{color: approved ? "var(--text-primary)" : "var(--text-secondary)", fontFeatureSettings: "var(--font-feature-tabular)"}}
           >
             {formatNaira(earned)}
           </span>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="flex gap-[8px] flex-wrap">
             {approved ? (
               <>
                 <StatusPill kind="success">Paid to GTB ••••6789</StatusPill>
                 <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    height: 26,
-                    padding: "0 10px",
-                    borderRadius: 999,
-                    background: "var(--surface-tag)",
-                    border: "1px solid var(--border-hairline)",
-                    color: "var(--text-secondary)",
-                    fontSize: 11.5,
-                    fontWeight: 700,
-                  }}
+                  className="inline-flex items-center h-[26px] py-0 px-[10px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] text-[11.5px] font-bold"
                 >
                   {keep}/{100 - keep} on {tierLabel}
                 </span>
@@ -170,48 +127,35 @@ export function EarningsDashboard() {
             )}
           </div>
           {!approved ? (
-            <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "var(--text-muted)", paddingTop: 12, borderTop: "1px solid var(--border-hairline)" }}>
+            <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)] pt-[12px] border-t border-t-[var(--border-hairline)]">
               Every naira is counted and kept. It goes to your bank account once verification clears — nothing expires while you wait.
             </span>
           ) : null}
         </div>
 
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            padding: 18,
-            borderRadius: "var(--radius-card)",
-            background: "var(--surface-card)",
-            border: "1px solid var(--border-hairline)",
-          }}
+          className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
         >
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
             Where it came from
           </span>
           {streams.map((s) => (
-            <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 12, opacity: s.dim ? 0.6 : 1 }}>
-              <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, borderRadius: 11, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)", flexShrink: 0 }}>
+            <div key={s.label} className="flex items-center gap-[12px]" style={{opacity: s.dim ? 0.6 : 1}}>
+              <span className="grid place-items-center w-[34px] h-[34px] rounded-[11] bg-[var(--surface-tag)] border border-[var(--border-hairline)] shrink-0">
                 <Icon name={s.icon} size={15} stroke={2} color={s.dim ? "var(--text-muted)" : "var(--text-secondary)"} />
               </span>
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                  <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)" }}>{s.label}</span>
+              <div className="flex-1 min-w-0 flex flex-col gap-[5px]">
+                <div className="flex items-baseline gap-[10px]">
+                  <span className="flex-1 text-[13.5px] font-semibold text-[var(--text-primary)]">{s.label}</span>
                   <span
-                    style={{
-                      fontSize: s.dim ? 13 : 14,
-                      fontWeight: s.dim ? 600 : 700,
-                      color: s.dim ? "var(--text-muted)" : "var(--text-primary)",
-                      fontFeatureSettings: "var(--font-feature-tabular)",
-                    }}
+                    className="" style={{fontSize: s.dim ? 13 : 14, fontWeight: s.dim ? 600 : 700, color: s.dim ? "var(--text-muted)" : "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)"}}
                   >
                     {s.status ?? formatNaira(s.amount)}
                   </span>
                 </div>
                 {s.pct !== undefined ? (
-                  <div style={{ height: 4, borderRadius: 999, background: "var(--surface-tag)", overflow: "hidden" }}>
-                    <div style={{ width: `${s.pct}%`, height: "100%", borderRadius: 999, background: "var(--accent)" }} />
+                  <div className="h-[4px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden">
+                    <div className="h-full rounded-[999] bg-[var(--accent)]" style={{width: `${s.pct}%`}} />
                   </div>
                 ) : null}
               </div>
@@ -220,11 +164,11 @@ export function EarningsDashboard() {
         </div>
 
         {approved ? (
-          <div style={{ display: "flex", gap: 12 }}>
-            <div style={{ flex: 1, padding: 16, borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
+          <div className="flex gap-[12px]">
+            <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
               <StatBlock value="1,240" label="EVG score" align="start" size="md" />
             </div>
-            <div style={{ flex: 1, padding: 16, borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
+            <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
               <StatBlock value="86" label="Sales" align="start" size="md" />
             </div>
           </div>
@@ -232,7 +176,7 @@ export function EarningsDashboard() {
 
         <div>
           <SectionHeader caption="Recent" title="Sales" action="See all" />
-          <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+          <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] p-[4px]">
             {recent.map((r) => (
               <ListRow key={r.title} title={r.title} subtitle={r.subtitle} icon={r.icon} meta={r.meta} />
             ))}

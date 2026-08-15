@@ -8,11 +8,13 @@ export interface KycApi {
 }
 
 export const kycApi: KycApi = {
+  // SEAM: replace with GET /api/hub/creator/kyc
   getStatus: () => mockRequest({ ...kycSubmission }),
 
   submit: async (submission) => {
     const updated: KycSubmission = { ...kycSubmission, ...submission, status: "pending" };
     Object.assign(kycSubmission, updated);
+    // SEAM: replace with POST /api/hub/creator/kyc
     return mockRequest({ ...updated }, 800);
   },
 };

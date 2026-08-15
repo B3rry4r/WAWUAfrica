@@ -12,6 +12,7 @@ export interface SessionApi {
 }
 
 export const sessionApi: SessionApi = {
+  // SEAM: replace with GET /api/hub/session
   getSession: () => mockRequest({ ...currentSession, creator: currentSession.creator ? { ...currentSession.creator } : null }),
 
   switchAccountType: async (type) => {

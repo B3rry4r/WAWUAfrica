@@ -48,13 +48,13 @@ export function ContentLibrary() {
       <FlowHeader
         title="My content"
         right={
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)", fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
             {items ? items.length : "–"} of {slotsTotal} slots
           </span>
         }
       />
 
-      <div style={{ display: "flex", gap: 8, padding: "12px 16px", overflow: "hidden", borderBottom: "1px solid var(--border-hairline)" }}>
+      <div className="flex gap-[8px] py-[12px] px-[16px] overflow-hidden border-b border-b-[var(--border-hairline)]">
         {(["all", "live", "review", "rejected"] as Filter[]).map((f) => {
           const count = f === "all" ? items?.length ?? 0 : items?.filter((i) => i.status === f).length ?? 0;
           const active = filter === f;
@@ -63,21 +63,7 @@ export function ContentLibrary() {
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              style={{
-                flexShrink: 0,
-                display: "inline-flex",
-                alignItems: "center",
-                height: 32,
-                padding: "0 14px",
-                borderRadius: 999,
-                background: active ? "var(--accent)" : "var(--surface-tag)",
-                border: active ? "none" : "1px solid var(--border-hairline)",
-                color: active ? "var(--text-on-accent)" : "var(--text-secondary)",
-                fontSize: 13,
-                fontWeight: active ? 600 : 500,
-                fontFamily: "var(--font-sans)",
-                cursor: "pointer",
-              }}
+              className="shrink-0 inline-flex items-center h-[32px] py-0 px-[14px] rounded-[999] text-[13px] cursor-pointer" style={{background: active ? "var(--accent)" : "var(--surface-tag)", border: active ? "none" : "1px solid var(--border-hairline)", color: active ? "var(--text-on-accent)" : "var(--text-secondary)", fontWeight: active ? 600 : 500, fontFamily: "var(--font-sans)"}}
             >
               {filterLabels[f]} {f === "all" ? count : `· ${count}`}
             </button>
@@ -85,7 +71,7 @@ export function ContentLibrary() {
         })}
       </div>
 
-      <div style={{ padding: "14px 16px 32px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="pt-[14px] px-[16px] pb-[32px] flex flex-col gap-[12px]">
         {error ? (
           <ErrorState onRetry={load} />
         ) : !items ? (

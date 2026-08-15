@@ -38,24 +38,7 @@ export function BottomNav({ accountType }: BottomNavProps) {
   return (
     <nav
       aria-label="Primary"
-      style={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: 78,
-        paddingBottom: 12,
-        paddingTop: 10,
-        display: "flex",
-        alignItems: "center",
-        background: "rgba(19,19,22,.86)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid var(--border-hairline)",
-        maxWidth: "var(--mobile-column)",
-        margin: "0 auto",
-        zIndex: 40,
-      }}
+      className="fixed left-0 right-0 bottom-0 h-[78px] pb-[12px] pt-[10px] flex items-center bg-[rgba(19,19,22,.86)] backdrop-blur-[20px] border-t border-t-[var(--border-hairline)] max-w-[var(--mobile-column)] m-0 z-[40]" style={{WebkitBackdropFilter: "blur(20px)"}}
     >
       {slots.map((slot) => {
         const active = slot.href === "/" ? pathname === "/" : pathname.startsWith(slot.href);
@@ -65,28 +48,11 @@ export function BottomNav({ accountType }: BottomNavProps) {
           <Link
             key={slot.href}
             href={slot.href}
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 5,
-              color: accent ? "var(--accent)" : "var(--text-muted)",
-              fontSize: 10.5,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
+            className="flex-1 flex flex-col items-center gap-[5px] text-[10.5px] font-semibold no-underline" style={{color: accent ? "var(--accent)" : "var(--text-muted)"}}
           >
             {slot.label === "Create" ? (
               <span
-                style={{
-                  display: "grid",
-                  placeItems: "center",
-                  width: 34,
-                  height: 26,
-                  borderRadius: 9,
-                  background: accent ? "var(--accent)" : "var(--surface-tag)",
-                }}
+                className="grid place-items-center w-[34px] h-[26px] rounded-[9]" style={{background: accent ? "var(--accent)" : "var(--surface-tag)"}}
               >
                 <Icon name="Plus" size={18} stroke={2.6} color="#fff" />
               </span>

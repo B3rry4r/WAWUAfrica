@@ -14,8 +14,8 @@ type Step = "value" | "tier" | "confirm" | "processing" | "success" | "failed";
 
 function CheckRow({ children }: { children: React.ReactNode }) {
   return (
-    <span style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13.5, lineHeight: 1.4, color: "var(--text-secondary)" }}>
-      <Icon name="Check" size={15} color="var(--accent)" stroke={2.4} style={{ marginTop: 2 }} />
+    <span className="flex items-start gap-[9px] text-[13.5px] leading-[1.4] text-[var(--text-secondary)]">
+      <Icon name="Check" size={15} color="var(--accent)" stroke={2.4} className="mt-[2px]" />
       {children}
     </span>
   );
@@ -38,13 +38,13 @@ export function CreatorOnboarding() {
   if (step === "processing") {
     return (
       <Centered>
-        <span style={{ display: "grid", placeItems: "center", width: 88, height: 88, borderRadius: 999, background: "var(--surface-card)", border: "1px solid var(--border-strong)" }}>
+        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--surface-card)] border border-[var(--border-strong)]">
           <Icon name="Loader" size={36} stroke={2.2} color="var(--accent)" />
         </span>
-        <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em" }}>Confirming your payment</h2>
-        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "var(--text-secondary)", maxWidth: 280 }}>This takes a few seconds. Do not close the app.</p>
-        <div style={{ width: 180, height: 5, borderRadius: 999, background: "var(--surface-tag)", overflow: "hidden", marginTop: 6 }}>
-          <div style={{ width: "62%", height: "100%", borderRadius: 999, background: "var(--accent)" }} />
+        <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Confirming your payment</h2>
+        <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[280px]">This takes a few seconds. Do not close the app.</p>
+        <div className="w-[180px] h-[5px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden mt-[6px]">
+          <div className="w-[62%] h-full rounded-[999] bg-[var(--accent)]" />
         </div>
       </Centered>
     );
@@ -52,25 +52,25 @@ export function CreatorOnboarding() {
 
   if (step === "success") {
     return (
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", maxWidth: "var(--mobile-column)", margin: "0 auto" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, padding: "40px 32px", textAlign: "center" }}>
-          <span style={{ display: "grid", placeItems: "center", width: 88, height: 88, borderRadius: 999, background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }}>
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+        <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center">
+          <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
             <Icon name="Check" size={40} stroke={2.6} color="var(--accent)" />
           </span>
-          <h2 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em" }}>You are on {tier === "pro" ? "Pro" : "Basic"}</h2>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "var(--text-secondary)", maxWidth: 290 }}>Uploading is on. Complete KYC next so we can pay you.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%", padding: 16, borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", textAlign: "left", marginTop: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ flex: 1, fontSize: 13.5, color: "var(--text-secondary)" }}>Paid today</span>
-              <span style={{ fontSize: 14, fontWeight: 700, fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(price)}</span>
+          <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em]">You are on {tier === "pro" ? "Pro" : "Basic"}</h2>
+          <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[290px]">Uploading is on. Complete KYC next so we can pay you.</p>
+          <div className="flex flex-col gap-[8px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
+            <div className="flex items-center gap-[10px]">
+              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Paid today</span>
+              <span className="text-[14px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ flex: 1, fontSize: 13.5, color: "var(--text-secondary)" }}>Renews</span>
-              <span style={{ fontSize: 14, fontWeight: 600, fontFeatureSettings: "var(--font-feature-tabular)" }}>14 Aug 2027</span>
+            <div className="flex items-center gap-[10px]">
+              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Renews</span>
+              <span className="text-[14px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>14 Aug 2027</span>
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "16px 20px 26px", borderTop: "1px solid var(--border-hairline)" }}>
+        <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
           <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/kyc")}>
             Start KYC
           </Button>
@@ -83,56 +83,56 @@ export function CreatorOnboarding() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", maxWidth: "var(--mobile-column)", margin: "0 auto" }}>
-      <FlowHeader title={title} onBack={() => (step === "value" ? router.back() : setStep("value"))} right={step === "tier" ? <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)" }}>Billed yearly</span> : undefined} />
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+      <FlowHeader title={title} onBack={() => (step === "value" ? router.back() : setStep("value"))} right={step === "tier" ? <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">Billed yearly</span> : undefined} />
 
-      <div style={{ flex: 1, padding: step === "value" ? "24px 20px 20px" : "18px 20px 20px", display: "flex", flexDirection: "column", gap: 18 }}>
+      <div className="flex-1 flex flex-col gap-[18px]" style={{padding: step === "value" ? "24px 20px 20px" : "18px 20px 20px"}}>
         {step === "value" ? (
           <>
-            <h2 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
+            <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em] leading-[1.15]">
               Get paid for what you already know
             </h2>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+            <div className="flex flex-col gap-[15px]">
               {[
                 { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates — ₦100 to ₦5,000 a piece." },
                 { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set ₦50–₦500 a message and reply within 24 hours." },
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
-                <div key={r.icon} style={{ display: "flex", gap: 12 }}>
-                  <span style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: 12, background: "var(--accent-tint)", border: "1px solid var(--border-accent)", flexShrink: 0 }}>
+                <div key={r.icon} className="flex gap-[12px]">
+                  <span className="grid place-items-center w-[38px] h-[38px] rounded-[12] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
                     <Icon name={r.icon} size={17} stroke={2} color="var(--accent)" />
                   </span>
-                  <span style={{ flex: 1, fontSize: 14, lineHeight: 1.45, color: "var(--text-secondary)" }}>
-                    <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{r.strong}</span>
+                  <span className="flex-1 text-[14px] leading-[1.45] text-[var(--text-secondary)]">
+                    <span className="text-[var(--text-primary)] font-semibold">{r.strong}</span>
                     {r.text}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16, borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>Two steps</span>
+            <div className="flex flex-col gap-[12px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
+              <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">Two steps</span>
               {[
                 ["Pick a yearly tier", " — unlocks uploading."],
                 ["Complete KYC", " — unlocks payouts. Takes 1–3 days."],
               ].map(([s, r], i) => (
-                <div key={s} style={{ display: "flex", gap: 11 }}>
-                  <span style={{ display: "grid", placeItems: "center", width: 24, height: 24, borderRadius: 999, background: "var(--accent)", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
-                  <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.45, color: "var(--text-secondary)" }}>
-                    <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{s}</span>
+                <div key={s} className="flex gap-[11px]">
+                  <span className="grid place-items-center w-[24px] h-[24px] rounded-[999] bg-[var(--accent)] text-[#fff] text-[12px] font-bold shrink-0">{i + 1}</span>
+                  <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
+                    <span className="text-[var(--text-primary)] font-semibold">{s}</span>
                     {r}
                   </span>
                 </div>
               ))}
-              <span style={{ fontSize: 12.5, lineHeight: 1.45, color: "var(--text-muted)", paddingLeft: 35 }}>You can upload and sell while KYC is in review.</span>
+              <span className="text-[12.5px] leading-[1.45] text-[var(--text-muted)] pl-[35px]">You can upload and sell while KYC is in review.</span>
             </div>
           </>
         ) : null}
 
         {step === "tier" ? (
           <>
-            <div style={{ display: "flex", gap: 4, padding: 4, borderRadius: 999, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
+            <div className="flex gap-[4px] p-[4px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
               {(["Basic", "Pro"] as const).map((label) => {
                 const active = (label === "Pro") === proSelected;
                 return (
@@ -143,20 +143,7 @@ export function CreatorOnboarding() {
                       setProSelected(label === "Pro");
                       setTier(label === "Pro" ? "pro" : "basic");
                     }}
-                    style={{
-                      flex: 1,
-                      display: "grid",
-                      placeItems: "center",
-                      height: 40,
-                      borderRadius: 999,
-                      border: "none",
-                      background: active ? "var(--accent)" : "transparent",
-                      color: active ? "var(--text-on-accent)" : "var(--text-secondary)",
-                      fontSize: 13.5,
-                      fontWeight: 600,
-                      fontFamily: "var(--font-sans)",
-                      cursor: "pointer",
-                    }}
+                    className="flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold cursor-pointer" style={{background: active ? "var(--accent)" : "transparent", color: active ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-sans)"}}
                   >
                     {label}
                   </button>
@@ -164,23 +151,23 @@ export function CreatorOnboarding() {
               })}
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 15, padding: 20, borderRadius: "var(--radius-card)", background: proSelected ? "var(--surface-elevated)" : "var(--surface-card)", border: proSelected ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)" }}>
-              <div style={{ display: "flex" }}>
+            <div className="flex flex-col gap-[15px] p-0 rounded-[var(--radius-card)]" style={{background: proSelected ? "var(--surface-elevated)" : "var(--surface-card)", border: proSelected ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)"}}>
+              <div className="flex">
                 <TierBadge tier={tier} />
               </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
-                <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(price)}</span>
-                <span style={{ fontSize: 14, color: "var(--text-muted)" }}>a year</span>
+              <div className="flex items-baseline gap-[7px]">
+                <span className="text-[34px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
+                <span className="text-[14px] text-[var(--text-muted)]">a year</span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: "var(--radius-input)", background: proSelected ? "var(--accent-tint)" : "var(--surface-tag)", border: proSelected ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)" }}>
-                <span style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>{proSelected ? "90/10" : "85/15"}</span>
-                <span style={{ flex: 1, fontSize: 12.5, lineHeight: 1.4, color: "var(--text-secondary)" }}>
+              <div className="flex items-center gap-[12px] p-[14px] rounded-[var(--radius-input)]" style={{background: proSelected ? "var(--accent-tint)" : "var(--surface-tag)", border: proSelected ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)"}}>
+                <span className="text-[24px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{proSelected ? "90/10" : "85/15"}</span>
+                <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
                   {proSelected ? "Keep 90% on content, DMs, tips and storefront — not 85%." : "Community credits still pay 90% on every tier."}
                 </span>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              <div className="flex flex-col gap-[9px]">
                 {proSelected ? (
                   <>
                     <CheckRow>7 uploads — 2 free, 5 paid</CheckRow>
@@ -206,57 +193,57 @@ export function CreatorOnboarding() {
 
         {step === "confirm" ? (
           <>
-            <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", overflow: "hidden" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--border-hairline)" }}>
-                <span style={{ flex: 1, fontSize: 14, color: "var(--text-secondary)" }}>Tier</span>
+            <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] overflow-hidden">
+              <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
+                <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Tier</span>
                 <TierBadge tier={tier} />
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--border-hairline)" }}>
-                <span style={{ flex: 1, fontSize: 14, color: "var(--text-secondary)" }}>Billing</span>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>Yearly</span>
+              <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
+                <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Billing</span>
+                <span className="text-[14px] font-semibold">Yearly</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--border-hairline)" }}>
-                <span style={{ flex: 1, fontSize: 14, color: "var(--text-secondary)" }}>Renews on</span>
-                <span style={{ fontSize: 14, fontWeight: 600, fontFeatureSettings: "var(--font-feature-tabular)" }}>14 Aug 2027</span>
+              <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
+                <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Renews on</span>
+                <span className="text-[14px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>14 Aug 2027</span>
               </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 12, padding: 18 }}>
-                <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>Total today</span>
-                <span style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", fontFeatureSettings: "var(--font-feature-tabular)" }}>{formatNaira(price)}</span>
+              <div className="flex items-baseline gap-[12px] p-[18px]">
+                <span className="flex-1 text-[15px] font-semibold">Total today</span>
+                <span className="text-[26px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "15px 16px", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
-              <span style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: 12, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
+            <div className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
+              <span className="grid place-items-center w-[38px] h-[38px] rounded-[12] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
                 <Icon name="CreditCard" size={17} stroke={2} color="var(--text-secondary)" />
               </span>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontSize: 14.5, fontWeight: 600 }}>Card, transfer or USSD</span>
-                <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>Handled by Flutterwave</span>
+              <div className="flex-1 flex flex-col gap-[2px]">
+                <span className="text-[14.5px] font-semibold">Card, transfer or USSD</span>
+                <span className="text-[12.5px] text-[var(--text-muted)]">Handled by Flutterwave</span>
               </div>
             </div>
 
-            <span style={{ fontSize: 12.5, lineHeight: 1.5, color: "var(--text-muted)" }}>
+            <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
               Your card is stored by Flutterwave for next year's renewal. WAWU never sees it.
             </span>
           </>
         ) : null}
 
         {step === "failed" ? (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, padding: "30px 0", textAlign: "center" }}>
-            <span style={{ display: "grid", placeItems: "center", width: 88, height: 88, borderRadius: 999, background: "var(--danger-tint)", border: "1px solid rgba(255,92,92,0.3)" }}>
+          <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[30px] px-0 text-center">
+            <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.3)]">
               <Icon name="TriangleAlert" size={36} stroke={2.2} color="var(--danger)" />
             </span>
-            <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em" }}>Payment did not go through</h2>
-            <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "var(--text-secondary)", maxWidth: 290 }}>Your bank declined the charge. Nothing was taken from your account.</p>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, width: "100%", padding: "14px 16px", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", textAlign: "left", marginTop: 6 }}>
-              <Icon name="Info" size={16} color="var(--text-muted)" style={{ marginTop: 1 }} />
-              <span style={{ flex: 1, fontSize: 13, lineHeight: 1.5, color: "var(--text-secondary)" }}>Try another card, or pay by transfer or USSD instead.</span>
+            <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Payment did not go through</h2>
+            <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[290px]">Your bank declined the charge. Nothing was taken from your account.</p>
+            <div className="flex items-start gap-[10px] w-full py-[14px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
+              <Icon name="Info" size={16} color="var(--text-muted)" className="mt-[1px]" />
+              <span className="flex-1 text-[13px] leading-[1.5] text-[var(--text-secondary)]">Try another card, or pay by transfer or USSD instead.</span>
             </div>
           </div>
         ) : null}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "16px 20px 26px", borderTop: "1px solid var(--border-hairline)" }}>
+      <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
         {step === "value" ? (
           <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep("tier")}>
             Choose a tier
@@ -267,7 +254,7 @@ export function CreatorOnboarding() {
             <Button full size="lg" onClick={() => setStep("confirm")}>
               Continue with {tier === "pro" ? "Pro" : "Basic"} — {formatNaira(price)}
             </Button>
-            <span style={{ alignSelf: "center", fontSize: 12, color: "var(--text-muted)" }}>Renews yearly. Cancel before renewal.</span>
+            <span className="text-[12px] text-[var(--text-muted)]" style={{alignSelf: "center"}}>Renews yearly. Cancel before renewal.</span>
           </>
         ) : null}
         {step === "confirm" ? (
@@ -275,7 +262,7 @@ export function CreatorOnboarding() {
             <Button full size="lg" onClick={pay}>
               Pay {formatNaira(price)}
             </Button>
-            <span style={{ alignSelf: "center", fontSize: 12, color: "var(--text-muted)", cursor: "pointer" }} onClick={() => setStep("failed")}>
+            <span className="text-[12px] text-[var(--text-muted)] cursor-pointer" style={{alignSelf: "center"}} onClick={() => setStep("failed")}>
               Simulate a failed payment
             </span>
           </>
@@ -297,7 +284,7 @@ export function CreatorOnboarding() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, padding: "40px 32px", textAlign: "center", minHeight: "100vh", maxWidth: "var(--mobile-column)", margin: "0 auto" }}>
+    <div className="flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center min-h-[100vh] max-w-[var(--mobile-column)] m-0">
       {children}
     </div>
   );

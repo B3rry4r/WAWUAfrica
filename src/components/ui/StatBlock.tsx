@@ -27,38 +27,18 @@ export function StatBlock({
 }: StatBlockProps) {
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        padding: "0 0",
-        borderRadius: "var(--radius-card)",
-        alignItems: align === "center" ? "center" : "flex-start",
-      }}
+      className="flex flex-col gap-[8px] py-0 px-0 rounded-[var(--radius-card)]" style={{alignItems: align === "center" ? "center" : "flex-start"}}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="flex items-center gap-[8px]">
         {icon ? <Icon name={icon} size={14} stroke={2.2} color={tone === "default" ? "var(--text-muted)" : tones[tone]} /> : null}
         <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
-          }}
+          className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]"
         >
           {label}
         </span>
       </div>
       <span
-        style={{
-          fontSize: fontSizes[size],
-          fontWeight: 700,
-          letterSpacing: "-0.025em",
-          lineHeight: 1,
-          color: tones[tone],
-          fontFeatureSettings: "var(--font-feature-tabular)",
-        }}
+        className="font-bold tracking-[-0.025em] leading-[1]" style={{fontSize: fontSizes[size], color: tones[tone], fontFeatureSettings: "var(--font-feature-tabular)"}}
       >
         {value}
       </span>

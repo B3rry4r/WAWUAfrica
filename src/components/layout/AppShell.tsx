@@ -10,15 +10,9 @@ export interface AppShellProps {
 export function AppShell({ children, accountType }: AppShellProps) {
   return (
     <div
-      style={{
-        maxWidth: "var(--mobile-column)",
-        margin: "0 auto",
-        minHeight: "100vh",
-        background: "var(--surface-page)",
-        position: "relative",
-      }}
+      className="max-w-[var(--mobile-column)] m-0 min-h-[100vh] bg-[var(--surface-page)] relative"
     >
-      <main style={{ paddingBottom: 90 }}>{children}</main>
+      <main className="pb-[90px]">{children}</main>
       <BottomNav accountType={accountType} />
     </div>
   );

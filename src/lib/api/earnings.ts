@@ -21,6 +21,8 @@ export interface EarningsApi {
 }
 
 export const earningsApi: EarningsApi = {
+  // SEAM: replace with GET /api/hub/content/mine/earnings
   getSummary: () => mockRequest({ ...currentEarnings }),
+  // SEAM: replace with GET /api/hub/content/mine/earnings?view=entries
   getEntries: () => mockRequest([...earningsEntries]),
 };

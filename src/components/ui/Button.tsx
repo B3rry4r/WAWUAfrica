@@ -66,22 +66,15 @@ export function Button({
     <button
       type="button"
       disabled={isDisabled}
+      className="inline-flex items-center justify-center gap-[9px] rounded-[var(--radius-button)] font-semibold leading-[1] whitespace-nowrap"
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 9,
         height: s.height,
         padding: s.padding,
-        borderRadius: "var(--radius-button)",
         fontSize: s.fontSize,
-        fontWeight: 600,
         fontFamily: "var(--font-sans)",
-        lineHeight: 1,
         cursor: isDisabled ? "not-allowed" : "pointer",
         opacity: isDisabled ? 0.55 : 1,
         transition: "background var(--dur-base) var(--ease-soft), transform var(--dur-fast) var(--ease-soft)",
-        whiteSpace: "nowrap",
         ...(full ? { width: "100%" } : {}),
         ...v,
         ...style,

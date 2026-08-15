@@ -15,61 +15,33 @@ export function Sheet({ open, onClose, title, caption, children }: SheetProps) {
   if (!open) return null;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end" }}>
+    <div className="fixed z-[50] flex items-end" style={{inset: 0}}>
       <div
         aria-hidden="true"
         onClick={onClose}
-        style={{ position: "absolute", inset: 0, background: "var(--surface-scrim)" }}
+        className="absolute bg-[var(--surface-scrim)]" style={{inset: 0}}
       />
       <div
         role="dialog"
         aria-modal="true"
-        style={{
-          position: "relative",
-          width: "100%",
-          maxWidth: "var(--mobile-column)",
-          margin: "0 auto",
-          borderRadius: "var(--radius-sheet) var(--radius-sheet) 0 0",
-          background: "var(--surface-page)",
-          border: "1px solid var(--border-strong)",
-          borderBottom: "none",
-          boxShadow: "var(--shadow-sheet)",
-          padding: "24px 20px calc(28px + env(safe-area-inset-bottom))",
-          display: "flex",
-          flexDirection: "column",
-          gap: 18,
-          animation: "wawuSheetIn var(--dur-slow) var(--ease-soft)",
-          maxHeight: "88vh",
-          overflowY: "auto",
-        }}
+        className="relative w-full max-w-[var(--mobile-column)] m-0 rounded-[var(--radius-sheet)_var(--radius-sheet)_0_0] bg-[var(--surface-page)] border border-[var(--border-strong)] border-b-[none] shadow-[var(--shadow-sheet)] pt-[24px] px-[20px] pb-[28px] flex flex-col gap-[18px] max-h-[88vh] overflow-y-auto" style={{animation: "wawuSheetIn var(--dur-slow) var(--ease-soft)"}}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+        <div className="flex items-start gap-[12px]">
+          <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
             {title ? (
-              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+              <h2 className="m-0 text-[19px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
                 {title}
               </h2>
             ) : null}
             {caption ? (
-              <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "var(--text-secondary)" }}>{caption}</p>
+              <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">{caption}</p>
             ) : null}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            style={{
-              display: "grid",
-              placeItems: "center",
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              background: "var(--surface-tag)",
-              border: "1px solid var(--border-hairline)",
-              color: "var(--text-primary)",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
+            className="grid place-items-center w-[32px] h-[32px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] cursor-pointer shrink-0"
           >
             <Icon name="X" size={16} stroke={2.2} />
           </button>

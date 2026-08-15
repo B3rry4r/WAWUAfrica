@@ -7,12 +7,12 @@ export default function HomePage() {
   return (
     <div>
       <Header title="WAWUAfrica" />
-      <div style={{ padding: "16px 16px 32px", display: "flex", flexDirection: "column", gap: 18 }}>
+      <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[18px]">
         <div>
-          <h2 style={{ margin: "0 0 10px", fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+          <h2 className="mt-0 mx-0 mb-[10px] text-[19px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
             For you
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="grid grid-cols-[1fr_1fr] gap-[12px]">
             <ContentGridCard
               state="locked"
               title="CAC in 7 days"
@@ -33,21 +33,13 @@ export default function HomePage() {
         </div>
 
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "14px 16px",
-            borderRadius: "var(--radius-card)",
-            background: "var(--surface-card)",
-            border: "1px solid var(--border-hairline)",
-          }}
+          className="flex items-center gap-[12px] py-[14px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
         >
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
+          <div className="flex-1 flex flex-col gap-[3px]">
+            <span className="text-[14px] font-semibold text-[var(--text-primary)]">
               From WAWUBasket
             </span>
-            <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+            <span className="text-[12.5px] text-[var(--text-muted)]">
               Physical goods live in the WAWU shopping app
             </span>
           </div>

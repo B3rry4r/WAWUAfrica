@@ -36,7 +36,7 @@ export function Inbox() {
 
   if (!state) {
     return (
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="p-[16px] flex flex-col gap-[12px]">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton key={i} height={150} radius="var(--radius-card)" />
         ))}
@@ -53,53 +53,24 @@ export function Inbox() {
   return (
     <div>
       <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "16px 18px 14px",
-          borderBottom: "1px solid var(--border-hairline)",
-        }}
+        className="flex items-center gap-[12px] pt-[16px] px-[18px] pb-[14px] border-b border-b-[var(--border-hairline)]"
       >
-        <span style={{ flex: 1, fontSize: 20, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="flex-1 text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Inbox
         </span>
         <Link
           href="/messages/settings"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            height: 26,
-            padding: "0 10px",
-            borderRadius: 999,
-            background: "var(--surface-tag)",
-            border: "1px solid var(--border-hairline)",
-            fontSize: 11.5,
-            fontWeight: 700,
-            color: "var(--text-secondary)",
-            fontFeatureSettings: "var(--font-feature-tabular)",
-            textDecoration: "none",
-          }}
+          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
         >
           {formatNaira(price)} each
         </Link>
       </header>
 
-      <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="py-[14px] px-[16px] flex flex-col gap-[12px]">
         {state.penalty !== "none" ? (
-          <Link href="/messages/settings" style={{ textDecoration: "none" }}>
+          <Link href="/messages/settings" className="no-underline">
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "12px 14px",
-                borderRadius: "var(--radius-card)",
-                background:
-                  state.penalty === "warned" ? "var(--warning-tint)" : "var(--danger-tint)",
-                border: `1px solid ${state.penalty === "warned" ? "rgba(255,183,3,0.32)" : "rgba(255,92,92,0.32)"}`,
-              }}
+              className="flex items-center gap-[10px] py-[12px] px-[14px] rounded-[var(--radius-card)]" style={{background: state.penalty === "warned" ? "var(--warning-tint)" : "var(--danger-tint)", border: `1px solid ${state.penalty === "warned" ? "rgba(255,183,3,0.32)" : "rgba(255,92,92,0.32)"}`}}
             >
               <Icon
                 name={state.penalty === "warned" ? "TriangleAlert" : "Lock"}
@@ -107,7 +78,7 @@ export function Inbox() {
                 stroke={2.2}
                 color={state.penalty === "warned" ? "var(--warning)" : "var(--danger)"}
               />
-              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)" }}>
+              <span className="flex-1 text-[12.5px] font-semibold text-[var(--text-primary)]">
                 {state.penalty === "warned"
                   ? `${state.responseStats.rate}% unanswered — you are missing messages`
                   : state.penalty === "disabled7"
@@ -125,46 +96,33 @@ export function Inbox() {
           return (
             <div
               key={t.id}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-                padding: 15,
-                borderRadius: "var(--radius-card)",
-                background: "var(--surface-card)",
-                border: `1px solid ${border}`,
-              }}
+              className="flex flex-col gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)]" style={{border: `1px solid ${border}`}}
             >
-              <div style={{ display: "flex", gap: 12 }}>
+              <div className="flex gap-[12px]">
                 <Avatar initials={t.buyerInitials} size={40} />
-                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ flex: 1, fontSize: 14.5, fontWeight: 600, color: "var(--text-primary)" }}>
+                <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+                  <div className="flex items-center gap-[8px]">
+                    <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">
                       {t.buyerName}
                     </span>
                     <span
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 700,
-                        color: critical ? "var(--danger)" : "var(--warning)",
-                        fontFeatureSettings: "var(--font-feature-tabular)",
-                      }}
+                      className="text-[15px] font-bold" style={{color: critical ? "var(--danger)" : "var(--warning)", fontFeatureSettings: "var(--font-feature-tabular)"}}
                     >
                       {timeLeft}
                     </span>
                   </div>
-                  <span style={{ fontSize: 13.5, lineHeight: 1.45, color: "var(--text-primary)" }}>{t.preview}</span>
+                  <span className="text-[13.5px] leading-[1.45] text-[var(--text-primary)]">{t.preview}</span>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 12, borderTop: "1px solid var(--border-hairline)" }}>
-                <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: critical ? "var(--danger)" : "var(--text-secondary)" }}>
+              <div className="flex items-center gap-[10px] pt-[12px] border-t border-t-[var(--border-hairline)]">
+                <span className="flex-1 text-[12.5px] font-semibold" style={{color: critical ? "var(--danger)" : "var(--text-secondary)"}}>
                   Respond by {critical ? "4:12 pm today" : "1:40 am"}
                 </span>
-                <span style={{ fontSize: 12.5, fontWeight: 700, fontFeatureSettings: "var(--font-feature-tabular)" }}>
+                <span className="text-[12.5px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
                   {formatNaira(dmEarn)} to earn
                 </span>
               </div>
-              <Button full style={{ height: 48 }} onClick={() => routerTo(t.id)}>
+              <Button full className="h-[48px]" onClick={() => routerTo(t.id)}>
                 Reply now
               </Button>
             </div>
@@ -174,36 +132,22 @@ export function Inbox() {
         {answered.map((t) => (
           <div
             key={t.id}
-            style={{
-              display: "flex",
-              gap: 12,
-              padding: 15,
-              borderRadius: "var(--radius-card)",
-              background: "var(--surface-card)",
-              border: "1px solid var(--border-hairline)",
-              opacity: t.unread ? 1 : 0.7,
-            }}
+            className="flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]" style={{opacity: t.unread ? 1 : 0.7}}
           >
             <Avatar initials={t.buyerInitials} size={40} />
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ flex: 1, fontSize: 14.5, fontWeight: 600, color: "var(--text-primary)" }}>{t.buyerName}</span>
+            <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+              <div className="flex items-center gap-[8px]">
+                <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">{t.buyerName}</span>
                 <StatusPill kind="success" size="xs">
                   Answered
                 </StatusPill>
               </div>
               <span
-                style={{
-                  fontSize: 13,
-                  color: "var(--text-secondary)",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
+                className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
               >
                 {t.preview}
               </span>
-              <span style={{ fontSize: 12, color: "var(--text-muted)", fontFeatureSettings: "var(--font-feature-tabular)" }}>
+              <span className="text-[12px] text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
                 Earned {formatNaira(dmEarn)} · replied in 3h
               </span>
             </div>
@@ -211,36 +155,22 @@ export function Inbox() {
         ))}
 
         <div
-          style={{
-            display: "flex",
-            gap: 12,
-            padding: 15,
-            borderRadius: "var(--radius-card)",
-            background: "var(--surface-card)",
-            border: "1px solid var(--border-hairline)",
-            opacity: 0.7,
-          }}
+          className="flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] opacity-[0.7]"
         >
           <Avatar initials="C" size={40} />
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ flex: 1, fontSize: 14.5, fontWeight: 600, color: "var(--text-primary)" }}>Chidi Umeh</span>
+          <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+            <div className="flex items-center gap-[8px]">
+              <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">Chidi Umeh</span>
               <StatusPill kind="info" size="xs">
                 Refunded
               </StatusPill>
             </div>
             <span
-              style={{
-                fontSize: 13,
-                color: "var(--text-secondary)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
+              className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
             >
               Do you review business plans?
             </span>
-            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Missed the window · earned nothing</span>
+            <span className="text-[12px] text-[var(--text-muted)]">Missed the window · earned nothing</span>
           </div>
         </div>
       </div>

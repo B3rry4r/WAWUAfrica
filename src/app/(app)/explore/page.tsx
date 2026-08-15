@@ -5,7 +5,7 @@ export default function ExplorePage() {
   return (
     <div>
       <Header title="Explore" />
-      <div style={{ padding: "16px 16px 32px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[16px]">
         <ProfileHeader
           name="Adaeze Okonkwo"
           handle="adaezeokonkwo"

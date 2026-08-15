@@ -32,6 +32,13 @@ export const currentSession: Session = {
   },
 };
 
+/**
+ * DEV ONLY — remove when the real session endpoint is live.
+ *
+ * These switches exist so every gate combination (user/creator, basic/pro,
+ * kyc pending/approved/rejected, subscribed or not) is reachable without a
+ * backend. They mutate the mock store directly and must never ship.
+ */
 export function setAccountType(type: AccountType): void {
   currentSession.accountType = type;
 }

@@ -37,19 +37,13 @@ export function ProfileHeader({
   onShare,
 }: ProfileHeaderProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "18px 20px 0" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+    <div className="flex flex-col gap-[14px] pt-[18px] px-[20px] pb-0">
+      <div className="flex items-start gap-[14px]">
         <Avatar src={avatarSrc} initials={name.slice(0, 1).toUpperCase()} size={68} border />
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
+          <div className="flex items-center gap-[8px] flex-wrap">
             <h1
-              style={{
-                margin: 0,
-                fontSize: 20,
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                color: "var(--text-primary)",
-              }}
+              className="m-0 text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]"
             >
               {name}
             </h1>
@@ -57,49 +51,44 @@ export function ProfileHeader({
             {plan ? <TierBadge tier={plan} /> : null}
           </div>
           {handle ? (
-            <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>@{handle}</span>
+            <span className="text-[13.5px] text-[var(--text-muted)]">@{handle}</span>
           ) : null}
         </div>
       </div>
 
       {bio ? (
-        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--text-secondary)" }}>{bio}</p>
+        <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{bio}</p>
       ) : null}
 
       {stats.length > 0 ? (
-        <div style={{ display: "flex", gap: 24 }}>
+        <div className="flex gap-[24px]">
           {stats.map((s) => (
-            <div key={s.label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div key={s.label} className="flex flex-col gap-[2px]">
               <span
-                style={{
-                  fontSize: 16.5,
-                  fontWeight: 700,
-                  color: "var(--text-primary)",
-                  fontFeatureSettings: "var(--font-feature-tabular)",
-                }}
+                className="text-[16.5px] font-bold text-[var(--text-primary)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
               >
                 {s.value}
               </span>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{s.label}</span>
+              <span className="text-[12px] text-[var(--text-muted)]">{s.label}</span>
             </div>
           ))}
         </div>
       ) : null}
 
       {primaryAction ? (
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1, display: "flex" }}>
-            <Button full variant="secondary" onClick={onPrimary} style={{ height: 48 }}>
+        <div className="flex gap-[8px]">
+          <div className="flex-1 flex">
+            <Button full variant="secondary" onClick={onPrimary} className="h-[48px]">
               {primaryAction}
             </Button>
           </div>
-          <div style={{ width: 48, display: "flex", flexShrink: 0 }}>
+          <div className="w-[48px] flex shrink-0">
             <Button
               full
               variant="secondary"
               aria-label="Share"
               onClick={onShare}
-              style={{ height: 48, padding: 0 }}
+              className="h-[48px] p-0"
             >
               <Icon name="Share2" size={18} stroke={2} />
             </Button>

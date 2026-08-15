@@ -17,6 +17,7 @@ export interface SubscriptionApi {
 }
 
 export const subscriptionApi: SubscriptionApi = {
+  // SEAM: replace with GET /api/hub/creator-subscription
   getSubscription: () => mockRequest({ ...currentSubscription }),
 
   upgradeToPro: async () => {
@@ -29,14 +30,17 @@ export const subscriptionApi: SubscriptionApi = {
       features: [],
     };
     currentSubscription.state = "active";
+    // SEAM: replace with POST /api/hub/creator-subscription (tier=pro)
     return mockRequest({ ...currentSubscription }, 700);
   },
 
   cancelPro: async () => {
     currentSubscription.state = "active";
     currentSubscription.cancelsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+    // SEAM: replace with DELETE /api/hub/creator-subscription
     return mockRequest({ ...currentSubscription }, 700);
   },
 
+  // SEAM: replace with GET /api/hub/creator/kyc/status
   getKycGate: () => mockRequest("pending"),
 };

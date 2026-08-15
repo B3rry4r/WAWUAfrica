@@ -40,7 +40,10 @@ export interface MessagingApi {
 }
 
 export const messagingApi: MessagingApi = {
+  // SEAM: replace with GET /api/hub/dm/inbox
   getState: () => mockRequest({ ...currentMessaging, threads: [...currentMessaging.threads] }),
+  // SEAM: replace with GET /api/hub/dm/stats
   getStats: () => mockRequest({ ...currentMessaging.responseStats }),
+  // SEAM: replace with GET /api/hub/dm/penalty
   getPenalty: () => mockRequest(currentMessaging.penalty),
 };

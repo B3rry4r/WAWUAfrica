@@ -19,50 +19,19 @@ export function AccountTypeToggle({ current }: AccountTypeToggleProps) {
 
   return (
     <div
-      style={{
-        display: "flex",
-        gap: 4,
-        padding: 4,
-        borderRadius: 999,
-        background: "var(--surface-tag)",
-        border: "1px solid var(--border-hairline)",
-      }}
+      className="flex gap-[4px] p-[4px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)]"
     >
       <button
         type="button"
         onClick={() => set("user")}
-        style={{
-          flex: 1,
-          height: 36,
-          padding: "0 18px",
-          borderRadius: 999,
-          border: "none",
-          background: current === "user" ? "var(--accent)" : "transparent",
-          color: current === "user" ? "var(--text-on-accent)" : "var(--text-secondary)",
-          fontSize: 13,
-          fontWeight: 600,
-          fontFamily: "var(--font-sans)",
-          cursor: "pointer",
-        }}
+        className="flex-1 h-[36px] py-0 px-[18px] rounded-[999] border-[none] text-[13px] font-semibold cursor-pointer" style={{background: current === "user" ? "var(--accent)" : "transparent", color: current === "user" ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-sans)"}}
       >
         User
       </button>
       <button
         type="button"
         onClick={() => set("creator")}
-        style={{
-          flex: 1,
-          height: 36,
-          padding: "0 18px",
-          borderRadius: 999,
-          border: "none",
-          background: current === "creator" ? "var(--accent)" : "transparent",
-          color: current === "creator" ? "var(--text-on-accent)" : "var(--text-secondary)",
-          fontSize: 13,
-          fontWeight: 600,
-          fontFamily: "var(--font-sans)",
-          cursor: "pointer",
-        }}
+        className="flex-1 h-[36px] py-0 px-[18px] rounded-[999] border-[none] text-[13px] font-semibold cursor-pointer" style={{background: current === "creator" ? "var(--accent)" : "transparent", color: current === "creator" ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-sans)"}}
       >
         Creator
       </button>

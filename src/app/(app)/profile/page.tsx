@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/Button";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { currentSession } from "@/lib/api/mocks/session";
+import { creatorGates } from "@/lib/auth/gates";
 import { currentEarnings } from "@/lib/api/earnings";
 import { currentMessaging } from "@/lib/api/messaging";
 import { currentSubscription } from "@/lib/api/subscription";
@@ -24,7 +25,7 @@ export default async function ProfilePage() {
   if (accountType === "user" || !creator) {
     return (
       <div>
-        <div style={{ display: "flex", justifyContent: "center", padding: 16 }}>
+        <div className="flex justify-center p-[16px]">
           <AccountTypeToggle current={accountType} />
         </div>
         <ProfileHeader
@@ -41,14 +42,15 @@ export default async function ProfilePage() {
     );
   }
 
-  const kycPending = creator.kyc !== "approved";
+  const gates = creatorGates(currentSession);
+  const kycPending = !gates.canEarn;
   const held = kycPending;
-  const tier = creator.tier;
+  const tier = gates.tier ?? creator.tier;
   const earned = held ? currentEarnings.held : currentEarnings.payable + currentEarnings.held;
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "center", padding: 16 }}>
+      <div className="flex justify-center p-[16px]">
         <AccountTypeToggle current={accountType} />
       </div>
 
@@ -66,34 +68,26 @@ export default async function ProfilePage() {
         primaryAction="Edit profile"
       />
 
-      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-        <Link href="/creator" style={{ textDecoration: "none" }}>
+      <div className="py-[16px] px-[20px] flex flex-col gap-[14px]">
+        <Link href="/creator" className="no-underline">
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              padding: 18,
-              borderRadius: "var(--radius-card)",
-              background: "var(--surface-elevated)",
-              border: "1px solid var(--border-accent)",
-            }}
+            className="flex flex-col gap-[14px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]"
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-              <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 13, background: "var(--accent-tint)", border: "1px solid var(--border-accent)", flexShrink: 0 }}>
+            <div className="flex items-center gap-[11px]">
+              <span className="grid place-items-center w-[40px] h-[40px] rounded-[13] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
                 <Icon name="ChartNoAxesColumn" size={18} color="var(--accent)" stroke={2} />
               </span>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>Creator dashboard</span>
-                <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Earnings, content, inbox, tier</span>
+              <div className="flex-1 flex flex-col gap-[2px]">
+                <span className="text-[16px] font-semibold text-[var(--text-primary)]">Creator dashboard</span>
+                <span className="text-[12.5px] text-[var(--text-secondary)]">Earnings, content, inbox, tier</span>
               </div>
               <Icon name="ChevronRight" size={18} color="var(--accent)" stroke={2.2} />
             </div>
-            <div style={{ display: "flex", gap: 10, paddingTop: 14, borderTop: "1px solid var(--border-hairline)" }}>
-              <div style={{ flex: 1 }}>
+            <div className="flex gap-[10px] pt-[14px] border-t border-t-[var(--border-hairline)]">
+              <div className="flex-1">
                 <StatBlock value={formatNaira(earned)} label="This month" align="start" size="sm" />
               </div>
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <StatBlock value={String(currentMessaging.threads.filter((t) => !t.opened).length)} label="To reply" align="start" size="sm" />
               </div>
             </div>
@@ -102,40 +96,32 @@ export default async function ProfilePage() {
 
         {kycPending ? (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              padding: 14,
-              borderRadius: "var(--radius-card)",
-              background: "var(--warning-tint)",
-              border: "1px solid rgba(255,183,3,0.32)",
-            }}
+            className="flex flex-col gap-[12px] p-[14px] rounded-[var(--radius-card)] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.32)]"
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div className="flex items-center gap-[12px]">
               <Icon name="Clock" size={18} color="var(--warning)" stroke={2.2} />
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text-primary)" }}>
+              <div className="flex-1 flex flex-col gap-[2px]">
+                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">
                   Finish verification to get paid
                 </span>
-                <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+                <span className="text-[12.5px] text-[var(--text-secondary)]">
                   Two steps left · takes 1 to 3 days
                 </span>
               </div>
             </div>
-            <Link href="/kyc" style={{ textDecoration: "none" }}>
-              <Button full iconRight="ArrowRight" style={{ height: 48 }}>
+            <Link href="/kyc" className="no-underline">
+              <Button full iconRight="ArrowRight" className="h-[48px]">
                 Complete verification
               </Button>
             </Link>
           </div>
         ) : (
-          <div style={{ display: "flex" }}>
+          <div className="flex">
             <StatusPill kind="success">Verified — payouts active</StatusPill>
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+        <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] p-[4px]">
           <Link href="/messages">
             <ListRow
               title="Paid messages"

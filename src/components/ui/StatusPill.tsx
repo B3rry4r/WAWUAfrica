@@ -23,21 +23,7 @@ export function StatusPill({ kind = "neutral", children, icon, size = "sm" }: St
   const k = kinds[kind];
   return (
     <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        height: heights[size],
-        padding: `0 ${size === "xs" ? 9 : 11}px`,
-        borderRadius: 999,
-        background: k.tint,
-        color: k.color,
-        fontSize: size === "xs" ? 10.5 : size === "sm" ? 11.5 : 12.5,
-        fontWeight: 700,
-        letterSpacing: 0.01,
-        lineHeight: 1,
-        whiteSpace: "nowrap",
-      }}
+      className="inline-flex items-center gap-[5px] rounded-[999] font-bold tracking-[0.01] leading-[1] whitespace-nowrap" style={{height: heights[size], padding: `0 ${size === "xs" ? 9 : 11}px`, background: k.tint, color: k.color, fontSize: size === "xs" ? 10.5 : size === "sm" ? 11.5 : 12.5}}
     >
       {icon ? <Icon name={icon} size={size === "xs" ? 11 : 12.5} stroke={2.4} color={k.color} /> : null}
       {children}
@@ -54,21 +40,7 @@ export interface HandoffPillProps {
 export function HandoffPill({ label, external = true }: HandoffPillProps) {
   return (
     <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        height: 26,
-        padding: "0 11px",
-        borderRadius: 999,
-        background: "var(--surface-tag)",
-        border: "1px solid var(--border-hairline)",
-        color: "var(--text-muted)",
-        fontSize: 11.5,
-        fontWeight: 600,
-        lineHeight: 1,
-        whiteSpace: "nowrap",
-      }}
+      className="inline-flex items-center gap-[5px] h-[26px] py-0 px-[11px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-muted)] text-[11.5px] font-semibold leading-[1] whitespace-nowrap"
     >
       {label}
       {external ? <Icon name="ArrowUpRight" size={11} stroke={2.2} color="var(--text-muted)" /> : null}

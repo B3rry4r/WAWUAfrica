@@ -17,48 +17,22 @@ export function FlowHeader({ title, right, onBack, backLabel = "Back" }: FlowHea
 
   return (
     <header
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "14px 16px",
-        borderBottom: "1px solid var(--border-hairline)",
-      }}
+      className="flex items-center gap-[12px] py-[14px] px-[16px] border-b border-b-[var(--border-hairline)]"
     >
       <button
         type="button"
         onClick={back}
         aria-label={backLabel}
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 34,
-          height: 34,
-          borderRadius: 999,
-          background: "var(--surface-tag)",
-          border: "1px solid var(--border-hairline)",
-          color: "var(--text-primary)",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
+        className="grid place-items-center w-[34px] h-[34px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] cursor-pointer shrink-0"
       >
         <Icon name="ChevronLeft" size={18} stroke={2.2} />
       </button>
       <span
-        style={{
-          flex: 1,
-          minWidth: 0,
-          fontSize: 16,
-          fontWeight: 600,
-          color: "var(--text-primary)",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
+        className="flex-1 min-w-0 text-[16px] font-semibold text-[var(--text-primary)] whitespace-nowrap overflow-hidden text-ellipsis"
       >
         {title}
       </span>
-      {right ?? <span style={{ width: 34 }} />}
+      {right ?? <span className="w-[34px]" />}
     </header>
   );
 }

@@ -14,45 +14,24 @@ export interface SectionHeaderProps {
 export function SectionHeader({ title, caption, eyebrow, action, onAction, icon }: SectionHeaderProps) {
   const label = eyebrow ?? caption;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+    <div className="flex items-center gap-[12px] mb-[12px]">
       {icon ? (
         <span
-          style={{
-            display: "grid",
-            placeItems: "center",
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            background: "var(--accent-tint)",
-            border: "1px solid var(--border-accent)",
-            flexShrink: 0,
-          }}
+          className="grid place-items-center w-[34px] h-[34px] rounded-[10] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0"
         >
           <Icon name={icon} size={16} stroke={2} color="var(--accent)" />
         </span>
       ) : null}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+      <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
         {label ? (
           <span
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
-            }}
+            className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]"
           >
             {label}
           </span>
         ) : null}
         <h2
-          style={{
-            margin: 0,
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "-0.01em",
-            color: "var(--text-primary)",
-          }}
+          className="m-0 text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]"
         >
           {title}
         </h2>
@@ -61,16 +40,7 @@ export function SectionHeader({ title, caption, eyebrow, action, onAction, icon 
         <button
           type="button"
           onClick={onAction}
-          style={{
-            background: "none",
-            border: "none",
-            padding: 0,
-            fontSize: 13.5,
-            fontWeight: 600,
-            color: "var(--accent)",
-            fontFamily: "var(--font-sans)",
-            cursor: "pointer",
-          }}
+          className="bg-transparent border-[none] p-0 text-[13.5px] font-semibold text-[var(--accent)] cursor-pointer" style={{fontFamily: "var(--font-sans)"}}
         >
           {action}
         </button>
