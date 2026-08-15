@@ -19,13 +19,15 @@ interface AppHeaderProps {
  */
 const OWN_HEADER_ROUTES = ["/search", "/notifications", "/content", "/purchases", "/services"];
 
-function hasOwnHeader(pathname: string) {
+/** Exported so DesktopHeader can hide on the same routes at xl width. */
+export function hasOwnHeader(pathname: string) {
   return OWN_HEADER_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 /**
  * App chrome — search pill and notifications bell live on every authenticated
  * screen (CLAUDE.md). Renders nothing on routes that supply their own header.
+ * Hidden at the xl breakpoint, where AppShell swaps in DesktopHeader instead.
  */
 export function AppHeader({ elevated = false }: AppHeaderProps) {
   const pathname = usePathname();
@@ -34,7 +36,7 @@ export function AppHeader({ elevated = false }: AppHeaderProps) {
 
   return (
     <header
-      className={`sticky top-0 z-30 flex items-center gap-[11px] px-4 py-4 ${
+      className={`sticky top-0 z-30 flex items-center gap-[11px] px-4 py-4 xl:hidden ${
         elevated ? "bg-[rgba(19,19,22,0.86)] backdrop-blur" : "border-b border-hairline"
       }`}
       style={elevated ? { backdropFilter: "var(--blur-chrome)" } : undefined}
