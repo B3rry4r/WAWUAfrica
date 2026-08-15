@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ContentCard } from "@/components/content/ContentCard";
 import { AccessBadge } from "@/components/ui/AccessBadge";
 import { Button } from "@/components/ui/Button";
 import { ComingSoonPill } from "@/components/ui/ComingSoonPill";
@@ -50,43 +51,101 @@ const FAQ = [
 export async function LandingContent() {
   const toWatch = await getFeaturedContent();
 
+  // Desktop hero collage reuses the same featured items the mobile carousel
+  // shows below — no separate mock, just a different arrangement of it.
+  const collage = toWatch.length > 0 ? [0, 1, 2, 0].map((i) => toWatch[i % toWatch.length]) : [];
+
   return (
     <div className="min-h-screen bg-surface-page">
       {/* Header */}
-      <header className="sticky top-0 z-20 flex items-center gap-1 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-3.5 py-3 backdrop-blur">
-        <img src="/wawu-logo-white.png" alt="WAWU" className="mr-auto h-[22px] w-auto object-contain" />
+      <header className="sticky top-0 z-20 flex items-center gap-1 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-3.5 py-3 backdrop-blur xl:gap-[34px] xl:px-14 xl:py-0 xl:h-[74px]">
+        <img src="/wawu-logo-white.png" alt="WAWU" className="mr-auto h-[22px] w-auto object-contain xl:mr-0 xl:h-[26px]" />
+        <nav className="hidden items-center gap-[26px] xl:flex" aria-label="Marketing">
+          {["For creators", "Explore", "Learn", "Services", "Pricing"].map((label) => (
+            // SEAM: these link to marketing sub-pages that do not exist yet — placeholder anchors, same pattern the footer already uses.
+            <a key={label} href="#" className="text-[14.5px] font-medium text-text-secondary hover:text-text-primary">
+              {label}
+            </a>
+          ))}
+        </nav>
+        <span className="hidden flex-1 xl:block" />
         <Button variant="ghost" size="sm" href="/sign-in">Sign in</Button>
-        <Button variant="secondary" size="sm" href="/sign-up">Sign up</Button>
+        <Button variant="secondary" size="sm" href="/sign-up" className="xl:hidden">Sign up</Button>
         <Button size="sm" href="/sign-up?type=creator">Become a creator</Button>
       </header>
 
       {/* Hero */}
-      <section className="flex flex-col items-start gap-[18px] px-5 pb-9 pt-10">
-        <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
-        <h1 className="m-0 text-[42px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary">
-          African expertise,
-          <br />
-          finally paid for.
-        </h1>
-        <p className="m-0 text-[16.5px] leading-relaxed text-text-secondary">
-          You already know something people will pay to learn. Publish it, price it, and let your audience unlock it — in naira, on your terms.
-        </p>
-        <div className="mt-1 flex w-full flex-col gap-3">
-          <Button full size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
-            Start earning today
-          </Button>
-          <Button full variant="ghost" size="md" href="/sign-up">
-            Browse creators first
-          </Button>
+      <section className="flex flex-col items-start gap-[18px] px-5 pb-9 pt-10 xl:mx-auto xl:grid xl:w-full xl:max-w-[1440px] xl:grid-cols-[1fr_560px] xl:items-center xl:gap-14 xl:px-14 xl:pb-14 xl:pt-16">
+        <div className="flex flex-col items-start gap-[18px] xl:contents">
+          <div className="hidden xl:flex xl:w-full xl:flex-col xl:items-start xl:gap-[22px]">
+            <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
+            <h1 className="m-0 text-[60px] font-bold leading-[1.02] tracking-[-0.035em] text-text-primary">
+              Sell what you know.
+              <br />
+              Keep up to 90%.
+            </h1>
+            <p className="m-0 max-w-[520px] text-[18px] leading-relaxed text-text-secondary [text-wrap:pretty]">
+              You already know something people will pay to learn. Publish it, price it, and let your audience unlock it — in naira, on your terms.
+            </p>
+            <div className="flex gap-3 pt-1.5">
+              <Button size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
+                Start earning today
+              </Button>
+              <Button size="lg" variant="secondary" href="/sign-up">
+                Browse creators first
+              </Button>
+            </div>
+            <div className="mt-1.5 flex gap-10 border-t border-hairline pt-[26px]">
+              {[
+                { value: "10,000+", label: "Creators on WAWU" },
+                { value: "₦900M+", label: "Paid to creators" },
+                { value: "1.5M+", label: "Fans on the platform" },
+              ].map((s) => (
+                <StatBlock key={s.label} value={s.value} label={s.label} align="start" size="md" />
+              ))}
+            </div>
+          </div>
+          <span className="xl:hidden">
+            <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
+          </span>
+          <h1 className="m-0 text-[42px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary xl:hidden">
+            African expertise,
+            <br />
+            finally paid for.
+          </h1>
+          <p className="m-0 text-[16.5px] leading-relaxed text-text-secondary xl:hidden">
+            You already know something people will pay to learn. Publish it, price it, and let your audience unlock it — in naira, on your terms.
+          </p>
+          <div className="mt-1 flex w-full flex-col gap-3 xl:hidden">
+            <Button full size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
+              Start earning today
+            </Button>
+            <Button full variant="ghost" size="md" href="/sign-up">
+              Browse creators first
+            </Button>
+          </div>
         </div>
+
+        {collage.length === 4 ? (
+          <div className="hidden xl:grid xl:grid-cols-2 xl:gap-[18px]">
+            <div className="flex flex-col gap-[18px] pt-[34px]">
+              <ContentCard content={collage[0]} state="locked" ratio="4 / 5" />
+              <ContentCard content={collage[1]} state="free" ratio="1 / 1" />
+            </div>
+            <div className="flex flex-col gap-[18px]">
+              <ContentCard content={collage[2]} state="locked" ratio="1 / 1" />
+              <ContentCard content={collage[3]} state="locked" ratio="4 / 5" />
+            </div>
+          </div>
+        ) : null}
       </section>
 
       {/* Creators to watch */}
       <CreatorCarousel items={toWatch} />
 
       {/* Stats */}
-      <section className="px-5 pb-12">
-        <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card">
+      <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
+        <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card xl:hidden">
           {[
             { value: "10,000+", label: "Creators on WAWU" },
             { value: "₦900M+", label: "Paid to creators" },
@@ -100,12 +159,12 @@ export async function LandingContent() {
       </section>
 
       {/* Every field */}
-      <section className="px-5 pb-[52px]">
+      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
         <SectionHeader caption="Every field" title="One platform" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
           From agriculture to fintech, Nigerians are monetising what they already know.
         </p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-6">
           {FIELDS.map((field) => (
             <div
               key={field}
@@ -116,7 +175,7 @@ export async function LandingContent() {
             </div>
           ))}
           <div
-            className="relative col-span-2 aspect-[2.1/1] overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]"
+            className="relative col-span-2 aspect-[2.1/1] overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] xl:col-span-3"
           >
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,10,13,0.88)_0%,rgba(11,10,13,0.32)_42%,transparent_68%)]" />
             <span className="absolute bottom-3 left-[13px] text-[15px] font-semibold text-text-primary">Culture</span>
@@ -125,12 +184,12 @@ export async function LandingContent() {
       </section>
 
       {/* How you earn */}
-      <section className="px-5 pb-[52px]">
+      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
         <SectionHeader caption="Five ways" title="How you earn" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Free to discover. People pay to connect, and pay for value.</p>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 xl:grid xl:grid-cols-5 xl:gap-[18px]">
           {WAYS.map((way) => (
-            <div key={way.title} className="flex gap-3.5 rounded-card border border-hairline bg-card p-4">
+            <div key={way.title} className="flex gap-3.5 rounded-card border border-hairline bg-card p-4 xl:flex-col xl:gap-3 xl:p-[22px]">
               <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-accent bg-accent-tint">
                 <Icon name={way.icon} size={19} color="var(--accent)" strokeWidth={2} />
               </span>
@@ -152,48 +211,66 @@ export async function LandingContent() {
         </div>
       </section>
 
-      {/* Earnings calculator */}
-      <section className="px-5 pb-[52px]">
-        <SectionHeader caption="Earnings calculator" title="What could you make?" />
-        <div className="mt-4">
-          <EarningsCalculator />
-        </div>
-      </section>
+      {/* Earnings calculator + More than content: source order keeps the calculator
+         first, but xl:order- swaps the visual order so "more than content" leads,
+         matching the design's left/right arrangement without reordering the DOM. */}
+      <div className="contents xl:grid xl:mx-auto xl:max-w-[1440px] xl:grid-cols-2 xl:gap-[22px] xl:px-14 xl:pb-[52px]">
+        <section className="px-5 pb-[52px] xl:order-2 xl:px-0 xl:pb-0">
+          <SectionHeader caption="Earnings calculator" title="What could you make?" />
+          <div className="mt-4">
+            <EarningsCalculator />
+          </div>
+        </section>
 
-      {/* More than content */}
-      <section className="px-5 pb-[52px]">
-        <SectionHeader caption="Only on WAWU" title="More than content" />
-        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
-          Other platforms sell your content. WAWU also gets your business registered, trained and covered.
-        </p>
-        <div className="rounded-card border border-hairline bg-card p-1.5">
-          {SERVICES.map((s) => (
-            <div key={s.title} className="flex items-center gap-3 px-3 py-3">
-              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
-                <Icon name={s.icon} size={18} strokeWidth={2} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14.5px] font-semibold text-text-primary">{s.title}</span>
-                <span className="block truncate text-[12.5px] text-text-muted">{s.subtitle}</span>
-              </span>
-              <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
-            </div>
-          ))}
-        </div>
-        <div className="mt-[18px] flex flex-col gap-3">
-          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">On the way</span>
-          <div className="flex flex-wrap gap-2">
-            {["Health insurance", "Pension", "Banking", "Grants and funding"].map((x) => (
-              <ComingSoonPill key={x}>{x}</ComingSoonPill>
+        {/* More than content */}
+        <section className="px-5 pb-[52px] xl:order-1 xl:px-0 xl:pb-0">
+          <SectionHeader caption="Only on WAWU" title="More than content" />
+          <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
+            Other platforms sell your content. WAWU also gets your business registered, trained and covered.
+          </p>
+          <div className="rounded-card border border-hairline bg-card p-1.5">
+            {SERVICES.map((s) => (
+              <div key={s.title} className="flex items-center gap-3 px-3 py-3">
+                <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
+                  <Icon name={s.icon} size={18} strokeWidth={2} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[14.5px] font-semibold text-text-primary">{s.title}</span>
+                  <span className="block truncate text-[12.5px] text-text-muted">{s.subtitle}</span>
+                </span>
+                <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
+              </div>
             ))}
           </div>
-        </div>
-      </section>
+          <div className="mt-[18px] flex flex-col gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">On the way</span>
+            <div className="flex flex-wrap gap-2">
+              {["Health insurance", "Pension", "Banking", "Grants and funding"].map((x) => (
+                <ComingSoonPill key={x}>{x}</ComingSoonPill>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Creator tiers */}
-      <section className="px-5 pb-[52px]">
+      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
         <SectionHeader caption="Creator tiers" title="Go further, keep more" />
-        <div className="mt-4 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col gap-3 xl:grid xl:grid-cols-3 xl:gap-[18px]">
+          <div className="hidden flex-col gap-3.5 rounded-card border border-hairline bg-card p-5 xl:flex">
+            <span className="text-[16px] font-semibold text-text-primary">Free</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
+                {formatNaira(0)}
+              </span>
+            </div>
+            <p className="m-0 text-[13.5px] leading-normal text-text-secondary">
+              Browse and unlock content, message creators, join communities, shop and learn.
+            </p>
+            <Button full variant="secondary" size="sm" href="/sign-up">
+              Join free
+            </Button>
+          </div>
           <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5">
             <TierBadge tier="basic" />
             <div className="flex items-baseline gap-1.5">
@@ -242,17 +319,17 @@ export async function LandingContent() {
       </section>
 
       {/* Testimonials */}
-      <section className="pb-[52px]">
-        <div className="px-5">
+      <section className="pb-[52px] xl:mx-auto xl:max-w-[1440px]">
+        <div className="px-5 xl:px-14">
           <SectionHeader caption="In their words" title="Creators on WAWU" />
         </div>
-        <div className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-1 pb-2">
+        <div className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-1 pb-2 xl:grid xl:grid-cols-3 xl:overflow-visible xl:px-14 xl:pb-0">
           {[
             { initial: "A", quote: "I was answering the same business questions free on WhatsApp for years. Now the answers are a course and they pay for my rent.", name: "Adaeze Okonkwo", meta: "Business Strategist, Enugu" },
             { initial: "I", quote: "The paid DM changed everything. People are serious when they pay ₦300 to ask, and I reply the same day.", name: "Ifeanyi Nwosu", meta: "Fashion Designer, Aba" },
             { initial: "Z", quote: "I got my CAC certificate and sold my first training pack in the same week, on the same app. That is the difference.", name: "Zainab Bello", meta: "Agribusiness Trainer, Kano" },
           ].map((t) => (
-            <div key={t.name} className="flex w-[292px] shrink-0 snap-center flex-col gap-4 rounded-card border border-hairline bg-card p-5">
+            <div key={t.name} className="flex w-[292px] shrink-0 snap-center flex-col gap-4 rounded-card border border-hairline bg-card p-5 xl:w-auto">
               <p className="m-0 text-[15px] leading-normal text-text-primary">“{t.quote}”</p>
               <div className="mt-auto flex items-center gap-2.5">
                 <span className="grid h-[38px] w-[38px] place-items-center rounded-full bg-accent-tint text-[15px] font-semibold text-accent-hover">{t.initial}</span>
@@ -267,20 +344,22 @@ export async function LandingContent() {
       </section>
 
       {/* FAQ */}
-      <section className="px-5 pb-[52px]">
+      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
         <SectionHeader caption="Before you ask" title="Questions" />
-        <div className="mt-4">
+        <div className="mt-4 xl:mx-auto xl:max-w-[760px]">
           <FaqAccordion items={FAQ} />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card p-7 bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)]">
-        <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent">Ready to get paid for what you know?</h2>
-        <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)]">No entry fee. Publish your first piece free, price the next one yourself.</p>
+      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card p-7 bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] xl:mx-auto xl:mb-14 xl:max-w-[1440px] xl:flex-row xl:items-center xl:justify-between xl:px-14 xl:py-12">
+        <div className="flex flex-col gap-3.5 xl:gap-2">
+          <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent xl:text-[32px]">Ready to get paid for what you know?</h2>
+          <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)] xl:text-[15px]">No entry fee. Publish your first piece free, price the next one yourself.</p>
+        </div>
         <Link
           href="/sign-up?type=creator"
-          className="mt-0.5 inline-flex h-[46px] items-center gap-2 self-start rounded-button bg-white px-[22px] text-[15px] font-semibold text-on-light"
+          className="mt-0.5 inline-flex h-[46px] shrink-0 items-center gap-2 self-start rounded-button bg-white px-[22px] text-[15px] font-semibold text-on-light xl:mt-0 xl:h-[52px] xl:self-auto"
         >
           Become a creator
           <Icon name="ArrowRight" size={17} color="var(--text-on-light)" strokeWidth={2.2} />
@@ -288,8 +367,8 @@ export async function LandingContent() {
       </section>
 
       {/* Newsletter */}
-      <section className="px-5 pb-12">
-        <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5">
+      <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
+        <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5 xl:mx-auto xl:max-w-[560px] xl:p-7">
           <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Stay in the loop</span>
           <p className="m-0 text-[15px] leading-normal text-text-secondary">
             Monthly notes on what is selling on WAWU and how creators are pricing it.
@@ -309,9 +388,9 @@ export async function LandingContent() {
       </section>
 
       {/* Footer */}
-      <footer className="flex flex-col gap-[26px] border-t border-hairline px-5 pb-[46px] pt-[30px]">
+      <footer className="flex flex-col gap-[26px] border-t border-hairline px-5 pb-[46px] pt-[30px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[20px] w-auto self-start object-contain opacity-80" />
-        <div className="grid grid-cols-2 gap-x-5 gap-y-[26px]">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-[26px] xl:grid-cols-4">
           {[
             { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Become a creator", "/sign-up?type=creator"], ["Creator tiers", "/sign-up?type=creator"]] },
             { label: "Services", links: [["CAC registration", "#cac"], ["NEPC registration", "#nepc"], ["Mentors", "#mentors"], ["Learn", "#learn"]] },
