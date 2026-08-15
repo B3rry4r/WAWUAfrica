@@ -60,16 +60,18 @@ const uploadMeta: Record<ContentType, { file: string; meta: string; note: string
 export interface PublishingWizardProps {
   type: ContentType;
   firstUpload: boolean;
+  /** Set when re-entering the wizard to fix and resubmit a rejected item. */
+  resubmit?: { id: string; title: string };
 }
 
-export function PublishingWizard({ type, firstUpload }: PublishingWizardProps) {
+export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWizardProps) {
   const router = useRouter();
   const meta = CONTENT_TYPE_META[type];
   const file = uploadMeta[type];
   const [step, setStep] = useState(0);
   const [paid, setPaid] = useState(!firstUpload);
   const [price, setPrice] = useState(1500);
-  const [title, setTitle] = useState(firstUpload ? "" : "The trader's playbook");
+  const [title, setTitle] = useState(resubmit ? resubmit.title : firstUpload ? "" : "The trader's playbook");
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -104,7 +106,7 @@ export function PublishingWizard({ type, firstUpload }: PublishingWizardProps) {
 
   return (
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
-      <FlowHeader title={step === 0 ? meta.label : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{stepLabel}</span>} />
+      <FlowHeader title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{stepLabel}</span>} />
 
       <div className="flex-1 py-[18px] px-[16px] flex flex-col gap-[18px]">
         {publishError ? (
@@ -160,10 +162,14 @@ export function PublishingWizard({ type, firstUpload }: PublishingWizardProps) {
         {!publishError && step === 3 ? (
           <>
             <Button full size="lg" loading={publishing} onClick={submit}>
-              {firstUpload ? "Publish free" : "Submit for review"}
+              {resubmit ? "Resubmit for review" : firstUpload ? "Publish free" : "Submit for review"}
             </Button>
             <span className="text-[12px] text-[var(--text-muted)]" style={{alignSelf: "center"}}>
-              {firstUpload ? "Reviewed before it goes live." : "Reviewed before it goes live, same as any upload."}
+              {resubmit
+                ? "Reviewed again before it goes live."
+                : firstUpload
+                  ? "Reviewed before it goes live."
+                  : "Reviewed before it goes live, same as any upload."}
             </span>
           </>
         ) : null}

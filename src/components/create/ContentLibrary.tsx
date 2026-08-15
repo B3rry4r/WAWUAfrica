@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { contentApi } from "@/lib/api/creator-content";
 import { currentSession } from "@/lib/api/mocks/session";
 import type { ContentItem, ContentStatus } from "@/types/content";
@@ -18,9 +19,19 @@ const filterLabels: Record<Filter, string> = {
 };
 
 export function ContentLibrary() {
+  const router = useRouter();
   const [items, setItems] = useState<ContentItem[] | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [error, setError] = useState(false);
+
+  // Routes a rejected item back into the publishing wizard, prefilled, so it
+  // can actually be fixed and resubmitted instead of dead-ending here.
+  const resubmit = useCallback(
+    (item: ContentItem) => {
+      router.push(`/create/new?type=${item.type}&resubmit=${item.id}`);
+    },
+    [router],
+  );
 
   const load = useCallback(() => {
     setError(false);
@@ -77,13 +88,21 @@ export function ContentLibrary() {
         ) : !items ? (
           [0, 1, 2, 3].map((i) => <Skeleton key={i} height={100} radius="var(--radius-card)" />)
         ) : (
-          filtered.map((item) => (
-            <ContentCard
-              key={item.id}
-              item={item}
-              onFix={item.status === "rejected" ? () => undefined : undefined}
-            />
-          ))
+          filtered.map((item) => {
+            // Rejected items are the only ones with somewhere to go right
+            // now: back into the wizard to fix and resubmit. Live and
+            // in-review items have no creator-facing detail/edit view yet —
+            // follow-up needed before they can be made tappable too.
+            const canResubmit = item.status === "rejected";
+            return (
+              <ContentCard
+                key={item.id}
+                item={item}
+                onClick={canResubmit ? () => resubmit(item) : undefined}
+                onFix={canResubmit ? () => resubmit(item) : undefined}
+              />
+            );
+          })
         )}
       </div>
     </div>
