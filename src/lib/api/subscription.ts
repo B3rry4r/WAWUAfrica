@@ -1,6 +1,5 @@
 import { PLANS } from "@/types/subscription";
 import type { Subscription } from "@/types/subscription";
-import { PLANS } from "@/types/subscription";
 import type { KycStatus, CreatorTier } from "@/types/account";
 import { mockRequest } from "./client";
 
