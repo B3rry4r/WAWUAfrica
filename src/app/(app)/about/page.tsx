@@ -1,4 +1,5 @@
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { ListRow } from "@/components/ui/ListRow";
 
 export default function AboutPage() {
   return (
@@ -17,6 +18,13 @@ export default function AboutPage() {
       <Section title="Credits, never cash" body="WAWU Credits are a count used for paid messages, community posts and tips. They can't be withdrawn or converted to cash." />
       <Section title="No wallet" body="There's no balance to cash out. Money moves from member to creator for the thing being bought, and that's it." />
       <Section title="Nigeria-first" body="Prices are in naira. Verification uses BVN and NIN in Nigeria, national IDs elsewhere, and every review is done by a human." />
+
+      <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+        <ListRow title="Partners" subtitle="Who we work with" icon="Handshake" href="/partners" />
+        <ListRow title="Privacy policy" icon="FileText" href="/privacy" />
+        <ListRow title="Terms of service" icon="Scale" href="/terms" />
+        <ListRow title="Contact us" subtitle="hello@wawuafrica.com" icon="Mail" href="mailto:hello@wawuafrica.com" />
+      </div>
     </div>
   );
 }
