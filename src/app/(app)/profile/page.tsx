@@ -41,8 +41,13 @@ export default async function OwnProfilePage() {
       <div className="flex flex-col rounded-[var(--radius-card)] border border-hairline bg-card p-1">
         {isCreator ? (
           <>
-            <ListRow title="My content" subtitle={`${profile.stats.published} published · ${profile.contentSlots?.published} of ${profile.contentSlots?.total} slots`} icon="Layers" href="/profile" />
-            <ListRow title="My purchases" icon="Package" meta="2" href="/messages" />
+            <ListRow title="Creator dashboard" subtitle="Earnings, uploads, messages" icon="LayoutDashboard" href="/creator" />
+            <ListRow title="My content" subtitle={`${profile.stats.published} published · ${profile.contentSlots?.published} of ${profile.contentSlots?.total} slots`} icon="Layers" href="/create/library" />
+            <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
+            <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
+            <ListRow title="Verification" icon="ShieldCheck" href="/kyc" />
+            <ListRow title="My purchases" icon="Package" meta="2" href="/purchases" />
+            <ListRow title="Saved" icon="Bookmark" href="/saved" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
         ) : (

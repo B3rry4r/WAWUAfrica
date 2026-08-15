@@ -85,3 +85,13 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
+/**
+ * Mock read helper used by the creator-side API modules (earnings, kyc,
+ * messaging, subscription). Resolves after a simulated round trip.
+ *
+ * SEAM: every caller of this is a mock read — grep "SEAM:" to find them.
+ */
+export async function mockRequest<T>(data: T, delayMs = 350): Promise<T> {
+  await delay(delayMs);
+  return data;
+}

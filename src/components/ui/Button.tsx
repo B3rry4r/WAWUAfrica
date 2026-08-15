@@ -4,13 +4,15 @@ import Link from "next/link";
 import { Icon } from "./Icon";
 import type { IconName } from "./Icon";
 
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface BaseProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
   full?: boolean;
+  /** Shows a busy state and blocks interaction. */
+  loading?: boolean;
   icon?: IconName;
   iconRight?: IconName;
   children?: ReactNode;
@@ -23,6 +25,7 @@ const variantClass: Record<ButtonVariant, string> = {
   primary: "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press",
   secondary: "bg-elevated text-text-primary border border-strong hover:bg-tag",
   ghost: "bg-transparent text-text-primary hover:bg-tag",
+  danger: "bg-danger text-on-accent hover:opacity-90",
 };
 
 const sizeClass: Record<ButtonSize, string> = {
@@ -54,7 +57,7 @@ function content(size: ButtonSize, icon?: IconName, iconRight?: IconName, childr
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", full = false, icon, iconRight, className = "", children, href, ...rest },
+  { variant = "primary", size = "md", full = false, loading = false, icon, iconRight, className = "", children, href, ...rest },
   ref,
 ) {
   const cls = buttonClass(variant, size, full, className);
@@ -65,8 +68,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       </Link>
     );
   }
+  const buttonRest = rest as ButtonHTMLAttributes<HTMLButtonElement>;
   return (
-    <button ref={ref} className={cls} {...(rest as ButtonHTMLAttributes<HTMLButtonElement>)}>
+    <button
+      ref={ref}
+      className={cls}
+      aria-busy={loading || undefined}
+      {...buttonRest}
+      disabled={loading || buttonRest.disabled}
+    >
       {content(size, icon, iconRight, children)}
     </button>
   );

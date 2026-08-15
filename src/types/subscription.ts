@@ -1,41 +1,50 @@
 import type { CreatorTier } from "./account";
 
-/** Creator Subscription lifecycle (docs/02 §2.5). */
-export type SubscriptionStatus = "active" | "past_due" | "cancelled" | "expired";
+/** Creator Subscription lifecycle (docs/01 §1 streams 7-8, docs/02 §2.5). */
+export type SubscriptionState = "none" | "active" | "past_due" | "expired";
 
-export interface CreatorSubscription {
-  creatorWawuId: string;
+export interface Plan {
   tier: CreatorTier;
-  status: SubscriptionStatus;
-  currentPeriodEnd: string;
-  /** 0.10 while tier is pro and active; read by purchase logic, not client copy. */
-  commissionRateOverride?: number | null;
+  price: number;
+  /** Upload slots included. */
+  slots: number;
+  /** How many of those are free by rule. */
+  freeSlots: number;
+  /** Revenue share the creator keeps, percent. */
+  split: number;
+  features: string[];
 }
 
-/** Locked yearly prices (docs/01 §1, streams 7–8). */
-export const CREATOR_TIER_PRICES: Record<CreatorTier, number> = {
-  basic: 5999,
-  pro: 18999,
-};
+export interface Subscription {
+  plan: Plan;
+  state: SubscriptionState;
+  renewsAt?: string;
+  cancelsAt?: string;
+}
 
-export const TIER_PERKS: Record<CreatorTier, string[]> = {
-  basic: [
-    "3 content uploads (1 free, 2 paid)",
-    "Unlimited messages in open communities",
-    "1 free selected course",
-    "Free business playbook",
-    "Personal pension registration",
-    "Purple badge",
-  ],
-  pro: [
-    "7 content uploads (2 free, 5 paid)",
-    "Host private communities",
-    "Gold badge",
-    "Up to 3 free courses of your choice",
-    "Priority admin support",
-    "1 month free health insurance",
-    "Personal pension registration",
-    "Recommended Deals",
-    "90/10 revenue split instead of 85/15",
-  ],
+export const PLANS: Record<CreatorTier, Plan> = {
+  basic: {
+    tier: "basic",
+    price: 5999,
+    slots: 3,
+    freeSlots: 1,
+    split: 85,
+    features: [
+      "3 uploads — 1 free and 2 paid",
+      "Host open communities · 90% on credits",
+      "1 free course, business playbook, purple badge",
+    ],
+  },
+  pro: {
+    tier: "pro",
+    price: 18999,
+    slots: 7,
+    freeSlots: 2,
+    split: 90,
+    features: [
+      "7 uploads instead of 3",
+      "Keep 90% instead of 85%",
+      "Private communities and 3 free courses",
+    ],
+  },
 };
