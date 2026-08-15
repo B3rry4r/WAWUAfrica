@@ -1,0 +1,44 @@
+{
+  "screenId": null,
+  "provenance": "declaration",
+  "declaredAs": "integration",
+  "resourceName": "WawuIdAuth",
+  "integration": {
+    "provider": "wawu-id",
+    "direction": ["outbound", "jwks-verify"],
+    "envVars": ["WAWU_ID_JWKS_URL", "WAWU_ID_INTERNAL_SERVICE_KEY", "WAWU_ID_BASE_URL"],
+    "sandbox": false,
+    "sandboxNote": "Real WAWU_ID_INTERNAL_SERVICE_KEY not available in this sandbox. Build agent implements the real JWKS-verification guard (this part is fully testable locally against a mock JWKS endpoint standing in for WAWU ID) plus the real outbound internal-API client behind an interface, with a mock adapter for tests. Live connectivity to the production WAWU ID service is an explicit open risk for Phase 8 to state plainly."
+  },
+  "reads": [
+    {
+      "entity": "WawuJwtClaims",
+      "fields": [
+        {"name": "sub", "type": "string", "nullable": false},
+        {"name": "email", "type": "string", "nullable": true},
+        {"name": "phone", "type": "string", "nullable": false},
+        {"name": "firstName", "type": "string", "nullable": false},
+        {"name": "lastName", "type": "string", "nullable": false},
+        {"name": "country", "type": "string", "nullable": false},
+        {"name": "verificationTier", "type": "string", "nullable": false},
+        {"name": "trustScore", "type": "number", "nullable": true},
+        {"name": "status", "type": "string", "nullable": false}
+      ],
+      "cardinality": "single",
+      "note": "Decoded from the Bearer JWT on every authenticated request via RS256 + JWKS (cached 24h). This backend never stores name/email/phone as its own source of truth — these fields pass through from the token for display/denormalization only where a resource genuinely needs a snapshot (e.g. Purchase.buyerName for a receipt), never as an editable local copy."
+    }
+  ],
+  "actions": [
+    {
+      "name": "elevateVerificationTier",
+      "kind": "custom",
+      "entity": "WawuUser",
+      "payload": [{"name": "userId", "type": "string"}, {"name": "tier", "type": "string"}],
+      "expectedResponse": {"entity": "void", "cardinality": "single"},
+      "note": "PATCH /internal/users/:userId/verification-tier on WAWU ID, header X-Service-Key. Called by this backend's own verification-submission review workflow when a manual reviewer approves a badge-ladder application. Elevate-only (WAWU ID's own semantics, never a downgrade from this call)."
+    }
+  ],
+  "authContext": {"requiresAuth": true, "rolesObserved": ["any-authenticated"]},
+  "special": {"realtime": false, "uploads": false, "downloads": false},
+  "note": "This is infrastructure (a Nest guard + strategy + a small WawuIdClient service in src/common/), not a resource module with its own controller/CRUD endpoints. The Phase 4 schema/pre-step agent builds the JWT verification guard; a later Phase-5 'verification' resource build agent builds the elevateVerificationTier call site as part of its own review-approval endpoint."
+}

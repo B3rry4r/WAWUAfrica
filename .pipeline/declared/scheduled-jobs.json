@@ -1,0 +1,31 @@
+{
+  "screenId": null,
+  "provenance": "declaration",
+  "declaredAs": "scheduler",
+  "resourceName": "ScheduledJobs",
+  "integration": {"provider": "internal", "direction": ["outbound"], "envVars": ["DM_SWEEP_CRON", "SUBSCRIPTION_RENEWAL_CRON"], "sandbox": true},
+  "reads": [
+    {"entity": "DirectMessage", "fields": [{"name": "id", "type": "string"}, {"name": "status", "type": "string"}, {"name": "deadlineAt", "type": "date"}], "cardinality": "list", "filtersOrSort": ["status=awaiting_response", "deadlineAt<now"]},
+    {"entity": "CreatorSubscription", "fields": [{"name": "id", "type": "string"}, {"name": "currentPeriodEnd", "type": "date"}, {"name": "status", "type": "string"}], "cardinality": "list", "filtersOrSort": ["currentPeriodEnd<=now"]}
+  ],
+  "actions": [
+    {
+      "name": "sweepMissedDmDeadlines",
+      "kind": "custom",
+      "entity": "DirectMessage",
+      "payload": [],
+      "expectedResponse": {"entity": "void", "cardinality": "single"},
+      "note": "@nestjs/schedule cron, every 5 min. For every DirectMessage past deadlineAt still awaiting_response: set status=refunded, call FlutterwaveWebhook.refund, update the creator's rolling CreatorNoResponseTracker (noResponseRatePct, penaltyState per thresholds in product-truths.json), zero WAWU fee on refund per spec."
+    },
+    {
+      "name": "attemptSubscriptionRenewals",
+      "kind": "custom",
+      "entity": "CreatorSubscription",
+      "payload": [],
+      "expectedResponse": {"entity": "void", "cardinality": "single"},
+      "note": "Daily cron. Note per conventions.md: actual renewal charging is delegated to Flutterwave's Payment Plan auto-charge — this job does NOT initiate the charge itself, it reconciles: any subscription whose currentPeriodEnd has passed with no renewal-succeeded webhook received within a grace window gets renewalAttempts incremented; after N attempts, status -> past_due -> expired, commissionRateOverride cleared, tier perks revoked. The actual successful-renewal path is driven by the Flutterwave webhook (declared/flutterwave-payments.json), not by this job."
+    }
+  ],
+  "authContext": {"requiresAuth": false, "rolesObserved": ["system"]},
+  "special": {"realtime": false, "uploads": false, "downloads": false}
+}

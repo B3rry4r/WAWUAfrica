@@ -1,0 +1,323 @@
+{
+  "source": {
+    "kind": "doc",
+    "paths": ["docs/01_SPEC.md", "docs/02_TECHNICAL_CONTEXT.md", "docs/03_USER_FLOWS.md"]
+  },
+  "truths": [
+    {
+      "id": "T-01",
+      "kind": "entitlement",
+      "statement": "Two independent gates control creator capability: a paid yearly subscription (Basic/Pro) unlocks uploading and creator tools, while manual KYC approval unlocks receiving earnings; a creator who has paid but has pending KYC can upload and sell but cannot be paid out yet, and that is a normal state, not an edge case.",
+      "provenance": "docs/01_SPEC.md §6 (\"A trust-tier-based creator gate\" row)",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-02",
+      "kind": "entitlement",
+      "statement": "Basic subscription tier grants 3 content uploads (1 free, 2 paid); Pro tier grants 7 content uploads (2 free, 5 paid).",
+      "provenance": "docs/01_SPEC.md §4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-03",
+      "kind": "entitlement",
+      "statement": "The first upload from a given creator must be free, enforced server-side (rejecting a paid first submission), not merely suggested in the UI.",
+      "provenance": "docs/01_SPEC.md §5, §7 (B2); docs/02_TECHNICAL_CONTEXT.md §2.1 `creatorFirstUploadFree`, §3.1",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-04",
+      "kind": "entitlement",
+      "statement": "Basic-tier creators can host/moderate only open (general) communities; Pro-tier creators can additionally open and host private communities.",
+      "provenance": "docs/01_SPEC.md §4; docs/03_USER_FLOWS.md §B4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-05",
+      "kind": "entitlement",
+      "statement": "Reading messages in open/general communities is always free regardless of credit balance or trial status; only sending a message costs 1 credit.",
+      "provenance": "docs/01_SPEC.md §3; docs/03_USER_FLOWS.md §A4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-06",
+      "kind": "entitlement",
+      "statement": "There is no entry fee to publish content, DM, or host a community at the standard 85/15 split — eligibility alone (not payment) unlocks the standard tier of creator activity; paying for Basic/Pro only adds upload-count limits, community-hosting scope, and the upgraded 90/10 split.",
+      "provenance": "docs/03_USER_FLOWS.md §B1",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-07",
+      "kind": "entitlement",
+      "statement": "Storefront/physical-product sales route entirely through the existing external WAWUBasket/WAWUBeauty apps as a handoff; the commerce engine for storefront is never rebuilt inside this product.",
+      "provenance": "docs/01_SPEC.md §1 row 6, §6; docs/03_USER_FLOWS.md §A6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-08",
+      "kind": "entitlement",
+      "statement": "Pension registration and 1-month free health insurance perks are partnership dependencies requiring an actual signed agreement with a licensed pension fund administrator and an insurer respectively; no engineering effort can ship them without that partnership, and status must be confirmed before scoping build time.",
+      "provenance": "docs/01_SPEC.md §4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-09",
+      "kind": "entitlement",
+      "statement": "The \"free course(s)\" perks (1 for Basic, up to 3 for Pro) assume access is granted into an existing training/course catalog (the app's `/training` section) rather than a new content library — this mapping needs confirmation, not assumption.",
+      "provenance": "docs/01_SPEC.md §4",
+      "confidence": "inferred"
+    },
+    {
+      "id": "T-10",
+      "kind": "pricing",
+      "statement": "PPV content and downloadable content (video, course, audio, PDF/book, image/art, template) are priced ₦100–₦5,000 (currency adjusts by region), paid once for permanent stream/download access, split 85% creator / 15% WAWU standard.",
+      "provenance": "docs/01_SPEC.md §1 rows 1–2",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-11",
+      "kind": "pricing",
+      "statement": "Direct-message price is creator-set in the range ₦50–₦500 per message, split 85/15 to the creator on a timely response, with zero WAWU fee taken on a refunded (missed-deadline) message.",
+      "provenance": "docs/01_SPEC.md §1 row 3, §2; docs/02_TECHNICAL_CONTEXT.md §2.3",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-12",
+      "kind": "pricing",
+      "statement": "WAWU Credits are sold in three fixed prepaid packs: Starter ₦500 for 50 credits, Popular ₦1,000 for 120 credits, Pro ₦2,000 for 300 credits; split 90% creator / 10% WAWU per credit spent.",
+      "provenance": "docs/01_SPEC.md §1 row 4; docs/02_TECHNICAL_CONTEXT.md §2.4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-13",
+      "kind": "pricing",
+      "statement": "Creator Subscription pricing is fixed and annual: Basic ₦5,999/year, Pro ₦18,999/year; the subscription fee itself is 100% WAWU / 0% creator revenue (it is a fee creators pay WAWU, not a revenue-share item).",
+      "provenance": "docs/01_SPEC.md §1 rows 7–8, §4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-14",
+      "kind": "pricing",
+      "statement": "Standard revenue split across PPV/downloads, DM (on-time response), tips, and storefront is 85% creator / 15% WAWU; Pro-tier creators receive an upgraded 90% creator / 10% WAWU on those same streams (1, 2, 3, 5, 6) — this is the stated actual incentive to purchase Pro.",
+      "provenance": "docs/01_SPEC.md §1, §4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-15",
+      "kind": "pricing",
+      "statement": "The WAWU Credits revenue split is 90% creator / 10% WAWU regardless of the creator's subscription tier (Basic or Pro) — it does not follow the standard-vs-Pro split rule that governs the other five streams.",
+      "provenance": "docs/01_SPEC.md §1 row 4, §3",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-16",
+      "kind": "lifecycle",
+      "statement": "A DirectMessage moves from `awaiting_response` to `responded` (creator paid 85/15 or 90/10) if the creator replies within 24 hours of `sentAt`, or to `refunded` (full user refund, zero WAWU fee) if a scheduled cron sweep finds it past `deadlineAt` (`sentAt + 24h`) still `awaiting_response`.",
+      "provenance": "docs/01_SPEC.md §2; docs/02_TECHNICAL_CONTEXT.md §2.3, §3.4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-17",
+      "kind": "lifecycle",
+      "statement": "Each DM auto-refund event also updates the creator's rolling `noResponseRatePct`, which drives a `penaltyState` machine: none (<10%) → warned (10–30%) → disabled_7d (30–50%) → disabled_30d (>50%), with `dmDisabledUntil` set automatically when disabled.",
+      "provenance": "docs/01_SPEC.md §2; docs/02_TECHNICAL_CONTEXT.md §2.3, §3.4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-18",
+      "kind": "lifecycle",
+      "statement": "Creator Subscription state moves active → past_due (on a failed annual renewal charge) → expired (after N failed retries per a defined backoff); on expiry, `commissionRateOverride` is cleared and all tier perks including the 90/10 split revert to standard.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §2.5, §3.6; docs/03_USER_FLOWS.md §B5",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-19",
+      "kind": "lifecycle",
+      "statement": "Subscription renewal is an annual scheduled job that charges the stored `flutterwaveCustomerRef`; success extends `currentPeriodEnd` by 1 year, failure increments `renewalAttempts` and retries before the state transitions to past_due/expired.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §3.6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-20",
+      "kind": "lifecycle",
+      "statement": "Every new user gets an automatic 7-day free trial of community chat starting at signup (`trialEndsAt = signup + 7d`); after the trial, sending a community message requires a positive credit balance (reading remains free at all times, and credits are non-refundable once purchased).",
+      "provenance": "docs/01_SPEC.md §3; docs/02_TECHNICAL_CONTEXT.md §2.4; docs/03_USER_FLOWS.md §A4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-21",
+      "kind": "lifecycle",
+      "statement": "A Purchase moves pending → completed | failed, and the server must re-verify the transaction against Flutterwave's API before marking it `completed` — the client-side payment callback alone is never trusted to finalize a purchase.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §2.2, §3.3",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-22",
+      "kind": "lifecycle",
+      "statement": "Submitted content starts in status `pending` until the existing moderation path (automated + manual review) clears it; once approved, free content goes fully live while approved paid content remains preview-only until the specific viewer has a completed Purchase for it.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §3.1, §3.2; docs/03_USER_FLOWS.md §B2",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-23",
+      "kind": "lifecycle",
+      "statement": "KYC is manual-review only: a creator's payout eligibility passes through at least a pending state (paid-but-pending is an explicitly named normal state) before earnings can be released; there is no automated approval path.",
+      "provenance": "docs/01_SPEC.md §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-24",
+      "kind": "lifecycle",
+      "statement": "A piece of content's `fullAssetUrl` is included in the API response only if the content is free OR the requester has a completed Purchase for that content id (short-lived signed URL either way); otherwise it is omitted and `fullAssetLocked: true` is returned instead, so client UI never needs the real asset URL to render the lock state.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §2.1, §3.2",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-25",
+      "kind": "metric",
+      "statement": "EVG-lite is a single computed integer per creator, `evgScore = views + purchases × weight + comments`, where the purchase weight is a global config constant (not per-creator); it is surfaced only as a badge with no trend lines, percentile ranking, or insights engine.",
+      "provenance": "docs/01_SPEC.md §6; docs/02_TECHNICAL_CONTEXT.md §2.6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-26",
+      "kind": "metric",
+      "statement": "`noResponseRatePct` is a rolling-window decimal computed per creator from missed-vs-total DM deadlines; the locked thresholds mapping it to `penaltyState` are <10% → none, 10–30% → warned, 30–50% → disabled_7d, >50% → disabled_30d.",
+      "provenance": "docs/01_SPEC.md §2; docs/02_TECHNICAL_CONTEXT.md §2.3",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-27",
+      "kind": "invariant",
+      "statement": "No endpoint, admin action, or support-tool script may ever convert a user's `creditBalance` back into a Flutterwave payout or naira value — doing so breaks the boundary that keeps Credits out of wallet/e-money-licensing territory; any future request to add this must be stopped and flagged, not built.",
+      "provenance": "docs/01_SPEC.md §3; docs/02_TECHNICAL_CONTEXT.md §2.4",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-28",
+      "kind": "invariant",
+      "statement": "No wallet, cash balance, or withdrawal UI exists or is being built anywhere in the product; the mechanism by which creators actually receive their 85–90% share is an explicitly out-of-scope, separate business/ops decision, not part of this build.",
+      "provenance": "docs/01_SPEC.md §6; docs/03_USER_FLOWS.md §B6, §D",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-29",
+      "kind": "invariant",
+      "statement": "WAWU Credits must render in the UI purely as a count (e.g. \"48 credits\"), never displayed or implied as a naira value — a display-layer invariant reinforcing (but distinct from) the non-cashable rule.",
+      "provenance": "CLAUDE.md §Non-negotiable product rules",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-30",
+      "kind": "invariant",
+      "statement": "Credits are single-purpose: they can be spent only on messages in general/open communities, never on PPV, downloads, DMs, tips, or anything else; any request to broaden credit usage is the wallet problem re-appearing and must be flagged, not implemented.",
+      "provenance": "docs/01_SPEC.md §3",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-31",
+      "kind": "invariant",
+      "statement": "Creator is an account type chosen at signup or via upgrade, not a trust-tier badge earned by climbing a ladder — the earlier \"trust-tier-based creator gate\" model is explicitly wrong and replaced.",
+      "provenance": "docs/01_SPEC.md §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-32",
+      "kind": "invariant",
+      "statement": "No DRM or screenshot/recording-block claims exist anywhere in the product or its UI copy — not achievable on the web platform at any budget or timeline.",
+      "provenance": "docs/01_SPEC.md §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-33",
+      "kind": "invariant",
+      "statement": "No automated identity verification (liveness check, Face ID) exists or is being built; KYC is entirely manual (BVN + NIN for Nigeria, national-ID equivalent elsewhere, plus ID document and payout bank details) — a stale \"Face-ID liveness check\" string in the old `src/lib/profile-data.ts` is dead display copy and must be ignored.",
+      "provenance": "docs/01_SPEC.md §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-34",
+      "kind": "invariant",
+      "statement": "Live streaming is phased out of the current build; pre-recorded video covers the PPV-video need for now, and any change to pull real-time ingest/playback/live-chat forward must be confirmed before scoping.",
+      "provenance": "docs/01_SPEC.md §1 row 1 note, §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-35",
+      "kind": "invariant",
+      "statement": "Event Tickets, Jobs/gigs/recruiting (including the word \"gigs\" anywhere in copy — the Pro perk is \"Recommended Deals,\" not \"Recommended Gigs & Deals\"), Blockchain/NFT, and Admin AML/CFT compliance dashboards are all cut entirely and must not be silently reintroduced.",
+      "provenance": "docs/01_SPEC.md §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-36",
+      "kind": "invariant",
+      "statement": "There is no Jobs section, Gigs section, Event Tickets section, Opportunities section, or Events section anywhere in this product — consistent with 01_SPEC.md's cut of Event Tickets and Jobs/gigs/recruiting.",
+      "provenance": "CLAUDE.md §Non-negotiable product rules; docs/01_SPEC.md §6",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-37",
+      "kind": "invariant",
+      "statement": "DM disputes, content moderation, and subscription-status views must extend the existing admin moderation/audit-trail system (ban/suspend logging, `trust_audit`/`moderation_log` export types) rather than building a second/parallel admin or dispute system.",
+      "provenance": "docs/01_SPEC.md §2, §7; docs/02_TECHNICAL_CONTEXT.md §4; docs/03_USER_FLOWS.md §C",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-38",
+      "kind": "invariant",
+      "statement": "Every one-time-payment stream (PPV, downloads, DM, tips, Credits) reuses the exact existing Flutterwave inline-checkout call pattern already live for CAC/NEPC payments; recurring billing for Creator Subscriptions rides the same underlying Flutterwave gateway relationship via its recurring-charge capability — no new PCI scope is introduced, and WAWU never touches raw card data.",
+      "provenance": "docs/01_SPEC.md §7; docs/02_TECHNICAL_CONTEXT.md §1",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-39",
+      "kind": "invariant",
+      "statement": "A Purchase's `commissionRate` is snapshotted at the moment of purchase (0.15 standard, or 0.10 if the creator was Pro-tier-and-active at that instant) and does not retroactively change if the creator's subscription tier changes afterward.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §2.2",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-40",
+      "kind": "invariant",
+      "statement": "There is no platform-wide consumer subscription in this model — fans pay creators directly per-item (PPV, downloads, DMs, tips, credits) rather than subscribing to the platform itself; the locked model is structurally closer to Passes.com's fan-to-creator mechanic than earlier drafts, intentionally simplified (no $29/mo creator SaaS fee, no flat per-transaction surcharge).",
+      "provenance": "docs/01_SPEC.md §8",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-41",
+      "kind": "doc-internal-conflict",
+      "statement": "docs/01_SPEC.md §6 declares the trust-tier-based creator gate \"wrong — replaced\" by the account-type + subscription + manual-KYC model, yet docs/01_SPEC.md §7 and docs/03_USER_FLOWS.md §B1 still describe creator eligibility to publish/DM/host as gated by the legacy trust tier (`certified_professional`/`trusted_partner`, \"same gate the composer already uses\"), and docs/02_TECHNICAL_CONTEXT.md §3.1 has the publish endpoint reject requests where \"requester's trust tier isn't certified_professional/trusted_partner\" — the docs are not fully reconciled on which gate is authoritative for publishing; treat CLAUDE.md's locked two-gate model (subscription unlocks uploading, KYC unlocks earning, creator = account type) as the tiebreaker for gating logic, but flag the trust-tier check in §3.1 as a discrepancy to resolve, not silently implement as an additional undocumented gate.",
+      "provenance": "docs/01_SPEC.md §6 vs §7; docs/02_TECHNICAL_CONTEXT.md §3.1; docs/03_USER_FLOWS.md §B1",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-42",
+      "kind": "doc-internal-conflict",
+      "statement": "docs/02_TECHNICAL_CONTEXT.md §4 (\"Frontend — files to touch\") references a pre-rebuild file structure (`src/lib/posts.ts`, `src/lib/feed-data.ts`, `src/lib/adapt.ts`, `src/app/(feed)/create/[category]/page.tsx`) that does not match the actual current repo, which lives under `src/app/(app)/`, `src/app/create/`, and `src/lib/api/` per CLAUDE.md; Section 4's file paths are stale and must be ignored for implementation, but Sections 1–3 of the same doc (data model and `/api/hub/...` API contract shapes: Purchase, DirectMessage, Credits, Subscription, EVG-lite field lists) remain the authoritative target contract and should be treated as strong evidence, not mere inference from screens.",
+      "provenance": "docs/02_TECHNICAL_CONTEXT.md §4 vs CLAUDE.md repo/code-boundary description",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-43",
+      "kind": "doc-internal-conflict",
+      "statement": "docs/01_SPEC.md §7 and docs/02_TECHNICAL_CONTEXT.md §4 describe the \"actual\" current bottom nav as Home / Market / Create / Opportunities / More (5 slots, with a live Opportunities tab for jobs/grants/funding), which conflicts with CLAUDE.md's locked current nav of Home / Communities / [Explore|Create] / Messages / Profile with no Opportunities or Market slot; the docs describe a pre-rebuild nav state that CLAUDE.md's locked nav has since superseded, so CLAUDE.md's nav is current truth, not the SPEC/technical-context doc's described nav.",
+      "provenance": "docs/01_SPEC.md §7; docs/02_TECHNICAL_CONTEXT.md §4 vs CLAUDE.md §Navigation (locked)",
+      "confidence": "explicit"
+    },
+    {
+      "id": "T-44",
+      "kind": "doc-internal-conflict",
+      "statement": "docs/01_SPEC.md §0 frames this feature as \"Built on top of the existing WAWU feed/post/profile system... Not a new app, not a new IA,\" reusing existing trust tiers and upload infra, while CLAUDE.md (the current, authoritative project instructions) describes the whole project as a \"Ground-up rebuild — it replaces the old post-feed app entirely\"; CLAUDE.md's ground-up-rebuild framing is current truth, so 01_SPEC.md's \"reuse the existing app/IA\" framing should be read as superseded context — its locked monetization numbers and mechanics (Section 1 table, splits, prices, DM/Credits rules) remain valid target-state truth regardless.",
+      "provenance": "docs/01_SPEC.md §0 vs CLAUDE.md project description",
+      "confidence": "inferred"
+    },
+    {
+      "id": "T-45",
+      "kind": "entitlement",
+      "statement": "A Pro-tier creator's 90/10 split applies specifically to streams 1 (PPV), 2 (downloads), 3 (DM, on response), 5 (tips), and 6 (storefront) — Credits (stream 4) is excluded from the tier-based split upgrade because it is fixed at 90/10 for all creators regardless of tier.",
+      "provenance": "docs/01_SPEC.md §1 row 8, §4",
+      "confidence": "explicit"
+    }
+  ]
+}

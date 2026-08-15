@@ -1,0 +1,11 @@
+{
+  "framework": "nestjs",
+  "decidedBy": "directive",
+  "confidence": "high",
+  "evidence": [
+    {"kind": "directive", "detail": "User said 'it should be nest js and prisma' explicitly in session", "source": "session"}
+  ],
+  "confirmedByUser": true,
+  "frozenAt": "2026-08-15T22:00:00Z",
+  "note": "User explicitly named both framework AND ORM in the same directive (NestJS + Prisma), skipping the ORM 'confirm' step the NestJS profile normally requires — both frozen together."
+}

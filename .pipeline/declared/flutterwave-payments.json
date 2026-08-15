@@ -1,0 +1,70 @@
+{
+  "screenId": null,
+  "provenance": "declaration",
+  "declaredAs": "integration",
+  "resourceName": "FlutterwaveWebhook",
+  "integration": {
+    "provider": "flutterwave",
+    "direction": ["outbound", "webhook-inbound"],
+    "envVars": ["FLUTTERWAVE_PUBLIC_KEY", "FLUTTERWAVE_SECRET_KEY", "FLUTTERWAVE_SECRET_HASH"],
+    "sandbox": false,
+    "sandboxNote": "No real Flutterwave test-mode credentials available in this sandbox. Build agent MUST put all outbound calls behind a FlutterwaveClient interface with a MockFlutterwaveAdapter for contract tests. Real connectivity is an explicit open risk, not silently assumed working — see conventions.md."
+  },
+  "reads": [
+    {
+      "entity": "FlutterwaveTransaction",
+      "fields": [
+        {"name": "id", "type": "string", "nullable": false},
+        {"name": "txRef", "type": "string", "nullable": false},
+        {"name": "status", "type": "string", "nullable": false},
+        {"name": "amount", "type": "number", "nullable": false},
+        {"name": "currency", "type": "string", "nullable": false}
+      ],
+      "cardinality": "single"
+    }
+  ],
+  "actions": [
+    {
+      "name": "initCharge",
+      "kind": "custom",
+      "entity": "FlutterwaveTransaction",
+      "payload": [{"name": "amount", "type": "number"}, {"name": "purpose", "type": "string"}, {"name": "wawuUserId", "type": "string"}],
+      "expectedResponse": {"entity": "FlutterwaveChargeInit", "cardinality": "single"},
+      "note": "Returns tx_ref (server-generated), amount (server-looked-up, never client-supplied), currency NGN, publicKey. Consumed by every payment-shaped resource: Purchase, Tip, DirectMessage, CreditPurchase, CreatorSubscription."
+    },
+    {
+      "name": "verifyCharge",
+      "kind": "custom",
+      "entity": "FlutterwaveTransaction",
+      "payload": [{"name": "transactionId", "type": "string"}, {"name": "txRef", "type": "string"}],
+      "expectedResponse": {"entity": "FlutterwaveTransaction", "cardinality": "single"},
+      "note": "GET /v3/transactions/:id/verify against Flutterwave. Cross-check status=successful, amount>=expected, currency=NGN, tx_ref match before any resource is marked completed."
+    },
+    {
+      "name": "refund",
+      "kind": "custom",
+      "entity": "FlutterwaveTransaction",
+      "payload": [{"name": "transactionId", "type": "string"}],
+      "expectedResponse": {"entity": "FlutterwaveTransaction", "cardinality": "single"},
+      "note": "POST /v3/transactions/:id/refund. No prior implementation anywhere in the WAWU codebase family — new. Used by the DM-deadline-sweep cron for missed-response auto-refunds."
+    },
+    {
+      "name": "createPaymentPlan",
+      "kind": "custom",
+      "entity": "FlutterwavePaymentPlan",
+      "payload": [{"name": "tier", "type": "string"}, {"name": "amount", "type": "number"}, {"name": "interval", "type": "string"}],
+      "expectedResponse": {"entity": "FlutterwavePaymentPlan", "cardinality": "single"},
+      "note": "One-time setup per subscription tier (Basic/Pro), Flutterwave's Payment Plan API. Referenced by CreatorSubscription.flutterwavePlanId."
+    },
+    {
+      "name": "receiveWebhook",
+      "kind": "custom",
+      "entity": "FlutterwaveWebhookEvent",
+      "payload": [{"name": "event", "type": "string"}, {"name": "data", "type": "object"}],
+      "expectedResponse": {"entity": "void", "cardinality": "single"},
+      "note": "POST /api/hub/webhooks/flutterwave, auth: provider-signature (verif-hash header checked against FLUTTERWAVE_SECRET_HASH), no user role. Reliability backstop for client-verify flow, and the ONLY signal for recurring subscription-renewal charges (no client involved in those)."
+    }
+  ],
+  "authContext": {"requiresAuth": false, "rolesObserved": ["provider-signature"]},
+  "special": {"realtime": false, "uploads": false, "downloads": false}
+}

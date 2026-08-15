@@ -1,0 +1,121 @@
+{
+  "stubs": [
+    {
+      "id": "STUB-1",
+      "kind": "dev-only mutator switches",
+      "file": "src/lib/api/mocks/session.ts:42-60",
+      "evidence": "/** DEV ONLY — remove when the real session endpoint is live. */ export function setAccountType(type){...} setCreatorTier(tier){...} setKycStatus(status){...} setSubscriptionPaid(paid){...} — mutate the single mutable currentSession object directly.",
+      "standsInFor": "The real backend endpoints that would flip a user's account type, creator tier, KYC status, and subscription-paid flag as a consequence of real actions (subscribing, KYC review, admin action) rather than direct client-side mutation.",
+      "consequence": "Any UI code path reachable from these switches (creator onboarding, KYC preview switcher, subscription flows) can silently jump the session into any gate combination with no server round trip or validation. If left in a production build, a user could self-grant creator status, Pro tier, or approved KYC — a direct violation of the two-gate model in CLAUDE.md ('manual KYC unlocks earning'). Must be stripped or hard-gated behind a dev-only build flag before any real backend exists.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-2",
+      "kind": "dev-only preview switcher wired into shipped component",
+      "file": "src/components/kyc/KycFlow.tsx:65,78",
+      "evidence": "{/** DEV ONLY — remove when the session endpoint is live. */} ... devSetKycStatus(v === \"form\" ? \"not_started\" : v);",
+      "standsInFor": "The real off-platform manual KYC review outcome (1-3 day human review) that should be the only thing capable of moving a submission to approved/rejected.",
+      "consequence": "The live KycFlow component ships a UI control that lets any user flip their own KYC status client-side, bypassing manual review entirely. This directly contradicts the locked product rule 'KYC is manual review' in CLAUDE.md. Needs to be removed or gated out of the production bundle before ship.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-3",
+      "kind": "dev-only mutator called from a real user flow",
+      "file": "src/components/onboarding/CreatorOnboarding.tsx:9,40-41",
+      "evidence": "import { setSubscriptionPaid, setCreatorTier } from \"@/lib/api/mocks/session\"; ... setSubscriptionPaid(true); setCreatorTier(tier);",
+      "standsInFor": "POST /api/hub/creator-subscription (tier=basic|pro) — the real subscription-purchase endpoint already SEAM-tagged in src/lib/api/subscription.ts, which should be the thing that ultimately flips subscriptionPaid server-side.",
+      "consequence": "Creator onboarding's 'pay for subscription' step does not call the subscriptionApi seam at all for the actual state change — it mutates the mock session directly. This is a bigger seam gap than a simple SEAM-tagged mock read: the write path bypasses the domain API layer entirely, so extracting this screen's contract needs manual reconciliation between CreatorOnboarding.tsx and subscription.ts rather than a mechanical seam replacement.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-4",
+      "kind": "dev-only simulated payment failure",
+      "file": "src/components/onboarding/CreatorOnboarding.tsx:289,291",
+      "evidence": "{/** DEV ONLY — remove when the session endpoint is live. */} ... Simulate a failed payment",
+      "standsInFor": "A real failed-payment response from the subscription/payment provider.",
+      "consequence": "No real payment failure path exists yet; this button exists purely to let developers preview the failure UI state. Must be removed before ship or the app will let users trigger a fake payment failure with no real transaction behind it.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-5",
+      "kind": "hardcoded stat standing in for dynamic per-user data",
+      "file": "src/components/shared/HomeRightRail.tsx:168; src/components/earnings/EarningsDashboard.tsx:179; src/components/dashboard/CreatorDashboard.tsx:126,209",
+      "evidence": "<StatBlock value=\"1,240\" label=\"EVG\" .../> — identical literal in all four locations, with an explicit comment: 'EVG isn't backed by an API yet — CreatorDashboard shows this same static placeholder for the same reason.'",
+      "standsInFor": "A real per-creator EVG (engagement/value/growth?) score. Note src/lib/api/mocks/profile.ts already models a genuine, varying evg field per creator (1240, 4, 820, 540, 210, 1980) and src/app/(app)/profile/[wawuId]/page.tsx correctly reads profile.stats.evg — so the data model and a working example already exist; these four call sites simply never got wired to it.",
+      "consequence": "Every creator's own dashboard and home rail shows the exact same '1,240' EVG number regardless of their actual standing, which is not just a missing-backend placeholder but an internal inconsistency (the same field is correctly dynamic on the public profile screen and hardcoded on the creator's own dashboard). Should be one of the first, easiest wins for a future extraction pass — no new endpoint needed, just point these four StatBlocks at the value profile/[wawuId]/page.tsx already reads.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-6",
+      "kind": "simulated async step with no backing endpoint",
+      "file": "src/app/(app)/services/cac/apply/page.tsx:109",
+      "evidence": "// Simulate the signature upload finishing so step 2's Continue eventually unlocks.",
+      "standsInFor": "A real file-upload endpoint for the CAC application's signature document.",
+      "consequence": "The CAC apply flow's step-2 gating (Continue button unlock) is driven by a timer/simulated completion rather than a real upload confirming server-side. Functionally fine for now (matches services.ts's SEAM-tagged POST /api/hub/services/cac/apply), but the upload step itself has no seam comment and isn't in services.ts/mocks/services.ts — a future extraction agent needs to know a real upload endpoint is needed here that isn't otherwise documented.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-7",
+      "kind": "simulated async step with no backing endpoint",
+      "file": "src/app/(app)/services/nepc/apply/page.tsx:94",
+      "evidence": "// Simulate the sample-photos upload finishing so step 2's Continue unlocks.",
+      "standsInFor": "A real file-upload endpoint for the NEPC application's sample product photos.",
+      "consequence": "Same pattern and same consequence as STUB-6, for the NEPC apply flow: no seam comment documents the underlying upload endpoint, only the final POST /api/hub/services/nepc/apply is SEAM-tagged.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-8",
+      "kind": "simulated round trip with no real endpoint at all (no seam)",
+      "file": "src/components/dm/DmThreadFooter.tsx:9-10",
+      "evidence": "// SEAM: replace with POST /api/hub/dm/:threadId/report — no report/flag endpoint\n// exists yet anywhere in the API layer, so this simulates the round trip.",
+      "standsInFor": "A DM report/flag-abuse endpoint that has no equivalent anywhere else in the API layer (unlike most SEAM comments, which mirror an endpoint pattern used elsewhere).",
+      "consequence": "Reporting a DM thread currently always 'succeeds' locally with a simulated delay and no real moderation action is recorded anywhere. Low risk (already SEAM-tagged, straightforward to wire once the endpoint exists) but flagged because it's a genuinely net-new endpoint, not a variation of an existing one.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-9",
+      "kind": "decorative UI not wired to real state",
+      "file": "src/app/(app)/purchases/page.tsx:40-48",
+      "evidence": "/** D5's desktop header carries a category tab row ... Rendered visually per design, \"Content\" fixed active — not wired to `filter` state. Rewiring the desktop screen to this taxonomy is a larger change than this header fix. */ const DESKTOP_TABS = [\"Content\", \"Courses\", \"Products\", \"Services\", \"Questions\"];",
+      "standsInFor": "A real category-tab filter that should drive the same `filter` state the mobile FILTERS row already drives, using a taxonomy (Content/Courses/Products/Services/Questions) that doesn't currently map onto the app's ContentType enum.",
+      "consequence": "On desktop, the purchases-page category tabs are cosmetic only — clicking anything other than the pre-selected 'Content' tab does nothing. Explicitly self-documented as a known gap, not hidden. A future pass needs to either reconcile the desktop taxonomy with ContentType or map DESKTOP_TABS to filter groups.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-10",
+      "kind": "unused scaffold component (dead stub)",
+      "file": "src/components/shared/RoutePlaceholder.tsx",
+      "evidence": "/** Temporary scaffold for a flow owned by another dev — replaced by the real screen. */ export function RoutePlaceholder(...)",
+      "standsInFor": "Any route still owned by another dev and not yet built out — a generic 'coming soon' EmptyState wrapper.",
+      "consequence": "grep of src/app/ finds zero remaining usages of RoutePlaceholder — every route appears to have been built out for real. The component itself is now dead code with no runtime consequence, but its presence signals the scan should double-check no route was accidentally left unimplemented; none were found. Safe to delete, not urgent.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-11",
+      "kind": "inline literal not yet promoted to mocks/ (SEAM-tagged)",
+      "file": "src/components/subscription/SubscriptionManagement.tsx:23-30",
+      "evidence": "// SEAM: replace with GET /api/hub/creator-subscription/history — no billing-history\n// endpoint exists yet, so desktop's history card (design D9) reads this local list,\n// same pattern as CreatorDashboard's local STREAMS array.\nconst BILLING_HISTORY = [ {title:\"Paid\", subtitle:\"12 Aug · card on file\", ...}, ... ];",
+      "standsInFor": "GET /api/hub/creator-subscription/history",
+      "consequence": "Correctly SEAM-tagged so it will be found by a seam-grep-based extraction agent, but it lives directly in the component rather than mocks/subscription.ts, unlike every other subscription data need. Low risk, purely a code-organization note for extraction tooling that expects seam-tagged reads inside mocks/ files.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-12",
+      "kind": "inline literal not yet promoted to mocks/ (unlabeled)",
+      "file": "src/components/dashboard/CreatorDashboard.tsx:35",
+      "evidence": "const STREAMS: { label: string; amount: number; pct: number }[] = [ ... ]; — referenced by SubscriptionManagement.tsx's own comment as a known sibling case ('same pattern as CreatorDashboard's local STREAMS array')",
+      "standsInFor": "A real per-creator revenue-by-stream breakdown, presumably part of GET /api/hub/content/mine/earnings.",
+      "consequence": "Unlike BILLING_HISTORY, this one carries no SEAM comment at its own definition site, so a pure seam-grep pass would miss it; only cross-referenced from another file's comment. Flag explicitly for a future extraction agent doing inline-literal discovery, not seam-comment discovery.",
+      "resolution": "unresolved"
+    },
+    {
+      "id": "STUB-13",
+      "kind": "hardcoded business-copy numbers not sourced from data layer",
+      "file": "src/app/(app)/explore/page.tsx:101-102,124-125",
+      "evidence": "const SHOPS = { basket: { ..., stat: \"4,120 items\" }, beauty: { ..., stat: \"890 services\" } }; and <ListRow title=\"NEPC, mentors and more\" subtitle=\"3 open · 4 coming with Pro\" .../>",
+      "standsInFor": "Live item/service counts that should come from marketplace.ts (WAWUBasket/WAWUBeauty item counts) and services.ts (open services count) respectively.",
+      "consequence": "These preview counts on the Explore hub are static copy and will silently go stale as real marketplace/services data changes — they don't reflect src/lib/api/mocks/marketplace.ts or mocks/services.ts content at all, even in mock mode. This is the exact 'Explore's hardcoded course/service preview counts' issue flagged by a prior audit.",
+      "resolution": "unresolved"
+    }
+  ]
+}

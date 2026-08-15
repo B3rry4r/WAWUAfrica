@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "id": "S-1",
+      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md §3.1 gates POST /api/hub/content on the requester's legacy trust tier being certified_professional or trusted_partner",
+      "targetState": "Publishing is gated ONLY by creatorGates().canUpload, which is derived from subscriptionPaid (paid Basic/Pro tier) — never from verification tier/trust score. KYC gates earning payout, not uploading. Verification badges are a fully separate credibility ladder.",
+      "reason": "docs/01_SPEC.md §6 and CLAUDE.md both explicitly state the trust-tier creator gate is the OLD, WRONG model, replaced by the two-independent-gates model. The actual current frontend (src/app/(focused)/create/**, wired in a prior fix wave) already implements the two-gate model exclusively — creatorGates().canUpload checks subscriptionPaid only, with zero verification/trust-tier logic anywhere in the upload path. docs/02_TECHNICAL_CONTEXT.md is a partially-stale doc per its own file-path staleness (already flagged as doc-internal-conflict in product-truths.json T- entries) — this is a second instance of the same staleness, not a new decision.",
+      "approvedBy": "dispatcher-inferred-from-explicit-spec-priority-rule",
+      "approvedAt": "2026-08-15T22:30:00Z",
+      "wireVisible": false
+    },
+    {
+      "id": "S-2",
+      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md §4 describes frontend files to touch using an old file structure (src/lib/posts.ts, src/lib/feed-data.ts, src/app/(feed)/create/[category]/page.tsx, src/components/feed/FeedCard.tsx, admin at src/app/admin/*)",
+      "targetState": "The actual current frontend structure is what Phase 1 Detect's scan-map.json documents — src/app/(app)/, src/app/(focused)/, src/app/(auth)/, src/app/(marketing)/, src/lib/api/<domain>.ts + src/lib/api/mocks/<domain>.ts. Section 4 of the doc is ignored entirely for file paths; only Sections 1-3 (data model + API contract shapes) are treated as authoritative.",
+      "reason": "The doc predates the ground-up rebuild CLAUDE.md describes. Confirmed directly by reading both the doc and the actual current repo structure this session.",
+      "approvedBy": "dispatcher-inferred-from-explicit-repo-inspection",
+      "approvedAt": "2026-08-15T22:30:00Z",
+      "wireVisible": false
+    },
+    {
+      "id": "S-3",
+      "asBuilt": "docs/02_TECHNICAL_CONTEXT.md's endpoint sketches use a generic {statusCode, message, data} shape implicitly (e.g. { data: { purchased: true, fullAssetUrl } })",
+      "targetState": "Canonical envelope for every endpoint: {statusCode, message, data} for single responses; {statusCode, message, data: [], pagination: {currentPage, nextPage, perPage, total}} for paginated lists. This matches the sibling WAWU-ID and legacy WAWUAfrica-API services' existing convention (WAWUAfrica_API_Contracts.md), confirmed via direct inspection of /workspace/projects/WAWU-ID and /workspace/projects/WAWUAfrica-API.",
+      "reason": "Consistency with the live WAWU product family (sibling evidence) rather than inventing a new envelope shape for one more service in the same ecosystem.",
+      "approvedBy": "dispatcher-inferred-from-sibling-evidence",
+      "approvedAt": "2026-08-15T22:30:00Z",
+      "wireVisible": false
+    }
+  ]
+}
