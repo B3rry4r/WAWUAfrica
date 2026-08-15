@@ -17,6 +17,7 @@ export async function searchAll(query: string): Promise<SearchResponse> {
   try {
     return await apiFetch<SearchResponse>(`/api/hub/search?q=${encodeURIComponent(query)}`, { authed: true });
   } catch {
+    // SEAM: replace with GET /api/hub/search?q=
     return mockSearch(query);
   }
 }
@@ -48,6 +49,7 @@ export async function getSuggestedCreators() {
     const res = await apiFetch<{ items: typeof mockSearchCreators }>("/api/hub/search/suggested-creators", { authed: true });
     return res.items;
   } catch {
+    // SEAM: replace with GET /api/hub/search/creators
     return mockSearchCreators;
   }
 }
@@ -57,6 +59,7 @@ export async function getSuggestedCommunities() {
     const res = await apiFetch<{ items: typeof mockSearchCommunities }>("/api/hub/search/suggested-communities", { authed: true });
     return res.items;
   } catch {
+    // SEAM: replace with GET /api/hub/search/communities
     return mockSearchCommunities;
   }
 }
