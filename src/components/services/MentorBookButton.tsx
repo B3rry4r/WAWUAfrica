@@ -4,8 +4,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui";
 import { MentorRequestSheet } from "./MentorRequestSheet";
 
-export function MentorBookButton({ mentor }: { mentor: { id: string; name: string; rate: number } }) {
+interface BookableMentor {
+  id: string;
+  name: string;
+  topics: string[];
+  openForRequests: boolean;
+  fullUntil?: string;
+}
+
+export function MentorBookButton({ mentor }: { mentor: BookableMentor }) {
   const [open, setOpen] = useState(false);
+
+  if (!mentor.openForRequests) {
+    return (
+      <Button full size="lg" variant="secondary" disabled>
+        {mentor.fullUntil ? `Full until ${mentor.fullUntil}` : "Not taking requests right now"}
+      </Button>
+    );
+  }
+
   return (
     <>
       <Button full size="lg" onClick={() => setOpen(true)}>
