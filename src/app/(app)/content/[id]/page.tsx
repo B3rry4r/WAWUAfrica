@@ -9,6 +9,7 @@ import type { IconName } from "@/components/ui/Icon";
 import { PriceChip } from "@/components/ui/PriceChip";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Sheet } from "@/components/ui/Sheet";
+import { StatBlock } from "@/components/ui/StatBlock";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Button } from "@/components/ui/Button";
@@ -369,10 +370,14 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
 
 /**
  * Sticky right rail (design D4, ~380px, xl only): price CTA / owned-file
- * actions, then the lesson list for a course. Mobile keeps the same two
- * blocks stacked under the title (see the `xl:hidden` block above) instead
- * of a sticky CTA sheet — this never scrolls out of view, unlike mobile's
- * bottom-sheet CTA.
+ * actions, the lesson list for a course, then a StatBlock row (Unlocked /
+ * Rating / Comments per the design). Mobile keeps the CTA and lesson list
+ * stacked under the title (see the `xl:hidden` block above) instead of a
+ * sticky rail — this never scrolls out of view, unlike mobile's bottom-sheet
+ * CTA. The stats are duplicated here (not moved) from EngagementRow, which
+ * stays intact in the main column at every width — ContentPiece has no
+ * dedicated unlock-count / 5-star-rating fields yet, so this reuses the same
+ * views / ratingPct / commentCount EngagementRow already computes.
  */
 function PurchasePanel({
   content,
@@ -397,6 +402,17 @@ function PurchasePanel({
         <UnlockedActions content={content} onDownload={onDownload} onTip={onTip} />
       ) : null}
       {content.contentType === "course" ? <LessonList content={content} /> : null}
+      <PurchasePanelStats content={content} />
+    </div>
+  );
+}
+
+function PurchasePanelStats({ content }: { content: ContentPiece }) {
+  return (
+    <div className="flex gap-[18px] rounded-card border border-hairline bg-card px-5 py-[18px]">
+      <StatBlock value={content.views.toLocaleString("en-NG")} label="Views" align="start" size="sm" />
+      <StatBlock value={`${Math.round(content.ratingPct ?? 96)}%`} label="Liked" align="start" size="sm" />
+      <StatBlock value={String(content.commentCount)} label="Comments" align="start" size="sm" />
     </div>
   );
 }
