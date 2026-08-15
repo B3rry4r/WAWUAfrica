@@ -54,7 +54,7 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
         title={headerTitle}
         right={
           view === "form" && step !== "review" ? (
-            <span className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{stepCount}</span>
+            <span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepCount}</span>
           ) : (
             undefined
           )
@@ -77,7 +77,11 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
               setView(v);
               devSetKycStatus(v === "form" ? "not_started" : v);
             }}
-            className="h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer" style={{border: view === v ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", background: view === v ? "var(--accent-tint)" : "var(--surface-tag)", color: view === v ? "var(--accent)" : "var(--text-muted)", fontFamily: "var(--font-sans)"}}
+            className={`h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
+              view === v
+                ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
+            }`}
           >
             {label}
           </button>
@@ -192,7 +196,11 @@ function DocumentStep({ onCaptured }: { onCaptured: () => void }) {
         {docTypes.map((d, i) => (
           <span
             key={d}
-            className="inline-flex items-center h-[38px] py-0 px-[15px] rounded-[999] text-[13.5px]" style={{background: i === 0 ? "var(--accent)" : "var(--surface-tag)", border: i === 0 ? "none" : "1px solid var(--border-hairline)", color: i === 0 ? "var(--text-on-accent)" : "var(--text-secondary)", fontWeight: i === 0 ? 600 : 500}}
+            className={`inline-flex items-center h-[38px] py-0 px-[15px] rounded-[999] text-[13.5px] ${
+              i === 0
+                ? "bg-[var(--accent)] border-none text-[var(--text-on-accent)] font-semibold"
+                : "bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] font-medium"
+            }`}
           >
             {d}
           </span>
@@ -255,7 +263,7 @@ function PayoutStep() {
 
       <div className="flex flex-col gap-[8px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Bank</span>
-        <button type="button" className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer text-left" style={{fontFamily: "var(--font-sans)"}}>
+        <button type="button" className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer text-left font-[family-name:var(--font-sans)]">
           <span className="flex-1">Guaranty Trust Bank</span>
           <Icon name="ChevronDown" size={16} strokeWidth={2.2} color="var(--text-muted)" />
         </button>
@@ -287,7 +295,7 @@ function ReviewStep({ consented, onConsent }: { consented: boolean; onConsent: (
         ].map(([k, v]) => (
           <div key={k} className="flex items-center gap-[12px] py-[15px] px-[18px] border-b border-b-[var(--border-hairline)]">
             <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{k}</span>
-            <span className="text-[13.5px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{v}</span>
+            <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{v}</span>
             <span className="text-[13px] font-semibold text-[var(--accent)] cursor-pointer">Edit</span>
           </div>
         ))}
@@ -297,7 +305,9 @@ function ReviewStep({ consented, onConsent }: { consented: boolean; onConsent: (
 
       <div className="flex items-start gap-[11px]" onClick={onConsent} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onConsent(); }}>
         <span
-          className="grid place-items-center w-[22px] h-[22px] rounded-[7] shrink-0 mt-[1px] cursor-pointer" style={{background: consented ? "var(--accent)" : "var(--surface-tag)", border: consented ? "none" : "1px solid var(--border-hairline)"}}
+          className={`grid place-items-center w-[22px] h-[22px] rounded-[7] shrink-0 mt-[1px] cursor-pointer border ${
+            consented ? "bg-[var(--accent)] border-none" : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
+          }`}
         >
           {consented ? <Icon name="Check" size={14} strokeWidth={3} color="#fff" /> : null}
         </span>

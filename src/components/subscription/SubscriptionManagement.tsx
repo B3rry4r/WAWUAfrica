@@ -27,7 +27,11 @@ function formatDate(iso?: string): string {
 
 function CheckRow({ ok, children, icon }: { ok: boolean; children: React.ReactNode; icon?: IconName }) {
   return (
-    <span className="flex items-start gap-[9px] text-[13.5px] leading-[1.45]" style={{color: ok ? "var(--text-secondary)" : "var(--text-muted)"}}>
+    <span
+      className={`flex items-start gap-[9px] text-[13.5px] leading-[1.45] ${
+        ok ? "text-[var(--text-secondary)]" : "text-[var(--text-muted)]"
+      }`}
+    >
       <Icon name={icon ?? (ok ? "Check" : "X")} size={15} strokeWidth={2.4} color={ok ? "var(--success)" : "var(--warning)"} className="mt-[2px]" />
       {children}
     </span>
@@ -206,12 +210,12 @@ export function SubscriptionManagement() {
                   <CardLabel>The reason to move</CardLabel>
                   <div className="flex items-center gap-[14px]">
                     <div className="flex flex-col gap-[4px]">
-                      <span className="text-[26px] font-bold tracking-[-0.03em] text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>85%</span>
+                      <span className="text-[26px] font-bold tracking-[-0.03em] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">85%</span>
                       <span className="text-[11px] font-semibold tracking-[0.05em] uppercase text-[var(--text-muted)]">You keep now</span>
                     </div>
                     <Icon name="ArrowRight" size={20} strokeWidth={2.4} color="var(--accent)" />
                     <div className="flex flex-col gap-[4px]">
-                      <span className="text-[34px] font-bold tracking-[-0.035em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>90%</span>
+                      <span className="text-[34px] font-bold tracking-[-0.035em] [font-feature-settings:var(--font-feature-tabular)]">90%</span>
                       <span className="text-[11px] font-semibold tracking-[0.05em] uppercase text-[var(--accent)]">On Pro</span>
                     </div>
                   </div>
@@ -221,11 +225,11 @@ export function SubscriptionManagement() {
                     </div>
                     <div className="flex items-center gap-[10px]">
                       <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">You kept</span>
-                      <span className="text-[14px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(basicKept)}</span>
+                      <span className="text-[14px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(basicKept)}</span>
                     </div>
                     <div className="flex items-center gap-[10px]">
                       <span className="flex-1 text-[13.5px] font-semibold">You would have kept</span>
-                      <span className="text-[16px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(proKept)}</span>
+                      <span className="text-[16px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(proKept)}</span>
                     </div>
                     <span className="text-[12.5px] text-[var(--text-muted)]">{formatNaira(proKept - basicKept)} more, on that month alone.</span>
                   </div>
@@ -241,15 +245,15 @@ export function SubscriptionManagement() {
                 <Card>
                   <div className="flex items-center gap-[10px]">
                     <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Pro, one year</span>
-                    <span className="text-[13.5px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(PLANS.pro.price)}</span>
+                    <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(PLANS.pro.price)}</span>
                   </div>
                   <div className="flex items-center gap-[10px]">
                     <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Credit for the rest of your Basic year</span>
-                    <span className="text-[13.5px] font-semibold text-[var(--success)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>−{formatNaira(proCredit)}</span>
+                    <span className="text-[13.5px] font-semibold text-[var(--success)] [font-feature-settings:var(--font-feature-tabular)]">−{formatNaira(proCredit)}</span>
                   </div>
                   <div className="flex items-baseline gap-[10px] pt-[11px] border-t border-t-[var(--border-hairline)]">
                     <span className="flex-1 text-[15px] font-semibold">Due today</span>
-                    <span className="text-[24px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(dueToday)}</span>
+                    <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(dueToday)}</span>
                   </div>
                 </Card>
               </>
@@ -267,7 +271,7 @@ export function SubscriptionManagement() {
                   <Card key={t}>
                     <div className="flex items-center gap-[10px]">
                       <TierBadge tier={t} />
-                      <span className="flex-1 text-[20px] font-bold tracking-[-0.02em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+                      <span className="flex-1 text-[20px] font-bold tracking-[-0.02em] [font-feature-settings:var(--font-feature-tabular)]">
                         {formatNaira(PLANS[t].price)}
                         <span className="text-[13px] font-normal text-[var(--text-muted)]"> / year</span>
                       </span>
@@ -305,7 +309,7 @@ export function SubscriptionManagement() {
               <Button full size="lg" loading={paying} onClick={payAndGoPro}>
                 Pay {formatNaira(dueToday)} and go Pro
               </Button>
-              <span className="text-[12px] text-[var(--text-muted)]" style={{alignSelf: "center"}}>Your 90/10 split starts on the next sale.</span>
+              <span className="text-[12px] text-[var(--text-muted)] self-center">Your 90/10 split starts on the next sale.</span>
             </div>
           ) : null}
         </>
@@ -315,12 +319,11 @@ export function SubscriptionManagement() {
         {paidSummary ? (
           <div className="flex flex-col items-center gap-[16px] pt-[14px] px-[6px] pb-[6px] text-center">
             <span
-              className="grid place-items-center w-[72px] h-[72px] rounded-[999]"
-              style={
+              className={`grid place-items-center w-[72px] h-[72px] rounded-[999] border ${
                 paidSummary.tier === "pro"
-                  ? { background: "rgba(255,183,3,0.14)", border: "1px solid rgba(255,183,3,0.34)" }
-                  : { background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }
-              }
+                  ? "bg-[rgba(255,183,3,0.14)] border-[rgba(255,183,3,0.34)]"
+                  : "bg-[var(--accent-tint)] border-[var(--border-accent)]"
+              }`}
             >
               <Icon name={paidSummary.tier === "pro" ? "Crown" : "Check"} size={30} strokeWidth={2.2} color={paidSummary.tier === "pro" ? "var(--brand-yellow)" : "var(--accent)"} />
             </span>
@@ -333,11 +336,11 @@ export function SubscriptionManagement() {
             <div className="flex flex-col gap-[9px] w-full py-[15px] px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
               <div className="flex items-center gap-[10px]">
                 <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Paid today</span>
-                <span className="text-[13.5px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(paidSummary.paid)}</span>
+                <span className="text-[13.5px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(paidSummary.paid)}</span>
               </div>
               <div className="flex items-center gap-[10px]">
                 <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Renews at {formatNaira(PLANS[paidSummary.tier].price)}</span>
-                <span className="text-[13.5px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatDate(subscription?.renewsAt)}</span>
+                <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatDate(subscription?.renewsAt)}</span>
               </div>
             </div>
             <div className="flex flex-col gap-[10px] w-full pt-[6px]">
@@ -417,11 +420,11 @@ export function SubscriptionManagement() {
                 type="button"
                 disabled={cardBusy !== null}
                 onClick={() => changeCard(last4)}
-                className="flex items-center gap-[12px] py-[14px] px-[15px] rounded-[var(--radius-input)] border text-left disabled:opacity-60"
-                style={{
-                  borderColor: active ? "var(--border-accent)" : "var(--border-hairline)",
-                  background: active ? "var(--accent-tint)" : "var(--surface-card)",
-                }}
+                className={`flex items-center gap-[12px] py-[14px] px-[15px] rounded-[var(--radius-input)] border text-left disabled:opacity-60 ${
+                  active
+                    ? "border-[var(--border-accent)] bg-[var(--accent-tint)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-card)]"
+                }`}
               >
                 <Icon name="CreditCard" size={16} color={active ? "var(--accent)" : "var(--text-muted)"} />
                 <span className="flex-1 text-[13.5px] font-semibold">Card ending {last4}</span>
@@ -523,13 +526,13 @@ function CurrentView({
             <StatusPill kind="success">Active</StatusPill>
           </div>
           <div className="flex items-baseline gap-[7px]">
-            <span className="text-[30px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
+            <span className="text-[30px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
             <span className="text-[14px] text-[var(--text-muted)]">a year</span>
           </div>
           <div className="flex items-center gap-[10px] pt-[13px] border-t border-t-[var(--border-hairline)]">
             <Icon name="Calendar" size={15} color="var(--text-muted)" />
             <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{subscription.cancelsAt ? "Renewal off — ends" : "Renews"}</span>
-            <span className="text-[13.5px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+            <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">
               {formatDate(subscription.cancelsAt ?? subscription.renewsAt)}
             </span>
           </div>
@@ -547,7 +550,7 @@ function CurrentView({
         <Card>
           <div className="flex items-baseline gap-[10px]">
             <span className="flex-1 text-[14px] font-semibold">Upload slots</span>
-            <span className="text-[17px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{slotsUsed} of {slotsTotal}</span>
+            <span className="text-[17px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{slotsUsed} of {slotsTotal}</span>
           </div>
           <div className="h-[6px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden">
             <div className="h-full rounded-[999] bg-[var(--accent)]" style={{width: `${Math.min(100, slotsPct)}%`}} />

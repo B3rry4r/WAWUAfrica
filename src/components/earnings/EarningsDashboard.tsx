@@ -72,7 +72,11 @@ export function EarningsDashboard() {
             key={String(v)}
             type="button"
             onClick={() => setApproved(v)}
-            className="h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer" style={{border: approved === v ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", background: approved === v ? "var(--accent-tint)" : "var(--surface-tag)", color: approved === v ? "var(--accent)" : "var(--text-muted)", fontFamily: "var(--font-sans)"}}
+            className={`h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
+              approved === v
+                ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
+            }`}
           >
             {v ? "KYC approved" : "KYC pending"}
           </button>
@@ -108,7 +112,9 @@ export function EarningsDashboard() {
             Earned this month
           </span>
           <span
-            className="text-[38px] font-bold tracking-[-0.035em] leading-[1]" style={{color: approved ? "var(--text-primary)" : "var(--text-secondary)", fontFeatureSettings: "var(--font-feature-tabular)"}}
+            className={`text-[38px] font-bold tracking-[-0.035em] leading-[1] [font-feature-settings:var(--font-feature-tabular)] ${
+              approved ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"
+            }`}
           >
             {formatNaira(earned)}
           </span>
@@ -140,7 +146,7 @@ export function EarningsDashboard() {
             Where it came from
           </span>
           {streams.map((s) => (
-            <div key={s.label} className="flex items-center gap-[12px]" style={{opacity: s.dim ? 0.6 : 1}}>
+            <div key={s.label} className={`flex items-center gap-[12px] ${s.dim ? "opacity-60" : "opacity-100"}`}>
               <span className="grid place-items-center w-[34px] h-[34px] rounded-[11] bg-[var(--surface-tag)] border border-[var(--border-hairline)] shrink-0">
                 <Icon name={s.icon} size={15} strokeWidth={2} color={s.dim ? "var(--text-muted)" : "var(--text-secondary)"} />
               </span>
@@ -148,7 +154,11 @@ export function EarningsDashboard() {
                 <div className="flex items-baseline gap-[10px]">
                   <span className="flex-1 text-[13.5px] font-semibold text-[var(--text-primary)]">{s.label}</span>
                   <span
-                    className="" style={{fontSize: s.dim ? 13 : 14, fontWeight: s.dim ? 600 : 700, color: s.dim ? "var(--text-muted)" : "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)"}}
+                    className={`[font-feature-settings:var(--font-feature-tabular)] ${
+                      s.dim
+                        ? "text-[13px] font-semibold text-[var(--text-muted)]"
+                        : "text-[14px] font-bold text-[var(--text-primary)]"
+                    }`}
                   >
                     {s.status ?? formatNaira(s.amount)}
                   </span>

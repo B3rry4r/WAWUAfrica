@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { sendTip, TIP_PRESETS } from "@/lib/api/tips";
+import { formatNaira } from "@/lib/format";
 import { Avatar, Button, Icon, Sheet } from "@/components/ui";
 
 type Phase = "choose" | "processing" | "success" | "failure";
@@ -63,7 +64,7 @@ export function TipSheet({
                       : "border-[var(--border-hairline)] bg-[var(--surface-input)] text-[var(--text-primary)]",
                   ].join(" ")}
                 >
-                  ₦{p.toLocaleString("en-NG")}
+                  {formatNaira(p)}
                 </button>
               );
             })}
@@ -76,7 +77,7 @@ export function TipSheet({
             className="w-full resize-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[15px] py-[13px] text-[14.5px] leading-[1.5] text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-disabled)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
           />
           <Button full disabled={!amount} onClick={pay}>
-            Send ₦{amount ? amount.toLocaleString("en-NG") : ""}
+            Send {amount ? formatNaira(amount) : ""}
           </Button>
         </div>
       ) : phase === "processing" ? (
@@ -91,7 +92,7 @@ export function TipSheet({
           </span>
           <div className="flex flex-col gap-[5px]">
             <span className="text-[17px] font-bold text-[var(--text-primary)]">
-              ₦{amount?.toLocaleString("en-NG")} sent
+              {amount != null ? formatNaira(amount) : ""} sent
             </span>
             <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
               {creator.name.split(" ")[0]} has your tip. Thanks for supporting their work.

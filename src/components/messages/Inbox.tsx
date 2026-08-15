@@ -60,7 +60,7 @@ export function Inbox() {
         </span>
         <Link
           href="/messages/settings"
-          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
+          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline [font-feature-settings:var(--font-feature-tabular)]"
         >
           {formatNaira(price)} each
         </Link>
@@ -70,7 +70,11 @@ export function Inbox() {
         {state.penalty !== "none" ? (
           <Link href="/messages/settings" className="no-underline">
             <div
-              className="flex items-center gap-[10px] py-[12px] px-[14px] rounded-[var(--radius-card)]" style={{background: state.penalty === "warned" ? "var(--warning-tint)" : "var(--danger-tint)", border: `1px solid ${state.penalty === "warned" ? "rgba(255,183,3,0.32)" : "rgba(255,92,92,0.32)"}`}}
+              className={`flex items-center gap-[10px] py-[12px] px-[14px] rounded-[var(--radius-card)] border ${
+                state.penalty === "warned"
+                  ? "bg-[var(--warning-tint)] border-[rgba(255,183,3,0.32)]"
+                  : "bg-[var(--danger-tint)] border-[rgba(255,92,92,0.32)]"
+              }`}
             >
               <Icon
                 name={state.penalty === "warned" ? "TriangleAlert" : "Lock"}
@@ -92,11 +96,12 @@ export function Inbox() {
         {urgent.map((t) => {
           const timeLeft = t.expiresAt ?? "";
           const critical = timeLeft.startsWith("1h");
-          const border = critical ? "rgba(255,92,92,0.32)" : "rgba(255,183,3,0.28)";
           return (
             <div
               key={t.id}
-              className="flex flex-col gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)]" style={{border: `1px solid ${border}`}}
+              className={`flex flex-col gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border ${
+                critical ? "border-[rgba(255,92,92,0.32)]" : "border-[rgba(255,183,3,0.28)]"
+              }`}
             >
               <div className="flex gap-[12px]">
                 <Avatar initials={t.buyerInitials} size={40} />
@@ -106,7 +111,9 @@ export function Inbox() {
                       {t.buyerName}
                     </span>
                     <span
-                      className="text-[15px] font-bold" style={{color: critical ? "var(--danger)" : "var(--warning)", fontFeatureSettings: "var(--font-feature-tabular)"}}
+                      className={`text-[15px] font-bold [font-feature-settings:var(--font-feature-tabular)] ${
+                        critical ? "text-[var(--danger)]" : "text-[var(--warning)]"
+                      }`}
                     >
                       {timeLeft}
                     </span>
@@ -115,10 +122,14 @@ export function Inbox() {
                 </div>
               </div>
               <div className="flex items-center gap-[10px] pt-[12px] border-t border-t-[var(--border-hairline)]">
-                <span className="flex-1 text-[12.5px] font-semibold" style={{color: critical ? "var(--danger)" : "var(--text-secondary)"}}>
+                <span
+                  className={`flex-1 text-[12.5px] font-semibold ${
+                    critical ? "text-[var(--danger)]" : "text-[var(--text-secondary)]"
+                  }`}
+                >
                   Respond by {critical ? "4:12 pm today" : "1:40 am"}
                 </span>
-                <span className="text-[12.5px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+                <span className="text-[12.5px] font-bold [font-feature-settings:var(--font-feature-tabular)]">
                   {formatNaira(dmEarn)} to earn
                 </span>
               </div>
@@ -132,7 +143,9 @@ export function Inbox() {
         {answered.map((t) => (
           <div
             key={t.id}
-            className="flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]" style={{opacity: t.unread ? 1 : 0.7}}
+            className={`flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] ${
+              t.unread ? "opacity-100" : "opacity-70"
+            }`}
           >
             <Avatar initials={t.buyerInitials} size={40} />
             <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
@@ -147,7 +160,7 @@ export function Inbox() {
               >
                 {t.preview}
               </span>
-              <span className="text-[12px] text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+              <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
                 Earned {formatNaira(dmEarn)} · replied in 3h
               </span>
             </div>

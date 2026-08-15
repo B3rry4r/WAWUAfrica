@@ -49,7 +49,11 @@ export function PaidMessagesSettings() {
             key={p}
             type="button"
             onClick={() => setPenalty(p)}
-            className="h-[30px] py-0 px-[12px] rounded-[999] text-[11.5px] font-semibold cursor-pointer" style={{border: penalty === p ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", background: penalty === p ? "var(--accent-tint)" : "var(--surface-tag)", color: penalty === p ? "var(--accent)" : "var(--text-muted)", fontFamily: "var(--font-sans)"}}
+            className={`h-[30px] py-0 px-[12px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
+              penalty === p
+                ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
+            }`}
           >
             {p === "none" ? "Good" : p === "warned" ? "Warning" : p === "disabled7" ? "Off 7d" : "Off 30d"}
           </button>
@@ -75,7 +79,11 @@ export function PaidMessagesSettings() {
           <button
             type="button"
             onClick={() => setEnabled(!enabled)}
-            className="flex items-center gap-[14px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left w-full" style={{background: enabled ? "var(--surface-elevated)" : "var(--surface-card)", border: enabled ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", fontFamily: "var(--font-sans)"}}
+            className={`flex items-center gap-[14px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left w-full border font-[family-name:var(--font-sans)] ${
+              enabled
+                ? "bg-[var(--surface-elevated)] border-[var(--border-accent)]"
+                : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
+            }`}
           >
             <div className="flex-1 flex flex-col gap-[3px]">
               <span className="text-[16px] font-semibold text-[var(--text-primary)]">Accept paid messages</span>
@@ -84,9 +92,17 @@ export function PaidMessagesSettings() {
               </span>
             </div>
             <span
-              className="relative w-[52px] h-[30px] rounded-[999] shrink-0" style={{background: enabled ? "var(--accent)" : "var(--surface-tag)", border: enabled ? "none" : "1px solid var(--border-hairline)"}}
+              className={`relative w-[52px] h-[30px] rounded-[999] shrink-0 ${
+                enabled
+                  ? "bg-[var(--accent)] border-none"
+                  : "bg-[var(--surface-tag)] border border-[var(--border-hairline)]"
+              }`}
             >
-              <span className="absolute top-[3px] w-[24px] h-[24px] rounded-[999]" style={{right: enabled ? 3 : "auto", left: enabled ? "auto" : 3, background: enabled ? "#fff" : "var(--text-disabled)"}} />
+              <span
+                className={`absolute top-[3px] w-[24px] h-[24px] rounded-[999] ${
+                  enabled ? "right-[3px] left-auto bg-[#fff]" : "right-auto left-[3px] bg-[var(--text-disabled)]"
+                }`}
+              />
             </span>
           </button>
         )}
@@ -113,7 +129,7 @@ export function PaidMessagesSettings() {
             value={price}
             onChange={setPrice}
             presets={[50, 100, 300, 500]}
-            hint="Anything from ₦50 to ₦500."
+            hint={`Anything from ${formatNaira(50)} to ${formatNaira(500)}.`}
           />
         ) : null}
 
@@ -210,7 +226,9 @@ export function PaidMessagesSettings() {
         {penalty === "disabled7" || penalty === "disabled30" ? (
           <>
             <div
-              className="flex flex-col gap-[14px] p-[18px] rounded-[var(--radius-card)] bg-[var(--danger-tint)]" style={{border: `1px solid ${penalty === "disabled7" ? "rgba(255,92,92,0.32)" : "rgba(255,92,92,0.4)"}`}}
+              className={`flex flex-col gap-[14px] p-[18px] rounded-[var(--radius-card)] bg-[var(--danger-tint)] border ${
+                penalty === "disabled7" ? "border-[rgba(255,92,92,0.32)]" : "border-[rgba(255,92,92,0.4)]"
+              }`}
             >
               <div className="flex items-center gap-[12px]">
                 <span className="grid place-items-center w-[42px] h-[42px] rounded-[13] bg-[rgba(255,92,92,0.16)] border border-[rgba(255,92,92,0.3)] shrink-0">
@@ -235,12 +253,14 @@ export function PaidMessagesSettings() {
             <div className="flex flex-col gap-[12px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
               <div className="flex items-baseline gap-[10px]">
                 <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Back on in</span>
-                <span className="text-[24px] font-bold tracking-[-0.02em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+                <span className="text-[24px] font-bold tracking-[-0.02em] [font-feature-settings:var(--font-feature-tabular)]">
                   {penalty === "disabled7" ? "6 days" : "29 days"}
                 </span>
               </div>
               <div className="h-[5px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden">
-                <div className="h-full rounded-[999] bg-[var(--danger)]" style={{width: penalty === "disabled7" ? "14%" : "4%"}} />
+                <div
+                  className={`h-full rounded-[999] bg-[var(--danger)] ${penalty === "disabled7" ? "w-[14%]" : "w-[4%]"}`}
+                />
               </div>
             </div>
 
@@ -251,7 +271,7 @@ export function PaidMessagesSettings() {
               <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
                 {penalty === "disabled7"
                   ? "Publishing, communities, tips and your storefront all keep working. Only paid messages are paused."
-                  : "A ₦500 price with three answered messages beats a ₦100 price with thirty missed ones. Fewer, better paid questions."}
+                  : `A ${formatNaira(500)} price with three answered messages beats a ${formatNaira(100)} price with thirty missed ones. Fewer, better paid questions.`}
               </span>
             </div>
 

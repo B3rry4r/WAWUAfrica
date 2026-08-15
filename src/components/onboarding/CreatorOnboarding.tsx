@@ -70,11 +70,11 @@ export function CreatorOnboarding() {
           <div className="flex flex-col gap-[8px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
             <div className="flex items-center gap-[10px]">
               <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Paid today</span>
-              <span className="text-[14px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
+              <span className="text-[14px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
             </div>
             <div className="flex items-center gap-[10px]">
               <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Renews</span>
-              <span className="text-[14px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>14 Aug 2027</span>
+              <span className="text-[14px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">14 Aug 2027</span>
             </div>
           </div>
         </div>
@@ -94,7 +94,9 @@ export function CreatorOnboarding() {
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
       <FlowHeader title={title} onBack={() => (step === "value" ? router.back() : setStep("value"))} right={step === "tier" ? <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">Billed yearly</span> : undefined} />
 
-      <div className="flex-1 flex flex-col gap-[18px]" style={{padding: step === "value" ? "24px 20px 20px" : "18px 20px 20px"}}>
+      <div
+        className={`flex-1 flex flex-col gap-[18px] px-[20px] pb-[20px] ${step === "value" ? "pt-[24px]" : "pt-[18px]"}`}
+      >
         {step === "value" ? (
           <>
             <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em] leading-[1.15]">
@@ -103,8 +105,8 @@ export function CreatorOnboarding() {
 
             <div className="flex flex-col gap-[15px]">
               {[
-                { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates — ₦100 to ₦5,000 a piece." },
-                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set ₦50–₦500 a message and reply within 24 hours." },
+                { icon: "Upload" as const, strong: "Publish and price your work.", text: ` Video, courses, audio, books, art, templates — ${formatNaira(100)} to ${formatNaira(5000)} a piece.` },
+                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: ` Set ${formatNaira(50)}–${formatNaira(500)} a message and reply within 24 hours.` },
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">
@@ -151,7 +153,9 @@ export function CreatorOnboarding() {
                       setProSelected(label === "Pro");
                       setTier(label === "Pro" ? "pro" : "basic");
                     }}
-                    className="flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold cursor-pointer" style={{background: active ? "var(--accent)" : "transparent", color: active ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-sans)"}}
+                    className={`flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
+                      active ? "bg-[var(--accent)] text-[var(--text-on-accent)]" : "bg-transparent text-[var(--text-secondary)]"
+                    }`}
                   >
                     {label}
                   </button>
@@ -159,17 +163,29 @@ export function CreatorOnboarding() {
               })}
             </div>
 
-            <div className="flex flex-col gap-[15px] p-0 rounded-[var(--radius-card)]" style={{background: proSelected ? "var(--surface-elevated)" : "var(--surface-card)", border: proSelected ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)"}}>
+            <div
+              className={`flex flex-col gap-[15px] p-0 rounded-[var(--radius-card)] border ${
+                proSelected
+                  ? "bg-[var(--surface-elevated)] border-[var(--border-accent)]"
+                  : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
+              }`}
+            >
               <div className="flex">
                 <TierBadge tier={tier} />
               </div>
               <div className="flex items-baseline gap-[7px]">
-                <span className="text-[34px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
+                <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
                 <span className="text-[14px] text-[var(--text-muted)]">a year</span>
               </div>
 
-              <div className="flex items-center gap-[12px] p-[14px] rounded-[var(--radius-input)]" style={{background: proSelected ? "var(--accent-tint)" : "var(--surface-tag)", border: proSelected ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)"}}>
-                <span className="text-[24px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{proSelected ? "90/10" : "85/15"}</span>
+              <div
+                className={`flex items-center gap-[12px] p-[14px] rounded-[var(--radius-input)] border ${
+                  proSelected
+                    ? "bg-[var(--accent-tint)] border-[var(--border-accent)]"
+                    : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
+                }`}
+              >
+                <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{proSelected ? "90/10" : "85/15"}</span>
                 <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
                   {proSelected ? "Keep 90% on content, DMs, tips and storefront — not 85%." : "Community credits still pay 90% on every tier."}
                 </span>
@@ -212,11 +228,11 @@ export function CreatorOnboarding() {
               </div>
               <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
                 <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Renews on</span>
-                <span className="text-[14px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>14 Aug 2027</span>
+                <span className="text-[14px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">14 Aug 2027</span>
               </div>
               <div className="flex items-baseline gap-[12px] p-[18px]">
                 <span className="flex-1 text-[15px] font-semibold">Total today</span>
-                <span className="text-[26px] font-bold tracking-[-0.03em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
+                <span className="text-[26px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
               </div>
             </div>
 
@@ -262,7 +278,7 @@ export function CreatorOnboarding() {
             <Button full size="lg" onClick={() => setStep("confirm")}>
               Continue with {tier === "pro" ? "Pro" : "Basic"} — {formatNaira(price)}
             </Button>
-            <span className="text-[12px] text-[var(--text-muted)]" style={{alignSelf: "center"}}>Renews yearly. Cancel before renewal.</span>
+            <span className="text-[12px] text-[var(--text-muted)] self-center">Renews yearly. Cancel before renewal.</span>
           </>
         ) : null}
         {step === "confirm" ? (
@@ -271,7 +287,7 @@ export function CreatorOnboarding() {
               Pay {formatNaira(price)}
             </Button>
             {/** DEV ONLY — remove when the session endpoint is live. */}
-            <span className="text-[12px] text-[var(--text-muted)] cursor-pointer" style={{alignSelf: "center"}} onClick={() => setStep("failed")}>
+            <span className="text-[12px] text-[var(--text-muted)] cursor-pointer self-center" onClick={() => setStep("failed")}>
               Simulate a failed payment
             </span>
           </>

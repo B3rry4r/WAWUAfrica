@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sendPaidDm } from "@/lib/api/dm";
+import { formatNaira } from "@/lib/format";
 import { Avatar, Button, Icon, Sheet, VerificationBadge } from "@/components/ui";
 
 type Phase = "compose" | "processing" | "success" | "failure";
@@ -78,14 +79,14 @@ export function DmPaySheet({
           <div className="flex items-center justify-between rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[12px_14px]">
             <span className="text-[14px] font-semibold text-[var(--text-primary)]">Message price</span>
             <span className="text-[15px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
-              ₦{creator.dmPrice.toLocaleString("en-NG")}
+              {formatNaira(creator.dmPrice)}
             </span>
           </div>
           <p className="m-0 text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
             {creator.name.split(" ")[0]} has 24 hours to reply. If not, you’re refunded automatically — no questions.
           </p>
           <Button full disabled={!text.trim()} onClick={pay}>
-            Send message · ₦{creator.dmPrice.toLocaleString("en-NG")}
+            Send message · {formatNaira(creator.dmPrice)}
           </Button>
         </div>
       ) : phase === "processing" ? (
