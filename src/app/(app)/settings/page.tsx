@@ -3,6 +3,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { ListRow } from "@/components/ui/ListRow";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { SettingsFooterActions } from "@/components/shared/SettingsFooterActions";
 import type { IconName } from "@/components/ui/Icon";
 
 interface Row {
@@ -42,8 +43,8 @@ export default async function SettingsPage() {
           {
             title: "Creator",
             rows: [
-              { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/settings" },
-              { title: "Earnings", subtitle: "Payouts and history", icon: "Wallet", href: "/settings" },
+              { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/messages/settings" },
+              { title: "Earnings", subtitle: "Payouts and history", icon: "Wallet", href: "/earnings" },
             ],
           } satisfies Group,
         ]
@@ -62,10 +63,6 @@ export default async function SettingsPage() {
         { title: "About WAWU", icon: "Info", href: "/about" },
         { title: "Partners", icon: "Handshake", href: "/partners" },
       ],
-    },
-    {
-      title: "Account",
-      rows: [{ title: "Delete account", icon: "Trash2", href: "/settings/delete-account" }],
     },
   ];
 
@@ -97,6 +94,8 @@ export default async function SettingsPage() {
           </div>
         </section>
       ))}
+
+      <SettingsFooterActions />
     </div>
   );
 }
