@@ -1,75 +1,121 @@
-import { getCourse } from "@/lib/api/learn";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import type { LearnCourse, LearnEntitlement } from "@/types/learn";
+import { COURSE_HOST } from "@/types/learn";
+import { getCourse, getCourseEntitlementState, getLearnEntitlement } from "@/lib/api/learn";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { CourseUnlockBar } from "@/components/learn/CourseUnlockBar";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { HandoffPill } from "@/components/ui/HandoffPill";
+import { CourseEntitlementPanel } from "@/components/learn/CourseEntitlementPanel";
+import { EnrolCourseCta } from "@/components/learn/EnrolCourseCta";
 
-export default async function CourseDetailPage({ params }: { params: { id: string } }) {
-  const course = await getCourse(params.id);
+export default function CourseDetailPage() {
+  const params = useParams<{ id: string }>();
+  const [course, setCourse] = useState<LearnCourse | null | undefined>(undefined);
+  const [entitlement, setEntitlement] = useState<LearnEntitlement | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!course) {
-    return (
-      <div className="p-4">
-        <ErrorState title="Course not found" body="This course may have been removed." />
-      </div>
-    );
-  }
+  const load = useCallback(() => {
+    setCourse(undefined);
+    setEntitlement(null);
+    setError(null);
+    Promise.all([getCourse(params.id), getLearnEntitlement()])
+      .then(([c, e]) => {
+        setCourse(c);
+        setEntitlement(e);
+      })
+      .catch(() => setError("We couldn't load this course."));
+  }, [params.id]);
 
-  const lessons = Array.from({ length: course.lessons }, (_, i) => `Lesson ${i + 1}`);
+  useEffect(load, [load]);
 
   return (
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
-      <div className="flex items-center gap-2.5">
+    <div className="flex min-h-screen flex-col">
+      <div className="flex items-center gap-2.5 p-[14px_16px]">
         <ProfileBackButton compact />
-        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
-          Course
-        </span>
+        <span className="text-[15px] font-semibold text-[var(--text-primary)]">Course</span>
       </div>
 
-      <div className="flex flex-col gap-2.5">
-        <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--text-muted)]">
-          {course.category} · {course.lessons} lessons · {course.minutes} min
-        </span>
-        <span className="text-[24px] font-extrabold leading-[1.2] tracking-[-0.025em] text-[var(--text-primary)]">
-          {course.title}
-        </span>
-        <span className="flex items-center gap-[7px] text-[13.5px] text-[var(--text-secondary)]">
-          {course.host.name}
-          <span className="text-[var(--accent)]">★ {course.rating.toFixed(1)}</span>
-          <span className="text-[var(--text-muted)]">· {course.students.toLocaleString("en-NG")} students</span>
-        </span>
-      </div>
+      {error ? (
+        <div className="px-4">
+          <ErrorState title={error} onRetry={load} />
+        </div>
+      ) : course === undefined || !entitlement ? (
+        <DetailSkeleton />
+      ) : course === null ? (
+        <div className="px-4">
+          <ErrorState title="Course not found" body="This course may have been removed." onRetry={load} />
+        </div>
+      ) : (
+        <CourseDetail course={course} entitlement={entitlement} onEnrolled={setEntitlement} />
+      )}
+    </div>
+  );
+}
 
-      <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{course.overview}</p>
+function CourseDetail({
+  course,
+  entitlement,
+  onEnrolled,
+}: {
+  course: LearnCourse;
+  entitlement: LearnEntitlement;
+  onEnrolled: (e: LearnEntitlement) => void;
+}) {
+  const state = getCourseEntitlementState(course.id, entitlement);
+  const alreadyEnrolled = state.status === "enrolled";
 
-      <section className="flex flex-col gap-2">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">What you’ll learn</span>
-        {course.whatYouLearn.map((w) => (
-          <div key={w} className="flex items-start gap-2.5 rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[11px_14px]">
-            <span className="mt-px">
-              <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.6} />
-            </span>
-            <span className="text-[13.5px] leading-[1.45] text-[var(--text-primary)]">{w}</span>
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="relative aspect-video w-full bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]" />
+
+      <div className="flex flex-1 flex-col gap-4 p-[18px_18px_20px]">
+        <div className="flex flex-col gap-[9px]">
+          <div className="flex">
+            <HandoffPill app={COURSE_HOST} />
           </div>
-        ))}
-      </section>
+          <h1 className="m-0 text-[22px] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--text-primary)]">{course.title}</h1>
+          <span className="text-[13px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+            {COURSE_HOST} · {course.hours} hours{course.certificate ? " · certificate on completion" : ""}
+          </span>
+        </div>
 
-      <section className="flex flex-col gap-2">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Lessons</span>
-        <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
-          {lessons.map((l, i) => (
-            <div key={l} className="flex items-center gap-3 rounded-[var(--radius-input)] p-3">
-              <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[999px] border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[12.5px] font-bold text-[var(--text-secondary)]">
-                {i + 1}
-              </span>
-              <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)]">{l}</span>
-              <Icon name="Lock" size={14} color="var(--text-muted)" />
-            </div>
+        <CourseEntitlementPanel state={state} entitlement={entitlement} />
+
+        <p className="m-0 text-[14.5px] leading-[1.55] text-[var(--text-secondary)]">{course.overview}</p>
+
+        <div className="flex flex-col gap-2.5 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-4">
+          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">What it covers</span>
+          {course.whatItCovers.map((w) => (
+            <span key={w} className="flex items-center gap-[9px] text-[13.5px] text-[var(--text-secondary)]">
+              <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+              {w}
+            </span>
           ))}
         </div>
-      </section>
+      </div>
 
-      <CourseUnlockBar title={course.title} price={course.price} />
+      <EnrolCourseCta courseId={course.id} alreadyEnrolled={alreadyEnrolled} onEnrolled={onEnrolled} />
+    </div>
+  );
+}
+
+function DetailSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 p-[0_18px_20px]">
+      <Skeleton className="aspect-video w-full rounded-none" />
+      <div className="flex flex-col gap-2.5">
+        <Skeleton className="h-[22px] w-[80%] rounded" />
+        <Skeleton className="h-[14px] w-[55%] rounded" />
+      </div>
+      <Skeleton className="h-[120px] w-full rounded-[var(--radius-card)]" />
+      <Skeleton className="h-[14px] w-full rounded" />
+      <Skeleton className="h-[14px] w-[85%] rounded" />
+      <Skeleton className="h-[160px] w-full rounded-[var(--radius-card)]" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCategories } from "@/lib/api/explore";
+import { getCourses, getGuides } from "@/lib/api/learn";
 import { formatNaira } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -10,7 +11,8 @@ const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text
 const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]" as const;
 
 export default async function ExplorePage() {
-  const categories = await getCategories();
+  const [categories, learnCourses, learnGuides] = await Promise.all([getCategories(), getCourses(), getGuides()]);
+  const countryGuideCount = learnGuides.filter((g) => g.kind === "country").length;
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -49,7 +51,12 @@ export default async function ExplorePage() {
         </div>
         <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
           <ListRow title="Business Playbook" subtitle="96 pages · free to download" icon="BookOpen" href="/learn" />
-          <ListRow title="Courses and guides" subtitle="24 courses · 12 country guides" icon="GraduationCap" href="/learn" />
+          <ListRow
+            title="Courses and guides"
+            subtitle={`${learnCourses.length} courses · ${countryGuideCount} country guides`}
+            icon="GraduationCap"
+            href="/learn"
+          />
         </div>
       </section>
 
