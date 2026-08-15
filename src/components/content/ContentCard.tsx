@@ -80,11 +80,7 @@ export function ContentCard({ content, state, ratio = "4 / 3", href, authorRow =
       ) : null}
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: ratio }}>
         <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)",
-          }}
+          className="absolute inset-0 bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]"
           aria-hidden="true"
         />
         <span className="absolute inset-0 grid place-items-center">

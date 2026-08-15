@@ -104,8 +104,7 @@ function PurchaseRow({ purchase, last }: { purchase: Purchase; last: boolean }) 
   return (
     <Link href={`/content/${purchase.contentId}`} className={`flex items-center gap-3.5 px-4 py-4 ${last ? "" : "border-b border-hairline"}`}>
       <span
-        className="grid h-[64px] w-[64px] shrink-0 place-items-center rounded-card border border-hairline text-text-secondary"
-        style={{ background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 10px, var(--surface-card) 10px 20px)" }}
+        className="grid h-[64px] w-[64px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
       >
         <Icon name={typeIcon(purchase.contentType)} size={22} strokeWidth={2} />
       </span>
