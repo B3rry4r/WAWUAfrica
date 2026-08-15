@@ -42,7 +42,7 @@ const SERVICES = [
 
 const FAQ = [
   { q: "What does WAWU take?", a: "You keep 85% of everything you earn — content unlocks, paid DMs, tips and storefront sales. Pro-tier creators keep 90%. There is no listing fee and no monthly platform fee." },
-  { q: "Do I need to be verified to publish?", a: "Creator access uses the WAWU ID tier you already have. Certified professional or Trusted partner can publish content, turn on paid DMs and host communities." },
+  { q: "Do I need to be verified to publish?", a: "No. Creator is an account type — pick it at signup or upgrade later, then pay a subscription (Basic or Pro) to publish content, turn on paid DMs and host communities. KYC is separate and only gates when you can receive payouts." },
   { q: "Does my first upload have to be free?", a: "Yes. Every creator's first piece of content is free — it is how people find out your work is worth paying for. Price everything after that yourself." },
   { q: "What happens if a creator never replies to a paid DM?", a: "The sender is refunded in full after 24 hours and WAWU takes no fee on that refund. Creators who repeatedly miss the window have DMs switched off automatically." },
   { q: "What are WAWU Credits?", a: "Prepaid message units for open communities — one credit sends one message. They are a count, not a cash balance, and they are never converted back to naira." },
