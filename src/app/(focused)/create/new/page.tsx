@@ -22,31 +22,63 @@ export default function NewContentPage({ searchParams }: Props) {
   // subscription unlocks uploading". KYC status never factors in here.
   if (!gates.isCreator) {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
-        <FlowHeader title="Upload" />
-        <EmptyState
-          icon="Sparkles"
-          title="Uploading needs a creator account"
-          caption="User accounts can buy, save and message. Switch to a creator account to publish videos, courses, PDFs and more."
-          action="Set up a creator account"
-          actionHref="/onboarding"
-        />
-      </div>
+      <>
+        <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
+          <FlowHeader title="Upload" />
+          <EmptyState
+            icon="Sparkles"
+            title="Uploading needs a creator account"
+            caption="User accounts can buy, save and message. Switch to a creator account to publish videos, courses, PDFs and more."
+            action="Set up a creator account"
+            actionHref="/onboarding"
+          />
+        </div>
+        {/* Desktop has no DesktopHeader here (/create/new owns its own header
+            per AppHeader.OWN_HEADER_ROUTES) and FocusedFlowShell gives this
+            route the full remaining width next to the Sidebar — so the gate
+            card is centered in that space rather than left-pinned at mobile
+            width, matching the sizing/centering other centered empty states
+            (e.g. communities' "Select a room") use at xl. */}
+        <div className="hidden xl:flex xl:h-full xl:items-center xl:justify-center xl:p-[48px]">
+          <div className="w-full max-w-[420px]">
+            <EmptyState
+              icon="Sparkles"
+              title="Uploading needs a creator account"
+              caption="User accounts can buy, save and message. Switch to a creator account to publish videos, courses, PDFs and more."
+              action="Set up a creator account"
+              actionHref="/onboarding"
+            />
+          </div>
+        </div>
+      </>
     );
   }
 
   if (!gates.canUpload) {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
-        <FlowHeader title="Upload" />
-        <EmptyState
-          icon="CreditCard"
-          title="Subscribe to unlock uploading"
-          caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts."
-          action="Choose a plan"
-          actionHref="/subscription"
-        />
-      </div>
+      <>
+        <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
+          <FlowHeader title="Upload" />
+          <EmptyState
+            icon="CreditCard"
+            title="Subscribe to unlock uploading"
+            caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts."
+            action="Choose a plan"
+            actionHref="/subscription"
+          />
+        </div>
+        <div className="hidden xl:flex xl:h-full xl:items-center xl:justify-center xl:p-[48px]">
+          <div className="w-full max-w-[420px]">
+            <EmptyState
+              icon="CreditCard"
+              title="Subscribe to unlock uploading"
+              caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts."
+              action="Choose a plan"
+              actionHref="/subscription"
+            />
+          </div>
+        </div>
+      </>
     );
   }
 
