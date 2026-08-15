@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { DmThreadFooter } from "@/components/dm/DmThreadFooter";
+import { formatNaira } from "@/lib/format";
 
 export default async function DmThreadPage({ params }: { params: { threadId: string } }) {
   const thread = await getDmThread(params.threadId);
@@ -18,7 +19,7 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
     );
   }
 
-  const { summary, messages, deadlineAt, refundedAt } = thread;
+  const { summary, messages, deadlineAt } = thread;
   const first = summary.creatorName.charAt(0);
 
   return (
@@ -60,7 +61,11 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
             <span className="text-[13px] leading-[1.5] text-[var(--text-primary)]">
               {summary.status === "refunded" ? (
                 <>
-                  You got a refund — ₦{summary.amount.toLocaleString("en-NG")} back to your payment method{refundedAt ? ` on ${refundedAt}` : ""}. This conversation is closed.
+                  <span className="block font-semibold text-[var(--text-primary)]">
+                    Your {formatNaira(summary.amount)} was refunded
+                  </span>
+                  {summary.creatorName.split(" ")[0]} did not reply within 24 hours. Back on your card in 3 to 5
+                  working days.
                 </>
               ) : (
                 <>
@@ -106,6 +111,7 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
       </div>
 
       <DmThreadFooter
+        threadId={summary.id}
         creator={{ wawuId: summary.creatorWawuId, name: summary.creatorName, handle: summary.creatorHandle, dmPrice: summary.amount }}
         status={summary.status}
       />
