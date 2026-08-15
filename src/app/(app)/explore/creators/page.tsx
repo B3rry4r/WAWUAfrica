@@ -7,6 +7,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 import { FollowButton } from "@/components/shared/FollowButton";
+import { CategoryFilterAside } from "../_components/CategoryFilterAside";
+import { CreatorGridCard } from "../_components/CreatorGridCard";
 
 const VALID_CATEGORIES: ExploreCategoryId[] = [
   "business",
@@ -30,34 +32,36 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <ScreenHeader
-        title="Creators"
-        right={
-          <Link href="/search" aria-label="Search" className="grid place-items-center">
-            <Icon name="Search" size={19} color="var(--text-secondary)" />
-          </Link>
-        }
-      />
-      <div className="flex gap-2 overflow-x-auto border-b border-[var(--border-hairline)] px-4 py-3 [scrollbar-width:none]">
-        {VALID_CATEGORIES.map((id) => {
-          const on = category === id;
-          return (
-            <Link
-              key={id}
-              href={id === "business" ? "/explore/creators" : `/explore/creators?category=${id}`}
-              className={`inline-flex h-8 flex-shrink-0 items-center rounded-[var(--radius-chip)] border px-[14px] text-[13px] no-underline capitalize ${
-                on
-                  ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
-                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
-              }`}
-            >
-              {id.replace("_", " ")}
+      <div className="xl:hidden">
+        <ScreenHeader
+          title="Creators"
+          right={
+            <Link href="/search" aria-label="Search" className="grid place-items-center">
+              <Icon name="Search" size={19} color="var(--text-secondary)" />
             </Link>
-          );
-        })}
+          }
+        />
+        <div className="flex gap-2 overflow-x-auto border-b border-[var(--border-hairline)] px-4 py-3 [scrollbar-width:none]">
+          {VALID_CATEGORIES.map((id) => {
+            const on = category === id;
+            return (
+              <Link
+                key={id}
+                href={id === "business" ? "/explore/creators" : `/explore/creators?category=${id}`}
+                className={`inline-flex h-8 flex-shrink-0 items-center rounded-[var(--radius-chip)] border px-[14px] text-[13px] no-underline capitalize ${
+                  on
+                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
+                }`}
+              >
+                {id.replace("_", " ")}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-[10px] p-[14px_16px_96px]">
+      <div className="flex flex-col gap-[10px] p-[14px_16px_96px] xl:hidden">
         {creators.map((creator) => (
           <CreatorRow
             key={creator.wawuId}
@@ -69,6 +73,17 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
             following={creator.following}
           />
         ))}
+      </div>
+
+      {/* xl: category filter moves into a permanent left aside (design D10)
+          and the list becomes a 4-up discovery grid instead of rows. */}
+      <div className="hidden xl:flex xl:items-start xl:gap-10 xl:p-[26px]">
+        <CategoryFilterAside activeCategory={category} />
+        <div className="grid min-w-0 flex-1 grid-cols-4 gap-[18px]">
+          {creators.map((creator) => (
+            <CreatorGridCard key={creator.wawuId} creator={creator} />
+          ))}
+        </div>
       </div>
     </div>
   );
