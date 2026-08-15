@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { getNotifications, markAllRead } from "@/lib/api/notifications";
 import { formatNaira, formatCredits } from "@/lib/format";
@@ -69,7 +70,7 @@ export default function NotificationsPage() {
       </div>
 
       {error ? (
-        <EmptyState icon="WifiOff" title="Could not load notifications" caption={error} action="Try again" onAction={load} />
+        <ErrorState title="Could not load notifications" body={error} onRetry={load} />
       ) : !items ? (
         <div className="flex flex-col gap-4 px-4 pt-4">
           {Array.from({ length: 5 }).map((_, i) => (

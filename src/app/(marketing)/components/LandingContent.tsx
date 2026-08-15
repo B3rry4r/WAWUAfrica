@@ -2,14 +2,14 @@ import Link from "next/link";
 import { AccessBadge } from "@/components/ui/AccessBadge";
 import { Button } from "@/components/ui/Button";
 import { ComingSoonPill } from "@/components/ui/ComingSoonPill";
-import { ContentCard } from "@/components/content/ContentCard";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { formatNaira } from "@/lib/format";
-import { mockContent } from "@/lib/api/mocks/mockContent";
+import { getFeaturedContent } from "@/lib/api/content";
+import { CreatorCarousel } from "./CreatorCarousel";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 
@@ -47,8 +47,8 @@ const FAQ = [
   { q: "What are WAWU Credits?", a: "Prepaid message units for open communities — one credit sends one message. They are a count, not a cash balance, and they are never converted back to naira." },
 ];
 
-export function LandingContent() {
-  const toWatch = mockContent.filter((c) => ["cac-in-7-days", "ankara-pattern-drafting", "dry-season-poultry"].includes(c.id));
+export async function LandingContent() {
+  const toWatch = await getFeaturedContent();
 
   return (
     <div className="min-h-screen bg-surface-page">
@@ -82,18 +82,7 @@ export function LandingContent() {
       </section>
 
       {/* Creators to watch */}
-      <section className="pb-11 pt-2">
-        <div className="px-5">
-          <SectionHeader caption="Earning on WAWU now" title="Creators to watch" action="See all" />
-        </div>
-        <div className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 py-4">
-          {toWatch.map((c) => (
-            <div key={c.id} className="w-[306px] shrink-0 snap-center">
-              <ContentCard content={c} state="free" ratio="4 / 5" />
-            </div>
-          ))}
-        </div>
-      </section>
+      <CreatorCarousel items={toWatch} />
 
       {/* Stats */}
       <section className="px-5 pb-12">

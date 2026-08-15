@@ -1,4 +1,5 @@
 import type { SearchResponse, SearchResults } from "@/types/search";
+import type { ContentPiece } from "@/types/content";
 import { mockContent } from "./mockContent";
 
 const searchContent = mockContent.filter((c) => c.accessType === "free" || c.title.includes("book") || c.title.toLowerCase().includes("book"));
@@ -43,4 +44,21 @@ export function mockSearch(query: string): SearchResponse {
     communities: mockSearchCommunities.filter((c) => c.name.toLowerCase().includes(q)),
   };
   return { query, results };
+}
+
+/** Stand-in for the client's recent-search history until a backend stores it. */
+export const mockRecentSearches = ["cac registration", "ankara pattern", "zainab bello"];
+
+/** Fuzzy fallback shown when a query matches nothing ("Closest things we have"). */
+export function mockClosestResults(query: string): ContentPiece[] {
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  return mockContent.filter((c) =>
+    words.some(
+      (w) =>
+        c.title.toLowerCase().includes(w) ||
+        c.description.toLowerCase().includes(w) ||
+        c.creator.fullName.toLowerCase().includes(w),
+    ),
+  );
 }

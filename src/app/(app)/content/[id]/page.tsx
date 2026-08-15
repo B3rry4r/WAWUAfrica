@@ -11,9 +11,12 @@ import { Sheet } from "@/components/ui/Sheet";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Button } from "@/components/ui/Button";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { getContent, initiateUnlock, verifyUnlock } from "@/lib/api/content";
 import { formatNaira } from "@/lib/format";
 import type { ContentPiece, ContentType } from "@/types/content";
+import { mockComments } from "@/lib/api/mocks/mockComments";
+import type { MockComment } from "@/lib/api/mocks/mockComments";
 
 type PaymentState = "idle" | "processing" | "success" | "failure";
 
@@ -78,7 +81,7 @@ export default function ContentDetailPage() {
       <ContentHeader onBack={() => router.back()} />
 
       {error ? (
-        <ErrorState caption={error} onRetry={load} />
+        <ErrorState title="Could not open this piece" body={error} onRetry={load} />
       ) : !content ? (
         <DetailSkeleton />
       ) : (
@@ -320,11 +323,7 @@ function Stat({ text }: { text: string }) {
   return <span className="text-[13px] font-medium text-text-secondary">{text}</span>;
 }
 
-const COMMENTS = [
-  { name: "Emeka Obi", time: "3h", text: "Page 19 alone paid for this. I have been pricing my tomatoes wrong for two years.", likes: 12, author: false },
-  { name: "Zainab Bello", time: "3h", text: "That page took the longest to write. Glad it landed.", likes: 4, author: true },
-  { name: "Musa Danladi", time: "1d", text: "Does the margin sheet work for services too, or only goods?", likes: 2, author: false },
-];
+const COMMENTS: MockComment[] = mockComments; // SEAM: replace with GET /api/hub/content/:id/comments
 
 function Comments({ content }: { content: ContentPiece }) {
   return (
@@ -473,23 +472,6 @@ function UnlockSheet({
         </div>
       ) : null}
     </Sheet>
-  );
-}
-
-function ErrorState({ caption, onRetry }: { caption: string; onRetry: () => void }) {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 py-12 text-center">
-      <span className="grid h-[64px] w-[64px] place-items-center rounded-button bg-tag text-text-muted">
-        <Icon name="FileX" size={28} />
-      </span>
-      <div className="flex flex-col gap-1">
-        <p className="m-0 text-[17px] font-bold">Could not open this piece</p>
-        <p className="m-0 text-[13.5px] text-text-secondary">{caption}</p>
-      </div>
-      <Button variant="secondary" onClick={onRetry}>
-        Try again
-      </Button>
-    </div>
   );
 }
 

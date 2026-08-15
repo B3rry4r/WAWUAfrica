@@ -31,6 +31,17 @@ export async function getFeed(): Promise<ContentFeedResponse> {
   }
 }
 
+/** Featured creators for the marketing landing ("Creators to watch"). */
+export async function getFeaturedContent(): Promise<ContentPiece[]> {
+  try {
+    const res = await apiFetch<{ items: ContentPiece[] }>("/api/hub/content?scope=featured");
+    return res.items;
+  } catch {
+    // SEAM: replace with GET /api/hub/content?scope=featured
+    return mockContent.filter((c) => ["cac-in-7-days", "ankara-pattern-drafting", "dry-season-poultry"].includes(c.id));
+  }
+}
+
 export async function getContent(id: string): Promise<ContentDetailResponse> {
   try {
     const res = await apiFetch<ContentDetailResponse>(`/api/hub/content/${id}`);

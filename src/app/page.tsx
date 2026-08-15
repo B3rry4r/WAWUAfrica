@@ -1,26 +1,19 @@
-"use client";
-
-import { SessionProvider, useSession } from "@/lib/auth/session-provider";
-import { AppShell } from "@/components/layout/AppShell";
+import { SessionProvider } from "@/lib/auth/session-provider";
+import { SessionGate } from "@/app/(app)/components/SessionGate";
 import { LandingContent } from "@/app/(marketing)/components/LandingContent";
-import { HomeFeed } from "@/app/(app)/components/HomeFeed";
 
-/** `/` resolves to the marketing site when signed out and the home feed when signed in. */
-function Root() {
-  const { isAuthenticated } = useSession();
-  return isAuthenticated ? (
-    <AppShell elevatedHeader>
-      <HomeFeed />
-    </AppShell>
-  ) : (
-    <LandingContent />
-  );
-}
-
-export default function RootPage() {
+/**
+ * `/` — server component. Renders the marketing landing for SEO; a client
+ * SessionGate swaps in the authenticated home feed when signed in. Only the
+ * genuinely interactive leaves (EarningsCalculator, FaqAccordion,
+ * CreatorCarousel) are client components.
+ */
+export default function Page() {
   return (
     <SessionProvider>
-      <Root />
+      <SessionGate>
+        <LandingContent />
+      </SessionGate>
     </SessionProvider>
   );
 }

@@ -6,11 +6,11 @@ import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { getPurchases } from "@/lib/api/purchases";
 import { formatNaira } from "@/lib/format";
-import type { ContentType, ContentPiece } from "@/types/content";
+import type { ContentType } from "@/types/content";
 import type { Purchase } from "@/types/purchase";
-import { mockContent } from "@/lib/api/mocks/mockContent";
 
 const FILTERS: Array<{ id: ContentType | "all"; label: string }> = [
   { id: "all", label: "All" },
@@ -73,7 +73,7 @@ export default function MyPurchasesPage() {
       </div>
 
       {error ? (
-        <EmptyState icon="WifiOff" title="Could not load your purchases" caption={error} action="Try again" onAction={load} />
+        <ErrorState title="Could not load your purchases" body={error} onRetry={load} />
       ) : !items ? (
         <ListSkeleton />
       ) : filtered.length === 0 ? (
@@ -96,7 +96,6 @@ export default function MyPurchasesPage() {
 }
 
 function PurchaseRow({ purchase, last }: { purchase: Purchase; last: boolean }) {
-  const detail: ContentPiece | undefined = mockContent.find((c) => c.id === purchase.contentId);
   const verb = TYPE_VERB[purchase.contentType];
   const date = new Date(purchase.purchasedAt);
   const dateLabel = date.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
@@ -119,7 +118,7 @@ function PurchaseRow({ purchase, last }: { purchase: Purchase; last: boolean }) 
       </span>
       <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-semibold text-accent">
         {verb}
-        {detail?.contentType === "video" ? null : <Icon name="ArrowRight" size={14} color="var(--accent)" />}
+        {purchase.contentType === "video" ? null : <Icon name="ArrowRight" size={14} color="var(--accent)" />}
       </span>
     </Link>
   );

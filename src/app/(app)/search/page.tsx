@@ -7,10 +7,10 @@ import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
-import { searchAll, getPopularSearches, getSuggestedCreators } from "@/lib/api/search";
-import { mockSearchResults } from "@/lib/api/mocks/mockSearch";
-import type { ContentType } from "@/types/content";
+import { searchAll, getPopularSearches, getSuggestedCreators, getClosestResults, getRecentSearches } from "@/lib/api/search";
+import type { ContentPiece, ContentType } from "@/types/content";
 import type { SearchCommunityResult, SearchCreatorResult, SearchResults, SearchTab } from "@/types/search";
 
 type Screen = "idle" | "loading" | "results" | "error";
@@ -29,15 +29,17 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [screen, setScreen] = useState<Screen>("idle");
   const [tab, setTab] = useState<SearchTab>("all");
-  const [results, setResults] = useState<SearchResults>(mockSearchResults);
+  const [results, setResults] = useState<SearchResults>({ content: [], creators: [], communities: [] });
   const [popular, setPopular] = useState<string[]>([]);
-  const [recent, setRecent] = useState<string[]>(["cac registration", "ankara pattern", "zainab bello"]);
+  const [recent, setRecent] = useState<string[]>([]);
   const [suggestedCreators, setSuggestedCreators] = useState<SearchCreatorResult[]>([]);
+  const [closest, setClosest] = useState<ContentPiece[]>([]);
   const timer = useRef<number | null>(null);
 
   useEffect(() => {
     getPopularSearches().then(setPopular).catch(() => {});
     getSuggestedCreators().then(setSuggestedCreators).catch(() => {});
+    getRecentSearches().then(setRecent).catch(() => {});
   }, []);
 
   const runSearch = (q: string) => {
@@ -53,6 +55,15 @@ export default function SearchPage() {
         setTab("all");
         setScreen("results");
         setRecent((prev) => [trimmed, ...prev.filter((r) => r !== trimmed)].slice(0, 5));
+        if (
+          res.results.content.length === 0 &&
+          res.results.creators.length === 0 &&
+          res.results.communities.length === 0
+        ) {
+          getClosestResults(trimmed).then(setClosest).catch(() => setClosest([]));
+        } else {
+          setClosest([]);
+        }
       })
       .catch(() => setScreen("error"));
   };
@@ -76,16 +87,6 @@ export default function SearchPage() {
 
   const noResults = screen === "results" && counts.all === 0;
   const words = query.trim().split(/\s+/).filter(Boolean);
-  const closest = words.length
-    ? mockSearchResults.content.filter((c) =>
-        words.some(
-          (w) =>
-            c.title.toLowerCase().includes(w.toLowerCase()) ||
-            c.description.toLowerCase().includes(w.toLowerCase()) ||
-            c.creator.fullName.toLowerCase().includes(w.toLowerCase()),
-        ),
-      )
-    : [];
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page">
@@ -196,7 +197,7 @@ export default function SearchPage() {
       ) : null}
 
       {screen === "error" ? (
-        <EmptyState icon="WifiOff" title="Search is unavailable" caption="We could not reach search right now. Try again in a moment." action="Try again" onAction={() => runSearch(query)} />
+        <ErrorState title="Search is unavailable" body="We could not reach search right now. Try again in a moment." onRetry={() => runSearch(query)} />
       ) : null}
 
       {screen === "loading" ? (
