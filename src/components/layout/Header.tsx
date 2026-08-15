@@ -17,7 +17,7 @@ export function Header({ title }: HeaderProps) {
           {title}
         </h1>
       ) : null}
-      <span className="" style={{flex: title ? 0 : 1}} />
+      <span className={title ? "flex-none" : "flex-1"} />
       <button
         type="button"
         aria-label="Search"

@@ -4,6 +4,7 @@ import type { OwnProfile, VerificationLevelEntry } from "@/types/verification";
 import { VERIFY_TIER_LABELS } from "@/types/verification";
 import { getOwnProfile, getVerificationLadder } from "@/lib/api/verification";
 import { getPurchases } from "@/lib/api/purchases";
+import { formatNaira } from "@/lib/format";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
@@ -137,7 +138,7 @@ function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
           <Icon name="ChevronRight" size={17} color="var(--accent)" strokeWidth={2.2} />
         </div>
         <div className="flex gap-5 border-t border-hairline pt-3">
-          <StatBlock value={`₦${(profile.earningsThisMonth ?? 0).toLocaleString("en-NG")}`} label="This month" align="start" size="sm" />
+          <StatBlock value={formatNaira(profile.earningsThisMonth ?? 0)} label="This month" align="start" size="sm" />
           <StatBlock value={String(profile.toReply)} label="To reply" align="start" size="sm" />
         </div>
       </div>
