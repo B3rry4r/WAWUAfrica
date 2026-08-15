@@ -16,6 +16,7 @@ const creators = [
     pieceCount: 4,
     verification: "certified_professional" as const,
     following: false,
+    category: "business" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-funmi",
@@ -24,6 +25,7 @@ const creators = [
     pieceCount: 6,
     verification: "certified_professional" as const,
     following: false,
+    category: "finance" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-zainab",
@@ -32,6 +34,7 @@ const creators = [
     pieceCount: 3,
     verification: "verified_business" as const,
     following: true,
+    category: "agriculture" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-musa",
@@ -39,6 +42,7 @@ const creators = [
     field: "Welder and trainer",
     pieceCount: 3,
     following: false,
+    category: "trade" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-ifeanyi",
@@ -47,6 +51,7 @@ const creators = [
     pieceCount: 5,
     verification: "verified_business" as const,
     following: false,
+    category: "creative_arts" as ExploreCategoryId,
   },
 ];
 
@@ -59,7 +64,9 @@ export async function getMockCategories(): Promise<typeof EXPLORE_CATEGORIES> {
 // SEAM: replace with GET /api/hub/explore/creators
 export async function getMockCreators(category?: ExploreCategoryId): Promise<typeof creators> {
   await delay(400);
-  return creators.map((c) => ({ ...c, following: MOCK_PROFILE_FOLLOWING.has(c.wawuId) }));
+  return creators
+    .filter((c) => !category || c.category === category)
+    .map((c) => ({ ...c, following: MOCK_PROFILE_FOLLOWING.has(c.wawuId) }));
 }
 
 // SEAM: replace with POST /api/hub/creators/:wawuId/follow

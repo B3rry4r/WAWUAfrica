@@ -68,14 +68,14 @@ export function ResetPasswordForm() {
         >
           <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
         </Link>
-        <span className="flex-1 text-[16px] font-semibold">New password</span>
+        <span className="flex-1 text-[16px] font-semibold">Set a new password</span>
       </div>
 
       <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-4 xl:flex-none xl:px-0">
         <div className="flex flex-col gap-2.5">
-          <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Choose a new password</h1>
+          <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Choose something new</h1>
           <p className="m-0 text-[14.5px] leading-normal text-text-secondary">
-            Your old one is on its way out. Make this one count.
+            You will be signed in on this device once it is saved.
           </p>
         </div>
         <div className="flex flex-col gap-4">
@@ -116,7 +116,7 @@ export function ResetPasswordForm() {
 
       <div className="mt-auto flex flex-col gap-3 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mt-6 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0 xl:pt-0">
         <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
-          {submitting ? "Updating…" : "Update password"}
+          {submitting ? "Saving…" : "Save new password"}
         </Button>
         <Button full variant="ghost" href="/sign-in">
           Back to sign in

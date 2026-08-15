@@ -67,9 +67,9 @@ export function ForgotPasswordForm() {
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2.5">
-              <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Forgot password?</h1>
+              <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Reset it by email</h1>
               <p className="m-0 text-[14.5px] leading-normal text-text-secondary">
-                No stress. Tell us the email and we will send you a link to set a new one.
+                Give us the address on your WAWU ID and we will send a reset link.
               </p>
             </div>
             <Input

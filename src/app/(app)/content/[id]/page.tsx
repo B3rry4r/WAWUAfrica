@@ -35,6 +35,15 @@ const typeVisual: Record<ContentType, IconName> = {
   template: "LayoutTemplate",
 };
 
+const typeLabel: Record<ContentType, string> = {
+  video: "Video",
+  course: "Course",
+  audio: "Audio",
+  pdf: "PDF",
+  image: "Image",
+  template: "Template",
+};
+
 export default function ContentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -162,7 +171,14 @@ export default function ContentDetailPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page">
-      <ContentHeader onBack={() => router.back()} onShare={shareContent} shared={shareFeedback} saved={content?.saved ?? false} onToggleSave={toggleSaved} />
+      <ContentHeader
+        title={content ? typeLabel[content.contentType] : "Content"}
+        onBack={() => router.back()}
+        onShare={shareContent}
+        shared={shareFeedback}
+        saved={content?.saved ?? false}
+        onToggleSave={toggleSaved}
+      />
 
       {error ? (
         <ErrorState title="Could not open this piece" body={error} onRetry={load} />
@@ -259,12 +275,14 @@ export default function ContentDetailPage() {
 }
 
 function ContentHeader({
+  title,
   onBack,
   onShare,
   shared,
   saved,
   onToggleSave,
 }: {
+  title: string;
   onBack: () => void;
   onShare: () => void;
   shared: boolean;
@@ -276,7 +294,7 @@ function ContentHeader({
       <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag">
         <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
       </button>
-      <span className="flex-1 text-[16px] font-semibold">Content</span>
+      <span className="flex-1 text-[16px] font-semibold">{title}</span>
       <button
         type="button"
         onClick={onShare}
