@@ -1,0 +1,237 @@
+{
+  "tasks": [
+    {
+      "id": "UA-1",
+      "kind": "stub",
+      "bornFrom": "STUB-1",
+      "screenId": "app-shell-header-nav",
+      "files": [
+        "src/lib/api/mocks/session.ts"
+      ],
+      "change": "Remove dev-only mutator switches (setCreatorTier/setKycStatus/setSubscriptionPaid) from the shipped session mock entirely once real auth (WAWU ID JWT) + real CreatorState/KycSubmission/CreatorSubscription endpoints are wired. These must not survive into the real build \u2014 real state changes only through their real endpoints (POST /kyc, POST /creator-subscription/verify, KYC review).",
+      "status": "open"
+    },
+    {
+      "id": "UA-2",
+      "kind": "stub",
+      "bornFrom": "STUB-2",
+      "screenId": "kyc",
+      "files": [
+        "src/components/kyc/KycFlow.tsx"
+      ],
+      "change": "Remove the dev-only pending/approved/rejected preview tab switcher; KYC status must only ever change via GET /kyc reflecting a real KycSubmission.status after manual review.",
+      "status": "open"
+    },
+    {
+      "id": "UA-3",
+      "kind": "stub",
+      "bornFrom": "STUB-3",
+      "screenId": "creator-onboarding-subscription-signup",
+      "files": [
+        "src/components/onboarding/CreatorOnboarding.tsx"
+      ],
+      "change": "pay() must call the real POST /creator-subscription -> Flutterwave charge -> POST /creator-subscription/verify flow, not call setSubscriptionPaid/setCreatorTier directly. subscriptionPaid must only ever be true as a result of a verified Flutterwave transaction.",
+      "status": "open"
+    },
+    {
+      "id": "UA-4",
+      "kind": "stub",
+      "bornFrom": "STUB-4",
+      "screenId": "creator-onboarding-subscription-signup",
+      "files": [
+        "src/components/onboarding/CreatorOnboarding.tsx"
+      ],
+      "change": "Remove the 'Simulate a failed payment' dev-only link; the failed-payment UI state must be reachable via a genuine Flutterwave verify failure once wired for real.",
+      "status": "open"
+    },
+    {
+      "id": "UA-5",
+      "kind": "stub",
+      "bornFrom": "STUB-5",
+      "screenId": "creator-dashboard",
+      "files": [
+        "src/components/shared/HomeRightRail.tsx",
+        "src/components/earnings/EarningsDashboard.tsx",
+        "src/components/dashboard/CreatorDashboard.tsx"
+      ],
+      "change": "Replace the hardcoded '1,240' EVG literal (4 call sites) with a real fetch from GET /creators/:wawuId/evg.",
+      "status": "open"
+    },
+    {
+      "id": "UA-6",
+      "kind": "stub",
+      "bornFrom": "STUB-6",
+      "screenId": "services-cac",
+      "files": [
+        "src/app/(app)/services/cac/apply/page.tsx"
+      ],
+      "change": "Replace the simulated document-upload async step with real presigned-URL upload (conventions.md file-upload pattern) feeding POST /services/cac/apply's document fields.",
+      "status": "open"
+    },
+    {
+      "id": "UA-7",
+      "kind": "stub",
+      "bornFrom": "STUB-7",
+      "screenId": "services-nepc",
+      "files": [
+        "src/app/(app)/services/nepc/apply/page.tsx"
+      ],
+      "change": "Same as UA-6 for the NEPC apply flow's document step.",
+      "status": "open"
+    },
+    {
+      "id": "UA-8",
+      "kind": "stub",
+      "bornFrom": "STUB-8",
+      "screenId": "messages-dm",
+      "files": [
+        "src/components/dm/DmThreadFooter.tsx"
+      ],
+      "change": "The refunded-thread 'Report an issue' action currently has NO seam at all (not even a SEAM comment) \u2014 wire it to the new POST /dm/:messageId/report endpoint.",
+      "status": "open"
+    },
+    {
+      "id": "UA-9",
+      "kind": "stub",
+      "bornFrom": "STUB-9",
+      "screenId": "purchases",
+      "files": [
+        "src/app/(app)/purchases/page.tsx"
+      ],
+      "change": "Decorative desktop tab row (Content/Courses/Products/Services/Questions, added in the desktop fix wave) is currently visual-only with 'Content' hardcoded active and not wired to the filter state \u2014 wire it to real filtering across the merged Purchase/ServiceApplication/DirectMessage read once GET /content/purchases exists.",
+      "status": "open"
+    },
+    {
+      "id": "UA-10",
+      "kind": "stub",
+      "bornFrom": "STUB-10",
+      "screenId": "app-shell-header-nav",
+      "files": [
+        "src/components/shared/RoutePlaceholder.tsx"
+      ],
+      "change": "Dead component, no longer referenced by any live route (superseded by real screens built in prior fix waves). Safe to delete in a later cleanup pass \u2014 not a wiring task, just noting it's confirmed unused so nobody re-wires it by mistake.",
+      "status": "open"
+    },
+    {
+      "id": "UA-11",
+      "kind": "stub",
+      "bornFrom": "STUB-11",
+      "screenId": "subscription-management",
+      "files": [
+        "src/components/subscription/SubscriptionManagement.tsx"
+      ],
+      "change": "BILLING_HISTORY inline literal must move to a real GET /creator-subscription/billing-history call.",
+      "status": "open"
+    },
+    {
+      "id": "UA-12",
+      "kind": "stub",
+      "bornFrom": "STUB-12",
+      "screenId": "creator-dashboard",
+      "files": [
+        "src/components/dashboard/CreatorDashboard.tsx"
+      ],
+      "change": "Unlabeled inline literal (the '86' Unlocks stat) must be sourced from GET /content/mine/earnings' aggregate instead.",
+      "status": "open"
+    },
+    {
+      "id": "UA-13",
+      "kind": "stub",
+      "bornFrom": "STUB-13",
+      "screenId": "explore",
+      "files": [
+        "src/app/(app)/explore/page.tsx"
+      ],
+      "change": "Hardcoded business-copy numbers (course/guide counts) must read from the real GET /learn/courses and GET /learn/guides list lengths instead of a stale literal.",
+      "status": "open"
+    },
+    {
+      "id": "UA-14",
+      "kind": "designed-state",
+      "bornFrom": "design:content-detail\u00b7comments",
+      "screenId": "content-detail",
+      "files": [
+        "src/app/(app)/content/[id]/page.tsx"
+      ],
+      "change": "submitComment is local-component-state only (no API call at all) \u2014 wire to real POST /content/:id/comments once the seam exists.",
+      "status": "open",
+      "enterCondition": "user submits the comment composer"
+    },
+    {
+      "id": "UA-15",
+      "kind": "designed-state",
+      "bornFrom": "design:content-detail\u00b7rating",
+      "screenId": "content-detail",
+      "files": [
+        "src/app/(app)/content/[id]/page.tsx"
+      ],
+      "change": "rateContent sets local myRating only; ContentPiece.ratingPct is never recomputed \u2014 wire to real POST /content/:id/rate.",
+      "status": "open",
+      "enterCondition": "user taps a star in the RateSheet"
+    },
+    {
+      "id": "UA-16",
+      "kind": "designed-state",
+      "bornFrom": "design:content-detail\u00b7save",
+      "screenId": "content-detail",
+      "files": [
+        "src/app/(app)/content/[id]/page.tsx"
+      ],
+      "change": "toggleSaved is an optimistic local toggle with no API call \u2014 wire to real POST/DELETE /content/:id/save.",
+      "status": "open",
+      "enterCondition": "user taps the bookmark/save icon"
+    },
+    {
+      "id": "UA-17",
+      "kind": "designed-state",
+      "bornFrom": "design:communities\u00b7private-join",
+      "screenId": "communities",
+      "files": [
+        "src/app/(app)/communities/page.tsx",
+        "src/components/communities/CommunityTabs.tsx"
+      ],
+      "change": "Private communities currently join instantly like open ones \u2014 no pending-request state exists anywhere in the frontend. Real backend has CommunityMembership.status=pending for private communities; frontend needs a genuinely new 'Request to join' UI state, not just a wiring change.",
+      "status": "open",
+      "enterCondition": "user taps Join on a community with kind=private"
+    },
+    {
+      "id": "UA-18",
+      "kind": "designed-state",
+      "bornFrom": "design:auth\u00b7reset-password-token",
+      "screenId": "auth-flows",
+      "files": [
+        "src/app/(auth)/reset-password/page.tsx"
+      ],
+      "change": "reset-password never captures a token/code from the emailed reset link (no route param, no query string read) \u2014 saveNewPassword has no way to identify which account's password is being reset. Real contract gap, needs a token param added to the route and the WAWU-ID reset-password call.",
+      "status": "open",
+      "enterCondition": "user follows the password-reset email link"
+    },
+    {
+      "id": "UA-19",
+      "kind": "supersede",
+      "bornFrom": "S-4",
+      "screenId": "auth-flows",
+      "files": [
+        "src/lib/api/auth.ts",
+        "src/app/(auth)/sign-up/components/SignUpFlow.tsx",
+        "src/app/(auth)/sign-in/components/SignInForm.tsx",
+        "src/app/(auth)/forgot-password/components/ForgotPasswordForm.tsx",
+        "src/app/(auth)/reset-password/components/ResetPasswordForm.tsx"
+      ],
+      "change": "Repoint every auth SEAM (signUp/verifyOtp/signIn/requestPasswordReset/saveNewPassword) at WAWU ID's own base URL (not this new backend's /api/hub/auth/*), per supersede S-4. This backend's own signUp-equivalent becomes a PATCH /api/hub/users/me call for accountType+interests, made AFTER WAWU ID's real signup succeeds.",
+      "status": "open"
+    },
+    {
+      "id": "UA-20",
+      "kind": "supersede",
+      "bornFrom": "S-5",
+      "screenId": "marketplace",
+      "files": [
+        "src/lib/api/marketplace.ts",
+        "src/lib/api/mocks/marketplace.ts"
+      ],
+      "change": "Marketplace product/shop reads stay on frontend mocks (external, not this backend's concern per S-5) \u2014 only the save/bookmark action (POST/DELETE /marketplace/saves) gets wired to this backend for real.",
+      "status": "open"
+    }
+  ]
+}
