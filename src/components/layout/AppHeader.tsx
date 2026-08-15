@@ -3,10 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
+import { useSession } from "@/lib/auth/session-provider";
 
 interface AppHeaderProps {
   /** Sticky header with a backdrop, used on the home feed. */
   elevated?: boolean;
+}
+
+/**
+ * Route prefixes that render their own local back/title header and must not
+ * get the global one stacked on top. A route "owns" its header if it matches
+ * exactly or falls under one of these prefixes (e.g. "/services" also covers
+ * "/services/cac", "/services/mentors/[id]", etc). Add new screens here as
+ * they grow their own header instead of hardcoding exact paths.
+ */
+const OWN_HEADER_ROUTES = ["/search", "/notifications", "/content", "/purchases", "/services"];
+
+function hasOwnHeader(pathname: string) {
+  return OWN_HEADER_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 /**
@@ -15,7 +29,8 @@ interface AppHeaderProps {
  */
 export function AppHeader({ elevated = false }: AppHeaderProps) {
   const pathname = usePathname();
-  if (pathname === "/search" || pathname === "/notifications") return null;
+  const { accountType } = useSession();
+  if (hasOwnHeader(pathname)) return null;
 
   return (
     <header
@@ -40,13 +55,15 @@ export function AppHeader({ elevated = false }: AppHeaderProps) {
         <Icon name="Bell" size={17} />
         <span className="absolute right-2 top-[7px] h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" />
       </Link>
-      <button
-        type="button"
-        aria-label="Browse"
-        className="grid h-9 w-9 place-items-center rounded-full border border-accent bg-accent-tint text-accent"
-      >
-        <Icon name="LayoutGrid" size={17} strokeWidth={2.2} />
-      </button>
+      {accountType === "creator" ? (
+        <Link
+          href="/explore"
+          aria-label="Browse"
+          className="grid h-9 w-9 place-items-center rounded-full border border-accent bg-accent-tint text-accent"
+        >
+          <Icon name="LayoutGrid" size={17} strokeWidth={2.2} />
+        </Link>
+      ) : null}
     </header>
   );
 }
