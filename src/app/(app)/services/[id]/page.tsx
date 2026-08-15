@@ -5,11 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import type { PartnerService } from "@/types/services";
 import { getService, notifyComingSoon } from "@/lib/api/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { ComingSoonPill } from "@/components/ui/ComingSoonPill";
-import { TierBadge } from "@/components/ui/TierBadge";
-import { Button } from "@/components/ui/Button";
-import { Icon } from "@/components/ui/Icon";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { Button, ComingSoonPill, ErrorState, Icon, TierBadge } from "@/components/ui";
+import type { IconName } from "@/components/ui/Icon";
 
 export default function ComingSoonServicePage() {
   const params = useParams();
@@ -40,19 +37,19 @@ export default function ComingSoonServicePage() {
 
   if (error) {
     return (
-      <div style={{ padding: 16 }}>
-        <ErrorState title="Service not found" caption="This service may have been removed." />
+      <div className="p-[16px]">
+        <ErrorState title="Service not found" body="This service may have been removed." />
       </div>
     );
   }
 
   if (!service) {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-[16px]">
         <ProfileBackButton compact />
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
+        <div className="mt-[16px] flex flex-col gap-[16px]">
           {[0, 1, 2].map((i) => (
-            <div key={i} style={{ height: 60, borderRadius: "var(--radius-card)", background: "var(--surface-tag)" }} />
+            <div key={i} className="h-[60px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
           ))}
         </div>
       </div>
@@ -60,56 +57,46 @@ export default function ComingSoonServicePage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           {service.name}
         </span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <span style={{ display: "grid", placeItems: "center", width: 56, height: 56, borderRadius: 16, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-          <Icon name={service.icon} size={24} color="var(--text-muted)" stroke={2} />
+      <div className="flex flex-col gap-[12px]">
+        <span className="grid h-[56px] w-[56px] place-items-center rounded-[16px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
+          <Icon name={service.icon as IconName} size={24} color="var(--text-muted)" />
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.025em", color: "var(--text-primary)" }}>
+        <div className="flex flex-wrap items-center gap-[8px]">
+          <span className="text-[24px] font-extrabold tracking-[-0.025em] text-[var(--text-primary)]">
             {service.name}
           </span>
-          <ComingSoonPill />
+          <ComingSoonPill>Coming soon</ComingSoonPill>
         </div>
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-secondary)" }}>{service.tagline}</span>
+        <span className="text-[15px] font-semibold text-[var(--text-secondary)]">{service.tagline}</span>
       </div>
 
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--text-secondary)" }}>{service.blurb}</p>
+      <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{service.blurb}</p>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: 14,
-          borderRadius: "var(--radius-card)",
-          background: "var(--surface-elevated)",
-          border: "1px solid var(--border-accent)",
-        }}
-      >
-        <span style={{ display: "grid", placeItems: "center", width: 40, height: 40, flexShrink: 0, borderRadius: 12, background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }}>
-          <Icon name="Crown" size={18} color="var(--brand-yellow)" stroke={2} fill="var(--brand-yellow)" />
+      <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[14px]">
+        <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+          <Icon name="Crown" size={18} color="var(--brand-yellow)" fill="var(--brand-yellow)" />
         </span>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
+        <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+          <span className="flex items-center gap-[7px] text-[14px] font-semibold text-[var(--text-primary)]">
             Pro members first
-            <TierBadge tier="pro" size="sm" />
+            <TierBadge tier="pro" />
           </span>
-          <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>{service.comingNote}</span>
+          <span className="text-[12.5px] text-[var(--text-secondary)]">{service.comingNote}</span>
         </div>
       </div>
 
       {notified ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: "var(--radius-input)", background: "var(--success-tint)", border: "1px solid rgba(184,232,62,0.32)" }}>
-          <Icon name="Check" size={17} color="var(--success)" stroke={2.6} />
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)" }}>
+        <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[rgba(184,232,62,0.32)] bg-[var(--success-tint)] p-[14px]">
+          <Icon name="Check" size={17} color="var(--success)" strokeWidth={2.6} />
+          <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
             You&apos;re on the list — we&apos;ll tell you the moment it launches.
           </span>
         </div>

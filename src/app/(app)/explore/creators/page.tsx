@@ -29,46 +29,27 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
   const creators = await getCreators(category);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
+    <div className="flex min-h-[100dvh] flex-col">
       <ScreenHeader
         title="Creators"
         right={
-          <Link href="/search" aria-label="Search" style={{ display: "grid", placeItems: "center" }}>
+          <Link href="/search" aria-label="Search" className="grid place-items-center">
             <Icon name="Search" size={19} color="var(--text-secondary)" />
           </Link>
         }
       />
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          padding: "12px 16px",
-          overflowX: "auto",
-          borderBottom: "1px solid var(--border-hairline)",
-          scrollbarWidth: "none",
-        }}
-      >
+      <div className="flex gap-2 overflow-x-auto border-b border-[var(--border-hairline)] px-4 py-3 [scrollbar-width:none]">
         {VALID_CATEGORIES.map((id) => {
           const on = category === id;
           return (
             <Link
               key={id}
               href={id === "business" ? "/explore/creators" : `/explore/creators?category=${id}`}
-              style={{
-                flexShrink: 0,
-                display: "inline-flex",
-                alignItems: "center",
-                height: 32,
-                padding: "0 14px",
-                borderRadius: "var(--radius-chip)",
-                background: on ? "var(--accent)" : "var(--surface-tag)",
-                border: `1px solid ${on ? "transparent" : "var(--border-hairline)"}`,
-                color: on ? "var(--text-on-accent)" : "var(--text-secondary)",
-                fontSize: 13,
-                fontWeight: on ? 600 : 500,
-                textDecoration: "none",
-                textTransform: "capitalize",
-              }}
+              className={`inline-flex h-8 flex-shrink-0 items-center rounded-[var(--radius-chip)] border px-[14px] text-[13px] no-underline capitalize ${
+                on
+                  ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
+                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
+              }`}
             >
               {id.replace("_", " ")}
             </Link>
@@ -76,7 +57,7 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
         })}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "14px 16px 96px" }}>
+      <div className="flex flex-col gap-[10px] p-[14px_16px_96px]">
         {creators.map((creator) => (
           <CreatorRow
             key={creator.wawuId}
@@ -106,31 +87,21 @@ function CreatorRow({ wawuId, name, field, pieceCount, verification, following }
   return (
     <Link
       href={`/profile/${wawuId}`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 13,
-        minHeight: 86,
-        padding: "0 14px",
-        borderRadius: "var(--radius-card)",
-        background: "var(--surface-card)",
-        border: "1px solid var(--border-hairline)",
-        textDecoration: "none",
-      }}
+      className="flex min-h-[86px] items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[0_14px] no-underline"
     >
       <Avatar initial={name.charAt(0)} size={52} />
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 15, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--text-primary)" }}>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-center gap-[6px]">
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-semibold text-[var(--text-primary)]">
             {name}
           </span>
           {verification && <VerificationBadge tier={verification} size={15} />}
         </div>
-        <span style={{ fontSize: 12.5, color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] text-[var(--text-muted)]">
           {field} · {pieceCount} {pieceCount === 1 ? "piece" : "pieces"}
         </span>
       </div>
-      <div style={{ display: "flex", flexShrink: 0 }}>
+      <div className="flex flex-shrink-0">
         <FollowButton wawuId={wawuId} initial={following} />
       </div>
     </Link>

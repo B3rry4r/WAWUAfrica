@@ -11,26 +11,21 @@ const TABS: { id: ProfileTab; label: string }[] = [
 /** Profile tab bar. Active tab gets the accent underline. */
 export function ProfileTabs({ wawuId, active }: { wawuId: string; active: ProfileTab }) {
   return (
-    <div style={{ display: "flex", gap: 22, padding: "12px 18px 0", borderBottom: "1px solid var(--border-hairline)" }}>
+    <div className="flex gap-[22px] border-b border-[var(--border-hairline)] p-[12px_18px_0]">
       {TABS.map((tab) => {
         const on = tab.id === active;
         return (
           <Link
             key={tab.id}
             href={`/profile/${wawuId}?tab=${tab.id}`}
-            style={{
-              position: "relative",
-              paddingBottom: 12,
-              fontSize: 14,
-              fontWeight: on ? 600 : 500,
-              color: on ? "var(--text-primary)" : "var(--text-muted)",
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-            }}
+            className={[
+              "relative whitespace-nowrap pb-3 text-[14px] no-underline",
+              on ? "font-semibold text-[var(--text-primary)]" : "font-medium text-[var(--text-muted)]",
+            ].join(" ")}
           >
             {tab.label}
             {on && (
-              <span style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 2, borderRadius: 2, background: "var(--accent)" }} />
+              <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-[2px] bg-[var(--accent)]" />
             )}
           </Link>
         );

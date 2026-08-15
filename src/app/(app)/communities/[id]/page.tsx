@@ -11,6 +11,11 @@ import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ErrorState } from "@/components/ui/ErrorState";
 
+const bubbleClass = {
+  mine: "[border-radius:16px_16px_4px_16px]",
+  other: "[border-radius:16px_16px_16px_4px]",
+} as const;
+
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -63,19 +68,19 @@ export default function CommunityDetailPage() {
 
   if (error) {
     return (
-      <div style={{ padding: 16 }}>
-        <ErrorState title="Community not found" caption="This community may have been removed." />
+      <div className="p-4">
+        <ErrorState title="Community not found" body="This community may have been removed." />
       </div>
     );
   }
 
   if (!community) {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-4">
         <ProfileBackButton compact />
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
+        <div className="mt-4 flex flex-col gap-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} style={{ height: 52, borderRadius: "var(--radius-input)", background: "var(--surface-tag)" }} />
+            <div key={i} className="h-[52px] rounded-[var(--radius-input)] bg-tag" />
           ))}
         </div>
       </div>
@@ -85,26 +90,14 @@ export default function CommunityDetailPage() {
   const joined = community.joined;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 11,
-          padding: "12px 16px 10px",
-          borderBottom: "1px solid var(--border-hairline)",
-          background: "var(--surface-elevated)",
-          position: "sticky",
-          top: 0,
-          zIndex: 40,
-        }}
-      >
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-40 flex items-center gap-[11px] border-b border-hairline bg-elevated px-4 pb-[10px] pt-3">
         <ProfileBackButton compact />
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-          <span style={{ fontSize: 15.5, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div className="flex min-w-0 flex-1 flex-col gap-[1px]">
+          <span className="truncate text-[15.5px] font-bold tracking-[-0.01em] text-text-primary">
             {community.name}
           </span>
-          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+          <span className="text-[12px] text-text-muted">
             {community.memberCount.toLocaleString("en-NG")} members · host {community.host.name}
           </span>
         </div>
@@ -112,76 +105,49 @@ export default function CommunityDetailPage() {
       </header>
 
       {!joined ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 8, padding: "60px 28px", flex: 1 }}>
-          <span
-            style={{
-              display: "grid",
-              placeItems: "center",
-              width: 64,
-              height: 64,
-              borderRadius: 999,
-              background: "var(--accent-tint)",
-              border: "1px solid var(--border-accent)",
-              marginBottom: 8,
-            }}
-          >
-            <Icon name="Lock" size={26} color="var(--accent)" stroke={1.9} />
+        <div className="flex flex-1 flex-col items-center gap-2 px-7 pb-[60px] pt-[60px] text-center">
+          <span className="mb-2 grid h-16 w-16 place-items-center rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+            <Icon name="Lock" size={26} color="var(--accent)" strokeWidth={1.9} />
           </span>
-          <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>Private community</span>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300 }}>
+          <span className="text-[18px] font-bold text-text-primary">Private community</span>
+          <p className="m-0 max-w-[300px] text-[14px] leading-[1.5] text-text-secondary">
             {community.name} is a closed circle. Join to read and post — reading is free, sending costs one credit.
           </p>
-          <Button onClick={doJoin} style={{ marginTop: 14 }}>
+          <Button onClick={doJoin} className="mt-3.5">
             Join community
           </Button>
         </div>
       ) : (
         <>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 9,
-              padding: "10px 16px",
-              borderBottom: "1px solid var(--border-hairline)",
-              background: "var(--surface-card)",
-            }}
-          >
-            <Icon name="Ticket" size={15} color="var(--accent)" stroke={2} />
-            <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+          <div className="flex items-center gap-[9px] border-b border-hairline bg-card px-4 py-[10px]">
+            <Icon name="Ticket" size={15} color="var(--accent)" strokeWidth={2} />
+            <span className="text-[12.5px] text-text-secondary">
               Reading is free · sending costs <b>{balance}</b> credit{balance === 1 ? "" : "s"}
             </span>
           </div>
 
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, padding: "16px 16px 12px" }}>
+          <div className="flex flex-1 flex-col gap-[10px] px-4 pb-3 pt-4">
             {messages.map((m) => {
               const mine = m.sender.wawuId === "wawu-me";
               return (
-                <div key={m.id} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}>
+                <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                   <div
-                    style={{
-                      maxWidth: "80%",
-                      padding: "10px 13px",
-                      borderRadius: 16,
-                      borderBottomRightRadius: mine ? 4 : 16,
-                      borderBottomLeftRadius: mine ? 16 : 4,
-                      background: mine ? "var(--accent)" : "var(--surface-card)",
-                      border: mine ? "1px solid transparent" : "1px solid var(--border-hairline)",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 3,
-                    }}
+                    className={[
+                      "flex max-w-[80%] flex-col gap-[3px] border p-[10px_13px]",
+                      bubbleClass[mine ? "mine" : "other"],
+                      mine ? "border-transparent bg-accent" : "border-hairline bg-card",
+                    ].join(" ")}
                   >
                     {!mine && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--accent-hover)" }}>
+                      <span className="flex items-center gap-[6px] text-[12px] font-bold text-[var(--accent-hover)]">
                         <Avatar initial={m.sender.name.charAt(0)} size={18} />
                         {m.sender.name}
                       </span>
                     )}
-                    <span style={{ fontSize: 14, lineHeight: 1.45, color: mine ? "var(--text-on-accent)" : "var(--text-primary)", whiteSpace: "pre-wrap" }}>
+                    <span className={`text-[14px] leading-[1.45] ${mine ? "text-[var(--text-on-accent)]" : "text-text-primary"} whitespace-pre-wrap`}>
                       {m.text}
                     </span>
-                    <span style={{ fontSize: 10.5, color: mine ? "rgba(255,255,255,0.7)" : "var(--text-muted)", alignSelf: "flex-end" }}>
+                    <span className={`self-end text-[10.5px] ${mine ? "text-white/70" : "text-text-muted"}`}>
                       {m.sentAt}
                     </span>
                   </div>
@@ -190,21 +156,13 @@ export default function CommunityDetailPage() {
             })}
           </div>
 
-          <footer
-            style={{
-              position: "sticky",
-              bottom: 0,
-              padding: "10px 16px calc(10px + env(safe-area-inset-bottom))",
-              background: "var(--surface-elevated)",
-              borderTop: "1px solid var(--border-hairline)",
-            }}
-          >
+          <footer className="sticky bottom-0 border-t border-hairline bg-elevated px-4 pb-[calc(10px_+_env(safe-area-inset-bottom))] pt-[10px]">
             {balance < 1 ? (
               <Button full icon="Ticket" onClick={() => router.push("/communities")}>
                 Top up credits
               </Button>
             ) : (
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+              <div className="flex items-end gap-2">
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -212,38 +170,26 @@ export default function CommunityDetailPage() {
                     if (e.key === "Enter") send();
                   }}
                   placeholder={`Message ${community.name} (1 credit)`}
-                  style={{
-                    flex: 1,
-                    height: 46,
-                    background: "var(--surface-input)",
-                    border: "1px solid var(--border-hairline)",
-                    borderRadius: "var(--radius-chip)",
-                    padding: "0 16px",
-                    color: "var(--text-primary)",
-                    fontSize: 14.5,
-                    fontFamily: "var(--font-sans)",
-                    outline: "none",
-                  }}
+                  className="h-[46px] flex-1 rounded-[var(--radius-chip)] border border-hairline bg-input px-4 text-[14.5px] text-text-primary outline-none"
                 />
                 <button
                   type="button"
                   aria-label="Send"
                   onClick={send}
                   disabled={!text.trim() || sending}
-                  style={{
-                    display: "grid",
-                    placeItems: "center",
-                    width: 46,
-                    height: 46,
-                    borderRadius: 999,
-                    border: "none",
-                    background: text.trim() && !sending ? "var(--accent)" : "var(--surface-tag)",
-                    color: text.trim() && !sending ? "var(--text-on-accent)" : "var(--text-disabled)",
-                    cursor: text.trim() && !sending ? "pointer" : "default",
-                    flexShrink: 0,
-                  }}
+                  className={[
+                    "grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full border-none",
+                    text.trim() && !sending
+                      ? "cursor-pointer bg-accent text-[var(--text-on-accent)]"
+                      : "cursor-default bg-tag text-[var(--text-disabled)]",
+                  ].join(" ")}
                 >
-                  <Icon name={sending ? "Loader2" : "Send"} size={17} stroke={2.2} style={sending ? { animation: "wawuSpin 900ms linear infinite" } : undefined} />
+                  <Icon
+                    name={sending ? "Loader2" : "Send"}
+                    size={17}
+                    strokeWidth={2.2}
+                    className={sending ? "[animation:wawuSpin_900ms_linear_infinite]" : ""}
+                  />
                 </button>
               </div>
             )}

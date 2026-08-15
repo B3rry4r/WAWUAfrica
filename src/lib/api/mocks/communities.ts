@@ -108,29 +108,34 @@ const MOCK_MESSAGES: Record<string, CommunityMessage[]> = {
   ],
 };
 
+// SEAM: replace with GET /api/hub/credits
 export async function getMockCreditsState(): Promise<CreditsState> {
   await delay(250);
   return { creditBalance: MOCK_BALANCE, trialEndsAt: null };
 }
 
+// SEAM: replace with GET /api/hub/communities
 export async function getMockCommunities(kind: "joined" | "discover"): Promise<Community[]> {
   await delay(280);
   const all = MOCK_COMMUNITIES.map((c) => ({ ...c, joined: MOCK_JOINED.has(c.id) }));
   return kind === "joined" ? all.filter((c) => c.joined) : all.filter((c) => !c.joined);
 }
 
+// SEAM: replace with GET /api/hub/communities/:id
 export async function getMockCommunity(id: string): Promise<Community | null> {
   await delay(250);
   const c = MOCK_COMMUNITIES.find((x) => x.id === id);
   return c ? { ...c, joined: MOCK_JOINED.has(c.id) } : null;
 }
 
+// SEAM: replace with GET /api/hub/communities/:id/messages
 export async function getMockCommunityMessages(id: string): Promise<CommunityMessage[]> {
   await delay(250);
   return MOCK_MESSAGES[id] ?? [];
 }
 
 /** 1 credit per message in open communities; reading is always free. */
+// SEAM: replace with POST /api/hub/communities/:id/messages
 export async function sendMockCommunityMessage(id: string, text: string): Promise<CommunityMessage> {
   await delay(350);
   MOCK_BALANCE = Math.max(0, MOCK_BALANCE - 1);
@@ -146,12 +151,14 @@ export async function sendMockCommunityMessage(id: string, text: string): Promis
   return msg;
 }
 
+// SEAM: replace with POST /api/hub/communities/:id/join
 export async function joinMockCommunity(id: string): Promise<boolean> {
   await delay(250);
   MOCK_JOINED.add(id);
   return true;
 }
 
+// SEAM: replace with POST /api/hub/credits/purchase
 export async function topUpMockCredits(pack: CreditPackId): Promise<number> {
   await delay(500);
   MOCK_BALANCE += CREDIT_PACKS[pack].credits;

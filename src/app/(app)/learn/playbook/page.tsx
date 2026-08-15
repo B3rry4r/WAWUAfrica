@@ -10,67 +10,40 @@ export default async function PlaybookPage() {
     playbook = await getPlaybook();
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load the playbook."} />;
+    return <ErrorState title={message ?? "We couldn't load the playbook."} />;
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           The playbook
         </span>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 12,
-          padding: "26px 20px",
-          borderRadius: "var(--radius-card)",
-          background: "var(--surface-card)",
-          border: "1px solid var(--border-hairline)",
-          textAlign: "center",
-        }}
-      >
-        <span
-          style={{
-            display: "grid",
-            placeItems: "center",
-            width: 76,
-            height: 98,
-            borderRadius: 12,
-            background: "var(--accent)",
-            color: "var(--text-on-accent)",
-            fontWeight: 800,
-            fontSize: 14,
-            letterSpacing: "0.02em",
-            textTransform: "uppercase",
-            boxShadow: "var(--shadow-float)",
-          }}
-        >
+      <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[26px_20px] text-center">
+        <span className="grid h-[98px] w-[76px] place-items-center rounded-[12px] bg-[var(--accent)] text-[14px] font-extrabold uppercase tracking-[0.02em] text-[var(--text-on-accent)] shadow-[var(--shadow-float)]">
           WAWU
         </span>
-        <span style={{ fontSize: 21, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.25, color: "var(--text-primary)" }}>
+        <span className="text-[21px] font-extrabold leading-[1.25] tracking-[-0.02em] text-[var(--text-primary)]">
           {playbook.title}
         </span>
-        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+        <span className="text-[13px] text-[var(--text-muted)]">
           {playbook.pages} pages · {playbook.format} · Free
         </span>
       </div>
 
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--text-secondary)" }}>{playbook.description}</p>
+      <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{playbook.description}</p>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>Inside</span>
-        <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+      <section className="flex flex-col gap-2">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Inside</span>
+        <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
           {playbook.chapters.map((ch) => (
-            <div key={ch.title} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderRadius: "var(--radius-input)" }}>
-              <Icon name="BookOpen" size={16} color="var(--accent)" stroke={2} />
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>{ch.title}</span>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Pages {ch.pages}</span>
+            <div key={ch.title} className="flex items-center gap-3 rounded-[var(--radius-input)] p-3">
+              <Icon name="BookOpen" size={16} color="var(--accent)" />
+              <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)]">{ch.title}</span>
+              <span className="text-[12px] text-[var(--text-muted)]">Pages {ch.pages}</span>
             </div>
           ))}
         </div>

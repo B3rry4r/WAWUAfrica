@@ -2,14 +2,14 @@ import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 
 export default function PrivacyPage() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[14px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Privacy
         </span>
       </div>
-      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "var(--text-secondary)" }}>
+      <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
         This is a plain-English summary. The full terms live in the About section.
       </p>
       <Section
@@ -34,9 +34,9 @@ export default function PrivacyPage() {
 
 function Section({ title, body }: { title: string; body: string }) {
   return (
-    <section style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>{title}</span>
-      <span style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--text-secondary)" }}>{body}</span>
+    <section className="flex flex-col gap-[5px]">
+      <span className="text-[15px] font-bold text-[var(--text-primary)]">{title}</span>
+      <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">{body}</span>
     </section>
   );
 }

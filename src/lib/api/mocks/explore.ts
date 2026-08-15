@@ -50,16 +50,19 @@ const creators = [
   },
 ];
 
+// SEAM: replace with GET /api/hub/explore/categories
 export async function getMockCategories(): Promise<typeof EXPLORE_CATEGORIES> {
   await delay(250);
   return EXPLORE_CATEGORIES;
 }
 
+// SEAM: replace with GET /api/hub/explore/creators
 export async function getMockCreators(category?: ExploreCategoryId): Promise<typeof creators> {
   await delay(400);
   return creators.map((c) => ({ ...c, following: MOCK_PROFILE_FOLLOWING.has(c.wawuId) }));
 }
 
+// SEAM: replace with POST /api/hub/creators/:wawuId/follow
 export async function toggleMockFollow(wawuId: string): Promise<boolean> {
   return toggleMockProfileFollow(wawuId);
 }

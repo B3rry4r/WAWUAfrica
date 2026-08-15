@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DmStatus } from "@/types/dm";
 import { DmPaySheet } from "./DmPaySheet";
-import { Button } from "@/components/ui/Button";
-import { Icon } from "@/components/ui/Icon";
+import { Button, Icon } from "@/components/ui";
 
 export function DmThreadFooter({
   creator,
@@ -18,49 +17,15 @@ export function DmThreadFooter({
   const [open, setOpen] = useState(false);
 
   return (
-    <footer
-      style={{
-        position: "sticky",
-        bottom: 0,
-        padding: "10px 16px calc(10px + env(safe-area-inset-bottom))",
-        background: "var(--surface-elevated)",
-        borderTop: "1px solid var(--border-hairline)",
-      }}
-    >
+    <footer className="sticky bottom-0 border-t border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[10px_16px_calc(10px+env(safe-area-inset-bottom))]">
       {status === "awaiting_response" ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 9,
-            height: 46,
-            padding: "0 14px",
-            borderRadius: "var(--radius-chip)",
-            background: "var(--surface-tag)",
-            border: "1px solid var(--border-hairline)",
-            color: "var(--text-muted)",
-            fontSize: 13.5,
-          }}
-        >
-          <Icon name="Clock" size={16} color="var(--text-muted)" stroke={2} />
+        <div className="flex h-[46px] items-center gap-[9px] rounded-[var(--radius-chip)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[14px] text-[13.5px] text-[var(--text-muted)]">
+          <Icon name="Clock" size={16} color="var(--text-muted)" />
           Waiting for {creator.name.split(" ")[0]} to reply…
         </div>
       ) : status === "refunded" ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 9,
-            height: 46,
-            padding: "0 14px",
-            borderRadius: "var(--radius-chip)",
-            background: "var(--surface-tag)",
-            border: "1px solid var(--border-hairline)",
-            color: "var(--text-muted)",
-            fontSize: 13.5,
-          }}
-        >
-          <Icon name="Lock" size={15} color="var(--text-muted)" stroke={2} />
+        <div className="flex h-[46px] items-center gap-[9px] rounded-[var(--radius-chip)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[14px] text-[13.5px] text-[var(--text-muted)]">
+          <Icon name="Lock" size={15} color="var(--text-muted)" />
           This conversation is closed.
         </div>
       ) : (

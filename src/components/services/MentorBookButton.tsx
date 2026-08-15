@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui";
 import { MentorRequestSheet } from "./MentorRequestSheet";
 
 export function MentorBookButton({ mentor }: { mentor: { id: string; name: string; rate: number } }) {

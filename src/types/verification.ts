@@ -1,5 +1,14 @@
 import type { AccountType, CreatorTier, VerificationLevel } from "./account";
 
+/** Display labels for each rung of the verification ladder. */
+export const VERIFY_TIER_LABELS: Record<VerificationLevel, string> = {
+  basic: "Basic",
+  verified_user: "Verified user",
+  verified_business: "Verified business",
+  certified_professional: "Certified professional",
+  trusted_partner: "Trusted partner",
+};
+
 /** A level's state on the ladder. */
 export type VerificationLadderStatus = "done" | "yours" | "next" | "locked";
 

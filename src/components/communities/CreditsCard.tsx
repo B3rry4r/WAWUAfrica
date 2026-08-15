@@ -39,39 +39,18 @@ export function CreditsCard({ initialBalance }: { initialBalance: number }) {
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 13,
-          padding: 14,
-          borderRadius: "var(--radius-card)",
-          background: "var(--surface-elevated)",
-          border: "1px solid var(--border-accent)",
-        }}
-      >
-        <span
-          style={{
-            display: "grid",
-            placeItems: "center",
-            width: 40,
-            height: 40,
-            flexShrink: 0,
-            borderRadius: 12,
-            background: "var(--accent-tint)",
-            border: "1px solid var(--border-accent)",
-          }}
-        >
-          <Icon name="Ticket" size={18} color="var(--accent)" stroke={2} />
+      <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+          <Icon name="Ticket" size={18} color="var(--accent)" strokeWidth={2} />
         </span>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">
             WAWU Credits
           </span>
-          <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[26px] font-extrabold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
             {balance}
           </span>
-          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>One credit sends one message. Reading is free.</span>
+          <span className="text-[12px] text-text-muted">One credit sends one message. Reading is free.</span>
         </div>
         <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
           Top up
@@ -80,7 +59,7 @@ export function CreditsCard({ initialBalance }: { initialBalance: number }) {
 
       <Sheet open={open} onClose={close} title="Top up credits" caption="Credits are for sending community messages — they can't be cashed out.">
         {phase === "choose" ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="flex flex-col gap-[10px]">
             {(Object.keys(CREDIT_PACKS) as CreditPackId[]).map((id) => {
               const p = CREDIT_PACKS[id];
               const active = chosen === id;
@@ -89,41 +68,31 @@ export function CreditsCard({ initialBalance }: { initialBalance: number }) {
                   key={id}
                   type="button"
                   onClick={() => setChosen(id)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 13,
-                    padding: "14px 15px",
-                    borderRadius: "var(--radius-input)",
-                    border: `1.5px solid ${active ? "var(--border-accent)" : "var(--border-hairline)"}`,
-                    background: active ? "var(--accent-tint)" : "var(--surface-input)",
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
+                  className={[
+                    "flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] border-[1.5px] p-[14px_15px] text-left",
+                    active
+                      ? "border-[var(--border-accent)] bg-[var(--accent-tint)]"
+                      : "border-hairline bg-input",
+                  ].join(" ")}
                 >
                   <span
-                    style={{
-                      display: "grid",
-                      placeItems: "center",
-                      width: 20,
-                      height: 20,
-                      borderRadius: 999,
-                      border: `1.5px solid ${active ? "var(--accent)" : "var(--border-strong)"}`,
-                      flexShrink: 0,
-                    }}
+                    className={[
+                      "grid h-5 w-5 shrink-0 place-items-center rounded-full border-[1.5px]",
+                      active ? "border-accent" : "border-strong",
+                    ].join(" ")}
                   >
-                    {active && <span style={{ width: 10, height: 10, borderRadius: 999, background: "var(--accent)" }} />}
+                    {active && <span className="h-2.5 w-2.5 rounded-full bg-accent" />}
                   </span>
-                  <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>
+                  <span className="flex flex-1 flex-col gap-1">
+                    <span className="flex items-center gap-2 text-[15px] font-semibold text-text-primary">
                       {p.credits} credits
                       {id === "popular" && (
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--accent)", padding: "2px 8px", borderRadius: 999, background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }}>
+                        <span className="rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.04em] text-accent">
                           Popular
                         </span>
                       )}
                     </span>
-                    <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>₦{p.price.toLocaleString("en-NG")}</span>
+                    <span className="text-[12.5px] text-text-muted">₦{p.price.toLocaleString("en-NG")}</span>
                   </span>
                 </button>
               );
@@ -131,34 +100,23 @@ export function CreditsCard({ initialBalance }: { initialBalance: number }) {
             <Button full disabled={!chosen} onClick={purchase}>
               Buy {chosen ? `${CREDIT_PACKS[chosen].credits} credits` : "credits"}
             </Button>
-            <p style={{ margin: 0, fontSize: 11.5, textAlign: "center", color: "var(--text-muted)" }}>
+            <p className="m-0 text-center text-[11.5px] text-text-muted">
               Credits never expire and are never a cash balance.
             </p>
           </div>
         ) : phase === "processing" ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: "26px 0 14px", textAlign: "center" }}>
-            <Icon name="Loader2" size={30} color="var(--accent)" stroke={2} style={{ animation: "wawuSpin 900ms linear infinite" }} />
-            <span style={{ fontSize: 15.5, fontWeight: 600, color: "var(--text-primary)" }}>Adding your credits…</span>
+          <div className="flex flex-col items-center gap-[14px] px-0 pb-[14px] pt-[26px] text-center">
+            <Icon name="Loader2" size={30} color="var(--accent)" strokeWidth={2} className="[animation:wawuSpin_900ms_linear_infinite]" />
+            <span className="text-[15.5px] font-semibold text-text-primary">Adding your credits…</span>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "8px 0 4px", textAlign: "center" }}>
-            <span
-              style={{
-                margin: "0 auto",
-                display: "grid",
-                placeItems: "center",
-                width: 56,
-                height: 56,
-                borderRadius: 999,
-                background: "var(--success-tint)",
-                border: "1px solid rgba(184,232,62,0.35)",
-              }}
-            >
-              <Icon name="Check" size={26} color="var(--success)" stroke={2.6} />
+          <div className="flex flex-col gap-4 px-0 pb-1 pt-2 text-center">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-[rgba(184,232,62,0.35)] bg-[var(--success-tint)]">
+              <Icon name="Check" size={26} color="var(--success)" strokeWidth={2.6} />
             </span>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)" }}>{added} credits added</span>
-              <span style={{ fontSize: 13.5, color: "var(--text-secondary)" }}>
+            <div className="flex flex-col gap-[5px]">
+              <span className="text-[17px] font-bold text-text-primary">{added} credits added</span>
+              <span className="text-[13.5px] text-text-secondary">
                 You now have <b>{balance}</b> credits. Reading communities is always free.
               </span>
             </div>

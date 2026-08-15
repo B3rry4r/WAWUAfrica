@@ -7,10 +7,11 @@ export function ShareButton() {
   return (
     <Button
       variant="secondary"
+      size="sm"
       icon="Share2"
       aria-label="Share"
+      className="w-12"
       onClick={() => void navigator.clipboard?.writeText(window.location.href)}
-      style={{ width: 48, padding: 0 }}
     />
   );
 }

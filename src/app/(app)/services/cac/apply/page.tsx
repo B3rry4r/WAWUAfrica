@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Icon } from "@/components/ui/Icon";
+import { Button, Icon, Input } from "@/components/ui";
 
 type Step = 1 | 2 | 3;
 const STEP_LABELS = ["Details", "Documents", "Review"];
@@ -50,15 +48,15 @@ export default function CacApplyPage() {
 
   if (done) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "64px 28px 96px", textAlign: "center" }}>
-        <span style={{ display: "grid", placeItems: "center", width: 72, height: 72, borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(184,232,62,0.35)" }}>
-          <Icon name="Check" size={34} color="var(--success)" stroke={2.6} />
+      <div className="flex flex-col items-center gap-[18px] p-[64px_28px_96px] text-center">
+        <span className="grid h-[72px] w-[72px] place-items-center rounded-full border border-[rgba(184,232,62,0.35)] bg-[var(--success-tint)]">
+          <Icon name="Check" size={34} color="var(--success)" strokeWidth={2.6} />
         </span>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <div className="flex flex-col gap-[6px]">
+          <span className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
             Application submitted
           </span>
-          <span style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--text-secondary)" }}>
+          <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
             Your details are with the CAC agent. Expect review within 7–14 days — we&apos;ll update you here.
           </span>
         </div>
@@ -70,72 +68,80 @@ export default function CacApplyPage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           CAC registration
         </span>
       </div>
 
-      <div style={{ display: "flex", gap: 6 }}>
+      <div className="flex gap-[6px]">
         {[1, 2, 3].map((s) => (
-          <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: step >= s ? "var(--accent)" : "var(--surface-tag)", transition: "background 200ms" }} />
+          <div key={s} className={["h-[4px] flex-1 rounded-full transition-colors duration-200", step >= s ? "bg-[var(--accent)]" : "bg-[var(--surface-tag)]"].join(" ")} />
         ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className="flex justify-between">
         {STEP_LABELS.map((label, i) => (
-          <span key={label} style={{ fontSize: 12, fontWeight: step === i + 1 ? 700 : 500, color: step === i + 1 ? "var(--accent)" : "var(--text-muted)" }}>
+          <span key={label} className={["text-[12px]", step === i + 1 ? "font-bold text-[var(--accent)]" : "font-medium text-[var(--text-muted)]"].join(" ")}>
             {i + 1}. {label}
           </span>
         ))}
       </div>
 
       {step === 1 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <Input label="Business name" value={name} onChange={setName} placeholder="e.g. Lagos Agro Supplies" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>Business type</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div className="flex flex-col gap-[14px]">
+          <Input label="Business name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Lagos Agro Supplies" />
+          <div className="flex flex-col gap-[8px]">
+            <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Business type</span>
+            <div className="flex flex-wrap gap-[8px]">
               {BUSINESS_TYPES.map((t) => {
                 const active = businessType === t;
                 return (
-                  <button key={t} type="button" onClick={() => setBusinessType(t)} style={{ height: 34, padding: "0 14px", borderRadius: 999, border: `1px solid ${active ? "var(--border-accent)" : "var(--border-hairline)"}`, background: active ? "var(--accent-tint)" : "var(--surface-tag)", color: active ? "var(--accent)" : "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setBusinessType(t)}
+                    className={[
+                      "h-[34px] cursor-pointer rounded-full border px-[14px] text-[13px] font-semibold",
+                      active ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]" : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]",
+                    ].join(" ")}
+                  >
                     {t}
                   </button>
                 );
               })}
             </div>
           </div>
-          <Input label="Owner's full name" value={ownerName} onChange={setOwnerName} />
-          <Input label="Phone number" value={phone} onChange={setPhone} inputMode="tel" placeholder="0801 234 5678" />
+          <Input label="Owner's full name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
+          <Input label="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="0801 234 5678" />
         </div>
       )}
 
       {step === 2 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>Documents to add</span>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="flex flex-col gap-[14px]">
+          <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Documents to add</span>
+          <div className="flex flex-col gap-[8px]">
             {docs.map((d) => (
-              <div key={d} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
-                <Icon name="FileCheck" size={16} color="var(--success)" stroke={2} />
-                <span style={{ flex: 1, fontSize: 13.5, color: "var(--text-primary)" }}>{d}</span>
-                <button type="button" aria-label="Remove" onClick={() => setDocs((x) => x.filter((v) => v !== d))} style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
-                  <Icon name="X" size={15} color="var(--text-muted)" stroke={2} />
+              <div key={d} className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[11px_14px]">
+                <Icon name="FileCheck" size={16} color="var(--success)" />
+                <span className="flex-1 text-[13.5px] text-[var(--text-primary)]">{d}</span>
+                <button type="button" aria-label="Remove" onClick={() => setDocs((x) => x.filter((v) => v !== d))} className="cursor-pointer border-0 bg-transparent p-[2px]">
+                  <Icon name="X" size={15} color="var(--text-muted)" />
                 </button>
               </div>
             ))}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="flex flex-col gap-[8px]">
               {DOC_TYPES.map((dt) => (
                 <button
                   key={dt}
                   type="button"
                   onClick={() => setDocs((x) => (x.includes(dt) ? x : [...x, dt]))}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: "var(--radius-input)", border: "1.5px dashed var(--border-strong)", background: "transparent", cursor: "pointer", textAlign: "left" }}
+                  className="flex cursor-pointer items-center gap-[10px] rounded-[var(--radius-input)] border-[1.5px] border-dashed border-[var(--border-strong)] bg-transparent p-[12px_14px] text-left"
                 >
-                  <Icon name="ImagePlus" size={17} color="var(--accent)" stroke={2} />
-                  <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "var(--text-secondary)" }}>Add {dt}</span>
-                  {docs.includes(dt) && <Icon name="Check" size={16} color="var(--accent)" stroke={2.6} />}
+                  <Icon name="ImagePlus" size={17} color="var(--accent)" />
+                  <span className="flex-1 text-[13.5px] font-semibold text-[var(--text-secondary)]">Add {dt}</span>
+                  {docs.includes(dt) && <Icon name="Check" size={16} color="var(--accent)" strokeWidth={2.6} />}
                 </button>
               ))}
             </div>
@@ -144,27 +150,27 @@ export default function CacApplyPage() {
       )}
 
       {step === 3 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="flex flex-col gap-[12px]">
           <ReviewRow label="Business name" value={name} />
           <ReviewRow label="Business type" value={businessType} />
           <ReviewRow label="Owner" value={ownerName} />
           <ReviewRow label="Phone" value={phone} />
           <ReviewRow label="Documents" value={`${docs.length} added`} />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>Registration fee</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)" }}>From ₦25,000</span>
+          <div className="flex items-center justify-between rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[12px_14px]">
+            <span className="text-[14px] font-semibold text-[var(--text-primary)]">Registration fee</span>
+            <span className="text-[15px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">From ₦25,000</span>
           </div>
         </div>
       )}
 
       {error && (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--danger)" }}>
+        <span className="inline-flex items-center gap-[6px] text-[12.5px] text-[var(--danger)]">
           <Icon name="CircleAlert" size={14} color="var(--danger)" />
           {error}
         </span>
       )}
 
-      <div style={{ display: "flex", gap: 10 }}>
+      <div className="flex gap-[10px]">
         {step > 1 && (
           <Button variant="secondary" onClick={() => setStep((s) => (s - 1) as Step)}>
             Back
@@ -186,9 +192,9 @@ export default function CacApplyPage() {
 
 function ReviewRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
-      <span style={{ fontSize: 13.5, color: "var(--text-muted)" }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", textAlign: "right" }}>{value}</span>
+    <div className="flex items-center justify-between gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[12px_14px]">
+      <span className="text-[13.5px] text-[var(--text-muted)]">{label}</span>
+      <span className="text-right text-[14px] font-semibold text-[var(--text-primary)]">{value}</span>
     </div>
   );
 }

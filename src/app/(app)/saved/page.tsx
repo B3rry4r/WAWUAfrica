@@ -9,14 +9,14 @@ export default async function SavedPage() {
     items = await getSavedItems();
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load your saved items."} />;
+    return <ErrorState title={message ?? "We couldn't load your saved items."} />;
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-3.5 p-[14px_16px_96px]">
+      <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Saved
         </span>
       </div>
@@ -28,15 +28,15 @@ export default async function SavedPage() {
           caption="Bookmark courses, playbooks and posts and they'll line up here."
         />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {items.map((item) => (
-            <div key={item.id} style={{ display: "flex", flexDirection: "column", gap: 6, padding: "14px 16px", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{item.title}</span>
-                <span style={{ fontSize: 11.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{item.savedAt}</span>
+            <div key={item.id} className="flex flex-col gap-1.5 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px_16px]">
+              <div className="flex items-center justify-between gap-2.5">
+                <span className="text-[15px] font-bold leading-[1.3] text-[var(--text-primary)]">{item.title}</span>
+                <span className="whitespace-nowrap text-[11.5px] text-[var(--text-muted)]">{item.savedAt}</span>
               </div>
-              <span style={{ fontSize: 12.5, color: "var(--accent-hover)" }}>{item.kindLabel}</span>
-              <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>by {item.creator}</span>
+              <span className="text-[12.5px] text-[var(--accent-hover)]">{item.kindLabel}</span>
+              <span className="text-[12.5px] text-[var(--text-muted)]">by {item.creator}</span>
             </div>
           ))}
         </div>

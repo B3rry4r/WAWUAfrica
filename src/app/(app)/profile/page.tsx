@@ -10,7 +10,7 @@ import { ListRow } from "@/components/ui/ListRow";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 
-const eyebrow = { fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 2px" } as const;
+const eyebrowClass = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted";
 
 export default async function OwnProfilePage() {
   let profile: OwnProfile;
@@ -18,27 +18,27 @@ export default async function OwnProfilePage() {
     profile = await getOwnProfile();
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load your profile."} />;
+    return <ErrorState title={message ?? "We couldn't load your profile."} />;
   }
   const isCreator = profile.accountType === "creator";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "16px 16px 96px" }}>
+    <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4">
       <IdentityBlock profile={profile} />
       {isCreator ? <CreatorDashboardCard profile={profile} /> : <UserVerificationCard profile={profile} />}
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={eyebrow}>Interests</span>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <section className="flex flex-col gap-[10px]">
+        <span className={eyebrowClass}>Interests</span>
+        <div className="flex flex-wrap gap-2">
           {profile.interests.map((i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", height: 32, padding: "0 13px", borderRadius: 999, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)", color: "var(--text-secondary)", fontSize: 12.5, fontWeight: 500 }}>
+            <span key={i} className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary">
               {i}
             </span>
           ))}
         </div>
       </section>
 
-      <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+      <div className="flex flex-col rounded-[var(--radius-card)] border border-hairline bg-card p-1">
         {isCreator ? (
           <>
             <ListRow title="My content" subtitle={`${profile.stats.published} published · ${profile.contentSlots?.published} of ${profile.contentSlots?.total} slots`} icon="Layers" href="/profile" />
@@ -60,33 +60,33 @@ export default async function OwnProfilePage() {
 
 function IdentityBlock({ profile }: { profile: OwnProfile }) {
   return (
-    <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center gap-3">
         <Avatar initial={profile.name.charAt(0)} size={66} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>{profile.name}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-[7px]">
+            <span className="text-[20px] font-semibold tracking-[-0.02em] text-text-primary">{profile.name}</span>
             <VerificationBadge tier={profile.verification} size={17} />
           </div>
-          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+          <span className="text-[13px] text-text-muted">
             @{profile.handle}
             {profile.accountType === "creator" && (
               <>
                 {" · "}
-                <TierBadge tier={profile.plan} size="sm" />
+                <TierBadge tier={profile.plan} />
               </>
             )}
           </span>
         </div>
-        <Link href="/profile/edit" style={{ textDecoration: "none" }}>
+        <Link href="/profile/edit" className="no-underline">
           <Button size="sm" variant="secondary">
             Edit
           </Button>
         </Link>
       </div>
-      {profile.bio && <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: "var(--text-secondary)" }}>{profile.bio}</p>}
+      {profile.bio && <p className="m-0 text-[14px] leading-[1.5] text-text-secondary">{profile.bio}</p>}
       {profile.accountType === "creator" && (
-        <div style={{ display: "flex", gap: 28, padding: "14px 0", borderTop: "1px solid var(--border-hairline)", borderBottom: "1px solid var(--border-hairline)" }}>
+        <div className="flex gap-7 border-b border-t border-hairline py-[14px]">
           <StatBlock value={String(profile.stats.published)} label="Published" align="start" size="sm" />
           <StatBlock value={String(profile.stats.sales)} label="Sales" align="start" size="sm" />
           <StatBlock value={profile.stats.followers} label="Followers" align="start" size="sm" />
@@ -98,19 +98,19 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
 
 function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
   return (
-    <Link href="/create" style={{ textDecoration: "none", display: "block" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 13, padding: 14, borderRadius: "var(--radius-card)", background: "var(--surface-elevated)", border: "1px solid var(--border-accent)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-          <span style={{ display: "grid", placeItems: "center", width: 38, height: 38, flexShrink: 0, borderRadius: 12, background: "var(--accent-tint)", border: "1px solid var(--border-accent)" }}>
-            <Icon name="ChartNoAxesColumn" size={17} color="var(--accent)" stroke={2} />
+    <Link href="/create" className="block no-underline">
+      <div className="flex flex-col gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
+        <div className="flex items-center gap-[11px]">
+          <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+            <Icon name="ChartNoAxesColumn" size={17} color="var(--accent)" strokeWidth={2} />
           </span>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-            <span style={{ fontSize: 15.5, fontWeight: 600, color: "var(--text-primary)" }}>Creator dashboard</span>
-            <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>Earnings, content, inbox, tier</span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="text-[15.5px] font-semibold text-text-primary">Creator dashboard</span>
+            <span className="text-[12.5px] text-text-secondary">Earnings, content, inbox, tier</span>
           </div>
-          <Icon name="ChevronRight" size={17} color="var(--accent)" stroke={2.2} />
+          <Icon name="ChevronRight" size={17} color="var(--accent)" strokeWidth={2.2} />
         </div>
-        <div style={{ display: "flex", gap: 20, paddingTop: 12, borderTop: "1px solid var(--border-hairline)" }}>
+        <div className="flex gap-5 border-t border-hairline pt-3">
           <StatBlock value={`₦${(profile.earningsThisMonth ?? 0).toLocaleString("en-NG")}`} label="This month" align="start" size="sm" />
           <StatBlock value={String(profile.toReply)} label="To reply" align="start" size="sm" />
         </div>
@@ -121,14 +121,14 @@ function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
 
 function UserVerificationCard({ profile }: { profile: OwnProfile }) {
   return (
-    <Link href="/profile/verification" style={{ textDecoration: "none", display: "block" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 15px", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)" }}>
+    <Link href="/profile/verification" className="block no-underline">
+      <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-hairline bg-card px-[15px] py-[14px]">
         <VerificationBadge tier={profile.verification} size={20} />
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
+        <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+          <span className="text-[14px] font-semibold text-text-primary">
             {profile.verification === "basic" ? "Basic profile" : profile.verification.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </span>
-          <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+          <span className="text-[12.5px] text-text-secondary">
             {profile.verification === "basic" ? "Verify to show buyers you're real" : "Move up the ladder"}
           </span>
         </div>

@@ -12,13 +12,8 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
 
   if (!thread) {
     return (
-      <div style={{ padding: 16 }}>
-        <ErrorState
-          title="Conversation not found"
-          caption="This thread may have been archived."
-          actionHref="/messages"
-          action="Back to messages"
-        />
+      <div className="p-4">
+        <ErrorState title="Conversation not found" body="This thread may have been archived." />
       </div>
     );
   }
@@ -27,29 +22,17 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
   const first = summary.creatorName.charAt(0);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 11,
-          padding: "12px 16px 10px",
-          borderBottom: "1px solid var(--border-hairline)",
-          background: "var(--surface-elevated)",
-          position: "sticky",
-          top: 0,
-          zIndex: 40,
-        }}
-      >
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-40 flex items-center gap-[11px] border-b border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[12px_16px_10px]">
         <ProfileBackButton compact />
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+        <div className="flex min-w-0 flex-1 items-center gap-[10px]">
           <Avatar initial={first} size={34} />
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+          <div className="flex min-w-0 flex-1 flex-col gap-px">
+            <span className="flex items-center gap-[6px] text-[15px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
               {summary.creatorName}
-              <VerificationBadge size={14} />
+              <VerificationBadge tier="verified_user" size={14} />
             </span>
-            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+            <span className="text-[12px] text-[var(--text-muted)]">
               Paid message · ₦{summary.amount.toLocaleString("en-NG")}
             </span>
           </div>
@@ -57,27 +40,24 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
         </div>
       </header>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, padding: "18px 16px 20px" }}>
+      <div className="flex flex-1 flex-col gap-[10px] p-[18px_16px_20px]">
         {(summary.status === "awaiting_response" || summary.status === "refunded") && (
           <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 9,
-              padding: "11px 13px",
-              borderRadius: "var(--radius-input)",
-              background: summary.status === "refunded" ? "var(--danger-tint)" : "var(--info-tint)",
-              border: `1px solid ${summary.status === "refunded" ? "rgba(255,92,92,0.3)" : "rgba(32,201,195,0.3)"}`,
-            }}
+            className={[
+              "flex items-start gap-[9px] rounded-[var(--radius-input)] border p-[11px_13px]",
+              summary.status === "refunded"
+                ? "border-[rgba(255,92,92,0.3)] bg-[var(--danger-tint)]"
+                : "border-[rgba(32,201,195,0.3)] bg-[var(--info-tint)]",
+            ].join(" ")}
           >
-            <Icon
-              name={summary.status === "refunded" ? "CircleAlert" : "Clock"}
-              size={16}
-              color={summary.status === "refunded" ? "var(--danger)" : "var(--info)"}
-              stroke={2}
-              style={{ marginTop: 1 }}
-            />
-            <span style={{ fontSize: 13, lineHeight: 1.5, color: "var(--text-primary)" }}>
+            <span className="mt-px shrink-0">
+              <Icon
+                name={summary.status === "refunded" ? "CircleAlert" : "Clock"}
+                size={16}
+                color={summary.status === "refunded" ? "var(--danger)" : "var(--info)"}
+              />
+            </span>
+            <span className="text-[13px] leading-[1.5] text-[var(--text-primary)]">
               {summary.status === "refunded" ? (
                 <>
                   You got a refund — ₦{summary.amount.toLocaleString("en-NG")} back to your payment method{refundedAt ? ` on ${refundedAt}` : ""}. This conversation is closed.
@@ -94,25 +74,29 @@ export default async function DmThreadPage({ params }: { params: { threadId: str
         {messages.map((m) => {
           const mine = m.from === "me";
           return (
-            <div key={m.id} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}>
+            <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div
-                style={{
-                  maxWidth: "78%",
-                  padding: "10px 13px",
-                  borderRadius: 16,
-                  borderBottomRightRadius: mine ? 4 : 16,
-                  borderBottomLeftRadius: mine ? 16 : 4,
-                  background: mine ? "var(--accent)" : "var(--surface-card)",
-                  border: mine ? "1px solid transparent" : "1px solid var(--border-hairline)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 3,
-                }}
+                className={[
+                  "flex max-w-[78%] flex-col gap-[3px] border p-[10px_13px]",
+                  mine
+                    ? "rounded-tl-[16px] rounded-tr-[16px] rounded-bl-[16px] rounded-br-[4px] border-transparent bg-[var(--accent)]"
+                    : "rounded-tl-[16px] rounded-tr-[16px] rounded-bl-[4px] rounded-br-[16px] border-[var(--border-hairline)] bg-[var(--surface-card)]",
+                ].join(" ")}
               >
-                <span style={{ fontSize: 14.5, lineHeight: 1.45, color: mine ? "var(--text-on-accent)" : "var(--text-primary)", whiteSpace: "pre-wrap" }}>
+                <span
+                  className={[
+                    "whitespace-pre-wrap text-[14.5px] leading-[1.45]",
+                    mine ? "text-[var(--text-on-accent)]" : "text-[var(--text-primary)]",
+                  ].join(" ")}
+                >
                   {m.text}
                 </span>
-                <span style={{ fontSize: 10.5, color: mine ? "rgba(255,255,255,0.7)" : "var(--text-muted)", alignSelf: "flex-end" }}>
+                <span
+                  className={[
+                    "self-end text-[10.5px]",
+                    mine ? "text-[rgba(255,255,255,0.7)]" : "text-[var(--text-muted)]",
+                  ].join(" ")}
+                >
                   {m.at}
                 </span>
               </div>

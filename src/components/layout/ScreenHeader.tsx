@@ -8,39 +8,16 @@ import { Icon } from "@/components/ui/Icon";
 export function ScreenHeader({ title, right }: { title: string; right?: ReactNode }) {
   const router = useRouter();
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "14px 16px",
-        borderBottom: "1px solid var(--border-hairline)",
-        background: "rgba(19,19,22,0.86)",
-        backdropFilter: "var(--blur-chrome)",
-        position: "sticky",
-        top: 0,
-        zIndex: 30,
-      }}
-    >
+    <div className="sticky top-0 z-30 flex items-center gap-[12px] border-b border-[var(--border-hairline)] bg-[rgba(19,19,22,0.86)] p-[14px_16px] [backdrop-filter:var(--blur-chrome)]">
       <button
         type="button"
         onClick={() => router.back()}
         aria-label="Back"
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 34,
-          height: 34,
-          borderRadius: 999,
-          background: "var(--surface-tag)",
-          border: "1px solid var(--border-hairline)",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
+        className="grid h-[34px] w-[34px] shrink-0 cursor-pointer place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)]"
       >
-        <Icon name="ChevronLeft" size={18} color="var(--text-primary)" stroke={2.2} />
+        <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
       </button>
-      <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>{title}</span>
+      <span className="flex-1 text-[16px] font-semibold text-[var(--text-primary)]">{title}</span>
       {right}
     </div>
   );

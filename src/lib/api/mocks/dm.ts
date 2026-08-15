@@ -2,6 +2,7 @@ import type { DmStatus, DmThreadDetail, DmThreadMessage, DmThreadSummary } from 
 import { delay } from "../client";
 
 /** Unread paid-DM count for the Messages nav badge. */
+// SEAM: replace with GET /api/hub/dm/inbox
 export async function getMockUnreadDmCount(): Promise<number> {
   await delay(80);
   return 3;
@@ -63,11 +64,13 @@ const MOCK_THREAD_DETAILS: Record<string, { messages: DmThreadMessage[]; deadlin
 /** Paid DM entry states for the fan sheet. */
 export type DmSendResult = "success" | "payment_failed" | "error";
 
+// SEAM: replace with GET /api/hub/dm/inbox
 export async function getMockDmThreads(): Promise<DmThreadSummary[]> {
   await delay(300);
   return MOCK_THREADS;
 }
 
+// SEAM: replace with GET /api/hub/dm/inbox
 export async function getMockDmThread(threadId: string): Promise<DmThreadDetail | null> {
   await delay(300);
   const summary = MOCK_THREADS.find((t) => t.id === threadId);
@@ -82,6 +85,7 @@ let sendCounter = 0;
  * Simulates the compose + pay round trip. Always succeeds so the happy path is
  * demoable; the sheet renders its failure state if this ever rejects.
  */
+// SEAM: replace with POST /api/hub/dm/:creatorId/send
 export async function sendMockPaidDm(
   creator: { wawuId: string; name: string; handle: string },
   text: string,

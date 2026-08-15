@@ -10,6 +10,7 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       body: payload,
     });
   } catch {
+    // SEAM: replace with POST /api/hub/auth/signup
     const user: SessionUser = {
       wawuId: `wawu_${payload.email.split("@")[0] ?? "new"}`,
       fullName: payload.fullName,
@@ -31,6 +32,7 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
       body: payload,
     });
   } catch {
+    // SEAM: replace with POST /api/hub/auth/otp/verify
     const user: SessionUser = {
       wawuId: `wawu_${payload.email.split("@")[0] ?? "new"}`,
       fullName: "",
@@ -52,6 +54,7 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       body: payload,
     });
   } catch {
+    // SEAM: replace with POST /api/hub/auth/signin
     const stored = sessionStorage.getUser();
     const user: SessionUser = stored ?? {
       wawuId: `wawu_${payload.email.split("@")[0] ?? "user"}`,
@@ -70,6 +73,7 @@ export async function requestPasswordReset(payload: ResetPasswordPayload): Promi
   try {
     await apiFetch<void>("/api/hub/auth/reset", { method: "POST", authed: true, body: payload });
   } catch {
+    // SEAM: replace with POST /api/hub/auth/reset
     return;
   }
 }
@@ -78,6 +82,7 @@ export async function saveNewPassword(payload: NewPasswordPayload): Promise<void
   try {
     await apiFetch<void>("/api/hub/auth/reset/confirm", { method: "POST", authed: true, body: payload });
   } catch {
+    // SEAM: replace with POST /api/hub/auth/reset/confirm
     return;
   }
 }

@@ -26,34 +26,19 @@ export function CommunityTabs({ joined, discover }: { joined: Community[]; disco
   const list = tab === "joined" ? joinedList : discoverList;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div
-        style={{
-          display: "flex",
-          gap: 4,
-          padding: 4,
-          borderRadius: "var(--radius-input)",
-          background: "var(--surface-tag)",
-          border: "1px solid var(--border-hairline)",
-        }}
-      >
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-1 rounded-[var(--radius-input)] border border-hairline bg-tag p-1">
         {(["joined", "discover"] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            style={{
-              flex: 1,
-              height: 38,
-              borderRadius: "var(--radius-input)",
-              border: "none",
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 600,
-              background: tab === t ? "var(--surface-card)" : "transparent",
-              color: tab === t ? "var(--text-primary)" : "var(--text-muted)",
-              boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.24)" : "none",
-            }}
+            className={[
+              "h-[38px] flex-1 cursor-pointer rounded-[var(--radius-input)] border-none text-[14px] font-semibold",
+              tab === t
+                ? "bg-card text-text-primary shadow-[0_1px_4px_rgba(0,0,0,0.24)]"
+                : "bg-transparent text-text-muted",
+            ].join(" ")}
           >
             {t === "joined" ? "Yours" : "Discover"}
           </button>
@@ -71,13 +56,13 @@ export function CommunityTabs({ joined, discover }: { joined: Community[]; disco
           }
         />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="flex flex-col gap-2">
           {list.map((c) =>
             c.joined ? (
               <Link
                 key={c.id}
                 href={`/communities/${c.id}`}
-                style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 12px", borderRadius: "var(--radius-input)", textDecoration: "none", cursor: "pointer" }}
+                className="flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] p-3 no-underline"
               >
                 <CommunityRow c={c} />
               </Link>
@@ -86,7 +71,7 @@ export function CommunityTabs({ joined, discover }: { joined: Community[]; disco
                 key={c.id}
                 type="button"
                 onClick={() => doJoin(c.id)}
-                style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 12px", borderRadius: "var(--radius-input)", textDecoration: "none", cursor: "pointer", background: "transparent", border: "none", width: "100%", textAlign: "left" }}
+                className="flex w-full cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] border-none bg-transparent p-3 text-left no-underline"
               >
                 <CommunityRow c={c} />
               </button>
@@ -101,35 +86,20 @@ export function CommunityTabs({ joined, discover }: { joined: Community[]; disco
 function CommunityRow({ c }: { c: Community }) {
   return (
     <>
-      <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 44,
-          height: 44,
-          flexShrink: 0,
-          borderRadius: 14,
-          background: "var(--surface-tag)",
-          border: "1px solid var(--border-hairline)",
-        }}
-      >
-        <Icon name="Users" size={19} color="var(--accent)" stroke={2} />
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-input)] border border-hairline bg-tag">
+        <Icon name="Users" size={19} color="var(--accent)" strokeWidth={2} />
       </span>
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 15, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+      <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+        <span className="flex items-center gap-[7px] text-[15px] font-semibold tracking-[-0.01em] text-text-primary">
           {c.name}
-          {c.joined && <Icon name="Check" size={14} color="var(--accent)" stroke={2.6} />}
+          {c.joined && <Icon name="Check" size={14} color="var(--accent)" strokeWidth={2.6} />}
         </span>
-        <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+        <span className="text-[12.5px] text-text-muted">
           {c.memberCount.toLocaleString("en-NG")} members{c.messagesToday ? ` · ${c.messagesToday} today` : ""}
         </span>
       </div>
-      {c.kind === "private" && (
-        <StatusPill kind="neutral" style={{ padding: "3px 9px", fontSize: 11 }}>
-          Private
-        </StatusPill>
-      )}
-      {!c.joined && <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>Join</span>}
+      {c.kind === "private" && <StatusPill kind="neutral">Private</StatusPill>}
+      {!c.joined && <span className="text-[13px] font-bold text-accent">Join</span>}
     </>
   );
 }

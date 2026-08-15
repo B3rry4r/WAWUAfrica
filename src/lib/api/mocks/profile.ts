@@ -7,11 +7,13 @@ import { delay } from "../client";
  */
 export const MOCK_PROFILE_FOLLOWING = new Set(["wawu-zainab"]);
 
+// SEAM: replace with GET /api/hub/creators/:wawuId/following
 export async function getMockProfileFollowing(wawuId: string): Promise<boolean> {
   await delay(80);
   return MOCK_PROFILE_FOLLOWING.has(wawuId);
 }
 
+// SEAM: replace with POST /api/hub/creators/:wawuId/follow
 export async function toggleMockProfileFollow(wawuId: string): Promise<boolean> {
   await delay(150);
   if (MOCK_PROFILE_FOLLOWING.has(wawuId)) {
@@ -159,6 +161,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
   },
 };
 
+// SEAM: replace with GET /api/hub/creators/:wawuId
 export async function getMockCreatorProfile(wawuId: string): Promise<CreatorProfile> {
   await delay(350);
   const profile = MOCK_PROFILES[wawuId];
@@ -169,6 +172,7 @@ export async function getMockCreatorProfile(wawuId: string): Promise<CreatorProf
 /** Join state per community is mocked in-memory so buttons stay interactive. */
 const MOCK_JOINED = new Set<string>();
 
+// SEAM: replace with POST /api/hub/communities/:id/join
 export async function toggleMockCommunityJoin(wawuId: string, communityId: string): Promise<boolean> {
   await delay(150);
   const key = `${wawuId}:${communityId}`;
@@ -180,6 +184,7 @@ export async function toggleMockCommunityJoin(wawuId: string, communityId: strin
   return true;
 }
 
+// SEAM: replace with GET /api/hub/communities/:id/joined
 export function isMockCommunityJoined(wawuId: string, communityId: string): boolean {
   return MOCK_JOINED.has(`${wawuId}:${communityId}`);
 }

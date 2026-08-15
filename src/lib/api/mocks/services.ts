@@ -89,21 +89,25 @@ export const MOCK_CAC_TIMELINE: ServiceApplicationTimeline[] = [
   { stage: "Certificate issued", status: "upcoming", note: "Your CAC certificate lands on WAWU." },
 ];
 
+// SEAM: replace with GET /api/hub/services
 export async function getMockServices(): Promise<PartnerService[]> {
   await delay(280);
   return MOCK_SERVICES;
 }
 
+// SEAM: replace with GET /api/hub/services/:id
 export async function getMockService(id: string): Promise<PartnerService | null> {
   await delay(250);
   return MOCK_SERVICES.find((s) => s.id === id) ?? null;
 }
 
+// SEAM: replace with GET /api/hub/services/cac/timeline
 export async function getMockCacTimeline(): Promise<ServiceApplicationTimeline[]> {
   await delay(250);
   return MOCK_CAC_TIMELINE;
 }
 
+// SEAM: replace with POST /api/hub/services/:id/notify
 export async function notifyMockComingSoon(id: string): Promise<boolean> {
   await delay(400);
   void id;

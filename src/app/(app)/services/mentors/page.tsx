@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { getMentors } from "@/lib/api/mentors";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Avatar } from "@/components/ui/Avatar";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
-import { Icon } from "@/components/ui/Icon";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { Avatar, ErrorState, Icon, VerificationBadge } from "@/components/ui";
 
 export default async function MentorsPage() {
   let mentors;
@@ -12,44 +9,44 @@ export default async function MentorsPage() {
     mentors = await getMentors();
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load mentors."} />;
+    return <ErrorState title="We couldn't load mentors." body={message} />;
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[14px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Mentors
         </span>
       </div>
 
-      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: "var(--text-secondary)" }}>
+      <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
         45-minute sessions with creators who have already done what you&apos;re trying to do.
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="flex flex-col gap-[10px]">
         {mentors.map((m) => (
-          <Link key={m.id} href={`/services/mentors/${m.id}`} style={{ display: "flex", gap: 13, padding: 14, borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", textDecoration: "none" }}>
-            <Avatar initial={m.name.charAt(0)} size={48} accent />
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 15, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+          <Link key={m.id} href={`/services/mentors/${m.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline">
+            <Avatar initial={m.name.charAt(0)} size={48} />
+            <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+              <span className="flex items-center gap-[6px] text-[15px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
                 {m.name}
-                <VerificationBadge size={14} />
+                <VerificationBadge tier="verified_user" size={14} />
               </span>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--accent-hover)" }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--accent-hover)]">
                 {m.field}
               </span>
-              <span style={{ fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.4 }}>{m.tagline}</span>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+              <span className="text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">{m.tagline}</span>
+              <span className="text-[12px] text-[var(--text-muted)]">
                 ★ {m.rating.toFixed(1)} · {m.sessions} sessions · {m.availability}
               </span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", flexShrink: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)" }}>
+            <div className="flex shrink-0 flex-col items-end justify-between">
+              <span className="text-[14px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
                 ₦{m.rate.toLocaleString("en-NG")}
               </span>
-              <Icon name="ChevronRight" size={16} color="var(--text-muted)" stroke={2} />
+              <Icon name="ChevronRight" size={16} color="var(--text-muted)" />
             </div>
           </Link>
         ))}

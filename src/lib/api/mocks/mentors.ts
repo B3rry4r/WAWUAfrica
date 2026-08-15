@@ -56,16 +56,19 @@ export const MOCK_MENTORS: Mentor[] = [
   },
 ];
 
+// SEAM: replace with GET /api/hub/mentors
 export async function getMockMentors(): Promise<Mentor[]> {
   await delay(280);
   return MOCK_MENTORS;
 }
 
+// SEAM: replace with GET /api/hub/mentors/:id
 export async function getMockMentor(id: string): Promise<Mentor | null> {
   await delay(250);
   return MOCK_MENTORS.find((m) => m.id === id) ?? null;
 }
 
+// SEAM: replace with POST /api/hub/mentors/:id/request
 export async function requestMockMentor(mentorId: string, note: string): Promise<{ id: string; status: "sent" }> {
   await delay(500);
   void note;

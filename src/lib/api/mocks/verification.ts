@@ -52,11 +52,13 @@ export const MOCK_VERIFICATION_SUBMISSIONS: VerificationSubmission[] = [
   },
 ];
 
+// SEAM: replace with GET /api/hub/profile
 export async function getMockOwnProfile(): Promise<OwnProfile> {
   await delay(350);
   return { ...MOCK_OWN_PROFILE, socials: { ...MOCK_OWN_PROFILE.socials } };
 }
 
+// SEAM: replace with PATCH /api/hub/profile
 export async function saveMockOwnProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
   await delay(450);
   MOCK_OWN_PROFILE.name = draft.name;
@@ -67,16 +69,19 @@ export async function saveMockOwnProfile(draft: OwnProfileDraft): Promise<OwnPro
   return { ...MOCK_OWN_PROFILE, socials: { ...MOCK_OWN_PROFILE.socials } };
 }
 
+// SEAM: replace with GET /api/hub/verification/ladder
 export async function getMockLadder(): Promise<VerificationLevelEntry[]> {
   await delay(300);
   return MOCK_VERIFICATION_LADDER;
 }
 
+// SEAM: replace with GET /api/hub/verification/submissions
 export async function getMockVerificationSubmissions(): Promise<VerificationSubmission[]> {
   await delay(300);
   return MOCK_VERIFICATION_SUBMISSIONS;
 }
 
+// SEAM: replace with POST /api/hub/verification/submit
 export async function submitMockVerification(tier: VerificationLevel): Promise<VerificationSubmission> {
   await delay(500);
   const submission: VerificationSubmission = { tier, status: "in_review", submittedAt: "Today" };
@@ -84,6 +89,7 @@ export async function submitMockVerification(tier: VerificationLevel): Promise<V
   return submission;
 }
 
+// SEAM: replace with POST /api/hub/verification/submit
 export async function resubmitMockVerification(tier: VerificationLevel): Promise<VerificationSubmission> {
   return submitMockVerification(tier);
 }

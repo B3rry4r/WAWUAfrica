@@ -3,6 +3,7 @@ import { sendMockTip, TIP_PRESETS } from "./mocks/tips";
 
 export { TIP_PRESETS };
 
+// SEAM: replace with POST /api/hub/tips
 export async function sendTip(
   creator: { wawuId: string; name: string },
   amount: number,

@@ -61,6 +61,7 @@ const ifeanyi: CreatorProfile = {
  * strips `fullAssetUrl` again defensively so it can never reach a client for
  * locked content, even if a mock or backend regression adds it.
  */
+// SEAM: replace with GET /api/hub/content?scope=feed
 export const mockContent: ContentPiece[] = [
   {
     id: "cac-in-7-days",
@@ -269,8 +270,10 @@ export const mockContent: ContentPiece[] = [
   },
 ];
 
+// SEAM: replace with GET /api/hub/content/purchases
 export const mockPurchasedIds = new Set(["invoice-pack-for-tailors", "cac-in-7-days", "the-traders-playbook", "welding-rebar", "highlife-horn-stems", "nsukka-market-in-oils"]);
 
+// SEAM: replace with GET /api/hub/content/:id
 export function mockContentById(id: string): ContentDetailResponse | null {
   const found = mockContent.find((c) => c.id === id || c.slug === id);
   if (!found) return null;

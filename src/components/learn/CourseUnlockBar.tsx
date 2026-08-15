@@ -8,15 +8,7 @@ import { Button } from "@/components/ui/Button";
 export function CourseUnlockBar({ title, price }: { title: string; price: number }) {
   const [open, setOpen] = useState(false);
   return (
-    <div
-      style={{
-        position: "sticky",
-        bottom: 0,
-        padding: "12px 16px calc(12px + env(safe-area-inset-bottom))",
-        background: "var(--surface-elevated)",
-        borderTop: "1px solid var(--border-hairline)",
-      }}
-    >
+    <div className="sticky bottom-0 border-t border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[12px_16px_calc(12px_+_env(safe-area-inset-bottom))]">
       {price === 0 ? (
         <Button full size="lg">
           Start learning · Free

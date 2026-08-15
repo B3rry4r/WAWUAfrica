@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import type { IconName } from "./Icon";
@@ -8,10 +9,12 @@ interface EmptyStateProps {
   caption?: string;
   action?: string;
   onAction?: () => void;
+  /** Renders the action CTA as a navigation link instead of a button. */
+  actionHref?: string;
 }
 
 /** Empty-state block with a way out, per the design system's EmptyState. */
-export function EmptyState({ icon, title, caption, action, onAction }: EmptyStateProps) {
+export function EmptyState({ icon, title, caption, action, onAction, actionHref }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center gap-4 px-6 py-12 text-center">
       <span className="grid h-[72px] w-[72px] place-items-center rounded-full bg-tag text-text-secondary">
@@ -21,7 +24,11 @@ export function EmptyState({ icon, title, caption, action, onAction }: EmptyStat
         <h3 className="text-[17px] font-semibold text-text-primary">{title}</h3>
         {caption ? <p className="mx-auto max-w-[260px] text-[14px] leading-relaxed text-text-secondary">{caption}</p> : null}
       </div>
-      {action && onAction ? (
+      {action && actionHref ? (
+        <Button size="md" variant="secondary" href={actionHref}>
+          {action}
+        </Button>
+      ) : action && onAction ? (
         <Button size="md" variant="secondary" onClick={onAction}>
           {action}
         </Button>

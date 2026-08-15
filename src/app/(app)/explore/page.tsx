@@ -1,63 +1,63 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { getCategories } from "@/lib/api/explore";
 import { Icon } from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { HandoffPill } from "@/components/ui/HandoffPill";
 import { ListRow } from "@/components/ui/ListRow";
 
-const eyebrow = { fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 2px" } as const;
-const seeAll = { fontSize: 12.5, fontWeight: 600, color: "var(--accent)" } as const;
+const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]" as const;
+const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]" as const;
 
 export default async function ExplorePage() {
   const categories = await getCategories();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-        <span style={eyebrow}>Browse</span>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Link href="/explore/categories" style={tileLink}>
+    <div className="flex flex-col gap-[18px]">
+      <section className="flex flex-col gap-[11px]">
+        <span className={eyebrow}>Browse</span>
+        <div className="grid grid-cols-2 gap-[12px]">
+          <Link href="/explore/categories" className={tileLink}>
             <IconTile icon="LayoutGrid" />
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-              <span style={tileTitle}>Categories</span>
-              <span style={tileSub}>All {categories.length}</span>
+            <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+              <span className={tileTitle}>Categories</span>
+              <span className={tileSub}>All {categories.length}</span>
             </div>
           </Link>
-          <Link href="/explore/creators" style={tileLink}>
+          <Link href="/explore/creators" className={tileLink}>
             <IconTile icon="UserRoundSearch" />
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-              <span style={tileTitle}>Creators</span>
-              <span style={tileSub}>By field</span>
+            <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+              <span className={tileTitle}>Creators</span>
+              <span className={tileSub}>By field</span>
             </div>
           </Link>
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-        <span style={eyebrow}>Buy and sell</span>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
+      <section className="flex flex-col gap-[11px]">
+        <span className={eyebrow}>Buy and sell</span>
+        <div className="grid grid-cols-2 items-stretch gap-[12px]">
           <ShopCard id="basket" />
           <ShopCard id="beauty" />
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 2px" }}>
-          <span style={{ flex: 1, ...eyebrow, padding: 0 }}>Learn</span>
-          <Link href="/learn" style={seeAll}>See all</Link>
+      <section className="flex flex-col gap-[11px]">
+        <div className="flex items-center gap-[10px] px-[2px]">
+          <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Learn</span>
+          <Link href="/learn" className={seeAll}>See all</Link>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
-          <ListRow title="Business Playbook" subtitle="96 pages · free to download" icon="BookOpen" meta="Free" href="/learn" />
+        <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+          <ListRow title="Business Playbook" subtitle="96 pages · free to download" icon="BookOpen" href="/learn" />
           <ListRow title="Courses and guides" subtitle="24 courses · 12 country guides" icon="GraduationCap" href="/learn" />
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 2px" }}>
-          <span style={{ flex: 1, ...eyebrow, padding: 0 }}>Services</span>
-          <Link href="/services" style={seeAll}>See all</Link>
+      <section className="flex flex-col gap-[11px]">
+        <div className="flex items-center gap-[10px] px-[2px]">
+          <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Services</span>
+          <Link href="/services" className={seeAll}>See all</Link>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+        <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
           <ListRow title="CAC registration" subtitle="From ₦25,000 · 7 to 14 days" icon="Stamp" href="/services" />
           <ListRow title="NEPC, mentors and more" subtitle="3 open · 4 coming with Pro" icon="Briefcase" href="/services" />
         </div>
@@ -66,36 +66,15 @@ export default async function ExplorePage() {
   );
 }
 
-const tileLink: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  height: 72,
-  padding: "0 14px",
-  borderRadius: "var(--radius-card)",
-  background: "var(--surface-card)",
-  border: "1px solid var(--border-hairline)",
-  textDecoration: "none",
-  color: "inherit",
-};
-const tileTitle = { fontSize: 14.5, fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" } as const;
-const tileSub = { fontSize: 12, color: "var(--text-muted)", whiteSpace: "nowrap" } as const;
+const tileLink =
+  "flex h-[72px] items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[14px] no-underline text-inherit" as const;
+const tileTitle = "whitespace-nowrap text-[14.5px] font-semibold text-[var(--text-primary)]" as const;
+const tileSub = "whitespace-nowrap text-[12px] text-[var(--text-muted)]" as const;
 
-function IconTile({ icon }: { icon: string }) {
+function IconTile({ icon }: { icon: IconName }) {
   return (
-    <span
-      style={{
-        display: "grid",
-        placeItems: "center",
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        flexShrink: 0,
-        background: "var(--accent-tint)",
-        border: "1px solid var(--border-accent)",
-      }}
-    >
-      <Icon name={icon} size={18} color="var(--accent)" stroke={2} />
+    <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+      <Icon name={icon} size={18} color="var(--accent)" />
     </span>
   );
 }
@@ -103,42 +82,21 @@ function IconTile({ icon }: { icon: string }) {
 const SHOPS = {
   basket: { name: "WAWUBasket", tagline: "Fashion, food, art", stat: "4,120 items", icon: "ShoppingBag" },
   beauty: { name: "WAWUBeauty", tagline: "Hair, nails, skin", stat: "890 services", icon: "Scissors" },
-} as const;
+} as const satisfies Record<string, { name: string; tagline: string; stat: string; icon: IconName }>;
 
 function ShopCard({ id }: { id: keyof typeof SHOPS }) {
   const shop = SHOPS[id];
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        padding: 14,
-        borderRadius: "var(--radius-card)",
-        background: "var(--surface-card)",
-        border: "1px solid var(--border-hairline)",
-      }}
-    >
-      <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 38,
-          height: 38,
-          flexShrink: 0,
-          borderRadius: 12,
-          background: "var(--accent-tint)",
-          border: "1px solid var(--border-accent)",
-        }}
-      >
-        <Icon name={shop.icon} size={18} color="var(--accent)" stroke={2} />
+    <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px]">
+      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <Icon name={shop.icon} size={18} color="var(--accent)" />
       </span>
-      <span style={{ fontSize: 15.5, fontWeight: 600, color: "var(--text-primary)" }}>{shop.name}</span>
-      <span style={{ flex: 1, fontSize: 12.5, lineHeight: 1.4, color: "var(--text-secondary)" }}>{shop.tagline}</span>
-      <div style={{ display: "flex" }}>
+      <span className="text-[15.5px] font-semibold text-[var(--text-primary)]">{shop.name}</span>
+      <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">{shop.tagline}</span>
+      <div className="flex">
         <HandoffPill app={shop.name} />
       </div>
-      <span style={{ fontSize: 11.5, color: "var(--text-muted)", fontFeatureSettings: "var(--font-feature-tabular)" }}>{shop.stat}</span>
+      <span className="text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{shop.stat}</span>
     </div>
   );
 }

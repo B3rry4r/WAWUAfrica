@@ -114,26 +114,31 @@ export const MOCK_GUIDES: LearnGuide[] = [
   { id: "g-ci", country: "Côte d'Ivoire", title: "Selling as an Ivorian creator", pages: 12 },
 ];
 
+// SEAM: replace with GET /api/hub/learn/entitlement
 export async function getMockLearnEntitlement(): Promise<LearnEntitlement> {
   await delay(250);
   return { tier: "basic", freeCourses: 1, totalCourses: MOCK_COURSES.length, canDownloadPlaybook: true };
 }
 
+// SEAM: replace with GET /api/hub/learn/courses
 export async function getMockCourses(): Promise<LearnCourse[]> {
   await delay(280);
   return MOCK_COURSES;
 }
 
+// SEAM: replace with GET /api/hub/content/:id
 export async function getMockCourse(id: string): Promise<LearnCourse | null> {
   await delay(250);
   return MOCK_COURSES.find((c) => c.id === id) ?? null;
 }
 
+// SEAM: replace with GET /api/hub/learn/playbook
 export async function getMockPlaybook(): Promise<Playbook> {
   await delay(250);
   return MOCK_PLAYBOOK;
 }
 
+// SEAM: replace with GET /api/hub/learn/guides
 export async function getMockGuides(): Promise<LearnGuide[]> {
   await delay(280);
   return MOCK_GUIDES;

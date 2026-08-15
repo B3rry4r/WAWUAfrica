@@ -5,7 +5,6 @@ import type { NotificationSettings } from "@/types/settings";
 import { getNotificationSettings, saveNotificationSettings } from "@/lib/api/settings";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Icon } from "@/components/ui/Icon";
-import { ErrorState } from "@/components/ui/ErrorState";
 
 const ROWS: { key: keyof NotificationSettings; label: string; caption: string }[] = [
   { key: "newReplies", label: "Replies to my messages", caption: "When a creator answers a paid DM" },
@@ -36,11 +35,11 @@ export default function NotificationsPage() {
 
   if (!settings) {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-4">
         <ProfileBackButton compact />
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
+        <div className="mt-4 flex flex-col gap-4">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} style={{ height: 60, borderRadius: "var(--radius-input)", background: "var(--surface-tag)" }} />
+            <div key={i} className="h-[60px] rounded-[var(--radius-input)] bg-[var(--surface-tag)]" />
           ))}
         </div>
       </div>
@@ -48,21 +47,21 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[14px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Notifications
         </span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+      <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
         {ROWS.map((r) => {
           const on = settings[r.key];
           return (
-            <div key={r.key} style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 14px", borderRadius: "var(--radius-input)" }}>
-              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{r.label}</span>
-                <span style={{ fontSize: 12.5, color: "var(--text-muted)", lineHeight: 1.4 }}>{r.caption}</span>
+            <div key={r.key} className="flex items-center gap-[13px] rounded-[var(--radius-input)] px-[14px] py-[13px]">
+              <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+                <span className="text-[15px] font-semibold text-[var(--text-primary)]">{r.label}</span>
+                <span className="text-[12.5px] leading-[1.4] text-[var(--text-muted)]">{r.caption}</span>
               </div>
               <button
                 type="button"
@@ -70,39 +69,18 @@ export default function NotificationsPage() {
                 aria-checked={on}
                 aria-label={r.label}
                 onClick={() => toggle(r.key)}
-                style={{
-                  width: 46,
-                  height: 28,
-                  borderRadius: 999,
-                  border: "none",
-                  cursor: "pointer",
-                  background: on ? "var(--accent)" : "var(--surface-tag)",
-                  borderColor: on ? "transparent" : "var(--border-hairline)",
-                  position: "relative",
-                  flexShrink: 0,
-                  transition: "background 160ms",
-                }}
+                className={`relative h-[28px] w-[46px] shrink-0 cursor-pointer rounded-full border-none transition-[background] duration-[160ms] ${on ? "bg-[var(--accent)]" : "bg-[var(--surface-tag)]"}`}
               >
                 <span
-                  style={{
-                    position: "absolute",
-                    top: 3,
-                    left: on ? 21 : 3,
-                    width: 22,
-                    height: 22,
-                    borderRadius: 999,
-                    background: "#fff",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                    transition: "left 160ms cubic-bezier(.32,.72,0,1)",
-                  }}
+                  className={`absolute top-[3px] h-[22px] w-[22px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-[left] duration-[160ms] ease-[cubic-bezier(.32,.72,0,1)] ${on ? "left-[21px]" : "left-[3px]"}`}
                 />
               </button>
             </div>
           );
         })}
       </div>
-      <p style={{ display: "flex", alignItems: "center", gap: 7, margin: 0, fontSize: 12, color: "var(--text-muted)", padding: "0 4px" }}>
-        <Icon name="Info" size={14} color="var(--text-muted)" stroke={2} />
+      <p className="m-0 flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--text-muted)]">
+        <Icon name="Info" size={14} color="var(--text-muted)" />
         Paid-message alerts never get switched off — refunds depend on them.
       </p>
     </div>

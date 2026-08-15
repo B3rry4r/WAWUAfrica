@@ -9,8 +9,8 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
 
   if (!course) {
     return (
-      <div style={{ padding: 16 }}>
-        <ErrorState title="Course not found" caption="This course may have been removed." />
+      <div className="p-4">
+        <ErrorState title="Course not found" body="This course may have been removed." />
       </div>
     );
   }
@@ -18,50 +18,52 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
   const lessons = Array.from({ length: course.lessons }, (_, i) => `Lesson ${i + 1}`);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Course
         </span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+      <div className="flex flex-col gap-2.5">
+        <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--text-muted)]">
           {course.category} · {course.lessons} lessons · {course.minutes} min
         </span>
-        <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.025em", lineHeight: 1.2, color: "var(--text-primary)" }}>
+        <span className="text-[24px] font-extrabold leading-[1.2] tracking-[-0.025em] text-[var(--text-primary)]">
           {course.title}
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13.5, color: "var(--text-secondary)" }}>
+        <span className="flex items-center gap-[7px] text-[13.5px] text-[var(--text-secondary)]">
           {course.host.name}
-          <span style={{ color: "var(--accent)" }}>★ {course.rating.toFixed(1)}</span>
-          <span style={{ color: "var(--text-muted)" }}>· {course.students.toLocaleString("en-NG")} students</span>
+          <span className="text-[var(--accent)]">★ {course.rating.toFixed(1)}</span>
+          <span className="text-[var(--text-muted)]">· {course.students.toLocaleString("en-NG")} students</span>
         </span>
       </div>
 
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--text-secondary)" }}>{course.overview}</p>
+      <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{course.overview}</p>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>What you’ll learn</span>
+      <section className="flex flex-col gap-2">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">What you’ll learn</span>
         {course.whatYouLearn.map((w) => (
-          <div key={w} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-            <Icon name="Check" size={15} color="var(--accent)" stroke={2.6} style={{ marginTop: 1 }} />
-            <span style={{ fontSize: 13.5, lineHeight: 1.45, color: "var(--text-primary)" }}>{w}</span>
+          <div key={w} className="flex items-start gap-2.5 rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[11px_14px]">
+            <span className="mt-px">
+              <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.6} />
+            </span>
+            <span className="text-[13.5px] leading-[1.45] text-[var(--text-primary)]">{w}</span>
           </div>
         ))}
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>Lessons</span>
-        <div style={{ display: "flex", flexDirection: "column", borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", padding: 4 }}>
+      <section className="flex flex-col gap-2">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Lessons</span>
+        <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
           {lessons.map((l, i) => (
-            <div key={l} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderRadius: "var(--radius-input)" }}>
-              <span style={{ display: "grid", placeItems: "center", width: 30, height: 30, flexShrink: 0, borderRadius: 999, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)", fontSize: 12.5, fontWeight: 700, color: "var(--text-secondary)" }}>
+            <div key={l} className="flex items-center gap-3 rounded-[var(--radius-input)] p-3">
+              <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[999px] border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[12.5px] font-bold text-[var(--text-secondary)]">
                 {i + 1}
               </span>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>{l}</span>
-              <Icon name="Lock" size={14} color="var(--text-muted)" stroke={2} />
+              <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)]">{l}</span>
+              <Icon name="Lock" size={14} color="var(--text-muted)" />
             </div>
           ))}
         </div>

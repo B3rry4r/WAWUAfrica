@@ -14,7 +14,7 @@ export default async function MessagesPage() {
     threads = await getDmThreads();
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load your messages."} />;
+    return <ErrorState title={message ?? "We couldn't load your messages."} />;
   }
 
   if (threads.length === 0) {
@@ -30,44 +30,50 @@ export default async function MessagesPage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 14px 96px" }}>
+    <div className="flex flex-col gap-2 p-[12px_14px_96px]">
       {threads.map((t) => (
         <Link
           key={t.id}
           href={`/messages/${t.id}`}
-          style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 10px", borderRadius: "var(--radius-input)", textDecoration: "none" }}
+          className="flex items-center gap-3 rounded-[var(--radius-input)] p-[12px_10px] no-underline"
         >
-          <div style={{ position: "relative", flexShrink: 0 }}>
+          <div className="relative shrink-0">
             <Avatar initial={t.creatorName.charAt(0)} size={48} />
             {t.unread && (
-              <span style={{ position: "absolute", bottom: 2, right: 2, width: 10, height: 10, borderRadius: 999, background: "var(--accent)", border: "2px solid var(--surface-page)" }} />
+              <span className="absolute bottom-[2px] right-[2px] h-[10px] w-[10px] rounded-full border-2 border-[var(--surface-page)] bg-[var(--accent)]" />
             )}
           </div>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 15, fontWeight: t.unread ? 700 : 600, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
+          <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+            <span
+              className={[
+                "flex items-center gap-[6px] text-[15px] tracking-[-0.01em] text-[var(--text-primary)]",
+                t.unread ? "font-bold" : "font-semibold",
+              ].join(" ")}
+            >
               {t.creatorName}
-              <VerificationBadge size={14} />
-              {t.status === "awaiting_response" && <StatusPill kind="warning" style={{ padding: "2px 8px", fontSize: 10.5 }}>Awaiting</StatusPill>}
-              {t.status === "refunded" && <StatusPill kind="error" style={{ padding: "2px 8px", fontSize: 10.5 }}>Refunded</StatusPill>}
+              <VerificationBadge tier="verified_user" size={14} />
+              {t.status === "awaiting_response" && <StatusPill kind="warning">Awaiting</StatusPill>}
+              {t.status === "refunded" && <StatusPill kind="danger">Refunded</StatusPill>}
             </span>
             <span
-              style={{
-                fontSize: 13.5,
-                color: t.unread ? "var(--text-primary)" : "var(--text-secondary)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                fontWeight: t.unread ? 500 : 400,
-              }}
+              className={[
+                "truncate text-[13.5px]",
+                t.unread ? "font-medium text-[var(--text-primary)]" : "font-normal text-[var(--text-secondary)]",
+              ].join(" ")}
             >
               {t.snippet}
             </span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5, flexShrink: 0 }}>
-            <span style={{ fontSize: 12, color: t.unread ? "var(--accent)" : "var(--text-muted)", fontWeight: t.unread ? 700 : 400 }}>
+          <div className="flex shrink-0 flex-col items-end gap-[5px]">
+            <span
+              className={[
+                "text-[12px]",
+                t.unread ? "font-bold text-[var(--accent)]" : "font-normal text-[var(--text-muted)]",
+              ].join(" ")}
+            >
               {t.lastAt}
             </span>
-            <Icon name="ChevronRight" size={15} color="var(--text-muted)" stroke={2} />
+            <Icon name="ChevronRight" size={15} color="var(--text-muted)" />
           </div>
         </Link>
       ))}

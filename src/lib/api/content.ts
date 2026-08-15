@@ -27,6 +27,7 @@ export async function getFeed(): Promise<ContentFeedResponse> {
     const res = await apiFetch<ContentFeedResponse>("/api/hub/content?scope=feed");
     return { items: res.items.map(guardLocked) };
   } catch {
+    // SEAM: replace with GET /api/hub/content?scope=feed
     return { items: mockContent.map((c) => guardLocked(mockContentById(c.id)!.content)) };
   }
 }
@@ -36,6 +37,7 @@ export async function getContent(id: string): Promise<ContentDetailResponse> {
     const res = await apiFetch<ContentDetailResponse>(`/api/hub/content/${id}`);
     return { content: guardLocked(res.content) };
   } catch {
+    // SEAM: replace with GET /api/hub/content/:id
     const mock = mockContentById(id);
     if (!mock) throw new Error("Content not found");
     return { content: guardLocked(mock.content) };
@@ -54,6 +56,7 @@ export async function initiateUnlock(id: string): Promise<UnlockInitiateResponse
       authed: true,
     });
   } catch {
+    // SEAM: replace with POST /api/hub/content/:id/unlock
     return {
       flutterwaveConfig: {
         publicKey: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? "FLWPUBK-MOCK",
@@ -82,6 +85,7 @@ export async function verifyUnlock(
       body: payload,
     });
   } catch {
+    // SEAM: replace with POST /api/hub/content/:id/unlock/verify
     mockPurchasedIds.add(id);
     const content = mockContentById(id)?.content;
     return {

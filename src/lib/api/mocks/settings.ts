@@ -41,22 +41,26 @@ export const MOCK_NOTIFICATION_SETTINGS: NotificationSettings = {
   communityDigest: false,
 };
 
+// SEAM: replace with GET /api/hub/saved
 export async function getMockSavedItems(): Promise<SavedItem[]> {
   await delay(280);
   return MOCK_SAVED_ITEMS;
 }
 
+// SEAM: replace with GET /api/hub/notifications/settings
 export async function getMockNotificationSettings(): Promise<NotificationSettings> {
   await delay(250);
   return { ...MOCK_NOTIFICATION_SETTINGS };
 }
 
+// SEAM: replace with PUT /api/hub/notifications/settings
 export async function saveMockNotificationSettings(next: NotificationSettings): Promise<NotificationSettings> {
   await delay(250);
   Object.assign(MOCK_NOTIFICATION_SETTINGS, next);
   return { ...MOCK_NOTIFICATION_SETTINGS };
 }
 
+// SEAM: replace with DELETE /api/hub/account
 export async function deleteMockAccount(): Promise<boolean> {
   await delay(500);
   return true;

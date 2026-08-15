@@ -1,9 +1,6 @@
 import { getMentor } from "@/lib/api/mentors";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Avatar } from "@/components/ui/Avatar";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
-import { Icon } from "@/components/ui/Icon";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { Avatar, ErrorState, Icon, VerificationBadge } from "@/components/ui";
 import { MentorBookButton } from "@/components/services/MentorBookButton";
 
 export default async function MentorDetailPage({ params }: { params: { id: string } }) {
@@ -11,53 +8,53 @@ export default async function MentorDetailPage({ params }: { params: { id: strin
 
   if (!mentor) {
     return (
-      <div style={{ padding: 16 }}>
-        <ErrorState title="Mentor not found" caption="This mentor may be on a break." />
+      <div className="p-[16px]">
+        <ErrorState title="Mentor not found" body="This mentor may be on a break." />
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "14px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Mentor
         </span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "10px 0", textAlign: "center" }}>
-        <Avatar initial={mentor.name.charAt(0)} size={72} accent />
-        <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 21, fontWeight: 700, color: "var(--text-primary)" }}>
+      <div className="flex flex-col items-center gap-[10px] p-[10px_0] text-center">
+        <Avatar initial={mentor.name.charAt(0)} size={72} />
+        <span className="flex items-center gap-[7px] text-[21px] font-bold text-[var(--text-primary)]">
           {mentor.name}
-          <VerificationBadge size={17} />
+          <VerificationBadge tier="verified_user" size={17} />
         </span>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--accent-hover)" }}>
+        <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--accent-hover)]">
           {mentor.field}
         </span>
-        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+        <span className="text-[13px] text-[var(--text-muted)]">
           @{mentor.handle} · ★ {mentor.rating.toFixed(1)} · {mentor.sessions} sessions
         </span>
       </div>
 
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "var(--text-secondary)" }}>{mentor.bio}</p>
+      <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{mentor.bio}</p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-          <Icon name="CalendarDays" size={16} color="var(--accent)" stroke={2} />
-          <span style={{ fontSize: 13.5, color: "var(--text-primary)" }}>
+      <div className="flex flex-col gap-[8px]">
+        <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[11px_14px]">
+          <Icon name="CalendarDays" size={16} color="var(--accent)" />
+          <span className="text-[13.5px] text-[var(--text-primary)]">
             Available {mentor.availability}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-          <Icon name="Clock" size={16} color="var(--accent)" stroke={2} />
-          <span style={{ fontSize: 13.5, color: "var(--text-primary)" }}>
+        <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[11px_14px]">
+          <Icon name="Clock" size={16} color="var(--accent)" />
+          <span className="text-[13.5px] text-[var(--text-primary)]">
             45-minute session · ₦{mentor.rate.toLocaleString("en-NG")}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: "var(--radius-input)", background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-          <Icon name="Languages" size={16} color="var(--accent)" stroke={2} />
-          <span style={{ fontSize: 13.5, color: "var(--text-primary)" }}>{mentor.languages.join(" · ")}</span>
+        <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[11px_14px]">
+          <Icon name="Languages" size={16} color="var(--accent)" />
+          <span className="text-[13.5px] text-[var(--text-primary)]">{mentor.languages.join(" · ")}</span>
         </div>
       </div>
 

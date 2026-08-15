@@ -5,6 +5,7 @@ export const TIP_PRESETS = [500, 1000, 2000, 5000] as const;
 
 export type TipResult = "success" | "payment_failed";
 
+// SEAM: replace with POST /api/hub/tips
 export async function sendMockTip(
   creator: { wawuId: string; name: string },
   amount: number,

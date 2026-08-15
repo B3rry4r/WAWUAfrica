@@ -1,13 +1,12 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import type { LearnCourse, LearnEntitlement, LearnGuide, Playbook } from "@/types/learn";
 import { getCourses, getGuides, getLearnEntitlement, getPlaybook } from "@/lib/api/learn";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 
-const eyebrow = { fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)", padding: "0 2px" } as const;
-const seeAll = { fontSize: 12.5, fontWeight: 600, color: "var(--accent)" } as const;
+const eyebrow = "text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]";
+const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]";
 
 export default async function LearnPage() {
   let entitlement: LearnEntitlement;
@@ -18,68 +17,30 @@ export default async function LearnPage() {
     [entitlement, courses, playbook, guides] = await Promise.all([getLearnEntitlement(), getCourses(), getPlaybook(), getGuides()]);
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load Learn."} />;
+    return <ErrorState title={message ?? "We couldn't load Learn."} />;
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div className="flex flex-col gap-5">
       <EntitlementBanner entitlement={entitlement} />
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={eyebrow}>Start here</span>
-        <Link href="/learn/playbook" style={{ textDecoration: "none", display: "block" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: 14,
-              padding: 16,
-              borderRadius: "var(--radius-card)",
-              background: "var(--surface-card)",
-              border: "1px solid var(--border-hairline)",
-            }}
-          >
-            <span
-              style={{
-                display: "grid",
-                placeItems: "center",
-                width: 56,
-                height: 72,
-                flexShrink: 0,
-                borderRadius: 10,
-                background: "var(--accent)",
-                color: "var(--text-on-accent)",
-                fontWeight: 800,
-                fontSize: 12,
-                letterSpacing: "0.02em",
-                textTransform: "uppercase",
-              }}
-            >
+      <section className="flex flex-col gap-2.5">
+        <span className={`px-[2px] ${eyebrow}`}>Start here</span>
+        <Link href="/learn/playbook" className="no-underline block">
+          <div className="flex gap-3.5 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-4">
+            <span className="grid h-[72px] w-[56px] shrink-0 place-items-center rounded-[10px] bg-[var(--accent)] text-[12px] font-extrabold uppercase tracking-[0.02em] text-[var(--text-on-accent)]">
               WAWU
             </span>
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--text-primary)", lineHeight: 1.3 }}>
+            <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+              <span className="text-[16px] font-bold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">
                 {playbook.title}
               </span>
-              <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
+              <span className="text-[12.5px] text-[var(--text-muted)]">
                 {playbook.pages} pages · {playbook.format} · Free download
               </span>
-              <div style={{ display: "flex" }}>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    height: 30,
-                    padding: "0 12px",
-                    borderRadius: "var(--radius-chip)",
-                    background: "var(--accent-tint)",
-                    border: "1px solid var(--border-accent)",
-                    color: "var(--accent)",
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                  }}
-                >
-                  <Icon name="Download" size={14} stroke={2.4} />
+              <div className="flex">
+                <span className="inline-flex h-[30px] items-center gap-1.5 rounded-[var(--radius-chip)] border border-[var(--border-accent)] bg-[var(--accent-tint)] px-3 text-[12.5px] font-bold text-[var(--accent)]">
+                  <Icon name="Download" size={14} strokeWidth={2.4} />
                   Free download
                 </span>
               </div>
@@ -88,44 +49,31 @@ export default async function LearnPage() {
         </Link>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 2px" }}>
-          <span style={{ flex: 1, ...eyebrow, padding: 0 }}>Courses</span>
-          <Link href="/learn/courses" style={seeAll}>See all {entitlement.totalCourses}</Link>
+      <section className="flex flex-col gap-[11px]">
+        <div className="flex items-center gap-2.5 px-[2px]">
+          <span className={`flex-1 ${eyebrow}`}>Courses</span>
+          <Link href="/learn/courses" className={seeAll}>See all {entitlement.totalCourses}</Link>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {courses.slice(0, 3).map((c) => (
             <CourseRow key={c.id} course={c} />
           ))}
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 2px" }}>
-          <span style={{ flex: 1, ...eyebrow, padding: 0 }}>Country guides</span>
-          <Link href="/learn/guides" style={seeAll}>See all {guides.length}</Link>
+      <section className="flex flex-col gap-[11px]">
+        <div className="flex items-center gap-2.5 px-[2px]">
+          <span className={`flex-1 ${eyebrow}`}>Country guides</span>
+          <Link href="/learn/guides" className={seeAll}>See all {guides.length}</Link>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "0 2px" }}>
+        <div className="flex flex-wrap gap-2 px-[2px]">
           {guides.slice(0, 6).map((g) => (
             <Link
               key={g.id}
               href={`/learn/guides/${g.id}`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                height: 34,
-                padding: "0 14px",
-                borderRadius: 999,
-                background: "var(--surface-tag)",
-                border: "1px solid var(--border-hairline)",
-                color: "var(--text-secondary)",
-                fontSize: 13,
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
+              className="inline-flex h-[34px] items-center gap-[7px] rounded-[999px] border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-3.5 text-[13px] font-semibold text-[var(--text-secondary)] no-underline"
             >
-              <Icon name="Globe" size={14} color="var(--text-muted)" stroke={2} />
+              <Icon name="Globe" size={14} color="var(--text-muted)" />
               {g.country}
             </Link>
           ))}
@@ -138,43 +86,22 @@ export default async function LearnPage() {
 function EntitlementBanner({ entitlement }: { entitlement: LearnEntitlement }) {
   const free = entitlement.freeCourses;
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: 13,
-        borderRadius: "var(--radius-card)",
-        background: "var(--surface-elevated)",
-        border: "1px solid var(--border-accent)",
-      }}
-    >
-      <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 38,
-          height: 38,
-          flexShrink: 0,
-          borderRadius: 12,
-          background: "var(--accent-tint)",
-          border: "1px solid var(--border-accent)",
-        }}
-      >
-        <Icon name="GraduationCap" size={17} color="var(--accent)" stroke={2} />
+    <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[13px]">
+      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <Icon name="GraduationCap" size={17} color="var(--accent)" />
       </span>
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 600, color: "var(--text-primary)" }}>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex items-center gap-2 text-[14.5px] font-semibold text-[var(--text-primary)]">
           {free} free course{free === 1 ? "" : "s"} available
-          <TierBadge tier={entitlement.tier} size="sm" />
+          <TierBadge tier={entitlement.tier} />
         </span>
-        <span style={{ fontSize: 12.5, color: "var(--text-secondary)" }}>
+        <span className="text-[12.5px] text-[var(--text-secondary)]">
           {entitlement.tier === "basic"
             ? "Upgrade to Pro to unlock the full catalogue."
             : "Pro unlocks every course."}
         </span>
       </div>
-      <Link href="/learn/courses" style={seeAll}>Browse</Link>
+      <Link href="/learn/courses" className={seeAll}>Browse</Link>
     </div>
   );
 }
@@ -183,47 +110,28 @@ function CourseRow({ course }: { course: LearnCourse }) {
   return (
     <Link
       href={`/learn/courses/${course.id}`}
-      style={{
-        display: "flex",
-        gap: 13,
-        padding: 13,
-        borderRadius: "var(--radius-card)",
-        background: "var(--surface-card)",
-        border: "1px solid var(--border-hairline)",
-        textDecoration: "none",
-      }}
+      className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline"
     >
-      <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 48,
-          height: 54,
-          flexShrink: 0,
-          borderRadius: 10,
-          background: "var(--surface-tag)",
-          border: "1px solid var(--border-hairline)",
-        }}
-      >
-        <Icon name="Play" size={18} color="var(--accent)" stroke={2} />
+      <span className="grid h-[54px] w-[48px] shrink-0 place-items-center rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
+        <Icon name="Play" size={18} color="var(--accent)" />
       </span>
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--text-muted)]">
           {course.category}
-          <span style={{ color: "var(--accent)" }}>★ {course.rating.toFixed(1)}</span>
+          <span className="text-[var(--accent)]">★ {course.rating.toFixed(1)}</span>
         </span>
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.3, letterSpacing: "-0.01em" }}>
+        <span className="text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">
           {course.title}
         </span>
-        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+        <span className="text-[12px] text-[var(--text-muted)]">
           {course.lessons} lessons · {course.minutes} min · {course.host.name}
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "flex-start" }}>
+      <div className="flex items-start">
         {course.price === 0 ? (
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)" }}>Free</span>
+          <span className="text-[12.5px] font-bold text-[var(--success)]">Free</span>
         ) : (
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[13px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
             ₦{course.price.toLocaleString("en-NG")}
           </span>
         )}

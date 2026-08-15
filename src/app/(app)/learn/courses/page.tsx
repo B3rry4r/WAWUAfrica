@@ -11,37 +11,37 @@ export default async function CoursesPage() {
     courses = await getCourses();
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState caption={message ?? "We couldn't load courses."} />;
+    return <ErrorState title={message ?? "We couldn't load courses."} />;
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "16px 16px 96px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex flex-col gap-3.5 p-[16px_16px_96px]">
+      <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
-        <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text-primary)" }}>
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           All courses
         </span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="flex flex-col gap-2.5">
         {courses.map((c) => (
           <Link
             key={c.id}
             href={`/learn/courses/${c.id}`}
-            style={{ display: "flex", gap: 13, padding: 13, borderRadius: "var(--radius-card)", background: "var(--surface-card)", border: "1px solid var(--border-hairline)", textDecoration: "none" }}
+            className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline"
           >
-            <span style={{ display: "grid", placeItems: "center", width: 48, height: 54, flexShrink: 0, borderRadius: 10, background: "var(--surface-tag)", border: "1px solid var(--border-hairline)" }}>
-              <Icon name="Play" size={18} color="var(--accent)" stroke={2} />
+            <span className="grid h-[54px] w-[48px] shrink-0 place-items-center rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
+              <Icon name="Play" size={18} color="var(--accent)" />
             </span>
-            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[var(--text-muted)]">
                 {c.category} · ★ {c.rating.toFixed(1)} · {c.students.toLocaleString("en-NG")} students
               </span>
-              <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{c.title}</span>
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+              <span className="text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--text-primary)]">{c.title}</span>
+              <span className="text-[12px] text-[var(--text-muted)]">
                 {c.lessons} lessons · {c.minutes} min · {c.host.name}
               </span>
             </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: c.price === 0 ? "var(--success)" : "var(--text-primary)", fontFeatureSettings: "var(--font-feature-tabular)" }}>
+            <span className={`text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)] ${c.price === 0 ? "text-[var(--success)]" : "text-[var(--text-primary)]"}`}>
               {c.price === 0 ? "Free" : `₦${c.price.toLocaleString("en-NG")}`}
             </span>
           </Link>
