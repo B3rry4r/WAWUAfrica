@@ -17,7 +17,7 @@ interface AppHeaderProps {
  * "/services/cac", "/services/mentors/[id]", etc). Add new screens here as
  * they grow their own header instead of hardcoding exact paths.
  */
-const OWN_HEADER_ROUTES = ["/search", "/notifications", "/content", "/purchases", "/services", "/subscription"];
+const OWN_HEADER_ROUTES = ["/search", "/notifications", "/content", "/purchases", "/services", "/subscription", "/create/new"];
 
 /** Exported so DesktopHeader can hide on the same routes at xl width. */
 export function hasOwnHeader(pathname: string) {
