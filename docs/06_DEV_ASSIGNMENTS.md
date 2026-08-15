@@ -1,7 +1,9 @@
 # Frontend Assignments — 3 devs
 
-**Phase: mobile only (390px).** Desktop designs are in progress. Do not build desktop
-layouts. `design/_wip/` is off limits.
+**Historical record.** This table documents the original mobile build-out
+(390px), now complete and merged to `main`. Desktop designs are now approved
+and implementation is underway — see `CLAUDE.md`'s Current phase and
+`design/screens/desktop/*.dc.html`.
 
 **Before anyone starts**, the shared foundation must be merged (owned by lead):
 design tokens as code, `src/components/ui/` primitives, the app shell + locked bottom
