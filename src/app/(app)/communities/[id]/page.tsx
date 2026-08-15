@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Community, CommunityMessage } from "@/types/credits";
 import { getCommunity, getCommunityMessages, getCreditsState, joinCommunity, sendCommunityMessage } from "@/lib/api/communities";
@@ -26,26 +26,31 @@ export default function CommunityDetailPage() {
   const [balance, setBalance] = useState(0);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState(false);
+  // "not-found": the community genuinely doesn't exist — retrying won't help, offer a way back instead.
+  // "failed": the fetch itself errored — plausibly transient, offer a retry.
+  const [errorKind, setErrorKind] = useState<"not-found" | "failed" | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let active = true;
+    setErrorKind(null);
     Promise.all([getCommunity(id), getCommunityMessages(id), getCreditsState()])
       .then(([c, msgs, credits]) => {
         if (!active) return;
         if (!c) {
-          setError(true);
+          setErrorKind("not-found");
           return;
         }
         setCommunity(c);
         setMessages(msgs);
         setBalance(credits.creditBalance);
       })
-      .catch(() => active && setError(true));
+      .catch(() => active && setErrorKind("failed"));
     return () => {
       active = false;
     };
   }, [id]);
+
+  useEffect(() => load(), [load]);
 
   const doJoin = async () => {
     if (!community) return;
@@ -66,10 +71,27 @@ export default function CommunityDetailPage() {
     }
   };
 
-  if (error) {
+  if (errorKind === "not-found") {
     return (
       <div className="p-4">
-        <ErrorState title="Community not found" body="This community may have been removed." />
+        <ErrorState
+          title="Community not found"
+          body="This community may have been removed."
+          onRetry={() => router.push("/communities")}
+          retryLabel="Back to communities"
+        />
+      </div>
+    );
+  }
+
+  if (errorKind === "failed") {
+    return (
+      <div className="p-4">
+        <ErrorState
+          title="Couldn't load this community"
+          body="Check your connection and try again."
+          onRetry={load}
+        />
       </div>
     );
   }

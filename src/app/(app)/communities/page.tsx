@@ -1,7 +1,7 @@
 import { getCommunities, getCreditsState } from "@/lib/api/communities";
 import { CreditsCard } from "@/components/communities/CreditsCard";
 import { CommunityTabs } from "@/components/communities/CommunityTabs";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { CommunitiesErrorRetry } from "@/components/communities/CommunitiesErrorRetry";
 
 export default async function CommunitiesPage() {
   let credits;
@@ -11,7 +11,7 @@ export default async function CommunitiesPage() {
     [credits, joined, discover] = await Promise.all([getCreditsState(), getCommunities("joined"), getCommunities("discover")]);
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title={message ?? "We couldn't load communities."} />;
+    return <CommunitiesErrorRetry title={message ?? "We couldn't load communities."} />;
   }
 
   return (
