@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, Icon, Input } from "@/components/ui";
@@ -10,6 +11,11 @@ import { payCacApplication } from "@/lib/api/services";
 
 type Step = 1 | 2 | 3;
 const STEP_LABELS = ["Details", "Documents", "Review"];
+const RAIL_STEPS: { n: Step; label: string }[] = [
+  { n: 1, label: "Business details" },
+  { n: 2, label: "Documents" },
+  { n: 3, label: "Review and pay" },
+];
 const REGISTRATION_FEE = 25000;
 
 type RegistrationType = "business_name" | "limited_company";
@@ -133,6 +139,7 @@ export default function CacApplyPage() {
   };
 
   const allDocsUploaded = docs.every((d) => d.state === "uploaded");
+  const docsReadyCount = docs.filter((d) => d.state === "uploaded").length;
 
   const next = () => {
     if (step === 1) {
@@ -177,7 +184,7 @@ export default function CacApplyPage() {
 
   if (result) {
     return (
-      <div className="flex flex-col items-center gap-[18px] p-[40px_28px_96px] text-center">
+      <div className="flex flex-col items-center gap-[18px] p-[40px_28px_96px] text-center xl:mx-auto xl:mt-[8vh] xl:max-w-[440px] xl:p-0">
         <span className="grid h-[88px] w-[88px] place-items-center rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)]">
           <Icon name="Check" size={40} color="var(--accent)" strokeWidth={2.6} />
         </span>
@@ -217,261 +224,399 @@ export default function CacApplyPage() {
     );
   }
 
-  return (
-    <div className="flex flex-col gap-[16px] p-[14px_16px_96px]">
-      <div className="flex items-center gap-[10px]">
-        <ProfileBackButton compact />
-        <span className="flex-1 text-[16px] font-semibold text-[var(--text-primary)]">CAC registration</span>
-        <span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{step} of 3</span>
+  // Shared step content — built once and reused by both the mobile stacked flow
+  // and the xl three-column layout, so the two never drift apart.
+  const failedBanner = payPhase === "failed" && (
+    <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,92,92,0.32)] bg-[var(--danger-tint)] p-[13px_14px]">
+      <Icon name="CircleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-[1px]" />
+      <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--danger)]">
+        Your bank didn&apos;t confirm the payment. Nothing was charged — try again.
+      </span>
+    </div>
+  );
+
+  const step1Content = (
+    <div className="flex flex-col gap-[16px]">
+      <div className="flex flex-col gap-[6px]">
+        <h2 className="m-0 text-[21px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Business details</h2>
+        <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+          Give three name choices in order of preference. CAC takes the first one that is free.
+        </p>
       </div>
 
-      <div className="flex gap-[6px]">
-        {[1, 2, 3].map((s) => (
-          <span key={s} className={`h-[4px] flex-1 rounded-full transition-colors duration-200 ${step >= s ? "bg-[var(--accent)]" : "bg-[var(--surface-tag)]"}`} />
-        ))}
-      </div>
-
-      {step === 1 && (
-        <div className="flex flex-col gap-[16px]">
-          <div className="flex flex-col gap-[6px]">
-            <h2 className="m-0 text-[21px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Business details</h2>
-            <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-              Give three name choices in order of preference. CAC takes the first one that is free.
-            </p>
-          </div>
-
-          {showNameErrors && nameErrorCount > 0 && (
-            <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,92,92,0.32)] bg-[var(--danger-tint)] p-[13px_14px]">
-              <Icon name="CircleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-[1px]" />
-              <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--danger)]">
-                {nameErrorCount} {nameErrorCount === 1 ? "thing" : "things"} to fix before you can continue.
-              </span>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-[8px]">
-            <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Registration type</span>
-            <div className="flex gap-[8px]">
-              {(
-                [
-                  { value: "business_name", label: "Business name" },
-                  { value: "limited_company", label: "Limited company" },
-                ] as const
-              ).map((opt) => {
-                const active = regType === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setRegType(opt.value)}
-                    className={[
-                      "h-[44px] flex-1 cursor-pointer rounded-full border text-[13px] font-semibold",
-                      active
-                        ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--text-on-accent)]"
-                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]",
-                    ].join(" ")}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <Input
-            label="First choice"
-            value={first}
-            onChange={(e) => setFirst(e.target.value)}
-            placeholder="e.g. Okeke Farms Enugu"
-            error={showNameErrors ? nameErrors.first : undefined}
-          />
-          <Input
-            label="Second choice"
-            value={second}
-            onChange={(e) => setSecond(e.target.value)}
-            placeholder="e.g. Ada Okeke Agro"
-            error={showNameErrors ? nameErrors.second : undefined}
-          />
-          <Input
-            label="Third choice"
-            value={third}
-            onChange={(e) => setThird(e.target.value)}
-            placeholder="A third option"
-            error={showNameErrors ? nameErrors.third : undefined}
-          />
-
-          <div className="flex flex-col gap-[8px]">
-            <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Nature of business</span>
-            <div className="relative">
-              <select
-                value={nature}
-                onChange={(e) => setNature(e.target.value)}
-                aria-label="Nature of business"
-                className="h-[52px] w-full cursor-pointer appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] pr-[40px] text-[15px] text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
-              >
-                {NATURE_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2">
-                <Icon name="ChevronDown" size={16} color="var(--text-muted)" strokeWidth={2.2} />
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
-            <Icon name="Info" size={15} color="var(--text-muted)" className="mt-[1px]" />
-            <span className="flex-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
-              Names cannot contain “Federal”, “National” or “Nigeria” without special approval.
-            </span>
-          </div>
+      {showNameErrors && nameErrorCount > 0 && (
+        <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,92,92,0.32)] bg-[var(--danger-tint)] p-[13px_14px]">
+          <Icon name="CircleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-[1px]" />
+          <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--danger)]">
+            {nameErrorCount} {nameErrorCount === 1 ? "thing" : "things"} to fix before you can continue.
+          </span>
         </div>
       )}
 
-      {step === 2 && (
-        <div className="flex flex-col gap-[16px]">
-          <div className="flex flex-col gap-[6px]">
-            <h2 className="m-0 text-[21px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Documents</h2>
-            <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">Photos are fine as long as the text is readable.</p>
-          </div>
-
-          {docs.map((doc) =>
-            doc.state === "empty" ? (
-              <div
-                key={doc.key}
-                className="flex flex-col items-center justify-center gap-[11px] rounded-[var(--radius-media)] border border-dashed border-[var(--border-strong)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] p-[26px_20px]"
+      <div className="flex flex-col gap-[8px]">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Registration type</span>
+        <div className="flex gap-[8px]">
+          {(
+            [
+              { value: "business_name", label: "Business name" },
+              { value: "limited_company", label: "Limited company" },
+            ] as const
+          ).map((opt) => {
+            const active = regType === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setRegType(opt.value)}
+                className={[
+                  "h-[44px] flex-1 cursor-pointer rounded-full border text-[13px] font-semibold",
+                  active
+                    ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--text-on-accent)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]",
+                ].join(" ")}
               >
-                <span className="grid h-[44px] w-[44px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
-                  <Icon name="Plus" size={19} color="var(--text-secondary)" strokeWidth={2.2} />
-                </span>
-                <span className="text-[14px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">Plain background, face clear</span>
-              </div>
-            ) : (
-              <div
-                key={doc.key}
-                className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]"
-              >
-                <div className="flex items-center gap-[13px]">
-                  <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-                    <Icon name={doc.icon} size={18} color="var(--accent)" strokeWidth={2} />
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                    <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
-                    <span className="text-[12px] text-[var(--text-muted)]">
-                      {doc.filename} {doc.state === "uploading" ? "· uploading" : doc.sizeLabel ? `· ${doc.sizeLabel}` : ""}
-                    </span>
-                  </div>
-                  {doc.state === "uploaded" ? (
-                    <Icon name="Check" size={18} color="var(--success)" strokeWidth={2.6} />
-                  ) : (
-                    <span className="text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{doc.progress ?? 0}%</span>
-                  )}
-                </div>
-                {doc.state === "uploading" && (
-                  <div className="h-[5px] overflow-hidden rounded-full bg-[var(--surface-tag)]">
-                    <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-300" style={{ width: `${doc.progress ?? 0}%` }} />
-                  </div>
-                )}
-              </div>
-            ),
-          )}
-
-          <div className="flex gap-[10px]">
-            <Button variant="secondary" icon="Camera" className="flex-1" onClick={() => addPassportPhoto("camera")}>
-              Take a photo
-            </Button>
-            <Button variant="secondary" icon="Paperclip" className="flex-1" onClick={() => addPassportPhoto("file")}>
-              Choose file
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="flex flex-col gap-[16px]">
-          {payPhase === "failed" && (
-            <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,92,92,0.32)] bg-[var(--danger-tint)] p-[13px_14px]">
-              <Icon name="CircleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-[1px]" />
-              <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--danger)]">
-                Your bank didn&apos;t confirm the payment. Nothing was charged — try again.
-              </span>
-            </div>
-          )}
-
-          <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
-            <ReviewRow label="Type" value={regType === "business_name" ? "Business name" : "Limited company"} onEdit={() => setStep(1)} />
-            <div className="flex items-start gap-[12px] border-b border-[var(--border-hairline)] p-[14px_16px]">
-              <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Names</span>
-              <div className="flex flex-col items-end gap-[3px]">
-                <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{first || "—"}</span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">{second || "—"}</span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">{third || "—"}</span>
-              </div>
-              <button type="button" onClick={() => setStep(1)} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)]">
-                Edit
+                {opt.label}
               </button>
-            </div>
-            <ReviewRow label="Nature" value={nature} onEdit={() => setStep(1)} />
-            <ReviewRow label="Documents" value={`${docs.filter((d) => d.state === "uploaded").length} attached`} onEdit={() => setStep(2)} last />
-          </div>
-
-          <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
-            <div className="flex items-center gap-[10px]">
-              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Registration fee</span>
-              <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(REGISTRATION_FEE)}</span>
-            </div>
-            <div className="flex items-baseline gap-[10px] border-t border-[var(--border-hairline)] pt-[11px]">
-              <span className="flex-1 text-[15px] font-semibold text-[var(--text-primary)]">Due now</span>
-              <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(REGISTRATION_FEE)}</span>
-            </div>
-            <span className="text-[12px] leading-[1.45] text-[var(--text-muted)]">Refunded in full if all three names are already taken.</span>
-          </div>
-
-          <button type="button" onClick={() => setConfirmed((v) => !v)} className="flex cursor-pointer items-start gap-[11px] border-0 bg-transparent p-0 text-left">
-            <span
-              className={[
-                "mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] border",
-                confirmed ? "border-[var(--accent)] bg-[var(--accent)]" : "border-[var(--border-hairline)] bg-transparent",
-              ].join(" ")}
-            >
-              {confirmed && <Icon name="Check" size={14} color="#fff" strokeWidth={3} />}
-            </span>
-            <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">The details above are correct and the documents are mine.</span>
-          </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
-      <div className="mt-[4px] flex gap-[10px]">
-        {step > 1 && step !== 3 && (
-          <Button variant="secondary" onClick={() => setStep((s) => (s - 1) as Step)}>
-            Back
-          </Button>
-        )}
-        {step === 1 && (
-          <Button full size="lg" iconRight="ArrowRight" onClick={next}>
-            Continue
-          </Button>
-        )}
-        {step === 2 && (
-          <Button full size="lg" iconRight="ArrowRight" disabled={!allDocsUploaded} onClick={next}>
-            Continue
-          </Button>
-        )}
-        {step === 3 && (
-          <div className="flex w-full flex-col gap-[10px]">
-            <Button full size="lg" disabled={!confirmed} loading={payPhase === "processing"} onClick={payAndSubmit}>
-              {payPhase === "failed" ? "Try again" : `Pay ${formatNaira(REGISTRATION_FEE)} and submit`}
-            </Button>
-            <Button variant="ghost" onClick={() => setStep(2)}>
-              Back
-            </Button>
-          </div>
-        )}
+      <Input
+        label="First choice"
+        value={first}
+        onChange={(e) => setFirst(e.target.value)}
+        placeholder="e.g. Okeke Farms Enugu"
+        error={showNameErrors ? nameErrors.first : undefined}
+      />
+      <Input
+        label="Second choice"
+        value={second}
+        onChange={(e) => setSecond(e.target.value)}
+        placeholder="e.g. Ada Okeke Agro"
+        error={showNameErrors ? nameErrors.second : undefined}
+      />
+      <Input
+        label="Third choice"
+        value={third}
+        onChange={(e) => setThird(e.target.value)}
+        placeholder="A third option"
+        error={showNameErrors ? nameErrors.third : undefined}
+      />
+
+      <div className="flex flex-col gap-[8px]">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Nature of business</span>
+        <div className="relative">
+          <select
+            value={nature}
+            onChange={(e) => setNature(e.target.value)}
+            aria-label="Nature of business"
+            className="h-[52px] w-full cursor-pointer appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] pr-[40px] text-[15px] text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+          >
+            {NATURE_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2">
+            <Icon name="ChevronDown" size={16} color="var(--text-muted)" strokeWidth={2.2} />
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
+        <Icon name="Info" size={15} color="var(--text-muted)" className="mt-[1px]" />
+        <span className="flex-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+          Names cannot contain “Federal”, “National” or “Nigeria” without special approval.
+        </span>
       </div>
     </div>
+  );
+
+  const step2Content = (
+    <div className="flex flex-col gap-[16px]">
+      <div className="flex flex-col gap-[6px]">
+        <h2 className="m-0 text-[21px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Documents</h2>
+        <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">Photos are fine as long as the text is readable.</p>
+      </div>
+
+      {docs.map((doc) =>
+        doc.state === "empty" ? (
+          <div
+            key={doc.key}
+            className="flex flex-col items-center justify-center gap-[11px] rounded-[var(--radius-media)] border border-dashed border-[var(--border-strong)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] p-[26px_20px]"
+          >
+            <span className="grid h-[44px] w-[44px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
+              <Icon name="Plus" size={19} color="var(--text-secondary)" strokeWidth={2.2} />
+            </span>
+            <span className="text-[14px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
+            <span className="text-[12.5px] text-[var(--text-muted)]">Plain background, face clear</span>
+          </div>
+        ) : (
+          <div
+            key={doc.key}
+            className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]"
+          >
+            <div className="flex items-center gap-[13px]">
+              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+                <Icon name={doc.icon} size={18} color="var(--accent)" strokeWidth={2} />
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
+                <span className="text-[12px] text-[var(--text-muted)]">
+                  {doc.filename} {doc.state === "uploading" ? "· uploading" : doc.sizeLabel ? `· ${doc.sizeLabel}` : ""}
+                </span>
+              </div>
+              {doc.state === "uploaded" ? (
+                <Icon name="Check" size={18} color="var(--success)" strokeWidth={2.6} />
+              ) : (
+                <span className="text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{doc.progress ?? 0}%</span>
+              )}
+            </div>
+            {doc.state === "uploading" && (
+              <div className="h-[5px] overflow-hidden rounded-full bg-[var(--surface-tag)]">
+                <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-300" style={{ width: `${doc.progress ?? 0}%` }} />
+              </div>
+            )}
+          </div>
+        ),
+      )}
+
+      <div className="flex gap-[10px]">
+        <Button variant="secondary" icon="Camera" className="flex-1" onClick={() => addPassportPhoto("camera")}>
+          Take a photo
+        </Button>
+        <Button variant="secondary" icon="Paperclip" className="flex-1" onClick={() => addPassportPhoto("file")}>
+          Choose file
+        </Button>
+      </div>
+    </div>
+  );
+
+  const reviewRows = (
+    <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
+      <ReviewRow label="Type" value={regType === "business_name" ? "Business name" : "Limited company"} onEdit={() => setStep(1)} />
+      <div className="flex items-start gap-[12px] border-b border-[var(--border-hairline)] p-[14px_16px]">
+        <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Names</span>
+        <div className="flex flex-col items-end gap-[3px]">
+          <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{first || "—"}</span>
+          <span className="text-[12.5px] text-[var(--text-muted)]">{second || "—"}</span>
+          <span className="text-[12.5px] text-[var(--text-muted)]">{third || "—"}</span>
+        </div>
+        <button type="button" onClick={() => setStep(1)} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)]">
+          Edit
+        </button>
+      </div>
+      <ReviewRow label="Nature" value={nature} onEdit={() => setStep(1)} />
+      <ReviewRow label="Documents" value={`${docsReadyCount} attached`} onEdit={() => setStep(2)} last />
+    </div>
+  );
+
+  const confirmToggle = (
+    <button type="button" onClick={() => setConfirmed((v) => !v)} className="flex cursor-pointer items-start gap-[11px] border-0 bg-transparent p-0 text-left">
+      <span
+        className={[
+          "mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] border",
+          confirmed ? "border-[var(--accent)] bg-[var(--accent)]" : "border-[var(--border-hairline)] bg-transparent",
+        ].join(" ")}
+      >
+        {confirmed && <Icon name="Check" size={14} color="#fff" strokeWidth={3} />}
+      </span>
+      <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">The details above are correct and the documents are mine.</span>
+    </button>
+  );
+
+  const priceCard = (
+    <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+      <div className="flex items-center gap-[10px]">
+        <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Registration fee</span>
+        <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(REGISTRATION_FEE)}</span>
+      </div>
+      <div className="flex items-baseline gap-[10px] border-t border-[var(--border-hairline)] pt-[11px]">
+        <span className="flex-1 text-[15px] font-semibold text-[var(--text-primary)]">Due now</span>
+        <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(REGISTRATION_FEE)}</span>
+      </div>
+      <span className="text-[12px] leading-[1.45] text-[var(--text-muted)]">Refunded in full if all three names are already taken.</span>
+    </div>
+  );
+
+  // Mobile-only: step 3 carries its own price card. At xl the price lives
+  // permanently in the right rail instead, so the review step there is just
+  // the recap + confirmation.
+  const step3Content = (
+    <div className="flex flex-col gap-[16px]">
+      {failedBanner}
+      {reviewRows}
+      {priceCard}
+      {confirmToggle}
+    </div>
+  );
+  const step3ContentDesktop = (
+    <div className="flex flex-col gap-[16px]">
+      {failedBanner}
+      {reviewRows}
+      {confirmToggle}
+    </div>
+  );
+
+  const navButtons = (
+    <div className="flex gap-[10px]">
+      {step > 1 && step !== 3 && (
+        <Button variant="secondary" onClick={() => setStep((s) => (s - 1) as Step)}>
+          Back
+        </Button>
+      )}
+      {step === 1 && (
+        <Button full size="lg" iconRight="ArrowRight" onClick={next}>
+          Continue
+        </Button>
+      )}
+      {step === 2 && (
+        <Button full size="lg" iconRight="ArrowRight" disabled={!allDocsUploaded} onClick={next}>
+          Continue
+        </Button>
+      )}
+      {step === 3 && (
+        <div className="flex w-full flex-col gap-[10px]">
+          <Button full size="lg" disabled={!confirmed} loading={payPhase === "processing"} onClick={payAndSubmit}>
+            {payPhase === "failed" ? "Try again" : `Pay ${formatNaira(REGISTRATION_FEE)} and submit`}
+          </Button>
+          <Button variant="ghost" onClick={() => setStep(2)}>
+            Back
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  // Live cost breakdown for the xl right rail — same registration fee the
+  // mobile flow charges (never invents a differential rate), but it does
+  // reflect real state as it's filled in: chosen structure and how many
+  // documents are ready.
+  const costCard = (
+    <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
+      <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">What you pay</span>
+      <div className="flex items-center justify-between text-[13.5px] text-[var(--text-secondary)]">
+        <span>Structure</span>
+        <span className="font-semibold text-[var(--text-primary)]">{regType === "business_name" ? "Business name" : "Limited company"}</span>
+      </div>
+      <div className="flex items-center justify-between text-[13.5px] text-[var(--text-secondary)]">
+        <span>Documents ready</span>
+        <span className="[font-feature-settings:var(--font-feature-tabular)]">
+          {docsReadyCount} of {docs.length}
+        </span>
+      </div>
+      <div className="flex items-center justify-between text-[13.5px] text-[var(--text-secondary)]">
+        <span>Registration fee</span>
+        <span className="[font-feature-settings:var(--font-feature-tabular)]">{formatNaira(REGISTRATION_FEE)}</span>
+      </div>
+      <div className="flex items-baseline justify-between border-t border-[var(--border-hairline)] pt-[10px] text-[16px] font-bold text-[var(--text-primary)]">
+        <span>Due now</span>
+        <span className="[font-feature-settings:var(--font-feature-tabular)]">{formatNaira(REGISTRATION_FEE)}</span>
+      </div>
+      <span className="text-[12px] leading-[1.45] text-[var(--text-muted)]">Refunded in full if all three names are already taken.</span>
+    </div>
+  );
+
+  const youWillNeedCard = (
+    <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
+      <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">You will need</span>
+      <span className="text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
+        A valid ID, a passport photo, and your proprietors&apos; signatures. Photos of originals are fine.
+      </span>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="flex flex-col gap-[16px] p-[14px_16px_96px] xl:hidden">
+        <div className="flex items-center gap-[10px]">
+          <ProfileBackButton compact />
+          <span className="flex-1 text-[16px] font-semibold text-[var(--text-primary)]">CAC registration</span>
+          <span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{step} of 3</span>
+        </div>
+
+        <div className="flex gap-[6px]">
+          {[1, 2, 3].map((s) => (
+            <span key={s} className={`h-[4px] flex-1 rounded-full transition-colors duration-200 ${step >= s ? "bg-[var(--accent)]" : "bg-[var(--surface-tag)]"}`} />
+          ))}
+        </div>
+
+        {step === 1 && step1Content}
+        {step === 2 && step2Content}
+        {step === 3 && step3Content}
+
+        <div className="mt-[4px]">{navButtons}</div>
+      </div>
+
+      {/* D13 frame 2 — 280px step rail / flex form / 340px live cost, replacing the mobile review-with-price step. */}
+      <div className="hidden xl:flex xl:h-full xl:min-h-0 xl:flex-1 xl:flex-col">
+        <div
+          className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
+          style={{ backdropFilter: "var(--blur-chrome)" }}
+        >
+          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
+            <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+            Services
+          </Link>
+          <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">CAC registration</span>
+          <span className="flex-1" />
+          <span className="text-[13.5px] text-[var(--text-muted)]">Saved automatically</span>
+        </div>
+
+        <div className="grid min-h-0 flex-1 grid-cols-[280px_1fr_340px] gap-[26px] overflow-hidden p-[26px]">
+          <div className="flex min-h-0 flex-col gap-[14px]">
+            {RAIL_STEPS.map(({ n, label }) => {
+              const state = n === step ? "current" : n < step ? "done" : "upcoming";
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => n <= step && setStep(n)}
+                  disabled={n > step}
+                  className={[
+                    "flex items-center gap-[11px] rounded-[var(--radius-input)] border p-[14px_16px] text-left",
+                    state === "current" ? "border-[var(--border-accent)] bg-[var(--accent-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
+                    n <= step ? "cursor-pointer" : "cursor-default",
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "grid h-[24px] w-[24px] shrink-0 place-items-center rounded-full text-[12px] font-bold",
+                      state === "done"
+                        ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+                        : state === "current"
+                          ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+                          : "bg-[var(--surface-tag)] text-[var(--text-muted)]",
+                    ].join(" ")}
+                  >
+                    {state === "done" ? <Icon name="Check" size={12} color="var(--text-on-accent)" strokeWidth={3} /> : n}
+                  </span>
+                  <span className={`text-[13.5px] ${state === "current" ? "font-semibold text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{label}</span>
+                </button>
+              );
+            })}
+            <div className="mt-auto flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+              <span className="text-[12.5px] font-semibold text-[var(--text-primary)]">Need help?</span>
+              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your answers before you pay — free.</span>
+            </div>
+          </div>
+
+          <div className="flex min-h-0 flex-col gap-[16px] overflow-y-auto">
+            {step === 1 && step1Content}
+            {step === 2 && step2Content}
+            {step === 3 && step3ContentDesktop}
+            <div className="mt-auto pt-[8px]">{navButtons}</div>
+          </div>
+
+          <div className="flex min-h-0 flex-col gap-[16px] overflow-y-auto">
+            {costCard}
+            {youWillNeedCard}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
