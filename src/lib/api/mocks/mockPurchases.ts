@@ -1,5 +1,6 @@
 import type { Purchase, PurchasesResponse } from "@/types/purchase";
 
+// SEAM: replace with GET /api/hub/content/purchases
 export const mockPurchases: PurchasesResponse = {
   items: [
     { id: "p1", contentId: "cac-in-7-days", contentType: "course", title: "CAC in 7 days", creatorName: "Adaeze Okonkwo", price: 2500, purchasedAt: "2026-08-12T09:00:00Z" },

@@ -12,7 +12,7 @@ Each dev owns whole flows end to end — routes, components, states, wiring. Not
 
 ---
 
-## Dev A — Consumer core
+## ev A — Consumer core
 The main loop a normal user lives in.
 
 | Flow | Design file |
