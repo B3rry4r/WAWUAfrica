@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, Icon, Input } from "@/components/ui";
+import { formatNaira } from "@/lib/format";
 
 type Step = 1 | 2 | 3;
 const STEP_LABELS = ["Details", "Documents", "Review"];
@@ -158,7 +159,7 @@ export default function CacApplyPage() {
           <ReviewRow label="Documents" value={`${docs.length} added`} />
           <div className="flex items-center justify-between rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[12px_14px]">
             <span className="text-[14px] font-semibold text-[var(--text-primary)]">Registration fee</span>
-            <span className="text-[15px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">From ₦25,000</span>
+            <span className="text-[15px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">From {formatNaira(25000)}</span>
           </div>
         </div>
       )}

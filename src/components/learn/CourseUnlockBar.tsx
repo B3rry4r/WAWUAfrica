@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { UnlockCourseSheet } from "./UnlockCourseSheet";
 import { Button } from "@/components/ui/Button";
+import { formatNaira } from "@/lib/format";
 
 /** Sticky bottom bar: free → "Start learning", paid → unlocks via sheet. */
 export function CourseUnlockBar({ title, price }: { title: string; price: number }) {
@@ -16,7 +17,7 @@ export function CourseUnlockBar({ title, price }: { title: string; price: number
       ) : (
         <>
           <Button full size="lg" onClick={() => setOpen(true)}>
-            Unlock course · ₦{price.toLocaleString("en-NG")}
+            Unlock course · {formatNaira(price)}
           </Button>
           <UnlockCourseSheet open={open} onClose={() => setOpen(false)} title={title} price={price} />
         </>

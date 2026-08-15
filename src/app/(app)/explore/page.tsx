@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCategories } from "@/lib/api/explore";
+import { formatNaira } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { HandoffPill } from "@/components/ui/HandoffPill";
@@ -58,7 +59,7 @@ export default async function ExplorePage() {
           <Link href="/services" className={seeAll}>See all</Link>
         </div>
         <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-          <ListRow title="CAC registration" subtitle="From ₦25,000 · 7 to 14 days" icon="Stamp" href="/services" />
+          <ListRow title="CAC registration" subtitle={`From ${formatNaira(25000)} · 7 to 14 days`} icon="Stamp" href="/services" />
           <ListRow title="NEPC, mentors and more" subtitle="3 open · 4 coming with Pro" icon="Briefcase" href="/services" />
         </div>
       </section>
