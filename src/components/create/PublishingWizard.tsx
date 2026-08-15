@@ -106,7 +106,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
 
   return (
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
-      <FlowHeader title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{stepLabel}</span>} />
+      <FlowHeader title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepLabel}</span>} />
 
       <div className="flex-1 py-[18px] px-[16px] flex flex-col gap-[18px]">
         {publishError ? (
@@ -164,7 +164,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
             <Button full size="lg" loading={publishing} onClick={submit}>
               {resubmit ? "Resubmit for review" : firstUpload ? "Publish free" : "Submit for review"}
             </Button>
-            <span className="text-[12px] text-[var(--text-muted)]" style={{alignSelf: "center"}}>
+            <span className="text-[12px] text-[var(--text-muted)] self-center">
               {resubmit
                 ? "Reviewed again before it goes live."
                 : firstUpload
@@ -192,9 +192,9 @@ function UploadStep({ type }: { type: ContentType }) {
             <span className="text-[14.5px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-[var(--text-primary)]">
               {file.file}
             </span>
-            <span className="text-[12px] text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{file.meta}</span>
+            <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{file.meta}</span>
           </div>
-          <span className="text-[13px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>68%</span>
+          <span className="text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)]">68%</span>
         </div>
         <div className="h-[5px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden">
           <div className="w-[68%] h-full rounded-[999] bg-[var(--accent)]" />
@@ -255,10 +255,10 @@ function PreviewStep({ type }: { type: ContentType }) {
         <div className="flex flex-col gap-[13px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
           <div className="flex items-baseline gap-[12px]">
             <span className="flex-1 text-[14px] font-semibold text-[var(--text-primary)]">Pages shown free</span>
-            <span className="text-[22px] font-bold tracking-[-0.02em]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>4</span>
+            <span className="text-[22px] font-bold tracking-[-0.02em] [font-feature-settings:var(--font-feature-tabular)]">4</span>
           </div>
-          <input type="range" min={1} max={10} defaultValue={4} className="w-full h-[24px] cursor-pointer" style={{accentColor: "var(--accent)"}} />
-          <div className="flex justify-between text-[11.5px] text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+          <input type="range" min={1} max={10} defaultValue={4} className="w-full h-[24px] cursor-pointer accent-[var(--accent)]" />
+          <div className="flex justify-between text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
             <span>1 page</span>
             <span>10 pages</span>
           </div>
@@ -274,8 +274,8 @@ function PreviewStep({ type }: { type: ContentType }) {
           <div className="flex-1 aspect-[3_/_4] rounded-[10] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
           <div className="flex-1 aspect-[3_/_4] rounded-[10] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
           <div className="relative flex-1 aspect-[3_/_4] rounded-[10] overflow-hidden border border-[var(--border-hairline)]">
-            <div className="absolute bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]" style={{inset: 0, filter: "blur(8px)", transform: "scale(1.12)"}} />
-            <div className="absolute bg-[var(--locked-veil)] grid place-items-center" style={{inset: 0}}>
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] blur-[8px] scale-[1.12]" />
+            <div className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center">
               <Icon name="Lock" size={16} strokeWidth={2.2} color="#fff" />
             </div>
           </div>
@@ -302,7 +302,7 @@ function DetailsStep({ title, onTitle }: { title: string; onTitle: (v: string) =
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Category</span>
         <button
           type="button"
-          className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer text-left" style={{fontFamily: "var(--font-sans)"}}
+          className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer text-left font-[var(--font-sans)]"
         >
           <span className="flex-1">Business</span>
           <Icon name="ChevronDown" size={16} strokeWidth={2.2} color="var(--text-muted)" />
@@ -370,7 +370,7 @@ function PriceStep({
         </div>
       ) : null}
 
-      <div className="flex gap-[4px] p-[4px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)]" style={{opacity: firstUpload ? 0.55 : 1}}>
+      <div className={`flex gap-[4px] p-[4px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] ${firstUpload ? "opacity-[0.55]" : "opacity-100"}`}>
         {["Free", "Paid"].map((label) => {
           const active = (label === "Paid") === paid;
           return (
@@ -379,7 +379,13 @@ function PriceStep({
               type="button"
               disabled={firstUpload && label === "Paid"}
               onClick={() => onPaid(label === "Paid")}
-              className="flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold" style={{background: active ? "var(--accent)" : "transparent", color: active ? "var(--text-on-accent)" : firstUpload && label === "Paid" ? "var(--text-disabled)" : "var(--text-secondary)", fontFamily: "var(--font-sans)", cursor: firstUpload && label === "Paid" ? "not-allowed" : "pointer"}}
+              className={`flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold font-[var(--font-sans)] ${
+                active
+                  ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+                  : firstUpload && label === "Paid"
+                    ? "bg-transparent text-[var(--text-disabled)]"
+                    : "bg-transparent text-[var(--text-secondary)]"
+              } ${firstUpload && label === "Paid" ? "cursor-not-allowed" : "cursor-pointer"}`}
             >
               {firstUpload && label === "Paid" ? (
                 <span className="inline-flex items-center gap-[7px]">
@@ -403,7 +409,7 @@ function PriceStep({
           </div>
           <div className="flex gap-[11px]">
             <span className="grid place-items-center w-[22px] h-[22px] rounded-[999] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">2</span>
-            <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">Your next upload can carry any price from ₦100 to ₦5,000.</span>
+            <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">Your next upload can carry any price from {formatNaira(100)} to {formatNaira(5000)}.</span>
           </div>
         </div>
       ) : paid ? (
@@ -413,20 +419,20 @@ function PriceStep({
             value={price}
             onChange={onPrice}
             presets={[500, 1000, 1500, 2500]}
-            hint="Most PDFs on WAWU sell between ₦500 and ₦2,000."
+            hint={`Most PDFs on WAWU sell between ${formatNaira(500)} and ${formatNaira(2000)}.`}
           />
           <div className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]">
             <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">You earn per sale</span>
-            <span className="text-[34px] font-bold tracking-[-0.035em] leading-[1]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+            <span className="text-[34px] font-bold tracking-[-0.035em] leading-[1] [font-feature-settings:var(--font-feature-tabular)]">
               {formatNaira(youEarn)}
             </span>
             <div className="flex items-center gap-[10px] pt-[13px] border-t border-t-[var(--border-hairline)]">
               <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Buyer pays</span>
-              <span className="text-[13.5px] font-semibold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>{formatNaira(price)}</span>
+              <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
             </div>
             <div className="flex items-center gap-[10px]">
               <span className="flex-1 text-[13px] text-[var(--text-secondary)]">WAWU takes {100 - keep}%</span>
-              <span className="text-[13.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>−{formatNaira(wawuTakes)}</span>
+              <span className="text-[13.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">−{formatNaira(wawuTakes)}</span>
             </div>
             {!tierIsPro ? (
               <div className="flex items-center gap-[9px] pt-[12px] border-t border-t-[var(--border-hairline)]">

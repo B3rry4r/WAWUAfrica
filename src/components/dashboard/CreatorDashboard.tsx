@@ -74,7 +74,9 @@ export function CreatorDashboard() {
             Earned this month
           </span>
           <span
-            className="text-[38px] font-bold tracking-[-0.035em] leading-[1]" style={{color: approved ? "var(--text-primary)" : "var(--text-secondary)", fontFeatureSettings: "var(--font-feature-tabular)"}}
+            className={`text-[38px] font-bold tracking-[-0.035em] leading-[1] [font-feature-settings:var(--font-feature-tabular)] ${
+              approved ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"
+            }`}
           >
             {formatNaira(earned)}
           </span>

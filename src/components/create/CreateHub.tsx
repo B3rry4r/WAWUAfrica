@@ -63,7 +63,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
           What are you publishing?
         </span>
         <span
-          className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
+          className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]"
         >
           {slotsLeft} of {slotsTotal} slots
         </span>
@@ -85,10 +85,18 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
                     key={type}
                     type="button"
                     onClick={() => choose(type)}
-                    className="flex flex-col gap-[11px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left" style={{background: first ? "var(--surface-elevated)" : "var(--surface-card)", border: first ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", fontFamily: "var(--font-sans)"}}
+                    className={`flex flex-col gap-[11px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left font-[var(--font-sans)] border ${
+                      first
+                        ? "bg-[var(--surface-elevated)] border-[var(--border-accent)]"
+                        : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
+                    }`}
                   >
                     <span
-                      className="grid place-items-center w-[40px] h-[40px] rounded-[13]" style={{background: first ? "var(--accent-tint)" : "var(--surface-tag)", border: first ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)"}}
+                      className={`grid place-items-center w-[40px] h-[40px] rounded-[13] border ${
+                        first
+                          ? "bg-[var(--accent-tint)] border-[var(--border-accent)]"
+                          : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
+                      }`}
                     >
                       <Icon name={typeIcons[type]} size={18} strokeWidth={2} color={first ? "var(--accent)" : "var(--text-secondary)"} />
                     </span>
@@ -125,7 +133,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
             <div className="flex items-baseline gap-[10px]">
               <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Slots used</span>
               <span
-                className="text-[17px] font-bold" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}
+                className="text-[17px] font-bold [font-feature-settings:var(--font-feature-tabular)]"
               >
                 {slotsTotal} of {slotsTotal}
               </span>
@@ -168,7 +176,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
               Take something down instead
             </Button>
           </div>
-          <span className="text-[12px] text-[var(--text-muted)] text-center" style={{alignSelf: "center"}}>
+          <span className="text-[12px] text-[var(--text-muted)] text-center self-center">
             Removing a piece frees its slot. Buyers keep what they bought.
           </span>
         </div>
