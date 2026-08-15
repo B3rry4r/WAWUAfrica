@@ -50,6 +50,23 @@ export const MOCK_SAVED_ITEMS: SavedItem[] = Object.keys(SAVED_AT_BY_ID)
   })
   .filter((item): item is SavedItem => item !== null);
 
+// Local to this wave's Privacy rebuild — kept here rather than in
+// @/types/settings to stay inside this task's file scope. Candidate to move
+// there in a later pass for consistency with NotificationSettings/SavedItem.
+export interface PrivacySettings {
+  showPurchases: boolean;
+  showSavedItems: boolean;
+  showFollowing: boolean;
+  showInMemberLists: boolean;
+}
+
+export interface BlockedAccount {
+  id: string;
+  name: string;
+  handle: string;
+  blockedAt: string;
+}
+
 export const MOCK_NOTIFICATION_SETTINGS: NotificationSettings = {
   newReplies: true,
   newFollowers: true,
@@ -82,4 +99,49 @@ export async function saveMockNotificationSettings(next: NotificationSettings): 
 export async function deleteMockAccount(): Promise<boolean> {
   await delay(500);
   return true;
+}
+
+export const MOCK_PRIVACY_SETTINGS: PrivacySettings = {
+  showPurchases: false,
+  showSavedItems: false,
+  showFollowing: true,
+  showInMemberLists: true,
+};
+
+export const MOCK_BLOCKED_ACCOUNTS: BlockedAccount[] = [
+  { id: "blk-1", name: "Chinedu Eze", handle: "@chinedu.eze", blockedAt: "3 weeks ago" },
+  { id: "blk-2", name: "Kelechi Uba", handle: "@kelechi.uba", blockedAt: "2 months ago" },
+];
+
+// SEAM: replace with GET /api/hub/privacy/settings
+export async function getMockPrivacySettings(): Promise<PrivacySettings> {
+  await delay(220);
+  return { ...MOCK_PRIVACY_SETTINGS };
+}
+
+// SEAM: replace with PUT /api/hub/privacy/settings
+export async function saveMockPrivacySettings(next: PrivacySettings): Promise<PrivacySettings> {
+  await delay(220);
+  Object.assign(MOCK_PRIVACY_SETTINGS, next);
+  return { ...MOCK_PRIVACY_SETTINGS };
+}
+
+// SEAM: replace with GET /api/hub/privacy/blocked
+export async function getMockBlockedAccounts(): Promise<BlockedAccount[]> {
+  await delay(260);
+  return [...MOCK_BLOCKED_ACCOUNTS];
+}
+
+// SEAM: replace with DELETE /api/hub/privacy/blocked/:id
+export async function unblockMockAccount(id: string): Promise<boolean> {
+  await delay(260);
+  const idx = MOCK_BLOCKED_ACCOUNTS.findIndex((a) => a.id === id);
+  if (idx >= 0) MOCK_BLOCKED_ACCOUNTS.splice(idx, 1);
+  return true;
+}
+
+// SEAM: replace with POST /api/hub/privacy/export
+export async function requestMockDataExport(): Promise<{ requestedAt: string }> {
+  await delay(450);
+  return { requestedAt: new Date().toISOString() };
 }
