@@ -1,3 +1,26 @@
+> # ⚠️ STALE PRODUCT TRUTHS — READ THIS FIRST
+>
+> This file was generated with the **old** WAWUAfrica repo as a source. Its
+> component documentation is accurate. Its **product description is not.**
+>
+> **Wrong in this file — do not build from these:**
+> - "No private messaging. Never design a DM." → **Paid DM is a core revenue
+>   stream** (₦50–₦500/message, 24h response window, auto-refund on miss).
+> - Six post categories (Learn, Sell, Opportunity, Event, Question, Research) →
+>   **the post feed is removed.** Content types are video, course, audio, pdf,
+>   image, template.
+> - Trust Score points system (+50 course, −100 spam, tiers Basic→Elite) →
+>   **not in scope.** We use the verification ladder + EVG-lite.
+> - Opportunity / Event as categories → **both sections removed entirely.**
+>
+> **Do not port these bundle exports** — they map to removed features:
+> `CATEGORIES`, `FILTERS`, `CategoryTag`, `CategoryBar`, `MISUSE_REASON`,
+> `TRUST_TIERS`, `TRUST_EARNS`, `TRUST_LOSES`, `TrustMeter`, `TrustScoreChip`,
+> `LEGACY`.
+>
+> Source of truth for the product is `docs/01_SPEC.md`. Source of truth for
+> using this system is `docs/04_DESIGN_SYSTEM.md`.
+
 # WAWUAfrica Design System
 
 A dark-first design system for **WAWUAfrica**, a Nigerian creator platform. Structural model: **passes.com** (locked content cards, price chips, stat blocks, dark chrome). Brand: **WAWU Purple #9411C9** and **Alan Sans**, from the supplied brand guidelines.

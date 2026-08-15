@@ -1,109 +1,176 @@
-# Dev C — Social & Retained Sections
+# Dev C — Social & Retained Sections: rectification
 
-Hand this file to your AI agent at the start of every session, along with the repo.
+**You are not starting over.** Your branch `feat/dev-c-flows` covers the widest
+surface of the three — 36 routes, profiles, DM, communities, Explore, Learn,
+Services, settings — and it builds and typechecks clean. You also got the Credits
+rule exactly right: rendered as a count, never a naira value, with the constraint
+commented in `CreditsCard`. That was the rule most likely to be broken.
+
+Two real gaps and one convention fix below. The convention one is my fault — the
+design-system bundle is written in inline styles and I never said not to copy it.
 
 ---
 
-## Your scope
+## What changed on `develop`
 
-Profiles, paid conversations, and the sections carried over from the old app.
+1. **The UI kit is 24 components** in `src/components/ui/`. Your `HandoffPill` and
+   `ProfileHeader` are in it, rewritten as Tailwind. Also there now: `Icon`,
+   `ListRow`, `SectionHeader`, `StatBlock`, `StatusPill`, `EngagementBar`,
+   `ErrorState`, `TierBadge`, `VerificationBadge`, `AccessBadge`,
+   `ComingSoonPill`.
 
-| # | Flow | Design file in `design/screens/` |
+2. **`SessionUser` gained `verification` and `creator`** — see
+   `src/types/auth.ts`. `creatorGates()` at `src/lib/auth/gates.ts` derives the
+   creator state you need for the settings split and profile variants.
+
+3. **Tailwind is the house style**, not inline styles. See R2.
+
+4. **The design-system readme is stale** on product truths — it claims "never
+   design a DM" and describes six post categories and a Trust Score. All wrong.
+   `docs/04_DESIGN_SYSTEM.md` lists what not to port.
+
+---
+
+## Rectification tasks
+
+### R1 — Rebase and split
+```bash
+git fetch origin
+git checkout feat/dev-c-flows
+git rebase origin/develop
+```
+Resolve conflicts in `src/components/ui/*` by **taking develop's version**. Keep
+your own code under `src/app/` and your feature component folders.
+
+Split into `feat/social-creator-profile`, `feat/social-own-profile-verification`,
+`feat/social-paid-dm`, `feat/social-communities-credits`, `feat/sections-explore`,
+`feat/sections-marketplace-tips`, `feat/sections-learn`,
+`feat/sections-services`, `feat/sections-settings`.
+
+### R2 — Convert inline styles to Tailwind
+Your branch has **864 `style={{}}` blocks and 4 `className`**. Same tokens, new
+mechanism:
+```tsx
+// from
+<div style={{ padding: 14, borderRadius: "var(--radius-card)",
+              background: "var(--surface-card)" }} />
+// to
+<div className="rounded-[var(--radius-card)] bg-[var(--surface-card)] p-3.5" />
+```
+Delete your local `HandoffPill.tsx` and `ProfileHeader.tsx` — Tailwind versions
+are on develop; import from `@/components/ui`.
+
+### R3 — Marketplace and Tips were never built
+C7 in your brief. Nothing exists at `/marketplace`, and the `ShopCard` in
+`(app)/explore/page.tsx` is a plain `<div>` — it renders WAWUBasket and
+WAWUBeauty and goes nowhere. That is a visible dead end on a screen users hit.
+
+Build:
+
+**Marketplace** — Basket and Beauty are **external apps**. We surface and hand
+off; we never rebuild their checkout, cart or payment.
+- `/marketplace` — landing, Basket and Beauty as two entry points
+- `/marketplace/basket` — product grid, category filters
+- `/marketplace/beauty` — product grid, category filters
+- `/marketplace/product/[platform]/[id]` — images, ₦ price, description, and a
+  clear handoff CTA using `HandoffPill` from `@/components/ui`. The purchase
+  completes in the other app — make that unmistakable, never imply in-app checkout.
+- `/marketplace/search`
+- Loading, empty, error on each.
+- Fix `ShopCard` in Explore to be a `<Link>` into `/marketplace/basket` and
+  `/marketplace/beauty`.
+
+**Tips** — one-time Flutterwave charge, no unlock logic, creator keeps 85%.
+- Tip entry point on the creator profile and under a content piece
+- Tip sheet: presets ₦500 / ₦1,000 / ₦2,000 / ₦5,000 plus a custom `NairaInput`,
+  optional message, a "creator keeps 85%" line, pay CTA
+- Payment states: processing, success, failed with retry
+
+### R4 — Drop the scope creep
+Delete `(app)/create/` and `(app)/home/` from your branch — `/create` is Dev B's,
+`/home` is Dev A's. Keep links pointing at them.
+
+### R5 — SEAM-tag the mocks
+Every mock read gets a grep-able seam naming the real endpoint:
+```ts
+// SEAM: replace with GET /api/hub/communities
+// SEAM: replace with POST /api/hub/credits/purchase
+// SEAM: replace with GET /api/hub/services
+```
+
+---
+
+## The three systems that must stay distinct
+You are the only dev who touches all three. Never collapse them:
+
+| System | What it is | Where |
 |---|---|---|
-| C1 | Creator profile (fan view) + Content/Community/Shop/About tabs | `WAWU Creator Profile.dc.html` |
-| C2 | Own profile + edit | `WAWU Profiles Verification.dc.html` |
-| C3 | Verification badge ladder (5 levels) | `WAWU Profiles Verification.dc.html` |
-| C4 | Paid DM, fan side: pay → awaiting → responded → refunded | `WAWU Paid DM.dc.html` |
-| C5 | Communities, credit packs, balance, spend | `WAWU Communities Credits.dc.html` |
-| C6 | Explore hub | `WAWU Explore.dc.html` |
-| C7 | Marketplace handoff (Basket/Beauty) + Tips | `WAWU Marketplace Tips.dc.html` |
-| C8 | Learn — courses + playbooks + country guides | `WAWU Learn.dc.html` |
-| C9 | Services catalogue + coming-soon states | `WAWU Services.dc.html` |
-| C10 | CAC / NEPC apply flows + Mentors | `WAWU Service Apply Mentors.dc.html` |
-| C11 | Settings (user vs creator variants), saved, delete account | `WAWU Settings States.dc.html` |
-
-**Open the actual design files.** Self-contained HTML — open in a browser.
-
----
-
-## Read before your first commit
-1. `CLAUDE.md` (root) — product rules. Non-negotiable.
-2. `docs/01_SPEC.md` — §1 monetization, §3 WAWU Credits. Tiebreaker for conflicts.
-3. `docs/00_PLATFORM_MAP.md` §3 — the retained sections and how they're repositioned.
-4. `docs/05_CONVENTIONS.md`
-
----
-
-## Three things people constantly confuse — keep them distinct
-
-| System | What it is | Where it lives |
-|---|---|---|
-| **Verification badges** | Profile credibility ladder: Basic → Verified User → Verified Business → Certified Professional → Trusted Partner. All manual review. | Your C3 |
+| **Verification badges** | Basic → Verified User → Verified Business → Certified Professional → Trusted Partner. Manual review. | Your profile screens |
 | **Creator KYC** | Unlocks *receiving earnings*. BVN/NIN + ID + payout details. Manual. | Dev B |
 | **Paid tier** | Basic/Pro subscription. Unlocks *uploading*. | Dev B |
 
-They are three separate systems. A user can hold a verification badge without being a creator. A creator can be subscribed with KYC pending. Never collapse them.
+A user can hold a verification badge without being a creator. A creator can be
+subscribed with KYC pending.
+
+## Rules that bite hardest in your area
+- **Credits are a count, never naira, never cashable.** You already got this
+  right — keep it through the refactor. No "cash out credits", ever.
+- **Marketplace is handoff only.** Never rebuild checkout.
+- **DM: 24 hours is the only deadline.** No business-hours rule. Miss it → full
+  refund, zero WAWU fee.
+- **Settings differ by account type.** A user has no DM settings, no tier, no
+  earnings preferences.
 
 ---
 
-## Already built — use, don't rebuild
+## Prompt for your AI agent
 
-```
-src/components/ui/          Button Input NairaInput Badge TierBadge PriceChip
-                            CreditCount Skeleton EmptyState ErrorState Sheet Avatar
-src/components/layout/      AppShell AppHeader BottomNav
-src/components/content/     ContentCard ContentCardSkeleton
-src/lib/api/client.ts       request()
-src/lib/auth/session.tsx    useSession useIsCreator useCreatorGates
-src/lib/format.ts           formatNaira formatCredits
-```
-
-`ContentCard` is shared with Dev A — you consume it on the creator profile Content tab. Need a variant? Add a prop, don't fork. Flag it in your PR.
-
-You'll add `src/lib/api/profile.ts`, `dm.ts`, `credits.ts`, `services.ts`, `learn.ts`. Follow the shape of `content.ts` — mock fallback when `NEXT_PUBLIC_API_BASE_URL` is unset.
-
----
-
-## Rules that bite in your area
-
-**WAWU Credits — the one most likely to go wrong:**
-- Render as a **count** ("48 credits") via `CreditCount` / `formatCredits()`. **Never** a naira value.
-- Packs: Starter ₦500 = 50, Popular ₦1,000 = 120, Pro ₦2,000 = 300.
-- Non-refundable, **non-cashable**. There is no "convert credits to cash" anywhere, ever. If a task asks for one, stop and raise it.
-- 7-day free community chat trial from signup. Reading stays free; sending costs 1 credit.
-- Creator earns 90% of credit spend in their community (higher than the standard 85% — deliberate, not a typo).
-
-**Paid DM (fan side):**
-- Creator sets price ₦50–₦500 per message.
-- **24-hour response window — the only deadline.** No business-hours rule.
-- Miss it → full refund, zero WAWU fee. Show the refunded state honestly.
-
-**Marketplace:**
-- Basket and Beauty are **external apps**. Handoff only. Never rebuild checkout, cart, or payment.
-- Make the handoff obvious — the user is leaving WAWU.
-
-**Services:**
-- Live: CAC Registration, NEPC Registration, Mentors.
-- Coming soon (real states, not fake): Health Insurance, Pension, Banking, Grants & Funding.
-- **EasyBuy is removed.** Do not build it.
-- The four coming-soon services *are* the Pro tier perks. Link Services ↔ tiers as one story.
-
-**Learn:**
-- Training + Knowledge Hub merged into one section. Courses, playbooks, country guides.
-- Tier entitlement surfaces here: Basic = 1 free course, Pro = 3 free courses.
-
-**Settings:**
-- User and creator see different lists. A user has no DM settings, no tier, no earnings prefs.
+> I'm rectifying the Social & Sections workstream of the WAWUAfrica app. My branch
+> `feat/dev-c-flows` is already built and working — this is a rebase, refactor and
+> gap-fill pass. Do NOT regenerate screens that already work.
+>
+> First read `CLAUDE.md`, `docs/01_SPEC.md`, `docs/04_DESIGN_SYSTEM.md` and
+> `docs/05_CONVENTIONS.md` on the current `develop`.
+>
+> Context: the shared UI kit now has 24 components in `src/components/ui/`,
+> including Tailwind versions of `HandoffPill` and `ProfileHeader` that supersede
+> my local ones. `SessionUser` gained `verification` and `creator` fields.
+>
+> Do these in order:
+> 1. Delete my local copies of anything now in `src/components/ui/` and import
+>    from the barrel `@/components/ui`.
+> 2. Convert every `style={{...}}` in my pages and feature components to Tailwind
+>    classes reading the same CSS-var tokens. Same visual result, same tokens.
+>    Typecheck after each file.
+> 3. Build the Marketplace section, which I never built: `/marketplace`,
+>    `/marketplace/basket`, `/marketplace/beauty`,
+>    `/marketplace/product/[platform]/[id]`, `/marketplace/search`. WAWUBasket and
+>    WAWUBeauty are EXTERNAL apps — surface products and hand off using
+>    `HandoffPill`. Never build checkout, cart or payment. Loading, empty and
+>    error states on each.
+> 4. Fix the dead end: `ShopCard` in `(app)/explore/page.tsx` is a `<div>`. Make
+>    it a `<Link>` into `/marketplace/basket` and `/marketplace/beauty`.
+> 5. Build Tips: entry points on creator profile and under content; a sheet with
+>    presets ₦500/₦1,000/₦2,000/₦5,000 plus custom `NairaInput`, optional message,
+>    "creator keeps 85%" line, pay CTA; processing, success and failed states.
+> 6. Delete `(app)/create/` and `(app)/home/` — other devs own those routes.
+> 7. Tag every mock read in `src/lib/api/` with
+>    `// SEAM: replace with <METHOD> /api/hub/...` per `docs/02_TECHNICAL_CONTEXT.md`.
+>
+> Critical rules: WAWU Credits render as a COUNT via `formatCredits()`, never a
+> naira value, and there is no cash-out anywhere. Marketplace is handoff only.
+> DM has one deadline, 24 hours. Settings differ between user and creator accounts.
+>
+> No `style={{}}`, no hardcoded hex, no `any`, no `console.log`. Run
+> `npm run typecheck` and `npx next build` before telling me you're done.
 
 ---
 
-## Definition of done, per screen
-- Matches the design file at 390px.
-- Loading, empty, error (with a way out), success — all four.
-- Correct for both account types where the screen differs.
-- No hardcoded hex, spacing, or currency string. No `any`, no `console.log`.
-- `npm run typecheck` clean.
-
-## Git
-Branch `feat/social-<flow>` or `feat/sections-<flow>` → PR into `develop`.
-PR body: which design file, which screens, which states covered.
+## Definition of done
+- `npm run typecheck` and `npx next build` clean.
+- Zero `style={{}}` in `src/`.
+- Marketplace routes exist; Explore's ShopCard links into them.
+- Tips flow complete with all payment states.
+- No local duplicate of a `@/components/ui` component.
+- Credits still render as a count everywhere. No cash-out anywhere.
+- Every mock read carries a `SEAM:` tag.

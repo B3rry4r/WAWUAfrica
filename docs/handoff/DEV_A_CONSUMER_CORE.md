@@ -1,72 +1,132 @@
-# Dev A — Consumer Core
+# Dev A — Consumer Core: rectification
 
-Hand this file to your AI agent at the start of every session, along with the repo.
+**You are not starting over.** Your work on `fix/ui-conformance-dev-a` is good —
+it builds, it typechecks, it broke none of the product rules, and your Tailwind
+approach is the one we standardised on. Two of the three problems below are mine,
+not yours: the foundation you were handed was incomplete, and the brief told you
+to put your whole scope on one branch.
 
 ---
 
-## Your scope
+## What changed on `develop`
 
-The loop a normal (non-creator) user lives in: arrive, sign up, browse, unlock, come back.
+1. **The UI kit went from 12 components to 24.** Everything you had to build
+   yourself — `Icon`, `ListRow`, `SectionHeader`, `StatBlock`, `AccessBadge`,
+   `ComingSoonPill` — is now in `src/components/ui/` and exported from the
+   barrel. Your versions were used as the base, so these are near-identical to
+   yours. New alongside them: `ProfileHeader`, `EngagementBar`, `HandoffPill`,
+   `ErrorState`, `StatusPill`, `TierBadge`, `VerificationBadge`.
 
-| # | Flow | Design file in `design/screens/` |
+2. **`SessionUser` now carries creator state.** It gained two fields:
+   ```ts
+   verification: VerificationLevel;   // profile credibility ladder
+   creator: CreatorState | null;      // tier, subscriptionPaid, kyc, slots, dmPrice
+   ```
+   Your `session-provider.tsx` and `session-storage.ts` survived as-is — only the
+   user shape widened.
+
+3. **`creatorGates()` exists** at `src/lib/auth/gates.ts`. Derive creator state
+   from it instead of reading `user.creator.kyc` inline.
+
+4. **Conventions changed:** one branch per *flow*, not per dev. Tailwind is now
+   written down as house style (you were already doing it).
+
+---
+
+## Rectification tasks
+
+### R1 — Rebase and split the branch
+Your single branch holds 8 flows. Split it so PRs are reviewable and stop
+colliding with B and C on shared files.
+
+```bash
+git fetch origin
+git checkout fix/ui-conformance-dev-a
+git rebase origin/develop
+```
+Resolve conflicts in `src/components/ui/*` by **taking develop's version** — it is
+your code promoted to the shared kit. Keep your own version only under `src/app/`.
+
+Then split into `feat/consumer-landing`, `feat/consumer-auth`,
+`feat/consumer-feed`, `feat/consumer-content-unlock`,
+`feat/consumer-search-notifications`. Open each PR as it is ready.
+
+### R2 — Landing page must be a server component
+`src/app/page.tsx` is `"use client"`, which makes the whole public marketing page
+client-rendered. That is the top of the funnel and the SEO surface.
+
+Split it: `page.tsx` stays a server component that reads auth state; move only the
+genuinely interactive parts — `EarningsCalculator`, `FaqAccordion`, the creator
+carousel — into their own `"use client"` leaves. Hero, stats, categories, "how you
+earn", "more than content", testimonials and footer render on the server.
+
+### R3 — Missing error states
+Three screens ship loading and empty but no error state. Every screen needs all
+four, and an error must offer a way out.
+
+| Screen | Has | Needs |
 |---|---|---|
-| A1 | Landing page (logged out) | `WAWU Landing Page.dc.html` |
-| A2 | Auth: sign up (user/creator split), OTP, sign in, forgot/reset | `WAWU Auth.dc.html` |
-| A3 | Home feed, filter tabs, all six content-type cards | `WAWU Home Feed.dc.html` |
-| A4 | Content detail: free / locked-preview / unlocked | `WAWU Content Detail.dc.html` |
-| A5 | Unlock sheet + payment processing/success/failure | `WAWU Content Detail.dc.html` |
-| A6 | My Purchases | `WAWU Content Detail.dc.html` |
-| A7 | Search + result tabs (All / Content / Creators / Communities) | `WAWU Notifications Search.dc.html` |
-| A8 | Notifications — all 12 types | `WAWU Notifications Search.dc.html` |
+| `(app)/purchases/page.tsx` | loading, empty | `ErrorState` + retry |
+| `(app)/search/page.tsx` | loading, empty | `ErrorState` + retry |
+| `(app)/notifications/page.tsx` | loading, empty | `ErrorState` + retry |
 
-**Open the actual design files.** They are self-contained HTML — open in a browser. The table above is an index, not a spec.
+`ErrorState` from `@/components/ui` already renders icon, title, body and retry.
 
----
+### R4 — Hand `/profile` to Dev C
+`(app)/profile/page.tsx` is Dev C's scope. Delete it from your branch; C's version
+supersedes it. Keep your header/nav links pointing at `/profile`.
 
-## Read before your first commit
-1. `CLAUDE.md` (root) — product rules. Non-negotiable.
-2. `docs/01_SPEC.md` — the locked monetization model. Tiebreaker for any conflict.
-3. `docs/05_CONVENTIONS.md` — folders, naming, states, git.
-4. `docs/02_TECHNICAL_CONTEXT.md` §3 — API contract shapes for content and purchases.
-
----
-
-## Already built — use, don't rebuild
-
-```
-src/components/ui/          Button Input NairaInput Badge TierBadge PriceChip
-                            CreditCount Skeleton EmptyState ErrorState Sheet Avatar
-src/components/layout/      AppShell AppHeader BottomNav
-src/components/content/     ContentCard ContentCardSkeleton
-src/lib/api/client.ts       request() — the only place fetch() lives
-src/lib/api/content.ts      getFeed getContent startUnlock verifyUnlock getPurchases
-src/lib/auth/session.tsx    useSession useIsCreator useCreatorGates
-src/lib/format.ts           formatNaira formatCredits
-src/types/                  content.ts account.ts api.ts
+### R5 — Adopt `creatorGates()`
+```ts
+import { creatorGates } from "@/lib/auth/gates";
+const { isCreator, canUpload, awaitingKyc } = creatorGates(user);
 ```
 
-`ContentCard` is shared with Dev C. If you need a variant, add a prop — do not fork it. Flag the change in your PR so C knows.
+### R6 — Mocks out of components
+Any placeholder array inside a component moves to `src/lib/api/mocks/`, and every
+read gets tagged `// SEAM: replace with GET /api/hub/content`. Grep-able seams are
+how we swap to the real backend without hunting.
 
 ---
 
-## Rules that bite in your area
+## Prompt for your AI agent
 
-- **Never resolve access on the client.** `fullAssetUrl` is present only when the server decides the viewer is entitled. Rendering a player off a locked item is a security bug, not a UI bug.
-- **Preview ≠ full asset.** A locked item shows `previewAssetUrl` only. Do not fetch the full asset "and hide it".
-- **Naira only.** Format through `formatNaira()`. Never concatenate ₦ by hand, never use floats.
-- **Never invent a price.** Prices come from the API. The 85/15 transparency line on the unlock sheet is copy, not a computed rate you make up.
-- **Sign-up routes by account type:** user → feed, creator → creator onboarding (Dev B's surface). You build the fork; B builds what's past it.
-- **No ID upload, no document capture, no liveness anywhere in auth.** That is creator onboarding, not sign-up.
+> I'm rectifying the Consumer Core workstream of the WAWUAfrica app. My branch
+> `fix/ui-conformance-dev-a` is already built and working — this is a rebase and
+> fix pass, NOT a rebuild. Do not regenerate screens that already work.
+>
+> First read `CLAUDE.md`, `docs/01_SPEC.md`, `docs/04_DESIGN_SYSTEM.md` and
+> `docs/05_CONVENTIONS.md` on the current `develop`.
+>
+> The shared UI kit grew from 12 to 24 components in `src/components/ui/` —
+> import from the barrel `@/components/ui` and delete any local duplicates I
+> created. `SessionUser` in `src/types/auth.ts` gained `verification` and
+> `creator` fields. `creatorGates()` in `src/lib/auth/gates.ts` is now the only
+> place creator gates get derived.
+>
+> Do these in order:
+> 1. Convert `src/app/page.tsx` from a client component to a server component.
+>    Move only `EarningsCalculator`, `FaqAccordion` and the creator carousel into
+>    `"use client"` leaves. Everything else renders on the server.
+> 2. Add an `ErrorState` (from `@/components/ui`) with working retry to
+>    `(app)/purchases/page.tsx`, `(app)/search/page.tsx`,
+>    `(app)/notifications/page.tsx`.
+> 3. Delete `(app)/profile/page.tsx` — another dev owns it.
+> 4. Replace inline reads of `user.creator.*` and account-type checks with
+>    `creatorGates(user)`.
+> 5. Move hardcoded placeholder arrays out of components into
+>    `src/lib/api/mocks/`, tagging each read
+>    `// SEAM: replace with GET /api/hub/...` naming the real endpoint.
+>
+> Tailwind classes on CSS-var tokens throughout. No `style={{}}`, no hardcoded
+> hex, no `any`, no `console.log`. Run `npm run typecheck` and `npx next build`
+> before telling me you're done.
 
 ---
 
-## Definition of done, per screen
-- Matches the design file at 390px.
-- Loading (skeleton), empty, error (with a way out), success — all four.
-- No hardcoded hex, spacing value, or currency string.
-- No `any`, no `console.log`.
-- `npm run typecheck` clean.
-
-## Git
-Branch `feat/consumer-<flow>` → PR into `develop`.
-PR body: which design file, which screens, which states covered.
+## Definition of done
+- `npm run typecheck` and `npx next build` clean.
+- Landing page renders server-side (view-source shows hero copy).
+- All four states on every screen you own.
+- No local duplicate of a `@/components/ui` component.
+- Every mock read carries a `SEAM:` tag.

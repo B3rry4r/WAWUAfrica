@@ -1,89 +1,164 @@
-# Dev B — Creator
+# Dev B — Creator: rectification
 
-Hand this file to your AI agent at the start of every session, along with the repo.
+**You are not starting over.** Your branch `peejay` is the most complete of the
+three — every flow B1–B9 shipped, it builds, it typechecks, and it broke none of
+the product rules. You also got the hardest thing right: your session mock
+defaults to `subscriptionPaid: true, kyc: "pending"`, and your earnings dashboard
+handles that state properly ("Finish verification to get paid"). That is the state
+most new creators actually live in and the one most likely to be skipped. Your
+`CreatorState` shape is now the shared one on `develop`.
 
----
-
-## Your scope
-
-Everything behind the creator account type: becoming one, and the tools you get.
-
-| # | Flow | Design file in `design/screens/` |
-|---|---|---|
-| B1 | Creator onboarding: value → tier select → payment → KYC | `WAWU Creator Onboarding.dc.html` |
-| B2 | KYC states: pending / approved / rejected + resubmit | `WAWU Creator Onboarding.dc.html` |
-| B3 | Two shells — what a user sees vs what a creator sees | `WAWU User vs Creator.dc.html` |
-| B4 | Creator dashboard | `WAWU User vs Creator.dc.html` |
-| B5 | Publishing: type picker → upload → preview asset → pricing | `WAWU Publishing.dc.html` |
-| B6 | Upload-slot limits, first-upload-must-be-free rule | `WAWU Publishing.dc.html` |
-| B7 | Creator DM inbox, countdown timers, penalty states | `WAWU Creator DM Earnings.dc.html` |
-| B8 | Earnings dashboard + KYC-pending variant | `WAWU Creator DM Earnings.dc.html` |
-| B9 | Subscription management, upgrade, past-due, expiry | `WAWU Subscription Management.dc.html` |
-
-**Open the actual design files.** Self-contained HTML — open in a browser.
+One real bug and one convention fix below. The convention one is my fault — the
+design-system bundle is written in inline styles and I never said not to copy it.
 
 ---
 
-## Read before your first commit
-1. `CLAUDE.md` (root) — product rules. Non-negotiable.
-2. `docs/01_SPEC.md` — §1 locked monetization model, §4 tiers. Tiebreaker for conflicts.
-3. `docs/05_CONVENTIONS.md`
-4. `docs/02_TECHNICAL_CONTEXT.md` §2.3–2.5 — DM, credits, subscription data model.
+## What changed on `develop`
+
+1. **Your `CreatorState` model won.** `SessionUser` in `src/types/auth.ts` now
+   carries it:
+   ```ts
+   creator: {
+     tier, subscriptionPaid, kyc, slotsUsed, slotsTotal, dmPrice, dmEnabled
+   } | null
+   ```
+   Plus `verification: VerificationLevel` for the separate credibility ladder.
+
+2. **`creatorGates()`** at `src/lib/auth/gates.ts` centralises what you were
+   deriving per-component. It exposes `isCreator`, `canUpload`, `canEarn`,
+   `awaitingKyc`, `kycStatus`, `tier`, `dmEnabled`, `dmPrice`, `slotsUsed`,
+   `slotsTotal`, `slotsRemaining`.
+
+3. **The UI kit is 24 components** in `src/components/ui/`. Your `Icon`,
+   `ListRow`, `SectionHeader`, `StatBlock`, `StatusPill`, `ProfileHeader` were
+   built independently by two other devs too — there is now one shared version.
+
+4. **Tailwind is the house style**, not inline styles. See R2.
+
+5. **`tsconfig.tsbuildinfo` is now gitignored.** It was committed on your branch;
+   that is also what let us recover your work when the first push went wrong.
 
 ---
 
-## The model, stated plainly
+## Rectification tasks
 
-Creator is an **account type**, not an earned trust level. Two gates, independent:
+### R1 — Rebase, rename, split
+`peejay` doesn't say what it contains. Rebase onto develop and split by flow.
 
-| Gate | Unlocks | Mechanism |
-|---|---|---|
-| Paid subscription (Basic ₦5,999/yr, Pro ₦18,999/yr) | Uploading + creator tools | Flutterwave recurring |
-| Manual KYC approval | **Receiving earnings** | Human review, 1–3 days |
-
-**`subscriptionActive && kycStatus === "pending"` is a normal state**, not an edge case. Most new creators sit there for days. They can upload, publish, and sell — they cannot be paid out. Earnings display, marked not-yet-payable, with a "complete verification" CTA. Build it deliberately.
-
-Use `useCreatorGates()` from `src/lib/auth/session.tsx` — it returns `{ canUpload, canEarn, kycStatus }`. Do not re-derive these conditions inline.
-
----
-
-## Already built — use, don't rebuild
-
+```bash
+git fetch origin
+git checkout peejay
+git rebase origin/develop
 ```
-src/components/ui/          Button Input NairaInput Badge TierBadge PriceChip
-                            CreditCount Skeleton EmptyState ErrorState Sheet Avatar
-src/components/layout/      AppShell AppHeader BottomNav
-src/components/content/     ContentCard ContentCardSkeleton
-src/lib/api/client.ts       request()
-src/lib/auth/session.tsx    useSession useIsCreator useCreatorGates
-src/lib/format.ts           formatNaira formatCredits
-src/types/account.ts        AccountType CreatorTier KycStatus VerificationLevel
+Resolve conflicts in `src/components/ui/*` and `src/types/auth.ts` by **taking
+develop's version** — your creator model is already in it. Keep your own code only
+under `src/app/` and your feature component folders.
+
+Then split into `feat/creator-onboarding`, `feat/creator-kyc`,
+`feat/creator-publishing`, `feat/creator-dashboard`, `feat/creator-dm-inbox`,
+`feat/creator-earnings`, `feat/creator-subscription`. Open each PR as it lands.
+
+### R2 — Convert inline styles to Tailwind
+Your branch has **711 `style={{}}` blocks and 1 `className`**. The design-system
+bundle you were working from is compiled JS using inline styles — it is a *spec*,
+not the house style. That was never made clear to you.
+
+Convert. The tokens stay identical, only the mechanism changes:
+```tsx
+// from
+<div style={{ padding: 14, borderRadius: "var(--radius-card)",
+              background: "var(--surface-card)" }} />
+// to
+<div className="rounded-[var(--radius-card)] bg-[var(--surface-card)] p-3.5" />
+```
+Work file by file, typechecking as you go. `src/components/ui/*` needs none of
+this — those are already converted on develop; just delete your local copies and
+import from `@/components/ui`.
+
+### R3 — Adopt `creatorGates()`
+Replace every inline read of `session.creator.subscriptionPaid` /
+`session.creator.kyc` with the helper. Same behaviour, one place to change it:
+```ts
+import { creatorGates } from "@/lib/auth/gates";
+const { canUpload, canEarn, awaitingKyc, slotsRemaining } = creatorGates(user);
 ```
 
-You'll add `src/lib/api/creator.ts`, `subscription.ts`, `dm.ts`. Follow the shape of `content.ts` — mock fallback when `NEXT_PUBLIC_API_BASE_URL` is unset.
+### R4 — SEAM-tag the mocks
+Your mocks in `src/lib/api/mocks/` are well structured — they just need grep-able
+seams so the backend swap is mechanical:
+```ts
+// SEAM: replace with GET /api/hub/creator/earnings
+// SEAM: replace with POST /api/hub/creator-subscription
+// SEAM: replace with GET /api/hub/dm/inbox
+```
+One tag per read, naming the real endpoint from `docs/02_TECHNICAL_CONTEXT.md`.
+
+### R5 — Keep the dev-only state switches, label them
+`setAccountType`, `setCreatorTier`, `setKycStatus` are genuinely useful — they make
+every gate combination reachable without a backend. Keep them, but mark the block:
+```ts
+/** DEV ONLY — remove when the session endpoint is live. */
+```
 
 ---
 
-## Rules that bite in your area
+## The states that must survive the refactor
+Do not lose these while converting. They are the ones that took real thought:
 
-- **No wallet. No withdrawal button. No cash-out UI. Anywhere.** The earnings dashboard is a *record*, not a balance. Payout happens outside the app for now.
-- **Splits:** 85/15 standard, 90/10 for Pro tier. Read the rate from the API/session — never hardcode, never compute a third rate.
-- **KYC is manual data collection.** Nigeria: BVN **and** NIN, both required. Other countries: national-ID equivalent, driven by the country chosen at sign-up. Plus ID document upload and payout bank details.
-- **No liveness, no Face ID, no automated verification.** If you see "Face-ID liveness" in any stale doc or the old repo, it is wrong. Ignore it.
-- **A creator's first upload must be free** — enforce in the UI and expect the server to enforce it too.
-- **Upload slots are tier-bound:** Basic 3 (1 free, 2 paid), Pro 7 (2 free, 5 paid). Show usage and the limit-reached state with an upgrade path.
-- **DM response window is 24 hours.** One deadline, no business-hours rule. Miss it → full refund to the fan, zero WAWU fee, and it counts toward the penalty rate (warn 10–30%, off 7d at 30–50%, off 30d above 50%).
-- **Verification badges are NOT your gate.** The profile credibility ladder (Dev C) is a separate system from creator KYC and from the paid tier. Keep all three distinct.
+- **Subscribed + KYC pending** — dashboard shows earnings, marked not-yet-payable,
+  with "Complete verification" CTA. Your existing copy is good; keep it.
+- **KYC rejected** — reason shown, resubmit path.
+- **Upload slots exhausted** — Basic 3 / Pro 7, with an upgrade prompt.
+- **First upload must be free** — enforced and explained, not just disabled.
+- **DM penalty ladder** — warning 10–30%, off 7d at 30–50%, off 30d above 50%.
+- **Subscription past-due and expired** — what still works, what stops.
 
 ---
 
-## Definition of done, per screen
-- Matches the design file at 390px.
-- Loading, empty, error (with a way out), success — all four.
-- Correct behaviour across: no subscription / subscribed+KYC pending / subscribed+KYC approved / past-due.
-- No hardcoded hex, spacing, or currency string. No `any`, no `console.log`.
-- `npm run typecheck` clean.
+## Prompt for your AI agent
 
-## Git
-Branch `feat/creator-<flow>` → PR into `develop`.
-PR body: which design file, which screens, which states, which gate combinations tested.
+> I'm rectifying the Creator workstream of the WAWUAfrica app. My branch `peejay`
+> is already fully built and working — this is a rebase and refactor pass, NOT a
+> rebuild. Do not regenerate any screen or flow.
+>
+> First read `CLAUDE.md`, `docs/01_SPEC.md`, `docs/04_DESIGN_SYSTEM.md` and
+> `docs/05_CONVENTIONS.md` on the current `develop`.
+>
+> Context on what changed: my `CreatorState` model is now shared, living on
+> `SessionUser` in `src/types/auth.ts`. `creatorGates()` in
+> `src/lib/auth/gates.ts` is now the only place creator gates get derived. The UI
+> kit has 24 shared components in `src/components/ui/`.
+>
+> Do these in order:
+> 1. Delete my local copies of anything that now exists in `src/components/ui/`
+>    (Icon, ListRow, SectionHeader, StatBlock, StatusPill, ProfileHeader, Button,
+>    Input, Sheet, Badge, Avatar, PriceChip, ContentCard) and import from the
+>    barrel `@/components/ui` instead.
+> 2. Convert every `style={{...}}` in my feature components and pages to Tailwind
+>    classes reading the same CSS-var tokens. Same visual result, same tokens —
+>    only the mechanism changes. Typecheck after each file.
+> 3. Replace inline reads of `session.creator.subscriptionPaid` and
+>    `session.creator.kyc` with `creatorGates(user)`.
+> 4. Tag every mock data read in `src/lib/api/` with
+>    `// SEAM: replace with <METHOD> /api/hub/...` using the endpoints in
+>    `docs/02_TECHNICAL_CONTEXT.md`.
+> 5. Mark the dev-only session switches (`setAccountType`, `setCreatorTier`,
+>    `setKycStatus`) with `/** DEV ONLY — remove when session endpoint is live. */`
+>
+> Critical: do NOT lose these states while refactoring — subscribed+KYC-pending
+> earnings view, KYC rejected with resubmit, upload slots exhausted with upgrade
+> prompt, first-upload-must-be-free, DM penalty ladder, subscription past-due and
+> expired.
+>
+> No `style={{}}`, no hardcoded hex, no `any`, no `console.log`. Run
+> `npm run typecheck` and `npx next build` before telling me you're done.
+
+---
+
+## Definition of done
+- `npm run typecheck` and `npx next build` clean.
+- Zero `style={{}}` in `src/`.
+- No local duplicate of a `@/components/ui` component.
+- Every gate read goes through `creatorGates()`.
+- Every mock read carries a `SEAM:` tag.
+- All six states listed above still work.
