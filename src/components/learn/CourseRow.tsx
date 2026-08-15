@@ -4,14 +4,20 @@ import { COURSE_HOST } from "@/types/learn";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 
-/** Course list item — thumbnail, "Alison · N hours", and the entitlement state. No price, ever. */
+/**
+ * Course list item — thumbnail, "Alison · N hours", and the entitlement
+ * state. No price, ever. Below xl this is always the mobile row (thumbnail
+ * left, text right); at xl, when its parent lays courses out 3-across
+ * (design D12), the same markup reflows into a card — thumbnail on top,
+ * full width — via responsive classes only, no layout prop needed.
+ */
 export function CourseRow({ course, state, freeCoursesTotal }: { course: LearnCourse; state: CourseEntitlementState; freeCoursesTotal: number }) {
   return (
     <Link
       href={`/learn/courses/${course.id}`}
-      className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline"
+      className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:flex-col xl:gap-[11px] xl:p-0"
     >
-      <div className="h-16 w-16 shrink-0 rounded-[12px] border border-[var(--border-hairline)] bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]" />
+      <div className="h-16 w-16 shrink-0 rounded-[12px] border border-[var(--border-hairline)] bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:aspect-video xl:h-auto xl:w-full xl:rounded-[var(--radius-media)]" />
       <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
         <span className="text-[14.5px] font-semibold leading-[1.3] text-[var(--text-primary)]">{course.title}</span>
         <span className="text-[12.5px] text-[var(--text-muted)]">

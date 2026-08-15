@@ -23,7 +23,7 @@ export default function CountryGuidesPage() {
   useEffect(load, [load]);
 
   return (
-    <div className="flex flex-col gap-3.5 p-[16px_16px_96px]">
+    <div className="flex flex-col gap-3.5 p-[16px_16px_96px] xl:mx-auto xl:max-w-[720px] xl:p-[26px]">
       <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
         <span className="text-[16px] font-semibold text-[var(--text-primary)]">Country guides</span>

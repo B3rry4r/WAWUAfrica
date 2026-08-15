@@ -30,7 +30,7 @@ export default function GuideDetailPage() {
   const title = guide && guide.kind === "country" ? guide.country : guide?.title ?? "Guide";
 
   return (
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:mx-auto xl:max-w-[720px] xl:p-[26px]">
       <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
         <span className="flex-1 text-[15px] font-semibold text-[var(--text-primary)]">{title}</span>

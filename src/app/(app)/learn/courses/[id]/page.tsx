@@ -35,7 +35,7 @@ export default function CourseDetailPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="flex items-center gap-2.5 p-[14px_16px]">
+      <div className="flex items-center gap-2.5 p-[14px_16px] xl:p-[26px_26px_0]">
         <ProfileBackButton compact />
         <span className="text-[15px] font-semibold text-[var(--text-primary)]">Course</span>
       </div>
@@ -70,10 +70,10 @@ function CourseDetail({
   const alreadyEnrolled = state.status === "enrolled";
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="relative aspect-video w-full bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]" />
+    <div className="flex flex-1 flex-col xl:mx-auto xl:w-full xl:max-w-[820px]">
+      <div className="relative aspect-video w-full rounded-none bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:mt-[6px] xl:rounded-[var(--radius-media)]" />
 
-      <div className="flex flex-1 flex-col gap-4 p-[18px_18px_20px]">
+      <div className="flex flex-1 flex-col gap-4 p-[18px_18px_20px] xl:p-[24px_0_20px]">
         <div className="flex flex-col gap-[9px]">
           <div className="flex">
             <HandoffPill app={COURSE_HOST} />
