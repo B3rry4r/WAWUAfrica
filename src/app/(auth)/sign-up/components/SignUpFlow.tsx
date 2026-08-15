@@ -322,7 +322,7 @@ export function SignUpFlow() {
             </span>
             <span className="flex flex-col gap-1 text-[13.5px] leading-normal text-text-secondary">
               <span>
-                I agree to the <Link href="/privacy">terms of service</Link> and <Link href="/privacy">privacy policy</Link>.
+                I agree to the <Link href="/terms">terms of service</Link> and <Link href="/privacy/policy">privacy policy</Link>.
               </span>
               {!details.acceptedTerms ? <span className="text-[12px] text-danger">You need to accept the terms to continue.</span> : null}
             </span>
