@@ -59,7 +59,7 @@ export function ContentLibrary() {
       <FlowHeader
         title="My content"
         right={
-          <span className="text-[12.5px] font-semibold text-[var(--text-muted)]" style={{fontFeatureSettings: "var(--font-feature-tabular)"}}>
+          <span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
             {items ? items.length : "–"} of {slotsTotal} slots
           </span>
         }
@@ -74,7 +74,11 @@ export function ContentLibrary() {
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              className="shrink-0 inline-flex items-center h-[32px] py-0 px-[14px] rounded-[999] text-[13px] cursor-pointer" style={{background: active ? "var(--accent)" : "var(--surface-tag)", border: active ? "none" : "1px solid var(--border-hairline)", color: active ? "var(--text-on-accent)" : "var(--text-secondary)", fontWeight: active ? 600 : 500, fontFamily: "var(--font-sans)"}}
+              className={`shrink-0 inline-flex items-center h-[32px] py-0 px-[14px] rounded-[999] text-[13px] cursor-pointer font-[var(--font-sans)] ${
+                active
+                  ? "bg-[var(--accent)] border-none text-[var(--text-on-accent)] font-semibold"
+                  : "bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] font-medium"
+              }`}
             >
               {filterLabels[f]} {f === "all" ? count : `· ${count}`}
             </button>

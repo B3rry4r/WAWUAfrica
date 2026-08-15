@@ -4,6 +4,7 @@
  * deliberately separate surfaces.
  */
 import type { ContentItem } from "@/types/content";
+import { formatNaira } from "@/lib/format";
 import { ApiError, mockRequest } from "./client";
 import { currentSession } from "./mocks/session";
 
@@ -12,7 +13,7 @@ export const libraryItems: ContentItem[] = [
     id: "c1",
     type: "course",
     title: "CAC in 7 days",
-    meta: "Course · ₦2,500 · 34 sold",
+    meta: `Course · ${formatNaira(2500)} · 34 sold`,
     price: 2500,
     status: "live",
     earned: 76500,
@@ -32,7 +33,7 @@ export const libraryItems: ContentItem[] = [
     id: "c3",
     type: "pdf",
     title: "The trader's playbook",
-    meta: "PDF · ₦1,500 · submitted today",
+    meta: `PDF · ${formatNaira(1500)} · submitted today`,
     price: 1500,
     status: "review",
   },
