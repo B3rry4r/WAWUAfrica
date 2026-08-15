@@ -1,9 +1,19 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getOwnProfile } from "@/lib/api/verification";
+import type { OwnProfile } from "@/types/verification";
 import { Avatar } from "@/components/ui/Avatar";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { ListRow } from "@/components/ui/ListRow";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { SettingsFooterActions } from "@/components/shared/SettingsFooterActions";
+import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
+import { NotificationsSettingsBody } from "./notifications/NotificationsSettingsBody";
+import { DeleteAccountBody } from "./delete-account/DeleteAccountBody";
+import { SettingsCategoryList, SettingsDetailShell, SETTINGS_LIST_HEADER } from "./SettingsDesktopShared";
+import type { InternalSettingsKey } from "./SettingsDesktopShared";
 import type { IconName } from "@/components/ui/Icon";
 
 interface Row {
@@ -19,83 +29,121 @@ interface Group {
   rows: Row[];
 }
 
-export default async function SettingsPage() {
-  let profile;
-  try {
-    profile = await getOwnProfile();
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title="Couldn't load settings" body={message} />;
+export default function SettingsPage() {
+  const [profile, setProfile] = useState<OwnProfile | null>(null);
+  const [error, setError] = useState<string>();
+  const [selected, setSelected] = useState<InternalSettingsKey>("notifications");
+
+  useEffect(() => {
+    let active = true;
+    getOwnProfile()
+      .then((p) => active && setProfile(p))
+      .catch((e) => active && setError(e instanceof Error ? e.message : undefined));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (error) {
+    return <ErrorState title="Couldn't load settings" body={error} />;
   }
 
-  const isCreator = profile.accountType === "creator";
+  const isCreator = profile?.accountType === "creator";
 
-  const groups: Group[] = [
-    {
-      title: "Account",
-      rows: [
-        { title: "Edit profile", subtitle: profile.handle ? `@${profile.handle}` : undefined, icon: "UserRound", href: "/profile/edit" },
-        { title: "Verification", subtitle: "Badge and ladder", icon: "ShieldCheck", href: "/profile/verification" },
-      ],
-    },
-    ...(isCreator
-      ? [
-          {
-            title: "Creator",
-            rows: [
-              { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/messages/settings" },
-              { title: "Earnings", subtitle: "Payouts and history", icon: "Wallet", href: "/earnings" },
-            ],
-          } satisfies Group,
-        ]
-      : []),
-    {
-      title: "App",
-      rows: [
-        { title: "Notifications", icon: "Bell", href: "/settings/notifications" },
-        { title: "Privacy", icon: "Lock", href: "/privacy" },
-        { title: "Saved", subtitle: "Your saved content", icon: "Bookmark", href: "/saved" },
-      ],
-    },
-    {
-      title: "About",
-      rows: [
-        { title: "About WAWU", icon: "Info", href: "/about" },
-        { title: "Partners", icon: "Handshake", href: "/partners" },
-      ],
-    },
-  ];
+  const groups: Group[] = profile
+    ? [
+        {
+          title: "Account",
+          rows: [
+            { title: "Edit profile", subtitle: profile.handle ? `@${profile.handle}` : undefined, icon: "UserRound", href: "/profile/edit" },
+            { title: "Verification", subtitle: "Badge and ladder", icon: "ShieldCheck", href: "/profile/verification" },
+          ],
+        },
+        ...(isCreator
+          ? [
+              {
+                title: "Creator",
+                rows: [
+                  { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/messages/settings" },
+                  { title: "Earnings", subtitle: "Payouts and history", icon: "Wallet", href: "/earnings" },
+                ],
+              } satisfies Group,
+            ]
+          : []),
+        {
+          title: "App",
+          rows: [
+            { title: "Notifications", icon: "Bell", href: "/settings/notifications" },
+            { title: "Privacy", icon: "Lock", href: "/privacy" },
+            { title: "Saved", subtitle: "Your saved content", icon: "Bookmark", href: "/saved" },
+          ],
+        },
+        {
+          title: "About",
+          rows: [
+            { title: "About WAWU", icon: "Info", href: "/about" },
+            { title: "Partners", icon: "Handshake", href: "/partners" },
+          ],
+        },
+      ]
+    : [];
 
   return (
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
-      <div className="flex items-center gap-[13px] p-[6px]">
-        <Avatar initial={profile.name.charAt(0)} size={52} />
-        <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-          <span className="text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">{profile.name}</span>
-          <span className="text-[12.5px] text-[var(--text-muted)]">{profile.email}</span>
-        </div>
-        <div className="flex flex-col items-end gap-[5px]">
-          {isCreator && <TierBadge tier={profile.plan} />}
-          <span className="text-[11.5px] text-[var(--text-muted)]">
-            {isCreator ? "Creator" : "Member"} account
-          </span>
-        </div>
+    <>
+      <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:hidden">
+        {!profile ? (
+          <>
+            <div className="flex items-center gap-[13px] p-[6px]">
+              <Skeleton variant="circle" className="h-[52px] w-[52px]" />
+              <Skeleton variant="row" className="h-9 flex-1" />
+            </div>
+            <Skeleton variant="row" className="h-[120px]" />
+            <Skeleton variant="row" className="h-[120px]" />
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-[13px] p-[6px]">
+              <Avatar initial={profile.name.charAt(0)} size={52} />
+              <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+                <span className="text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">{profile.name}</span>
+                <span className="text-[12.5px] text-[var(--text-muted)]">{profile.email}</span>
+              </div>
+              <div className="flex flex-col items-end gap-[5px]">
+                {isCreator && <TierBadge tier={profile.plan} />}
+                <span className="text-[11.5px] text-[var(--text-muted)]">
+                  {isCreator ? "Creator" : "Member"} account
+                </span>
+              </div>
+            </div>
+
+            {groups.map((g) => (
+              <section key={`${g.title}-${g.rows.length}`} className="flex flex-col gap-[8px]">
+                <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                  {g.title}
+                </span>
+                <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+                  {g.rows.map((r) => (
+                    <ListRow key={r.title} title={r.title} subtitle={r.subtitle} icon={r.icon} href={r.href} />
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            <SettingsFooterActions />
+          </>
+        )}
       </div>
 
-      {groups.map((g) => (
-        <section key={`${g.title}-${g.rows.length}`} className="flex flex-col gap-[8px]">
-          <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
-            {g.title}
-          </span>
-          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            {g.rows.map((r) => (
-              <ListRow key={r.title} title={r.title} subtitle={r.subtitle} icon={r.icon} href={r.href} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      <SettingsFooterActions />
-    </div>
+      <ThreePaneLayout
+        listWidth={320}
+        listHeader={SETTINGS_LIST_HEADER}
+        list={<SettingsCategoryList activeKey={selected} onSelectInternal={setSelected} />}
+        detail={
+          <SettingsDetailShell title={selected === "notifications" ? "Notifications" : "Delete account"}>
+            {selected === "notifications" ? <NotificationsSettingsBody /> : <DeleteAccountBody variant="desktop" />}
+          </SettingsDetailShell>
+        }
+      />
+    </>
   );
 }
