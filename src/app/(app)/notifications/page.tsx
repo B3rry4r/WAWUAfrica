@@ -45,6 +45,15 @@ export default function NotificationsPage() {
   const earlier = items?.filter((n) => Date.now() - new Date(n.createdAt).getTime() >= 24 * 60 * 60 * 1000) ?? [];
   const unread = items?.filter((n) => !n.read).length ?? 0;
 
+  // Desktop-only regroup by consequence (design D15): urgent action first, then
+  // money, then everything else — independent of the time-based mobile grouping
+  // above, which stays untouched.
+  const needsNow = items?.filter((n) => n.kind === "dm_deadline") ?? [];
+  const needsNowIds = new Set(needsNow.map((n) => n.id));
+  const money = items?.filter((n) => n.amount !== undefined && !needsNowIds.has(n.id)) ?? [];
+  const moneyIds = new Set(money.map((n) => n.id));
+  const laterDesktop = items?.filter((n) => !needsNowIds.has(n.id) && !moneyIds.has(n.id)) ?? [];
+
   const onMarkAllRead = async () => {
     try {
       await markAllRead();
@@ -55,9 +64,9 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-page">
-      <div className="flex items-center gap-3 border-b border-hairline px-4 py-4">
-        <span className="flex-1 text-[17px] font-semibold">Notifications</span>
+    <div className="flex min-h-screen flex-col bg-surface-page xl:mx-auto xl:w-full xl:max-w-[700px]">
+      <div className="flex items-center gap-3 border-b border-hairline px-4 py-4 xl:sticky xl:top-0 xl:z-10 xl:h-[68px] xl:bg-page xl:px-6 xl:py-0">
+        <span className="flex-1 text-[17px] font-semibold xl:text-[19px] xl:tracking-[-0.02em]">Notifications</span>
         {unread > 0 ? (
           <button type="button" onClick={onMarkAllRead} className="text-[13.5px] font-semibold text-accent">
             Mark all read
@@ -99,22 +108,36 @@ export default function NotificationsPage() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-5 px-4 pb-8 pt-4">
-          {now.length ? (
-            <NotificationGroup label="Now" items={now} />
-          ) : null}
-          {earlier.length ? <NotificationGroup label="Earlier" items={earlier} /> : null}
-        </div>
+        <>
+          {/* Mobile: grouped by time (Now / Earlier). */}
+          <div className="flex flex-col gap-5 px-4 pb-8 pt-4 xl:hidden">
+            {now.length ? (
+              <NotificationGroup label="Now" items={now} />
+            ) : null}
+            {earlier.length ? <NotificationGroup label="Earlier" items={earlier} /> : null}
+          </div>
+
+          {/* Desktop (design D15): grouped by consequence — urgent action first, then money, then everything else. */}
+          <div className="hidden flex-col gap-5 px-6 pb-10 pt-5 xl:flex">
+            {needsNow.length ? <NotificationGroup label="Needs you now" items={needsNow} urgent /> : null}
+            {money.length ? <NotificationGroup label="Money" items={money} /> : null}
+            {laterDesktop.length ? <NotificationGroup label="Earlier" items={laterDesktop} /> : null}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function NotificationGroup({ label, items }: { label: string; items: AppNotification[] }) {
+function NotificationGroup({ label, items, urgent = false }: { label: string; items: AppNotification[]; urgent?: boolean }) {
   return (
     <section className="flex flex-col gap-2">
       <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-text-muted">{label}</span>
-      <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card">
+      <div
+        className={`flex flex-col overflow-hidden rounded-card border bg-card ${
+          urgent ? "border-danger/40" : "border-hairline"
+        }`}
+      >
         {items.map((n, i) => (
           <NotificationRow key={n.id} notification={n} last={i === items.length - 1} />
         ))}
