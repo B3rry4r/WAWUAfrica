@@ -10,7 +10,7 @@ export interface PartnerService {
   status: ServiceStatus;
   /** e.g. "7–14 days", "2–3 days". */
   turnaround?: string;
-  /** e.g. "From ₦25,000". */
+  /** e.g. "From ₦25,000" — build with formatNaira(), never a hardcoded ₦ string. */
   priceFrom?: string;
   /** e.g. "CAC" for the partner. */
   partner?: string;
@@ -24,4 +24,38 @@ export interface ServiceApplicationTimeline {
   stage: string;
   status: "done" | "current" | "upcoming";
   note: string;
+}
+
+/** A single application a user has in flight or resolved, tracked at /services/applications/:id. */
+export type ApplicationStatus = "under_review" | "approved" | "rejected" | "pending";
+
+export interface ApplicationTimelineStep {
+  stage: string;
+  status: "done" | "current" | "upcoming";
+  /** Short display date, e.g. "15 Aug". Omitted for steps that haven't happened yet. */
+  date?: string;
+  note: string;
+}
+
+export interface ServiceApplication {
+  id: string;
+  kind: "cac" | "nepc" | "mentor";
+  title: string;
+  subtitle?: string;
+  reference: string;
+  appliedDate: string;
+  status: ApplicationStatus;
+  statusLabel: string;
+  /** Integer Naira. Undefined for free flows (e.g. mentor requests). */
+  amountPaid?: number;
+  certificateExpectedBy?: string;
+  timeline: ApplicationTimelineStep[];
+  /** Present only when status is "rejected". */
+  rejection?: { note: string; refunded: boolean };
+}
+
+/** A creator's existing CAC-registered business, pulled into the NEPC apply flow. */
+export interface CacBusinessRecord {
+  businessName: string;
+  rcNumber: string;
 }
