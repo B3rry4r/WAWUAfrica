@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -32,6 +33,8 @@ interface CategoryRow {
   href: string;
   /** Handled in-place by this batch instead of a real navigation. */
   internal?: InternalSettingsKey;
+  /** Handled by calling signOut() instead of a real navigation. */
+  action?: "sign-out";
   danger?: boolean;
 }
 
@@ -54,6 +57,7 @@ const ACCOUNT_ROWS: CategoryRow[] = [
   { key: "privacy", label: "Privacy", icon: "Lock", href: "/privacy" },
   { key: "saved", label: "Saved", icon: "Bookmark", href: "/saved" },
   { key: "about", label: "About and partners", icon: "Info", href: "/about" },
+  { key: "sign-out", label: "Sign out", icon: "LogOut", href: "#", action: "sign-out", danger: true },
   { key: "delete-account", label: "Delete account", icon: "Trash2", href: "/settings/delete-account", internal: "delete-account", danger: true },
 ];
 
@@ -77,12 +81,29 @@ export function SettingsCategoryList({
   activeKey: string;
   onSelectInternal: (key: InternalSettingsKey) => void;
 }) {
-  const { accountType } = useSession();
+  const router = useRouter();
+  const { accountType, signOut } = useSession();
   const isCreator = accountType === "creator";
 
   const renderRow = (row: CategoryRow) => {
     const active = row.key === activeKey;
     const iconColor = row.danger ? "var(--danger)" : active ? "var(--accent)" : "var(--text-secondary)";
+    if (row.action === "sign-out") {
+      return (
+        <button
+          key={row.key}
+          type="button"
+          onClick={() => {
+            signOut();
+            router.push("/sign-in");
+          }}
+          className={categoryRowClass(active, row.danger)}
+        >
+          <Icon name={row.icon} size={18} strokeWidth={2.2} color={iconColor} />
+          {row.label}
+        </button>
+      );
+    }
     if (row.internal) {
       return (
         <button key={row.key} type="button" onClick={() => onSelectInternal(row.internal!)} className={categoryRowClass(active, row.danger)}>
