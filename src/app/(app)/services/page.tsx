@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getServices } from "@/lib/api/services";
+import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ComingSoonPill, ErrorState, Icon, TierBadge } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 
@@ -18,7 +19,16 @@ export default async function ServicesPage() {
   const coming = services.filter((s) => s.status === "coming");
 
   return (
-    <div className="flex flex-col gap-[20px]">
+    <div className="flex flex-col gap-[20px] p-[14px_16px_96px]">
+      <div className="flex items-center gap-[10px]">
+        <ProfileBackButton compact />
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Services</span>
+      </div>
+
+      <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
+        Get registered, get trained, get covered — without leaving the app.
+      </p>
+
       <section className="flex flex-col gap-[11px]">
         <span className={eyebrow}>Open now</span>
         <div className="flex flex-col gap-[10px]">
@@ -30,7 +40,6 @@ export default async function ServicesPage() {
               <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
                 <span className="flex items-center gap-[8px] text-[15.5px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
                   {s.name}
-                  <TierBadge tier="basic" />
                 </span>
                 <span className="text-[13px] text-[var(--text-secondary)]">{s.tagline}</span>
                 <span className="text-[12px] text-[var(--text-muted)]">
