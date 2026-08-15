@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { OtpInput } from "../../components/OtpInput";
+import { useAuthBrand } from "../../components/AuthBrand";
 import { useSession } from "@/lib/auth/session-provider";
 import { signUp, verifyOtp } from "@/lib/api/auth";
 import type { AccountType } from "@/types/account";
@@ -129,11 +130,21 @@ export function SignUpFlow() {
 
   const stepLabel = step === "otp" ? "Step 2 of 3" : step === "interests" ? "Step 3 of 3" : "Step 1 of 3";
 
+  // Desktop: the step progress moves into the brand panel instead of sitting
+  // atop the form. The "how will you use WAWU" screen keeps the marketing
+  // panel (testimonial) — the numbered list only starts once the account
+  // creation flow itself begins.
+  useAuthBrand(
+    step === "type"
+      ? { kind: "marketing" }
+      : { kind: "steps", current: step === "otp" ? 2 : step === "interests" ? 3 : 1, steps: ["Your details", "Verify your email", "Pick five interests"] },
+  );
+
   if (step === "type") {
     return (
-      <div className="flex min-h-screen flex-col">
-        <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-[34px]">
-          <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto self-start object-contain" />
+      <div className="flex min-h-screen flex-col xl:min-h-0">
+        <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-[34px] xl:flex-none xl:px-0 xl:pb-0 xl:pt-0">
+          <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto self-start object-contain xl:hidden" />
           <div className="flex flex-col gap-2">
             <h2 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">What brings you to WAWU?</h2>
             <p className="m-0 text-[14.5px] leading-normal text-text-secondary">You can switch to a creator account later — nothing here is permanent.</p>
@@ -172,7 +183,7 @@ export function SignUpFlow() {
             </span>
           </button>
         </div>
-        <div className="flex flex-col gap-2.5 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4">
+        <div className="flex flex-col gap-2.5 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mt-6 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0 xl:pt-0">
           <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep("identity")}>
             Continue
           </Button>
@@ -453,8 +464,8 @@ function AuthScaffold({
   noBorder?: boolean;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className={`flex items-center gap-3 px-[18px] pb-3.5 pt-4 ${noBorder ? "" : "border-b border-hairline"}`}>
+    <div className="flex min-h-screen flex-col xl:min-h-0">
+      <div className={`flex items-center gap-3 px-[18px] pb-3.5 pt-4 xl:px-0 ${noBorder ? "" : "border-b border-hairline xl:border-0"}`}>
         {onBack ? (
           <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag">
             <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
@@ -462,19 +473,19 @@ function AuthScaffold({
         ) : null}
         <span className="flex-1 text-[16px] font-semibold">{title}</span>
         {stepLabel ? (
-          <span className="text-[12.5px] font-semibold text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
+          <span className="text-[12.5px] font-semibold text-text-muted [font-feature-settings:var(--font-feature-tabular)] xl:hidden">
             {stepLabel}
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-4 px-5 pb-5 pt-[18px]">{children}</div>
+      <div className="flex flex-1 flex-col gap-4 px-5 pb-5 pt-[18px] xl:flex-none xl:px-0 xl:pb-0">{children}</div>
     </div>
   );
 }
 
 function Footer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-auto flex flex-col gap-3 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4">
+    <div className="mt-auto flex flex-col gap-3 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mt-6 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0 xl:pt-0">
       {children}
     </div>
   );

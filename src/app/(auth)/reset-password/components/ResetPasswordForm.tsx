@@ -59,8 +59,8 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="flex items-center gap-3 px-[18px] pb-3.5 pt-4">
+    <div className="flex min-h-screen flex-col xl:min-h-0">
+      <div className="flex items-center gap-3 px-[18px] pb-3.5 pt-4 xl:px-0">
         <Link
           href="/sign-in"
           aria-label="Back"
@@ -71,7 +71,7 @@ export function ResetPasswordForm() {
         <span className="flex-1 text-[16px] font-semibold">New password</span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-4">
+      <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-4 xl:flex-none xl:px-0">
         <div className="flex flex-col gap-2.5">
           <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Choose a new password</h1>
           <p className="m-0 text-[14.5px] leading-normal text-text-secondary">
@@ -114,7 +114,7 @@ export function ResetPasswordForm() {
         </div>
       </div>
 
-      <div className="mt-auto flex flex-col gap-3 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4">
+      <div className="mt-auto flex flex-col gap-3 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mt-6 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0 xl:pt-0">
         <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
           {submitting ? "Updating…" : "Update password"}
         </Button>
