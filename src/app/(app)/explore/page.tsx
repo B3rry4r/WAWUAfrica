@@ -87,7 +87,10 @@ const SHOPS = {
 function ShopCard({ id }: { id: keyof typeof SHOPS }) {
   const shop = SHOPS[id];
   return (
-    <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px]">
+    <Link
+      href={`/marketplace/${id}`}
+      className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline"
+    >
       <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
         <Icon name={shop.icon} size={18} color="var(--accent)" />
       </span>
@@ -97,6 +100,6 @@ function ShopCard({ id }: { id: keyof typeof SHOPS }) {
         <HandoffPill app={shop.name} />
       </div>
       <span className="text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{shop.stat}</span>
-    </div>
+    </Link>
   );
 }
