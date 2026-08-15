@@ -1,0 +1,49 @@
+import type { CreatorTier } from "./account";
+
+export type SubscriptionState = "none" | "active" | "expired";
+
+export interface Plan {
+  tier: CreatorTier;
+  price: number;
+  /** Upload slots included. */
+  slots: number;
+  /** How many of those are free by rule. */
+  freeSlots: number;
+  /** Revenue share the creator keeps, percent. */
+  split: number;
+  features: string[];
+}
+
+export interface Subscription {
+  plan: Plan;
+  state: SubscriptionState;
+  renewsAt?: string;
+  cancelsAt?: string;
+}
+
+export const PLANS: Record<CreatorTier, Plan> = {
+  basic: {
+    tier: "basic",
+    price: 5999,
+    slots: 3,
+    freeSlots: 1,
+    split: 85,
+    features: [
+      "3 uploads — 1 free and 2 paid",
+      "Host open communities · 90% on credits",
+      "1 free course, business playbook, purple badge",
+    ],
+  },
+  pro: {
+    tier: "pro",
+    price: 18999,
+    slots: 7,
+    freeSlots: 2,
+    split: 90,
+    features: [
+      "7 uploads instead of 3",
+      "Keep 90% instead of 85%",
+      "Private communities and 3 free courses",
+    ],
+  },
+};
