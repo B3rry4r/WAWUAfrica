@@ -1,3 +1,4 @@
+import { PLANS } from "@/types/subscription";
 import type { Subscription } from "@/types/subscription";
 import type { KycStatus } from "@/types/account";
 import { mockRequest } from "./client";
@@ -12,7 +13,13 @@ export const currentSubscription: Subscription = {
 export interface SubscriptionApi {
   getSubscription: () => Promise<Subscription>;
   upgradeToPro: () => Promise<Subscription>;
+  /** Starts (or restarts, after expiry) the Basic tier at full price — no proration. */
+  downgradeToBasic: () => Promise<Subscription>;
+  /** Retries payment on the CURRENT tier — a past-due recovery, not an upgrade. */
+  retryPayment: () => Promise<Subscription>;
   cancelPro: () => Promise<Subscription>;
+  /** Swaps the card on file. No payment processor is wired up yet — this is a UI-only mock. */
+  updateCard: (last4: string) => Promise<{ last4: string }>;
   getKycGate: () => Promise<KycStatus>;
 }
 
@@ -21,16 +28,24 @@ export const subscriptionApi: SubscriptionApi = {
   getSubscription: () => mockRequest({ ...currentSubscription }),
 
   upgradeToPro: async () => {
-    currentSubscription.plan = {
-      tier: "pro",
-      price: 18999,
-      slots: 7,
-      freeSlots: 2,
-      split: 90,
-      features: [],
-    };
+    currentSubscription.plan = { ...PLANS.pro };
     currentSubscription.state = "active";
+    currentSubscription.cancelsAt = undefined;
     // SEAM: replace with POST /api/hub/creator-subscription (tier=pro)
+    return mockRequest({ ...currentSubscription }, 700);
+  },
+
+  downgradeToBasic: async () => {
+    currentSubscription.plan = { ...PLANS.basic };
+    currentSubscription.state = "active";
+    currentSubscription.cancelsAt = undefined;
+    // SEAM: replace with POST /api/hub/creator-subscription (tier=basic)
+    return mockRequest({ ...currentSubscription }, 700);
+  },
+
+  retryPayment: async () => {
+    currentSubscription.state = "active";
+    // SEAM: replace with POST /api/hub/creator-subscription/retry
     return mockRequest({ ...currentSubscription }, 700);
   },
 
@@ -39,6 +54,11 @@ export const subscriptionApi: SubscriptionApi = {
     currentSubscription.cancelsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
     // SEAM: replace with DELETE /api/hub/creator-subscription
     return mockRequest({ ...currentSubscription }, 700);
+  },
+
+  updateCard: async (last4: string) => {
+    // SEAM: replace with POST /api/hub/creator-subscription/card
+    return mockRequest({ last4 }, 500);
   },
 
   // SEAM: replace with GET /api/hub/creator/kyc/status
