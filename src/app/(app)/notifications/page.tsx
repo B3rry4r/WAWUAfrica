@@ -17,13 +17,13 @@ const toneIcon: Record<NotificationTone, IconName> = {
   neutral: "Bell",
 };
 
-const toneIconColor: Record<NotificationTone, string> = {
-  danger: "var(--danger)",
-  accent: "var(--accent)",
-  success: "var(--success)",
-  warning: "var(--warning)",
-  info: "var(--info)",
-  neutral: "var(--text-muted)",
+const toneIconClass: Record<NotificationTone, string> = {
+  danger: "text-danger",
+  accent: "text-accent",
+  success: "text-success",
+  warning: "text-warning",
+  info: "text-info",
+  neutral: "text-text-muted",
 };
 
 export default function NotificationsPage() {
@@ -132,7 +132,7 @@ function NotificationRow({ notification: n, last }: { notification: AppNotificat
 
   return (
     <div className={`flex gap-3 px-4 py-3.5 ${last ? "" : "border-b border-hairline"} ${n.read ? "" : "bg-accent-tint/40"}`}>
-      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full border border-hairline bg-tag" style={{ color: toneIconColor[n.tone] }}>
+      <span className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full border border-hairline bg-tag ${toneIconClass[n.tone]}`}>
         <Icon name={toneIcon[n.tone]} size={17} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -141,7 +141,7 @@ function NotificationRow({ notification: n, last }: { notification: AppNotificat
           {!n.read ? <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-accent" aria-label="Unread" /> : null}
         </span>
         {n.amount !== undefined ? (
-          <span className="text-[13px] font-semibold text-accent" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="text-[13px] font-semibold text-accent [font-feature-settings:var(--font-feature-tabular)]">
             {formatNaira(n.amount)}
           </span>
         ) : null}
@@ -149,7 +149,7 @@ function NotificationRow({ notification: n, last }: { notification: AppNotificat
           <span className="text-[13px] font-semibold text-warning">{formatCredits(n.creditsCount)}</span>
         ) : null}
         <span className="text-[13px] leading-relaxed text-text-secondary">{n.body}</span>
-        <span className="text-[11.5px] text-text-muted" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+        <span className="text-[11.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
           {timeLabel}
         </span>
         {n.actionLabel ? (

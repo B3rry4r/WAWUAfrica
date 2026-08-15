@@ -284,7 +284,7 @@ function ContentHeader({
 
 function MediaBlock({ content, state }: { content: ContentPiece; state: string }) {
   return (
-    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-media border border-hairline" style={{ background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 12px, var(--surface-card) 12px 24px)" }}>
+    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]">
       <span className="absolute inset-0 grid place-items-center">
         <span className="grid h-[54px] w-[54px] place-items-center rounded-full border border-strong bg-[rgba(11,10,13,0.55)] text-text-primary backdrop-blur">
           <Icon name={typeVisual[content.contentType]} size={22} strokeWidth={2} />
@@ -365,7 +365,7 @@ function LessonList({ content }: { content: ContentPiece }) {
             {lesson.index}
           </span>
           <span className="min-w-0 flex-1 truncate text-[14.5px] text-text-primary">{lesson.title}</span>
-          <span className="shrink-0 text-[12.5px] text-text-muted" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+          <span className="shrink-0 text-[12.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
             {lesson.durationLabel}
           </span>
         </div>
@@ -614,7 +614,7 @@ function UnlockSheet({
           </div>
           <div className="rounded-input border border-hairline bg-input p-3.5">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[24px] font-bold tracking-[-0.02em]" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+              <span className="text-[24px] font-bold tracking-[-0.02em] [font-feature-settings:var(--font-feature-tabular)]">
                 {formatNaira(content.price)}
               </span>
               <span className="text-[13px] text-text-muted">once</span>

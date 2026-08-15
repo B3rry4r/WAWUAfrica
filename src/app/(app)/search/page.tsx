@@ -229,7 +229,7 @@ export default function SearchPage() {
                 }`}
               >
                 {t === "all" ? "All" : t.charAt(0).toUpperCase() + t.slice(1)}
-                <span className="opacity-70" style={{ fontFeatureSettings: "var(--font-feature-tabular)" }}>
+                <span className="opacity-70 [font-feature-settings:var(--font-feature-tabular)]">
                   {counts[t]}
                 </span>
               </button>
@@ -241,8 +241,7 @@ export default function SearchPage() {
               {(tab === "all" ? results.content.slice(0, 3) : results.content).map((c) => (
                 <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5">
                   <span
-                    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline text-text-secondary"
-                    style={{ background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 10px, var(--surface-card) 10px 20px)" }}
+                    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
                   >
                     <Icon name={typeIcon(c.contentType)} size={20} />
                   </span>
@@ -319,8 +318,7 @@ export default function SearchPage() {
               {closest.slice(0, 3).map((c) => (
                 <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5">
                   <span
-                    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline text-text-secondary"
-                    style={{ background: "repeating-linear-gradient(135deg, var(--surface-tag) 0 10px, var(--surface-card) 10px 20px)" }}
+                    className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
                   >
                     <Icon name={typeIcon(c.contentType)} size={20} />
                   </span>
