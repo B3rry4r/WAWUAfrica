@@ -39,7 +39,22 @@ Bottom bar, 5 slots. Slot 3 swaps by account type:
 Search and notifications live in the header on every screen.
 
 ## Code boundaries
-- Design tokens come from `design/system/`. Never hardcode a hex, spacing, or radius.
+- **Tailwind classes, never `style={{}}`.** Tokens are CSS variables — read them
+  through Tailwind: `className="bg-[var(--surface-card)]"`. The design-system
+  bundle uses inline styles; it is a compiled reference, not the house style.
+- Never hardcode a hex, spacing value, or radius. Tokens only.
 - All API calls go through `src/lib/api/`. No `fetch()` inside components.
-- Shared UI lives in `src/components/ui/`. Don't fork a second Button.
+- Shared UI lives in `src/components/ui/` — import from the barrel. **Never fork
+  a component.** If a screen needs a variant, add a prop.
+- Mock data lives in `src/lib/api/mocks/`, never inline in a component. Tag every
+  mock read `// SEAM: replace with GET /api/hub/...`.
+- Creator gates come from `creatorGates()` in `src/lib/auth/gates.ts`. Never
+  re-check `subscriptionPaid` / `kyc` inline.
+- One branch per flow, not per dev. See `docs/05_CONVENTIONS.md`.
 - If a task conflicts with `docs/01_SPEC.md`, the spec wins — stop and flag it.
+
+## The design-system readme is stale on product truths
+`design/system/_ds/*/readme.md` was generated from the OLD repo. It says "never
+design a DM", lists six post categories, and describes a Trust Score system.
+**All of that is wrong.** See `docs/04_DESIGN_SYSTEM.md`. The components are fine;
+the product narrative in that file is not.

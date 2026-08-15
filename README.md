@@ -30,3 +30,14 @@ npm run dev
 
 ## Branching
 `feat/<area>-<desc>` → PR into `develop`. `main` is release-only.
+
+## Dev handoff
+| Dev | Brief |
+|---|---|
+| A — Consumer core | `docs/handoff/DEV_A_CONSUMER_CORE.md` |
+| B — Creator | `docs/handoff/DEV_B_CREATOR.md` |
+| C — Social & sections | `docs/handoff/DEV_C_SOCIAL_SECTIONS.md` |
+
+Agent rules are mirrored to `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.windsurfrules`
+and `.github/copilot-instructions.md` — whichever tool a dev uses picks them up.
+Edit `CLAUDE.md`, then run `npm run sync-agent-rules`.

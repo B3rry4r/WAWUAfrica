@@ -1,0 +1,151 @@
+import type { VerificationLevel } from "./account";
+
+/**
+ * Content model, mirroring docs/02_TECHNICAL_CONTEXT.md §2.1.
+ * `fullAssetUrl` is server-side gated and must NEVER reach the client for
+ * locked content — see the API layer in src/lib/api/content.ts.
+ */
+export type ContentType = "video" | "course" | "audio" | "pdf" | "image" | "template";
+
+export type DeliveryMode = "stream" | "download";
+
+export type AccessType = "free" | "paid";
+
+export type ContentState = "free" | "locked" | "unlocked";
+
+export interface CreatorProfile {
+  wawuId: string;
+  fullName: string;
+  handle: string;
+  headline?: string;
+  location?: string;
+  verificationLevel: VerificationLevel;
+  isPro?: boolean;
+}
+
+export interface ContentPiece {
+  id: string;
+  slug: string;
+  contentType: ContentType;
+  title: string;
+  description: string;
+  category: string;
+  accessType: AccessType;
+  price: number;
+  creator: CreatorProfile;
+  durationLabel?: string;
+  pageCount?: number;
+  lessonCount?: number;
+  views: number;
+  ratingPct?: number;
+  commentCount: number;
+  likes: number;
+  saved: boolean;
+  createdAt: string;
+  /** Always safe to serve — truncated PDF, 30–60s clip, episode-gated preview. */
+  previewAssetUrl: string;
+  /**
+   * Gated. Present ONLY when the requester is entitled to the full asset
+   * (free piece or completed purchase). Never present for locked content —
+   * enforce in the API layer, not just in components.
+   */
+  fullAssetUrl?: string;
+  /** Derived — tells the client to render lock/unlock UI without a real URL. */
+  fullAssetLocked: boolean;
+  courseLessons?: CourseLesson[];
+  /** Whether the current user has a completed purchase for this piece. */
+  purchased?: boolean;
+}
+
+export interface CourseLesson {
+  id: string;
+  index: number;
+  title: string;
+  durationLabel: string;
+  free: boolean;
+}
+
+export interface ContentFilterOption {
+  id: string;
+  label: string;
+}
+
+export interface ContentFeedResponse {
+  items: ContentPiece[];
+}
+
+export interface ContentDetailResponse {
+  content: ContentPiece;
+}
+
+/**
+ * Server response to POST /api/hub/content/:id/unlock.
+ * `fullAssetUrl` is a short-lived signed URL — treat as ephemeral, never cache.
+ */
+export interface UnlockInitiateResponse {
+  flutterwaveConfig: FlutterwaveConfig;
+}
+
+export interface UnlockVerifyResponse {
+  data: { purchased: true; fullAssetUrl: string } | { purchased: false };
+}
+
+export interface FlutterwaveConfig {
+  publicKey: string;
+  txRef: string;
+  amount: number;
+  currency: "NGN";
+  customerEmail: string;
+  customerName?: string;
+}
+
+/* ---------------------------------------------------------------------------
+ * Creator-side content model (upload library, publishing wizard).
+ * Consumer-side reading model is ContentPiece above. Both are in use:
+ * ContentPiece is what a buyer sees, ContentItem is what a creator manages.
+ * ------------------------------------------------------------------------- */
+
+export const CONTENT_TYPES: ContentType[] = [
+  "video",
+  "course",
+  "audio",
+  "pdf",
+  "image",
+  "template",
+];
+
+export interface ContentTypeMeta {
+  label: string;
+  group: "stream" | "download";
+  blurb: string;
+}
+
+export const CONTENT_TYPE_META: Record<ContentType, ContentTypeMeta> = {
+  video: { label: "Video", group: "stream", blurb: "One lesson or a talk" },
+  course: { label: "Course", group: "stream", blurb: "Several lessons in order" },
+  audio: { label: "Audio", group: "download", blurb: "Music, stems, podcast" },
+  pdf: { label: "PDF or book", group: "download", blurb: "Guides, workbooks" },
+  image: { label: "Image or art", group: "download", blurb: "Prints, design pieces" },
+  template: { label: "Template", group: "download", blurb: "Invoices, sheets, forms" },
+};
+
+export type ContentStatus = "live" | "review" | "rejected";
+
+export interface ContentItem {
+  id: string;
+  type: ContentType;
+  title: string;
+  /** File description shown under the title, e.g. "PDF · 34 pages · ₦1,500". */
+  meta: string;
+  /** Naira price; 0 means free. */
+  price: number;
+  status: ContentStatus;
+  /** Lifetime earnings (paid content only). */
+  earned?: number;
+  /** Sales/views count. */
+  activity?: string;
+  /** True for the first, free upload. */
+  isFirstUpload?: boolean;
+  /** Rejection reason shown to the creator. */
+  rejectionReason?: string;
+}

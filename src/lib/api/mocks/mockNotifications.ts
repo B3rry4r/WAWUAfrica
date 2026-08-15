@@ -1,0 +1,133 @@
+import type { AppNotification, NotificationsResponse } from "@/types/notification";
+import { formatNaira, formatCredits } from "@/lib/format";
+
+const minutesAgo = (mins: number) => new Date(Date.now() - mins * 60_000).toISOString();
+
+/**
+ * All 12 notification kinds, mirroring WAWU Notifications Search.dc.html.
+ * Money-bearing kinds carry `amount` (naira); credits kinds carry a COUNT.
+ */
+// SEAM: replace with GET /api/hub/notifications
+export const mockNotifications: NotificationsResponse = {
+  unreadCount: 4,
+  items: [
+    {
+      id: "n-dm-deadline",
+      kind: "dm_deadline",
+      title: "Reply to Emeka within 1h 12m",
+      body: "Miss it and his ₦300 is refunded. You earn nothing.",
+      tone: "danger",
+      amount: 300,
+      actionLabel: "Reply now",
+      read: false,
+      createdAt: minutesAgo(2),
+    },
+    {
+      id: "n-sale",
+      kind: "sale",
+      title: "CAC in 7 days sold",
+      body: "Ngozi Eze unlocked it · 20 min ago",
+      tone: "accent",
+      amount: 2250,
+      read: false,
+      createdAt: minutesAgo(20),
+    },
+    {
+      id: "n-dm-received",
+      kind: "dm_received",
+      title: "Paid message from Musa",
+      body: "“Can two people share one registration?” · 2h",
+      tone: "accent",
+      amount: 300,
+      read: false,
+      createdAt: minutesAgo(120),
+    },
+    {
+      id: "n-content-published",
+      kind: "content_published",
+      title: "The trader's playbook is live",
+      body: "Approved and in the feed",
+      tone: "success",
+      read: false,
+      createdAt: minutesAgo(4 * 60),
+    },
+    {
+      id: "n-kyc-verified",
+      kind: "kyc_verified",
+      title: "You are verified",
+      body: "Earnings now reach your GTB account ending 6789",
+      tone: "success",
+      read: true,
+      createdAt: minutesAgo(24 * 60),
+    },
+    {
+      id: "n-dm-refunded",
+      kind: "dm_refunded",
+      title: "Your ₦250 came back",
+      body: "Tolu Balogun did not reply within 24 hours",
+      tone: "info",
+      amount: 250,
+      read: true,
+      createdAt: minutesAgo(24 * 60),
+    },
+    {
+      id: "n-credits-low",
+      kind: "credits_low",
+      title: "3 credits left",
+      body: "Top up to keep chatting in Traders of Ogbete",
+      tone: "warning",
+      creditsCount: 3,
+      actionLabel: "Buy credits",
+      read: true,
+      createdAt: minutesAgo(2 * 24 * 60),
+    },
+    {
+      id: "n-content-rejected",
+      kind: "content_rejected",
+      title: "Market survey 2024 was not approved",
+      body: "Charts belong to another publisher · your slot is back",
+      tone: "danger",
+      read: true,
+      createdAt: minutesAgo(3 * 24 * 60),
+    },
+    {
+      id: "n-subscription-renewal",
+      kind: "subscription_renewal",
+      title: "Pro renews in 7 days",
+      body: `${formatNaira(18999)} on card ending 4412`,
+      tone: "neutral",
+      amount: 18999,
+      read: true,
+      createdAt: minutesAgo(3 * 24 * 60),
+    },
+    {
+      id: "n-follower",
+      kind: "new_follower",
+      title: "Chidi Umeh followed you",
+      body: "Artist · Nsukka",
+      tone: "neutral",
+      read: true,
+      createdAt: minutesAgo(5 * 24 * 60),
+    },
+    {
+      id: "n-tip",
+      kind: "tip_received",
+      title: "Tip from Ngozi Eze",
+      body: "“The nil-return page saved me a trip” · 1w",
+      tone: "accent",
+      amount: 1000,
+      read: true,
+      createdAt: minutesAgo(7 * 24 * 60),
+    },
+    {
+      id: "n-trial-ending",
+      kind: "trial_ending",
+      title: "Your community trial ends tomorrow",
+      body: `After that, each message costs ${formatCredits(1)}.`,
+      tone: "warning",
+      creditsCount: 0,
+      read: true,
+      createdAt: minutesAgo(6 * 24 * 60),
+    },
+  ],
+};

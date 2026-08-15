@@ -55,11 +55,25 @@ never in a `useEffect` on mount.
 Every screen ships with: loading (skeleton), empty, error (with a way out), and
 success. A PR missing any of these will be sent back.
 
-## Git
-- Branch: `feat/<area>-<short-desc>`, e.g. `feat/content-unlock-sheet`.
-- Small PRs into `develop`. One flow per PR where possible.
+## Git — one branch per FLOW, not per dev
+- Branch: `feat/<area>-<flow>`, e.g. `feat/content-unlock`, `feat/creator-kyc`.
+- **One flow per branch, one branch per PR.** Do not accumulate your whole scope
+  on a single branch — that guarantees conflicts on shared files.
+- Open the PR as soon as the flow is done. Rebase on `develop` daily.
 - PR body must list: which design file, which screens, which states covered.
 - `main` is protected and only receives releases.
+
+## Styling — Tailwind, never inline
+Colour, radius, spacing and elevation come from CSS-variable tokens. Use them
+through Tailwind classes:
+```tsx
+// yes
+<div className="rounded-[var(--radius-card)] bg-[var(--surface-card)] p-4" />
+// no
+<div style={{ borderRadius: "var(--radius-card)" }} />
+```
+The design-system bundle uses inline styles — it is a compiled reference, not the
+house style. Port to Tailwind. See `docs/04_DESIGN_SYSTEM.md`.
 
 ## Definition of done
 - Matches the design file at 390px.
