@@ -15,6 +15,7 @@ export async function markAllRead(): Promise<void> {
   try {
     await apiFetch<void>("/api/hub/notifications/read-all", { method: "POST", authed: true });
   } catch {
+    // SEAM: replace with POST /api/hub/notifications/read-all
     return;
   }
 }

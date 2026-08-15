@@ -3,6 +3,11 @@ import { API_BASE, USE_MOCKS } from "./config";
 
 const REQUEST_TIMEOUT_MS = 8000;
 
+/** Simulated latency for mock reads — mirrors a real round trip. */
+export async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export class ApiError extends Error {
   readonly status: number;
 

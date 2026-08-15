@@ -33,8 +33,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex h-[78px] w-full max-w-[430px] items-center border-t border-hairline bg-[rgba(19,19,22,0.86)] pb-[12px] backdrop-blur"
-      style={{ backdropFilter: "var(--blur-chrome)" }}
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex h-[78px] w-full max-w-[430px] items-center border-t border-hairline bg-[rgba(19,19,22,0.86)] pb-[12px] [backdrop-filter:var(--blur-chrome)]"
     >
       {items.map((item) => {
         const active = pathname === item.href;

@@ -7,6 +7,7 @@ const minutesAgo = (mins: number) => new Date(Date.now() - mins * 60_000).toISOS
  * All 12 notification kinds, mirroring WAWU Notifications Search.dc.html.
  * Money-bearing kinds carry `amount` (naira); credits kinds carry a COUNT.
  */
+// SEAM: replace with GET /api/hub/notifications
 export const mockNotifications: NotificationsResponse = {
   unreadCount: 4,
   items: [

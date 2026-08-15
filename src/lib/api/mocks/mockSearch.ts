@@ -4,24 +4,28 @@ import { mockContent } from "./mockContent";
 
 const searchContent = mockContent.filter((c) => c.accessType === "free" || c.title.includes("book") || c.title.toLowerCase().includes("book"));
 
+// SEAM: replace with GET /api/hub/search/suggested-creators
 export const mockSearchCreators = [
   { wawuId: "wawu_funmi", fullName: "Funmi Adeyemi", headline: "Accountant", location: "Lagos", verificationLevel: "certified_professional" as const, pieceCount: 6 },
   { wawuId: "wawu_adaeze", fullName: "Adaeze Okonkwo", headline: "Business Strategist", location: "Enugu", verificationLevel: "certified_professional" as const, pieceCount: 4 },
   { wawuId: "wawu_musa", fullName: "Musa Danladi", headline: "Welder and trainer", location: "Kaduna", verificationLevel: "verified_user" as const, pieceCount: 3 },
 ];
 
+// SEAM: replace with GET /api/hub/search/suggested-communities
 export const mockSearchCommunities = [
   { id: "books-and-records", name: "Books and records", memberCount: 312, visibility: "open" as const },
   { id: "traders-of-ogbete", name: "Traders of Ogbete", memberCount: 890, visibility: "open" as const },
   { id: "export-to-ghana", name: "Export to Ghana", memberCount: 204, visibility: "open" as const },
 ];
 
+// SEAM: replace with GET /api/hub/search
 export const mockSearchResults: SearchResults = {
   content: searchContent,
   creators: mockSearchCreators,
   communities: mockSearchCommunities,
 };
 
+// SEAM: replace with GET /api/hub/search
 export function mockSearch(query: string): SearchResponse {
   const q = query.trim().toLowerCase();
   if (!q) {
