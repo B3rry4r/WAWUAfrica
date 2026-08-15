@@ -17,7 +17,7 @@ def normalize(f: str) -> str:
         r = r[: -len("/page.tsx")]
     elif r == "page.tsx":
         r = ""
-    r = re.sub(r"\((app|auth|marketing)\)/?", "", r)
+    r = re.sub(r"\((app|auth|marketing|focused)\)/?", "", r)
     return ("/" + r.strip("/")).rstrip("/") or "/"
 
 def route_re(r: str) -> str:

@@ -187,13 +187,15 @@ export function SubscriptionManagement() {
         <FlowHeader title={title} onBack={onBack} />
       </div>
 
-      {/* D9's own 68px "‹ Settings / Subscription" bar. /subscription is a top-level
-          flow route (like /kyc, /create/new) outside the (app) route group, so it
-          isn't wrapped by AppShell — no persistent Sidebar/DesktopHeader reaches it
-          the way it does for sibling desktop screens. Flagging rather than fixing:
-          moving this route under (app) would also pull in AppHeader + BottomNav at
-          mobile widths (that route group's shell isn't conditional on width), which
-          would regress the mobile layout — out of scope for a two-file task. */}
+      {/* D9's own 68px "‹ Settings / Subscription" bar. /subscription now lives in
+          the (focused) route group, whose layout gives it a persistent Sidebar +
+          DesktopHeader (search/notifications/account chip) — but neither of those
+          does back-navigation, and DesktopHeader has no concept of "which settings
+          page am I under." This bar still earns its place for that: it's the
+          breadcrumb back to /settings, same job AppHeader's mobile back-arrow
+          would do. It's registered in AppHeader's OWN_HEADER_ROUTES so DesktopHeader
+          hides here instead of stacking above it — the same mechanism /services and
+          /content already use for their own local headers. */}
       <div className="hidden h-[68px] shrink-0 items-center gap-4 border-b border-[var(--border-hairline)] px-[26px] xl:flex">
         <Link href="/settings" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
           <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
