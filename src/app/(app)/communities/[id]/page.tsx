@@ -1,15 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import type { Community, CommunityMessage } from "@/types/credits";
-import { getCommunity, getCommunityMessages, getCreditsState, joinCommunity, sendCommunityMessage } from "@/lib/api/communities";
+import type { Community } from "@/types/credits";
+import { getCommunities } from "@/lib/api/communities";
+import { useCommunityThread } from "@/hooks/useCommunityThread";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
+import { ROOMS_LIST_HEADER, RoomsDesktopList } from "@/components/communities/RoomsDesktopList";
+import { CommunityThreadDesktop } from "@/components/communities/CommunityThreadDesktop";
 
 const bubbleClass = {
   mine: "[border-radius:16px_16px_4px_16px]",
@@ -21,98 +25,96 @@ export default function CommunityDetailPage() {
   const router = useRouter();
   const id = String(params?.id ?? "");
 
-  const [community, setCommunity] = useState<Community | null>(null);
-  const [messages, setMessages] = useState<CommunityMessage[]>([]);
-  const [balance, setBalance] = useState(0);
+  const { community, messages, balance, errorKind, load, doJoin, send, sending } = useCommunityThread(id);
   const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
-  // "not-found": the community genuinely doesn't exist — retrying won't help, offer a way back instead.
-  // "failed": the fetch itself errored — plausibly transient, offer a retry.
-  const [errorKind, setErrorKind] = useState<"not-found" | "failed" | null>(null);
 
-  const load = useCallback(() => {
+  // Rooms list for the xl: three-pane view (design D14) — only needed above
+  // the xl breakpoint, but fetched unconditionally like Inbox/QuestionsDesktop
+  // each own their fetch for the mobile/desktop split (see messages/page.tsx).
+  const [joinedRooms, setJoinedRooms] = useState<Community[]>([]);
+  useEffect(() => {
     let active = true;
-    setErrorKind(null);
-    Promise.all([getCommunity(id), getCommunityMessages(id), getCreditsState()])
-      .then(([c, msgs, credits]) => {
-        if (!active) return;
-        if (!c) {
-          setErrorKind("not-found");
-          return;
-        }
-        setCommunity(c);
-        setMessages(msgs);
-        setBalance(credits.creditBalance);
-      })
-      .catch(() => active && setErrorKind("failed"));
+    getCommunities("joined")
+      .then((rooms) => active && setJoinedRooms(rooms))
+      .catch(() => {});
     return () => {
       active = false;
     };
-  }, [id]);
+  }, []);
 
-  useEffect(() => load(), [load]);
-
-  const doJoin = async () => {
-    if (!community) return;
-    await joinCommunity(community.id);
-    setCommunity({ ...community, joined: true });
-  };
-
-  const send = async () => {
-    if (!community || !text.trim() || sending || balance < 1) return;
-    setSending(true);
-    try {
-      const msg = await sendCommunityMessage(community.id, text.trim());
-      setMessages((m) => [...m, msg]);
-      setText("");
-      setBalance((b) => Math.max(0, b - 1));
-    } finally {
-      setSending(false);
-    }
+  const handleSend = async () => {
+    if (!text.trim()) return;
+    await send(text);
+    setText("");
   };
 
   if (errorKind === "not-found") {
     return (
-      <div className="p-4">
-        <ErrorState
-          title="Community not found"
-          body="This community may have been removed."
-          onRetry={() => router.push("/communities")}
-          retryLabel="Back to communities"
+      <>
+        <div className="p-4 xl:hidden">
+          <ErrorState
+            title="Community not found"
+            body="This community may have been removed."
+            onRetry={() => router.push("/communities")}
+            retryLabel="Back to communities"
+          />
+        </div>
+        <ThreePaneLayout
+          listWidth={340}
+          listHeader={ROOMS_LIST_HEADER}
+          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+          detail={<CommunityThreadDesktop id={id} />}
         />
-      </div>
+      </>
     );
   }
 
   if (errorKind === "failed") {
     return (
-      <div className="p-4">
-        <ErrorState
-          title="Couldn't load this community"
-          body="Check your connection and try again."
-          onRetry={load}
+      <>
+        <div className="p-4 xl:hidden">
+          <ErrorState
+            title="Couldn't load this community"
+            body="Check your connection and try again."
+            onRetry={load}
+          />
+        </div>
+        <ThreePaneLayout
+          listWidth={340}
+          listHeader={ROOMS_LIST_HEADER}
+          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+          detail={<CommunityThreadDesktop id={id} />}
         />
-      </div>
+      </>
     );
   }
 
   if (!community) {
     return (
-      <div className="p-4">
-        <ProfileBackButton compact />
-        <div className="mt-4 flex flex-col gap-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-[52px] rounded-[var(--radius-input)] bg-tag" />
-          ))}
+      <>
+        <div className="p-4 xl:hidden">
+          <ProfileBackButton compact />
+          <div className="mt-4 flex flex-col gap-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-[52px] rounded-[var(--radius-input)] bg-tag" />
+            ))}
+          </div>
         </div>
-      </div>
+        <ThreePaneLayout
+          listWidth={340}
+          listHeader={ROOMS_LIST_HEADER}
+          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+          detail={<CommunityThreadDesktop id={id} />}
+        />
+      </>
     );
   }
 
   const joined = community.joined;
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <>
+    <div className="flex min-h-dvh flex-col xl:hidden">
       <header className="sticky top-0 z-40 flex items-center gap-[11px] border-b border-hairline bg-elevated px-4 pb-[10px] pt-3">
         <ProfileBackButton compact />
         <div className="flex min-w-0 flex-1 flex-col gap-[1px]">
@@ -189,7 +191,7 @@ export default function CommunityDetailPage() {
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") send();
+                    if (e.key === "Enter") handleSend();
                   }}
                   placeholder={`Message ${community.name} (1 credit)`}
                   className="h-[46px] flex-1 rounded-[var(--radius-chip)] border border-hairline bg-input px-4 text-[14.5px] text-text-primary outline-none"
@@ -197,7 +199,7 @@ export default function CommunityDetailPage() {
                 <button
                   type="button"
                   aria-label="Send"
-                  onClick={send}
+                  onClick={handleSend}
                   disabled={!text.trim() || sending}
                   className={[
                     "grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full border-none",
@@ -219,5 +221,13 @@ export default function CommunityDetailPage() {
         </>
       )}
     </div>
+
+    <ThreePaneLayout
+      listWidth={340}
+      listHeader={ROOMS_LIST_HEADER}
+      list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+      detail={<CommunityThreadDesktop id={id} />}
+    />
+    </>
   );
 }
