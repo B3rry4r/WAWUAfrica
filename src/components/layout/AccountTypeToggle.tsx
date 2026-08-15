@@ -24,14 +24,22 @@ export function AccountTypeToggle({ current }: AccountTypeToggleProps) {
       <button
         type="button"
         onClick={() => set("user")}
-        className="flex-1 h-[36px] py-0 px-[18px] rounded-[999] border-[none] text-[13px] font-semibold cursor-pointer" style={{background: current === "user" ? "var(--accent)" : "transparent", color: current === "user" ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-sans)"}}
+        className={`flex-1 h-[36px] py-0 px-[18px] rounded-[999] border-[none] text-[13px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
+          current === "user"
+            ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+            : "bg-transparent text-[var(--text-secondary)]"
+        }`}
       >
         User
       </button>
       <button
         type="button"
         onClick={() => set("creator")}
-        className="flex-1 h-[36px] py-0 px-[18px] rounded-[999] border-[none] text-[13px] font-semibold cursor-pointer" style={{background: current === "creator" ? "var(--accent)" : "transparent", color: current === "creator" ? "var(--text-on-accent)" : "var(--text-secondary)", fontFamily: "var(--font-sans)"}}
+        className={`flex-1 h-[36px] py-0 px-[18px] rounded-[999] border-[none] text-[13px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
+          current === "creator"
+            ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+            : "bg-transparent text-[var(--text-secondary)]"
+        }`}
       >
         Creator
       </button>
