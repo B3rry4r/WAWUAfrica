@@ -1,6 +1,9 @@
 import Link from "next/link";
-import type { OwnProfile } from "@/types/verification";
-import { getOwnProfile } from "@/lib/api/verification";
+import type { VerificationLevel } from "@/types/account";
+import type { OwnProfile, VerificationLevelEntry } from "@/types/verification";
+import { VERIFY_TIER_LABELS } from "@/types/verification";
+import { getOwnProfile, getVerificationLadder } from "@/lib/api/verification";
+import { getPurchases } from "@/lib/api/purchases";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
@@ -14,18 +17,30 @@ const eyebrowClass = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em]
 
 export default async function OwnProfilePage() {
   let profile: OwnProfile;
+  let ladder: VerificationLevelEntry[];
+  let purchasesCount: number;
   try {
-    profile = await getOwnProfile();
+    const [profileRes, ladderRes, purchasesRes] = await Promise.all([
+      getOwnProfile(),
+      getVerificationLadder(),
+      getPurchases(),
+    ]);
+    profile = profileRes;
+    ladder = ladderRes;
+    purchasesCount = purchasesRes.items.length;
   } catch (e) {
     const message = e instanceof Error ? e.message : undefined;
     return <ErrorState title={message ?? "We couldn't load your profile."} />;
   }
   const isCreator = profile.accountType === "creator";
+  const currentLevel = ladder.find((l) => l.status === "yours");
+  const nextLevel = ladder.find((l) => l.status === "next");
 
   return (
     <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4">
       <IdentityBlock profile={profile} />
-      {isCreator ? <CreatorDashboardCard profile={profile} /> : <UserVerificationCard profile={profile} />}
+      {isCreator && <CreatorDashboardCard profile={profile} />}
+      <VerificationProgressCard tier={currentLevel?.tier ?? profile.verification} nextTier={nextLevel?.tier} />
 
       <section className="flex flex-col gap-[10px]">
         <span className={eyebrowClass}>Interests</span>
@@ -45,14 +60,20 @@ export default async function OwnProfilePage() {
             <ListRow title="My content" subtitle={`${profile.stats.published} published · ${profile.contentSlots?.published} of ${profile.contentSlots?.total} slots`} icon="Layers" href="/create/library" />
             <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
             <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
-            <ListRow title="Verification" icon="ShieldCheck" href="/kyc" />
+            <ListRow title="Verification" icon="ShieldCheck" href="/profile/verification" />
             <ListRow title="My purchases" icon="Package" meta="2" href="/purchases" />
             <ListRow title="Saved" icon="Bookmark" href="/saved" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
         ) : (
           <>
-            <ListRow title="My purchases" subtitle="6 pieces unlocked" icon="Package" meta="6" />
+            <ListRow
+              title="My purchases"
+              subtitle={`${purchasesCount} pieces unlocked`}
+              icon="Package"
+              meta={String(purchasesCount)}
+              href="/purchases"
+            />
             <ListRow title="Saved" icon="Bookmark" meta="14" href="/saved" />
             <ListRow title="Credits" subtitle="1 per community message" icon="Ticket" meta={String(profile.credits)} href="/communities" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
@@ -103,7 +124,7 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
 
 function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
   return (
-    <Link href="/create" className="block no-underline">
+    <Link href="/creator" className="block no-underline">
       <div className="flex flex-col gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
         <div className="flex items-center gap-[11px]">
           <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
@@ -124,18 +145,21 @@ function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
   );
 }
 
-function UserVerificationCard({ profile }: { profile: OwnProfile }) {
+function VerificationProgressCard({ tier, nextTier }: { tier: VerificationLevel; nextTier?: VerificationLevel }) {
+  const label = tier === "basic" ? "Basic profile" : VERIFY_TIER_LABELS[tier];
+  const subtitle =
+    tier === "basic"
+      ? "Verify to show buyers you're real"
+      : nextTier
+        ? `Apply to be a ${VERIFY_TIER_LABELS[nextTier]}`
+        : "You're at the top of the ladder";
   return (
     <Link href="/profile/verification" className="block no-underline">
       <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-hairline bg-card px-[15px] py-[14px]">
-        <VerificationBadge tier={profile.verification} size={20} />
+        <VerificationBadge tier={tier} size={20} />
         <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-          <span className="text-[14px] font-semibold text-text-primary">
-            {profile.verification === "basic" ? "Basic profile" : profile.verification.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-          </span>
-          <span className="text-[12.5px] text-text-secondary">
-            {profile.verification === "basic" ? "Verify to show buyers you're real" : "Move up the ladder"}
-          </span>
+          <span className="text-[14px] font-semibold text-text-primary">{label}</span>
+          <span className="text-[12.5px] text-text-secondary">{subtitle}</span>
         </div>
         <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
       </div>
