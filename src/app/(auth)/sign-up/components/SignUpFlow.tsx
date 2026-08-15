@@ -122,8 +122,9 @@ export function SignUpFlow() {
   const onFinishInterests = () => {
     if (interests.length < INTERESTS_MIN) return;
     persistInterests(interests);
-    // Creator onboarding (/create) is Dev B's; land creators on the feed for now.
-    router.push("/");
+    // Creators go straight into onboarding (tier -> payment -> KYC).
+    // Users land on the feed.
+    router.push(otpState?.accountType === "creator" ? "/onboarding" : "/");
   };
 
   const stepLabel = step === "otp" ? "Step 2 of 3" : step === "interests" ? "Step 3 of 3" : "Step 1 of 3";
