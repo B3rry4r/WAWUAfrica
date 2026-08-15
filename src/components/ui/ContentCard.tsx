@@ -16,13 +16,14 @@ const borderClass: Record<ContentItem["status"], string> = {
   rejected: "border-[rgba(255,92,92,0.28)]",
 };
 
-export interface ContentCardProps {
+export interface CreatorUploadCardProps {
   item: ContentItem;
   onClick?: () => void;
   onFix?: () => void;
 }
 
-export function ContentCard({ item, onClick, onFix }: ContentCardProps) {
+/** Creator dashboard upload-list row (status pill, earnings, fix-and-resubmit). */
+export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardProps) {
   const pill = statusPill[item.status];
 
   return (

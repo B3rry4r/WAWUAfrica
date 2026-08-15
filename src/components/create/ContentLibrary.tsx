@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { contentApi } from "@/lib/api/creator-content";
 import { currentSession } from "@/lib/api/mocks/session";
 import type { ContentItem, ContentStatus } from "@/types/content";
-import { ContentCard } from "@/components/ui/ContentCard";
+import { CreatorUploadCard } from "@/components/ui/ContentCard";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
@@ -99,7 +99,7 @@ export function ContentLibrary() {
             // follow-up needed before they can be made tappable too.
             const canResubmit = item.status === "rejected";
             return (
-              <ContentCard
+              <CreatorUploadCard
                 key={item.id}
                 item={item}
                 onClick={canResubmit ? () => resubmit(item) : undefined}
