@@ -182,7 +182,7 @@ export default function CommunityDetailPage() {
 
           <footer className="sticky bottom-0 border-t border-hairline bg-elevated px-4 pb-[calc(10px_+_env(safe-area-inset-bottom))] pt-[10px]">
             {balance < 1 ? (
-              <Button full icon="Ticket" onClick={() => router.push("/communities")}>
+              <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>
                 Top up credits
               </Button>
             ) : (
