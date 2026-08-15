@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatNaira } from "@/lib/format";
 import { PLANS } from "@/types/subscription";
 import type { Subscription } from "@/types/subscription";
@@ -12,10 +13,21 @@ import { creatorGates } from "@/lib/auth/gates";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { ListRow } from "@/components/ui/ListRow";
 import { Sheet } from "@/components/ui/Sheet";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { StatBlock } from "@/components/ui/StatBlock";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { TierBadge } from "@/components/ui/TierBadge";
+
+// SEAM: replace with GET /api/hub/creator-subscription/history — no billing-history
+// endpoint exists yet, so desktop's history card (design D9) reads this local list,
+// same pattern as CreatorDashboard's local STREAMS array.
+const BILLING_HISTORY = [
+  { title: "Paid", subtitle: "12 Aug · card on file", icon: "CheckCheck" as IconName },
+  { title: "Paid", subtitle: "12 Jul · card on file", icon: "CheckCheck" as IconName },
+  { title: "Paid", subtitle: "12 Jun · retried once, then cleared", icon: "RotateCcw" as IconName },
+];
 
 /** Where within the flow the screen is currently drawn — not a state switcher. */
 type Screen = "billing" | "upgrade" | "resubscribe";
@@ -170,11 +182,28 @@ export function SubscriptionManagement() {
   };
 
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
-      <FlowHeader title={title} onBack={onBack} />
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:min-h-0 xl:max-w-none">
+      <div className="xl:hidden">
+        <FlowHeader title={title} onBack={onBack} />
+      </div>
+
+      {/* D9's own 68px "‹ Settings / Subscription" bar. /subscription is a top-level
+          flow route (like /kyc, /create/new) outside the (app) route group, so it
+          isn't wrapped by AppShell — no persistent Sidebar/DesktopHeader reaches it
+          the way it does for sibling desktop screens. Flagging rather than fixing:
+          moving this route under (app) would also pull in AppHeader + BottomNav at
+          mobile widths (that route group's shell isn't conditional on width), which
+          would regress the mobile layout — out of scope for a two-file task. */}
+      <div className="hidden h-[68px] shrink-0 items-center gap-4 border-b border-[var(--border-hairline)] px-[26px] xl:flex">
+        <Link href="/settings" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
+          <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+          Settings
+        </Link>
+        <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em]">Subscription</span>
+      </div>
 
       {loadState === "loading" ? (
-        <div className="flex-1 pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+        <div className="flex-1 pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px] xl:mx-auto xl:mt-[26px] xl:w-full xl:max-w-[560px] xl:px-0">
           <Skeleton variant="card" className="h-[160px]" />
           <Skeleton variant="card" className="h-[96px]" />
           <Skeleton variant="card" className="h-[140px]" />
@@ -188,7 +217,7 @@ export function SubscriptionManagement() {
         </div>
       ) : (
         <>
-          <div className="flex-1 pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+          <div className="flex-1 pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px] xl:hidden">
             {screen === "billing" ? (
               <CurrentView
                 subscription={subscription}
@@ -289,7 +318,7 @@ export function SubscriptionManagement() {
           </div>
 
           {screen === "billing" && state === "active" && tier === "basic" ? (
-            <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
+            <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px] xl:hidden">
               <Button full size="lg" iconRight="ArrowRight" onClick={() => setScreen("upgrade")}>
                 See what Pro adds
               </Button>
@@ -297,7 +326,7 @@ export function SubscriptionManagement() {
           ) : null}
 
           {screen === "billing" && (state === "expired" || state === "none") ? (
-            <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
+            <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px] xl:hidden">
               <Button full size="lg" onClick={() => setScreen("resubscribe")}>
                 {state === "expired" ? "Start a tier again" : "Choose a plan"}
               </Button>
@@ -305,13 +334,39 @@ export function SubscriptionManagement() {
           ) : null}
 
           {screen === "upgrade" ? (
-            <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
+            <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px] xl:hidden">
               <Button full size="lg" loading={paying} onClick={payAndGoPro}>
                 Pay {formatNaira(dueToday)} and go Pro
               </Button>
               <span className="text-[12px] text-[var(--text-muted)] self-center">Your 90/10 split starts on the next sale.</span>
             </div>
           ) : null}
+
+          {/* D9 · Subscription, desktop — current plan and the upgrade case, side by
+              side, instead of mobile's four-screen flow (billing/upgrade/resubscribe). */}
+          <div className="hidden xl:block">
+            <DesktopSubscriptionView
+              subscription={subscription}
+              slotsUsed={gates.slotsUsed}
+              slotsTotal={gates.slotsTotal}
+              cardLast4={cardLast4}
+              retrying={retrying}
+              paying={paying}
+              cancelling={cancelling}
+              downgrading={downgrading}
+              resubTier={resubTier}
+              monthlySales={monthlySales}
+              basicKept={basicKept}
+              proKept={proKept}
+              dueToday={dueToday}
+              onUpgrade={payAndGoPro}
+              onStartTier={startTier}
+              onCancel={() => setShowCancel(true)}
+              onDowngrade={handleDowngrade}
+              onChangeCard={() => setShowCard(true)}
+              onRetryPayment={retryPayment}
+            />
+          </div>
         </>
       )}
 
@@ -633,5 +688,324 @@ function CurrentView({
         </Card>
       ) : null}
     </>
+  );
+}
+
+function BillingHistoryCard() {
+  return (
+    <Card>
+      <CardLabel>Billing history</CardLabel>
+      <div className="flex flex-col -mx-[6px]">
+        {BILLING_HISTORY.map((row, i) => (
+          <ListRow key={i} title={row.title} subtitle={row.subtitle} icon={row.icon} trailing="none" />
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * D9 · Subscription, desktop (1440×900) — current plan and the upgrade case laid
+ * out side by side, replacing the mobile flow's four separate screens
+ * (active/upgrade/past-due/expired) with one view that reads real state off
+ * `subscription` (creatorGates()/subscriptionApi.getSubscription(), unchanged).
+ *
+ * Design D9 also draws a "Pause for a month" button in the right column. There
+ * is no pause state in `SubscriptionState` ("none" | "active" | "past_due" |
+ * "expired") or in `subscriptionApi` — inventing one would mean wiring a UI
+ * control to nothing real. Substituted the *real* equivalent action instead:
+ * downgrading Pro → Basic (already wired via `onDowngrade`/`handleDowngrade`,
+ * the same action the mobile cancel sheet already offers Pro creators) is the
+ * closest genuine "cheaper, not cancelled" option this backend supports.
+ */
+function DesktopSubscriptionView({
+  subscription,
+  slotsUsed,
+  slotsTotal,
+  cardLast4,
+  retrying,
+  paying,
+  cancelling,
+  downgrading,
+  resubTier,
+  monthlySales,
+  basicKept,
+  proKept,
+  dueToday,
+  onUpgrade,
+  onStartTier,
+  onCancel,
+  onDowngrade,
+  onChangeCard,
+  onRetryPayment,
+}: {
+  subscription: Subscription;
+  slotsUsed: number;
+  slotsTotal: number;
+  cardLast4: string;
+  retrying: boolean;
+  paying: boolean;
+  cancelling: boolean;
+  downgrading: boolean;
+  resubTier: CreatorTier | null;
+  monthlySales: number;
+  basicKept: number;
+  proKept: number;
+  dueToday: number;
+  onUpgrade: () => void;
+  onStartTier: (tier: CreatorTier) => void;
+  onCancel: () => void;
+  onDowngrade: () => void;
+  onChangeCard: () => void;
+  onRetryPayment: () => void;
+}) {
+  const tier = subscription.plan.tier;
+  const state = subscription.state;
+  const price = subscription.plan.price;
+  const active = state === "active";
+  const pastdue = state === "past_due";
+  const expired = state === "expired";
+  const none = state === "none";
+  const slotsPct = slotsTotal > 0 ? Math.round((slotsUsed / slotsTotal) * 100) : 0;
+
+  return (
+    <div className="grid w-full grid-cols-2 items-start gap-[26px] p-[26px]">
+      {/* Left column — current status, reused across every renewal state. */}
+      <div className="flex min-w-0 flex-col gap-[16px]">
+        {active ? (
+          <div
+            className={`flex flex-col gap-[16px] rounded-[var(--radius-card)] border p-[24px] ${
+              tier === "pro"
+                ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]"
+                : "border-[var(--border-accent)] bg-[linear-gradient(140deg,#3B0A55,#131316)]"
+            }`}
+          >
+            <div className="flex items-center gap-[12px]">
+              <TierBadge tier={tier} />
+              <span className="text-[21px] font-semibold tracking-[-0.02em]">
+                {tier === "pro" ? "Pro" : "Basic"} · {formatNaira(price)} a year
+              </span>
+            </div>
+            <div className="flex gap-[32px]">
+              <StatBlock value={formatDate(subscription.cancelsAt ?? subscription.renewsAt)} label={subscription.cancelsAt ? "Ends" : "Renews"} align="start" size="md" />
+              <StatBlock value={`${slotsUsed} / ${slotsTotal}`} label="Slots used" align="start" size="md" />
+              <StatBlock value={`${PLANS[tier].split}%`} label="You keep" align="start" size="md" />
+            </div>
+            <div className="flex gap-[12px] border-t border-t-[rgba(255,255,255,0.14)] pt-[16px]">
+              <Button size="sm" variant="secondary" onClick={onChangeCard}>
+                Change card
+              </Button>
+              <Button size="sm" variant="ghost" loading={cancelling} onClick={onCancel}>
+                {subscription.cancelsAt ? "Renewal off" : "Cancel plan"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {pastdue ? (
+          <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[rgba(255,183,3,0.32)] bg-[var(--warning-tint)] p-[24px]">
+            <div className="flex items-center gap-[12px]">
+              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-[rgba(255,183,3,0.3)] bg-[rgba(255,183,3,0.16)]">
+                <Icon name="CreditCard" size={19} strokeWidth={2.2} color="var(--warning)" />
+              </span>
+              <div className="flex flex-1 flex-col gap-[3px]">
+                <span className="text-[16px] font-semibold">Renewal did not go through</span>
+                <span className="text-[12.5px] text-[var(--text-secondary)]">Card {cardLast4} was declined</span>
+              </div>
+            </div>
+            <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+              We will try twice more before {tier === "pro" ? "Pro" : "Basic"} lapses.
+            </p>
+            <Button size="lg" loading={retrying} onClick={onRetryPayment}>
+              Pay {formatNaira(price)} now
+            </Button>
+          </div>
+        ) : null}
+
+        {expired ? (
+          <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface-card)] p-[24px]">
+            <div className="flex items-center gap-[10px]">
+              <StatusPill kind="neutral">Expired</StatusPill>
+              <span className="flex-1 text-[12.5px] text-[var(--text-muted)]">
+                {tier === "pro" ? "Pro" : "Basic"} ended {formatDate(subscription.cancelsAt ?? subscription.renewsAt)}
+              </span>
+            </div>
+            <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+              You are back to a plain creator account. Nothing was deleted and nobody lost anything they bought.
+            </p>
+          </div>
+        ) : null}
+
+        {none ? (
+          <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface-card)] p-[24px]">
+            <StatusPill kind="neutral">No plan yet</StatusPill>
+            <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+              Choose Basic or Pro to start uploading and selling.
+            </p>
+          </div>
+        ) : null}
+
+        {!none ? <BillingHistoryCard /> : null}
+
+        {active ? (
+          <div className="flex gap-[13px] rounded-[var(--radius-card)] border border-[rgba(255,183,3,0.4)] bg-[var(--surface-card)] p-[20px]">
+            <Icon name="TriangleAlert" size={18} color="var(--warning)" />
+            <div className="flex flex-col gap-[5px]">
+              <span className="text-[14px] font-semibold">If a renewal fails</span>
+              <span className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+                Published pieces stay readable and buyers keep access. You cannot post or take new questions until it clears.
+              </span>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Right column — the case for what to do next, shaped by the same state. */}
+      <div className="flex min-w-0 flex-col gap-[16px]">
+        {active && tier === "basic" ? (
+          <>
+            <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[24px]">
+              <div className="flex items-center gap-[12px]">
+                <TierBadge tier="pro" />
+                <span className="text-[21px] font-semibold tracking-[-0.02em]">Pro · {formatNaira(PLANS.pro.price)} a year</span>
+              </div>
+              <span className="text-[14px] leading-[1.55] text-[var(--text-secondary)]">
+                On last month&apos;s {formatNaira(monthlySales)} of sales, the extra 5% would have added {formatNaira(proKept - basicKept)}.
+              </span>
+              <div className="flex flex-col gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-page)] p-[18px]">
+                <div className="flex justify-between text-[13.5px] text-[var(--text-secondary)]">
+                  <span>Sales, last month</span>
+                  <span className="font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(monthlySales)}</span>
+                </div>
+                <div className="flex justify-between text-[13.5px] text-[var(--text-secondary)]">
+                  <span>Kept on Basic, 85%</span>
+                  <span className="[font-feature-settings:var(--font-feature-tabular)]">{formatNaira(basicKept)}</span>
+                </div>
+                <div className="flex justify-between text-[13.5px] text-[var(--text-secondary)]">
+                  <span>Would have kept on Pro, 90%</span>
+                  <span className="font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(proKept)}</span>
+                </div>
+                <div className="flex justify-between border-t border-t-[var(--border-hairline)] pt-[10px] text-[15px] font-bold">
+                  <span>Difference</span>
+                  <span className="text-[var(--success)] [font-feature-settings:var(--font-feature-tabular)]">+{formatNaira(proKept - basicKept)}</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-[10px]">
+                {PLANS.pro.features.map((f) => (
+                  <CheckRow key={f} ok>{f}</CheckRow>
+                ))}
+              </div>
+              <Button full size="lg" loading={paying} onClick={onUpgrade}>
+                Upgrade for {formatNaira(dueToday)} today
+              </Button>
+              <span className="text-center text-[12.5px] text-[var(--text-muted)]">
+                Credited for the rest of your Basic year, then {formatNaira(PLANS.pro.price)} annually
+              </span>
+            </div>
+            <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
+              <span className="text-[14px] font-semibold">Rather not commit right now?</span>
+              <span className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+                Your pieces and community stay live either way — stopping the renewal only takes effect at your renewal date.
+              </span>
+              <Button size="sm" variant="secondary" loading={cancelling} onClick={onCancel}>
+                Do not renew
+              </Button>
+            </div>
+          </>
+        ) : null}
+
+        {active && tier === "pro" ? (
+          <>
+            <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[24px]">
+              <div className="flex items-center gap-[12px]">
+                <TierBadge tier="pro" />
+                <span className="text-[21px] font-semibold tracking-[-0.02em]">You&apos;re already on Pro</span>
+              </div>
+              <span className="text-[14px] leading-[1.55] text-[var(--text-secondary)]">
+                Keeping 90% of every sale instead of 85%, with no slot cap.
+              </span>
+              <div className="flex flex-col gap-[10px]">
+                {PLANS.pro.features.map((f) => (
+                  <CheckRow key={f} ok>{f}</CheckRow>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
+              <span className="text-[14px] font-semibold">Not selling much right now?</span>
+              <span className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+                Move to Basic instead of cancelling — {formatNaira(PLANS.basic.price)}/yr keeps {PLANS.basic.slots} uploads and open communities. Nothing you published or sold is touched.
+              </span>
+              <div className="flex gap-[10px]">
+                <Button size="sm" variant="secondary" loading={downgrading} onClick={onDowngrade}>
+                  Move to Basic
+                </Button>
+                <Button size="sm" variant="ghost" loading={cancelling} onClick={onCancel}>
+                  Do not renew
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {pastdue ? (
+          <>
+            <Card>
+              <CardLabel>Still working</CardLabel>
+              <CheckRow ok>Everything you published stays live and selling</CheckRow>
+              <CheckRow ok>Paid messages and your community</CheckRow>
+              <CheckRow ok>
+                Your {PLANS[tier].split}/{100 - PLANS[tier].split} split, until it lapses
+              </CheckRow>
+            </Card>
+            <Card>
+              <CardLabel>Paused until you pay</CardLabel>
+              <CheckRow ok={false} icon="X">New uploads</CheckRow>
+              <CheckRow ok={false} icon="X">
+                {tier === "pro" ? "Opening a new private community" : "Opening a new community"}
+              </CheckRow>
+            </Card>
+            <button
+              type="button"
+              onClick={onChangeCard}
+              className="flex cursor-pointer items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[16px] py-[15px] text-left"
+            >
+              <Icon name="CreditCard" size={16} color="var(--text-muted)" />
+              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Use a different card</span>
+              <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
+            </button>
+          </>
+        ) : null}
+
+        {expired || none ? (
+          <>
+            <Card>
+              <CardLabel>Starting fresh</CardLabel>
+              <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+                {expired
+                  ? "No proration — this is a new term at full price. Everything you already published or sold was untouched while you were off."
+                  : "Pick a tier to start uploading and selling."}
+              </span>
+            </Card>
+            {(["basic", "pro"] as CreatorTier[]).map((t) => (
+              <Card key={t}>
+                <div className="flex items-center gap-[10px]">
+                  <TierBadge tier={t} />
+                  <span className="flex-1 text-[20px] font-bold tracking-[-0.02em] [font-feature-settings:var(--font-feature-tabular)]">
+                    {formatNaira(PLANS[t].price)}
+                    <span className="text-[13px] font-normal text-[var(--text-muted)]"> / year</span>
+                  </span>
+                </div>
+                {PLANS[t].features.map((f) => (
+                  <CheckRow key={f} ok>{f}</CheckRow>
+                ))}
+                <Button full loading={resubTier === t} onClick={() => onStartTier(t)}>
+                  Start {t === "pro" ? "Pro" : "Basic"} — {formatNaira(PLANS[t].price)}
+                </Button>
+              </Card>
+            ))}
+          </>
+        ) : null}
+      </div>
+    </div>
   );
 }
