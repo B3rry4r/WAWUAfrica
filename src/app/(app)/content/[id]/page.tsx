@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent, RefObject } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
@@ -12,7 +13,11 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { FollowButton } from "@/components/shared/FollowButton";
+import { TipSheet } from "@/components/dm/TipSheet";
 import { getContent, initiateUnlock, verifyUnlock } from "@/lib/api/content";
+import { isFollowing as fetchIsFollowing } from "@/lib/api/profile";
+import { useSession } from "@/lib/auth/session-provider";
 import { formatNaira, creatorSplitRate } from "@/lib/format";
 import type { ContentPiece, ContentType } from "@/types/content";
 import { mockComments } from "@/lib/api/mocks/mockComments";
@@ -32,22 +37,102 @@ const typeVisual: Record<ContentType, IconName> = {
 export default function ContentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useSession();
   const [content, setContent] = useState<ContentPiece | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [payment, setPayment] = useState<PaymentState>("idle");
+  const [following, setFollowing] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState(false);
+  const [rateOpen, setRateOpen] = useState(false);
+  const [myRating, setMyRating] = useState<number | null>(null);
+  const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
+  const [comments, setComments] = useState<MockComment[]>(COMMENTS);
+  const [draft, setDraft] = useState("");
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(() => {
     setError(null);
     setContent(null);
     getContent(params.id)
-      .then((res) => setContent(res.content))
+      .then(async (res) => {
+        setContent(res.content);
+        try {
+          setFollowing(await fetchIsFollowing(res.content.creator.wawuId));
+        } catch {
+          setFollowing(false);
+        }
+      })
       .catch(() => setError("We could not load this piece. It may have been removed."));
   }, [params.id]);
 
   useEffect(load, [load]);
 
   const state = content ? (content.accessType === "free" ? "free" : content.purchased ? "unlocked" : "locked") : "free";
+
+  const shareContent = useCallback(async () => {
+    if (!content || typeof window === "undefined") return;
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: content.title, url });
+        return;
+      } catch {
+        // user dismissed the native share sheet — fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareFeedback(true);
+      setTimeout(() => setShareFeedback(false), 1600);
+    } catch {
+      // clipboard unavailable — nothing more we can do here
+    }
+  }, [content]);
+
+  const toggleSaved = useCallback(() => {
+    // SEAM: replace with POST /api/hub/content/:id/save — no save-toggle
+    // endpoint exists yet in src/lib/api, so this is an optimistic local toggle.
+    setContent((prev) => (prev ? { ...prev, saved: !prev.saved } : prev));
+  }, []);
+
+  const downloadAsset = useCallback((url: string | undefined, title: string) => {
+    if (!url) {
+      setDownloadNotice("No downloadable file is attached to this piece yet.");
+      setTimeout(() => setDownloadNotice(null), 2200);
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = title;
+    a.rel = "noopener";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setDownloadNotice("Download started");
+    setTimeout(() => setDownloadNotice(null), 2200);
+  }, []);
+
+  const submitComment = (e: FormEvent) => {
+    e.preventDefault();
+    const text = draft.trim();
+    if (!text || !content) return;
+    const isCreator = user?.wawuId === content.creator.wawuId;
+    setComments((prev) => [{ name: user?.fullName ?? "You", time: "now", text, likes: 0, author: isCreator }, ...prev]);
+    setContent((prev) => (prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev));
+    // SEAM: replace with POST /api/hub/content/:id/comments
+    setDraft("");
+    setReplyTo(null);
+  };
+
+  const startReply = (name: string) => {
+    setReplyTo(name);
+    setDraft(`@${name} `);
+    commentInputRef.current?.focus();
+  };
 
   const startUnlock = async () => {
     setUnlockOpen(true);
@@ -76,7 +161,7 @@ export default function ContentDetailPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page">
-      <ContentHeader onBack={() => router.back()} />
+      <ContentHeader onBack={() => router.back()} onShare={shareContent} shared={shareFeedback} saved={content?.saved ?? false} onToggleSave={toggleSaved} />
 
       {error ? (
         <ErrorState title="Could not open this piece" body={error} onRetry={load} />
@@ -85,15 +170,41 @@ export default function ContentDetailPage() {
       ) : (
         <div className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-4">
           <MediaBlock content={content} state={state} />
-          <TitleBlock content={content} state={state} />
+          <TitleBlock content={content} state={state} following={following} />
           {content.contentType === "course" ? <LessonList content={content} /> : null}
           {state === "locked" ? (
             <LockedCta content={content} onUnlock={startUnlock} />
           ) : state === "unlocked" ? (
-            <UnlockedActions content={content} />
+            <UnlockedActions
+              content={content}
+              onDownload={() => downloadAsset(content.fullAssetUrl, content.title)}
+              onTip={() => setTipOpen(true)}
+            />
           ) : null}
-          <EngagementRow content={content} state={state} />
-          <Comments content={content} />
+          {downloadNotice ? (
+            <div role="status" className="rounded-button border border-hairline bg-tag px-3.5 py-2.5 text-center text-[12.5px] font-semibold text-text-secondary">
+              {downloadNotice}
+            </div>
+          ) : null}
+          <EngagementRow
+            content={content}
+            state={state}
+            onShare={shareContent}
+            shared={shareFeedback}
+            onToggleSave={toggleSaved}
+            rated={myRating}
+            onRate={() => setRateOpen(true)}
+          />
+          <Comments
+            content={content}
+            comments={comments}
+            draft={draft}
+            onDraftChange={setDraft}
+            onSubmit={submitComment}
+            replyTo={replyTo}
+            onReply={startReply}
+            inputRef={commentInputRef}
+          />
         </div>
       )}
 
@@ -103,27 +214,69 @@ export default function ContentDetailPage() {
         content={content}
         payment={payment}
         onRetry={startUnlock}
+        onDownload={() => downloadAsset(content?.fullAssetUrl, content?.title ?? "download")}
         onDone={() => {
           setUnlockOpen(false);
           setPayment("idle");
+        }}
+      />
+
+      <TipSheet
+        open={tipOpen}
+        onClose={() => setTipOpen(false)}
+        creator={content ? { wawuId: content.creator.wawuId, name: content.creator.fullName } : null}
+      />
+
+      <RateSheet
+        open={rateOpen}
+        onClose={() => setRateOpen(false)}
+        value={myRating}
+        onRate={(n) => {
+          setMyRating(n);
+          setRateOpen(false);
+          // SEAM: replace with POST /api/hub/content/:id/rate — no rating
+          // endpoint is documented yet; this is a local-only rating.
         }}
       />
     </div>
   );
 }
 
-function ContentHeader({ onBack }: { onBack: () => void }) {
+function ContentHeader({
+  onBack,
+  onShare,
+  shared,
+  saved,
+  onToggleSave,
+}: {
+  onBack: () => void;
+  onShare: () => void;
+  shared: boolean;
+  saved: boolean;
+  onToggleSave: () => void;
+}) {
   return (
     <div className="flex items-center gap-3 border-b border-hairline px-[18px] py-3">
       <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag">
         <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
       </button>
       <span className="flex-1 text-[16px] font-semibold">Content</span>
-      <button type="button" aria-label="Share" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary">
-        <Icon name="Share2" size={16} />
+      <button
+        type="button"
+        onClick={onShare}
+        aria-label={shared ? "Link copied" : "Share"}
+        className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary"
+      >
+        <Icon name={shared ? "Check" : "Share2"} size={16} color={shared ? "var(--accent)" : undefined} />
       </button>
-      <button type="button" aria-label="Save" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary">
-        <Icon name="Bookmark" size={16} />
+      <button
+        type="button"
+        onClick={onToggleSave}
+        aria-label={saved ? "Remove from saved" : "Save"}
+        aria-pressed={saved}
+        className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary"
+      >
+        <Icon name="Bookmark" size={16} color={saved ? "var(--accent)" : undefined} fill={saved ? "var(--accent)" : "none"} />
       </button>
     </div>
   );
@@ -171,7 +324,7 @@ function MediaBlock({ content, state }: { content: ContentPiece; state: string }
   );
 }
 
-function TitleBlock({ content, state }: { content: ContentPiece; state: string }) {
+function TitleBlock({ content, state, following }: { content: ContentPiece; state: string; following: boolean }) {
   return (
     <div className="flex flex-col gap-2.5">
       <h1 className="m-0 text-[22px] font-bold leading-snug tracking-[-0.015em]">{content.title}</h1>
@@ -191,9 +344,7 @@ function TitleBlock({ content, state }: { content: ContentPiece; state: string }
           </span>
         </Link>
         <span className="ml-auto">
-          <Button variant="secondary" size="sm">
-            Follow
-          </Button>
+          <FollowButton key={`follow-${content.creator.wawuId}-${following}`} wawuId={content.creator.wawuId} initial={following} size="sm" />
         </span>
       </div>
       <p className="m-0 text-[14.5px] leading-relaxed text-text-secondary">{content.description}</p>
@@ -257,7 +408,7 @@ function LockedCta({ content, onUnlock }: { content: ContentPiece; onUnlock: () 
   );
 }
 
-function UnlockedActions({ content }: { content: ContentPiece }) {
+function UnlockedActions({ content, onDownload, onTip }: { content: ContentPiece; onDownload: () => void; onTip: () => void }) {
   return (
     <div className="flex flex-col gap-3">
       {content.contentType === "pdf" || content.contentType === "template" || content.contentType === "image" ? (
@@ -269,19 +420,35 @@ function UnlockedActions({ content }: { content: ContentPiece }) {
             <span className="text-[13px] font-semibold">{content.contentType === "image" ? "Full resolution" : "Your file"}</span>
             <span className="text-[12px] text-text-muted">Page 5 of {content.pageCount ?? 34}</span>
           </span>
-          <Button variant="secondary" size="sm" icon="Download">
+          <Button variant="secondary" size="sm" icon="Download" onClick={onDownload}>
             Download
           </Button>
         </div>
       ) : null}
-      <Button full variant="secondary" icon="HandCoins">
+      <Button full variant="secondary" icon="HandCoins" onClick={onTip}>
         Tip {content.creator.fullName.split(" ")[0]}
       </Button>
     </div>
   );
 }
 
-function EngagementRow({ content, state }: { content: ContentPiece; state: string }) {
+function EngagementRow({
+  content,
+  state,
+  onShare,
+  shared,
+  onToggleSave,
+  rated,
+  onRate,
+}: {
+  content: ContentPiece;
+  state: string;
+  onShare: () => void;
+  shared: boolean;
+  onToggleSave: () => void;
+  rated: number | null;
+  onRate: () => void;
+}) {
   const live = state === "free" || state === "unlocked";
   if (!live) {
     return (
@@ -300,17 +467,30 @@ function EngagementRow({ content, state }: { content: ContentPiece; state: strin
         <span className="ml-auto text-[12.5px] font-semibold text-text-muted">{Math.round(content.ratingPct ?? 96)}% liked</span>
       </div>
       <div className="flex gap-2">
-        <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold">
-          <Icon name="Share2" size={15} color="var(--text-secondary)" />
-          Share
+        <button
+          type="button"
+          onClick={onShare}
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold"
+        >
+          <Icon name={shared ? "Check" : "Share2"} size={15} color={shared ? "var(--accent)" : "var(--text-secondary)"} />
+          {shared ? "Copied" : "Share"}
         </button>
-        <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold">
-          <Icon name="Bookmark" size={15} color="var(--text-secondary)" />
+        <button
+          type="button"
+          onClick={onToggleSave}
+          aria-pressed={content.saved}
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold"
+        >
+          <Icon name="Bookmark" size={15} color={content.saved ? "var(--accent)" : "var(--text-secondary)"} fill={content.saved ? "var(--accent)" : "none"} />
           {content.saved ? "Saved" : "Save"}
         </button>
-        <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold">
-          <Icon name="Star" size={15} color="var(--text-secondary)" />
-          Rate
+        <button
+          type="button"
+          onClick={onRate}
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold"
+        >
+          <Icon name="Star" size={15} color={rated ? "var(--accent)" : "var(--text-secondary)"} fill={rated ? "var(--accent)" : "none"} />
+          {rated ? `Rated ${rated}` : "Rate"}
         </button>
       </div>
     </div>
@@ -323,12 +503,30 @@ function Stat({ text }: { text: string }) {
 
 const COMMENTS: MockComment[] = mockComments; // SEAM: replace with GET /api/hub/content/:id/comments
 
-function Comments({ content }: { content: ContentPiece }) {
+function Comments({
+  content,
+  comments,
+  draft,
+  onDraftChange,
+  onSubmit,
+  replyTo,
+  onReply,
+  inputRef,
+}: {
+  content: ContentPiece;
+  comments: MockComment[];
+  draft: string;
+  onDraftChange: (value: string) => void;
+  onSubmit: (e: FormEvent) => void;
+  replyTo: string | null;
+  onReply: (name: string) => void;
+  inputRef: RefObject<HTMLInputElement>;
+}) {
   return (
     <div className="flex flex-col gap-3.5">
       <h2 className="m-0 text-[17px] font-bold tracking-[-0.015em]">{content.commentCount} comments</h2>
-      {COMMENTS.map((c) => (
-        <div key={c.text} className="flex gap-3">
+      {comments.map((c, i) => (
+        <div key={`${c.name}-${c.time}-${i}`} className="flex gap-3">
           <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-tag text-[13px] font-semibold text-text-secondary">
             {c.name.charAt(0)}
           </span>
@@ -346,7 +544,7 @@ function Comments({ content }: { content: ContentPiece }) {
                 <Icon name="Heart" size={14} color="var(--text-muted)" />
                 {c.likes}
               </span>
-              <button type="button" className="text-[12.5px] font-semibold text-text-muted">
+              <button type="button" onClick={() => onReply(c.name)} className="text-[12.5px] font-semibold text-text-muted">
                 Reply
               </button>
             </div>
@@ -356,10 +554,25 @@ function Comments({ content }: { content: ContentPiece }) {
       <p className="m-0 text-[12.5px] leading-relaxed text-text-muted">
         Comments are the only way to reach a creator here unless they have paid messages on.
       </p>
-      <button type="button" className="flex items-center gap-2.5 rounded-input border border-hairline bg-input px-4 py-3.5 text-left text-[14px] text-text-muted">
+      <form onSubmit={onSubmit} className="flex items-center gap-2.5 rounded-input border border-hairline bg-input px-4 py-2.5 text-[14px]">
         <Icon name="MessageCircle" size={16} color="var(--text-muted)" />
-        Add a comment
-      </button>
+        <input
+          ref={inputRef}
+          type="text"
+          value={draft}
+          onChange={(e) => onDraftChange(e.target.value)}
+          placeholder={replyTo ? `Reply to ${replyTo}` : "Add a comment"}
+          className="min-w-0 flex-1 bg-transparent py-1 text-text-primary outline-none placeholder:text-text-muted"
+        />
+        <button
+          type="submit"
+          disabled={!draft.trim()}
+          aria-label="Post comment"
+          className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-accent text-on-accent disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Icon name="ArrowUp" size={15} color="var(--text-on-accent)" strokeWidth={2.4} />
+        </button>
+      </form>
     </div>
   );
 }
@@ -370,6 +583,7 @@ function UnlockSheet({
   content,
   payment,
   onRetry,
+  onDownload,
   onDone,
 }: {
   open: boolean;
@@ -377,6 +591,7 @@ function UnlockSheet({
   content: ContentPiece | null;
   payment: PaymentState;
   onRetry: () => void;
+  onDownload: () => void;
   onDone: () => void;
 }) {
   if (!content) return null;
@@ -444,7 +659,15 @@ function UnlockSheet({
           <Button full size="lg" iconRight="ArrowRight" onClick={onDone}>
             Start reading
           </Button>
-          <Button full variant="ghost" icon="Download" onClick={onDone}>
+          <Button
+            full
+            variant="ghost"
+            icon="Download"
+            onClick={() => {
+              onDownload();
+              onDone();
+            }}
+          >
             Download the file
           </Button>
         </div>
@@ -469,6 +692,41 @@ function UnlockSheet({
           </Button>
         </div>
       ) : null}
+    </Sheet>
+  );
+}
+
+function RateSheet({
+  open,
+  onClose,
+  value,
+  onRate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  value: number | null;
+  onRate: (n: number) => void;
+}) {
+  return (
+    <Sheet open={open} onClose={onClose} title="Rate this piece" caption="Your rating helps other buyers decide.">
+      <div className="flex items-center justify-center gap-2 py-2">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onRate(n)}
+            aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+            className="grid h-11 w-11 place-items-center rounded-button transition-colors hover:bg-tag"
+          >
+            <Icon
+              name="Star"
+              size={26}
+              color={value !== null && n <= value ? "var(--accent)" : "var(--text-muted)"}
+              fill={value !== null && n <= value ? "var(--accent)" : "none"}
+            />
+          </button>
+        ))}
+      </div>
     </Sheet>
   );
 }
