@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CreditPackId } from "@/types/credits";
 import { CREDIT_PACKS } from "@/types/credits";
 import { topUpCredits } from "@/lib/api/communities";
+import { formatNaira } from "@/lib/format";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -92,7 +93,7 @@ export function CreditsCard({ initialBalance }: { initialBalance: number }) {
                         </span>
                       )}
                     </span>
-                    <span className="text-[12.5px] text-text-muted">₦{p.price.toLocaleString("en-NG")}</span>
+                    <span className="text-[12.5px] text-text-muted">{formatNaira(p.price)}</span>
                   </span>
                 </button>
               );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
+import { formatNaira } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 
 type Phase = "idle" | "processing" | "done";
@@ -26,11 +27,11 @@ export function UnlockCourseSheet({ open, onClose, title, price }: { open: boole
           <div className="flex items-center justify-between rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[12px_14px]">
             <span className="text-[14px] font-semibold text-[var(--text-primary)]">Course price</span>
             <span className="text-[15px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
-              ₦{price.toLocaleString("en-NG")}
+              {formatNaira(price)}
             </span>
           </div>
           <Button full onClick={start}>
-            Unlock course · ₦{price.toLocaleString("en-NG")}
+            Unlock course · {formatNaira(price)}
           </Button>
         </div>
       ) : phase === "processing" ? (

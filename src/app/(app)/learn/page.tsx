@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { LearnCourse, LearnEntitlement, LearnGuide, Playbook } from "@/types/learn";
 import { getCourses, getGuides, getLearnEntitlement, getPlaybook } from "@/lib/api/learn";
+import { formatNaira } from "@/lib/format";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -132,7 +133,7 @@ function CourseRow({ course }: { course: LearnCourse }) {
           <span className="text-[12.5px] font-bold text-[var(--success)]">Free</span>
         ) : (
           <span className="text-[13px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
-            ₦{course.price.toLocaleString("en-NG")}
+            {formatNaira(course.price)}
           </span>
         )}
       </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { LearnCourse } from "@/types/learn";
 import { getCourses } from "@/lib/api/learn";
+import { formatNaira } from "@/lib/format";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -42,7 +43,7 @@ export default async function CoursesPage() {
               </span>
             </div>
             <span className={`text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)] ${c.price === 0 ? "text-[var(--success)]" : "text-[var(--text-primary)]"}`}>
-              {c.price === 0 ? "Free" : `₦${c.price.toLocaleString("en-NG")}`}
+              {c.price === 0 ? "Free" : formatNaira(c.price)}
             </span>
           </Link>
         ))}
