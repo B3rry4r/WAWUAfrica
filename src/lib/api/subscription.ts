@@ -1,5 +1,6 @@
 import type { Subscription } from "@/types/subscription";
-import type { KycStatus } from "@/types/account";
+import { PLANS } from "@/types/subscription";
+import type { KycStatus, CreatorTier } from "@/types/account";
 import { mockRequest } from "./client";
 
 /** Basic ₦5,999/yr, Pro ₦18,999/yr. Yearly, paid up front. */
@@ -11,6 +12,8 @@ export const currentSubscription: Subscription = {
 
 export interface SubscriptionApi {
   getSubscription: () => Promise<Subscription>;
+  /** First-time creator onboarding: pay for the chosen tier, Basic or Pro. */
+  subscribe: (tier: CreatorTier) => Promise<Subscription>;
   upgradeToPro: () => Promise<Subscription>;
   cancelPro: () => Promise<Subscription>;
   getKycGate: () => Promise<KycStatus>;
@@ -19,6 +22,13 @@ export interface SubscriptionApi {
 export const subscriptionApi: SubscriptionApi = {
   // SEAM: replace with GET /api/hub/creator-subscription
   getSubscription: () => mockRequest({ ...currentSubscription }),
+
+  subscribe: async (tier) => {
+    currentSubscription.plan = { ...PLANS[tier] };
+    currentSubscription.state = "active";
+    // SEAM: replace with POST /api/hub/creator-subscription (tier=basic|pro)
+    return mockRequest({ ...currentSubscription }, 700);
+  },
 
   upgradeToPro: async () => {
     currentSubscription.plan = {

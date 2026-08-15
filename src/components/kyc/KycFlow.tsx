@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { kycApi } from "@/lib/api/kyc";
+import { kycApi, devSetKycStatus } from "@/lib/api/kyc";
 import type { KycStatus } from "@/types/account";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
@@ -62,6 +62,7 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
         onBack={view === "form" && step === 1 ? undefined : view === "form" ? () => backStep(step, docUploaded, setStep, setDocUploaded) : undefined}
       />
 
+      {/** DEV ONLY — remove when the session endpoint is live. */}
       <div className="flex justify-center gap-[4px] pt-[10px] px-[16px] pb-0">
         {([
           ["form", "Form"],
@@ -72,7 +73,10 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
           <button
             key={v}
             type="button"
-            onClick={() => setView(v)}
+            onClick={() => {
+              setView(v);
+              devSetKycStatus(v === "form" ? "not_started" : v);
+            }}
             className="h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer" style={{border: view === v ? "1px solid var(--border-accent)" : "1px solid var(--border-hairline)", background: view === v ? "var(--accent-tint)" : "var(--surface-tag)", color: view === v ? "var(--accent)" : "var(--text-muted)", fontFamily: "var(--font-sans)"}}
           >
             {label}
@@ -134,7 +138,9 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
             <Button full size="lg" onClick={() => setView("form")}>
               Resubmit KYC
             </Button>
-            <Button full variant="ghost">Contact support</Button>
+            <Button full variant="ghost" href="mailto:hello@wawuafrica.com">
+              Contact support
+            </Button>
           </>
         ) : null}
       </div>
