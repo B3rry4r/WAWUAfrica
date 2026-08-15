@@ -124,6 +124,23 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
 
   const desktopPrice = paid && !firstUpload ? price : 0;
 
+  // D7 desktop header · 3-pill progress summary. The mobile `step` pointer
+  // (Upload → Free preview → Details → Price) is a literal current-screen
+  // index that doesn't map onto the desktop layout, which collapses those
+  // into two simultaneous columns with nothing gated behind a "current
+  // step". So the desktop pills read logical completion off the same
+  // fields the mobile Details/Price steps collect instead of mirroring
+  // `step` directly — a step is "done" once its data is filled in, and the
+  // first not-yet-filled step is the one shown as current.
+  const desktopStepsFilled = [
+    true, // Upload — the file is already attached the moment this screen renders
+    title.trim().length > 0, // Details
+    firstUpload || !paid || price > 0, // Price — first upload is auto-free; otherwise needs a price once "Paid" is chosen
+  ];
+  let desktopCurrentStep = desktopStepsFilled.findIndex((filled) => !filled);
+  if (desktopCurrentStep === -1) desktopCurrentStep = desktopStepsFilled.length - 1;
+  const desktopStepLabels = ["Upload", "Details", "Price"];
+
   return (
     <>
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
@@ -210,6 +227,27 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
           <Icon name="X" size={18} color="var(--text-secondary)" />
           Discard
         </button>
+        <span className="flex-1" />
+        <div className="flex items-center gap-5">
+          {desktopStepLabels.map((label, i) => {
+            const active = i <= desktopCurrentStep;
+            return (
+              <span
+                key={label}
+                className={`flex items-center gap-2 text-[13.5px] font-semibold ${active ? "text-text-primary" : "text-text-muted"}`}
+              >
+                <span
+                  className={`grid h-[22px] w-[22px] place-items-center rounded-full text-[11.5px] font-bold ${
+                    active ? "bg-accent text-on-accent" : "bg-tag"
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                {label}
+              </span>
+            );
+          })}
+        </div>
         <span className="flex-1" />
         {publishError ? (
           <span className="text-[13px] text-danger">{publishError}</span>
