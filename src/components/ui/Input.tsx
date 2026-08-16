@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import type { InputHTMLAttributes } from "react";
 import { Icon } from "./Icon";
 import type { IconName } from "./Icon";
@@ -14,7 +14,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { label, error, hint, icon, className = "", id, ...rest },
   ref,
 ) {
-  const inputId = id ?? rest.name;
+  // Falls back to a generated id when neither `id` nor `name` is passed —
+  // without this, <label htmlFor> had nothing to point at and every such
+  // field lost its accessible-name association (screen readers, and
+  // Playwright/Testing-Library's getByLabel, couldn't find the input).
+  const generatedId = useId();
+  const inputId = id ?? rest.name ?? generatedId;
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       {label ? (
