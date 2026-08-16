@@ -181,6 +181,16 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
     });
     sessionStorage.setRefreshToken(result.refreshToken);
     await completeHubOnboarding(result.accessToken, payload.accountType);
+    // Real, freshly generated 6-digit code emailed via WAWU ID -- not
+    // best-effort like completeHubOnboarding above: if this genuinely
+    // fails, the OTP screen the wizard is about to show would have no code
+    // to check against, so a real failure here must fail signUp() too
+    // (isIntentionalMockMode still lets pure dev/demo mode through).
+    await apiFetch<{ message: string; expiresIn: number }>("/auth/email/verify/start", {
+      method: "POST",
+      baseUrl: WAWU_ID_BASE,
+      body: { email: payload.email },
+    });
 
     const user: SessionUser = {
       wawuId: result.user.id,
@@ -210,22 +220,22 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
 
 export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse> {
   try {
-    const result = await apiFetch<WawuIdTokenResult>("/auth/otp/verify", {
+    const result = await apiFetch<WawuIdTokenResult>("/auth/email/verify/confirm", {
       method: "POST",
       baseUrl: WAWU_ID_BASE,
-      body: { phone: payload.phone, code: payload.code },
+      body: { email: payload.email, code: payload.code },
     });
     sessionStorage.setRefreshToken(result.refreshToken);
 
-    // Find-or-create on WAWU ID's side. This function has no accountType to
-    // PATCH onto the Hub (OtpVerifyPayload carries only phone+code) — its one
-    // current caller (SignUpFlow) already ran signUp()'s PATCH earlier in the
-    // same flow. A future standalone/passwordless caller of this function
-    // would need to PATCH accountType itself; see report.
+    // This function's one current caller (SignUpFlow) already ran signUp()'s
+    // Hub onboarding PATCH earlier in the same flow and overrides
+    // accountType/fullName from its own local state when it calls
+    // signInUser() — see SignUpFlow.tsx's onVerifyOtp. accountType here is
+    // just a safe default for any other caller.
     const user: SessionUser = {
       wawuId: result.user.id,
       fullName: result.user.fullName,
-      email: result.user.email ?? "",
+      email: result.user.email ?? payload.email,
       accountType: "user",
       interests: [],
       verification: mapVerificationTier(result.user.verificationTier),
@@ -234,11 +244,11 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
     return { token: result.accessToken, user };
   } catch (e) {
     if (!isIntentionalMockMode(e)) throw e;
-    // SEAM: replace with POST /auth/otp/verify (WAWU ID)
+    // SEAM: replace with POST /auth/email/verify/confirm (WAWU ID)
     const user: SessionUser = {
-      wawuId: `wawu_${payload.phone}`,
+      wawuId: `wawu_${payload.email.split("@")[0] ?? "new"}`,
       fullName: "",
-      email: "",
+      email: payload.email,
       accountType: "user",
       interests: [],
       verification: "basic",
@@ -298,6 +308,25 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       creator: null,
     };
     return { token: `mock-token-${Date.now()}`, user };
+  }
+}
+
+/**
+ * Re-sends the email-verification code (codes expire after 5 minutes
+ * server-side). The sign-up wizard's OTP screen had a visible countdown
+ * with no real resend behind it -- this is that missing real call.
+ */
+export async function resendEmailVerificationCode(email: string): Promise<{ message: string; expiresIn: number }> {
+  try {
+    return await apiFetch<{ message: string; expiresIn: number }>("/auth/email/verify/start", {
+      method: "POST",
+      baseUrl: WAWU_ID_BASE,
+      body: { email },
+    });
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
+    // SEAM: replace with POST /auth/email/verify/start (WAWU ID)
+    return { message: "Verification code sent", expiresIn: 300 };
   }
 }
 

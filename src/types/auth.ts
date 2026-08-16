@@ -38,18 +38,16 @@ export interface NewPasswordPayload {
 }
 
 /**
- * PRODUCT-CONTRACT CONFLICT (flagged, not silently resolved — see Phase 6
- * agent report): design/screens/WAWU Auth.dc.html's OTP screen collects and
- * displays an EMAIL address ("Verify your email" / "We sent it to
- * ada@okeke.ng"), but WAWU ID (the only service that actually implements
- * OTP — POST /auth/otp/verify) is phone-only, delivered via WhatsApp. There
- * is no email-OTP endpoint anywhere in WAWU ID. This type is wired to WAWU
- * ID's real, callable shape; the screen's copy still reads "email" and is a
- * known, out-of-scope-for-this-task mismatch a product decision should
- * resolve (see report).
+ * Matches the approved design (design/screens/WAWU Auth.dc.html: "Verify
+ * your email" / "We sent it to ada@okeke.ng") -- a real, freshly generated
+ * 6-digit code emailed via WAWU ID's POST /auth/email/verify/start and
+ * checked by POST /auth/email/verify/confirm (added directly to WAWU ID
+ * for this; it previously only had a phone/WhatsApp OTP, which is what
+ * this type used to be wired to -- see git history for that mismatch and
+ * why it was wrong).
  */
 export interface OtpVerifyPayload {
-  phone: string;
+  email: string;
   code: string;
 }
 

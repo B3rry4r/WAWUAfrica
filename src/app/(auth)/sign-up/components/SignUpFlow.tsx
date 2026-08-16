@@ -10,7 +10,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { OtpInput } from "../../components/OtpInput";
 import { useAuthBrand } from "../../components/AuthBrand";
 import { useSession } from "@/lib/auth/session-provider";
-import { signUp, verifyOtp } from "@/lib/api/auth";
+import { resendEmailVerificationCode, signUp, verifyOtp } from "@/lib/api/auth";
 import type { AccountType } from "@/types/account";
 
 const COUNTRIES: Record<string, string[]> = {
@@ -47,6 +47,8 @@ export function SignUpFlow() {
   const [otpState, setOtpState] = useState<OtpState | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [resendSeconds, setResendSeconds] = useState(42);
+  const [resending, setResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
 
   useEffect(() => {
@@ -111,17 +113,28 @@ export function SignUpFlow() {
     setSubmitting(true);
     setOtpError(null);
     try {
-      // NOTE: WAWU ID's OTP is phone-only (see OtpVerifyPayload's doc comment
-      // in src/types/auth.ts) — this screen's copy still says "email" per the
-      // approved design, a known product-contract mismatch flagged in the
-      // Phase 6 report, not fixed here (out of scope: field-name-only change).
-      const res = await verifyOtp({ phone: otpState.phone, code: otp });
+      const res = await verifyOtp({ email: otpState.email, code: otp });
       signInUser({ ...res.user, fullName: otpState.fullName, accountType: otpState.accountType }, res.token);
       setStep("done");
     } catch (e) {
       setOtpError(e instanceof Error ? e.message : "That code did not work.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const onResendOtp = async () => {
+    if (!otpState || resendSeconds > 0 || resending) return;
+    setResending(true);
+    setResendError(null);
+    try {
+      await resendEmailVerificationCode(otpState.email);
+      setResendSeconds(42);
+      setOtp("");
+    } catch (e) {
+      setResendError(e instanceof Error ? e.message : "Could not resend the code.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -414,11 +427,23 @@ export function SignUpFlow() {
           </div>
           <OtpInput value={otp} onChange={setOtp} />
           {otpError ? <p className="m-0 text-[13px] font-medium text-danger">{otpError}</p> : null}
+          {resendError ? <p className="m-0 text-[13px] font-medium text-danger">{resendError}</p> : null}
           <div className="flex items-center gap-2">
             <Icon name="Clock" size={15} color="var(--text-muted)" />
-            <span className="text-[13.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
-              Resend the code in 0:{String(resendSeconds).padStart(2, "0")}
-            </span>
+            {resendSeconds > 0 ? (
+              <span className="text-[13.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
+                Resend the code in 0:{String(resendSeconds).padStart(2, "0")}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onResendOtp}
+                disabled={resending}
+                className="text-[13.5px] font-semibold text-accent disabled:opacity-60"
+              >
+                {resending ? "Resending…" : "Resend the code"}
+              </button>
+            )}
           </div>
           <div className="flex items-start gap-2.5 rounded-input border border-hairline bg-card p-3.5">
             <Icon name="Info" size={16} color="var(--text-muted)" className="mt-0.5" />
