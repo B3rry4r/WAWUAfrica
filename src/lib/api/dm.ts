@@ -1,12 +1,6 @@
 import type { DmStatus, DmThreadDetail, DmThreadMessage, DmThreadSummary } from "@/types/dm";
 import { apiFetch, apiFetchPaginated, ApiError, delay, isMockModeError } from "./client";
-import {
-  getMockDmThread,
-  getMockDmThreads,
-  getMockUnreadDmCount,
-  sendMockPaidDm,
-  type DmSendResult,
-} from "./mocks/dm";
+import { getMockDmThread, getMockDmThreads, sendMockPaidDm, type DmSendResult } from "./mocks/dm";
 
 /**
  * Wire shape of DirectMessage as returned by the real backend
@@ -102,12 +96,19 @@ function toDmThreadDetail(dm: RawDirectMessage): DmThreadDetail {
   };
 }
 
+/**
+ * Creator-side only: GET /api/hub/dm/inbox (CreatorAccountGuard-protected)
+ * is a different relation from getDmThreads()'s /dm/threads (fan-side —
+ * DMs the signed-in account SENT). The Sidebar badge is meant to reflect
+ * the signed-in creator's own unanswered paid questions, so it must read
+ * from /inbox, the same endpoint messaging.ts's getState() uses for the
+ * real D8 inbox — not /threads, which would count something unrelated
+ * (or belong to a plain user with no inbox at all). Caller (Sidebar.tsx)
+ * only invokes this for creator accounts.
+ */
 export async function fetchUnreadDmCount(): Promise<number> {
-  // GAP: no dedicated unread-count endpoint exists on DirectMessage — and
-  // per the GAP above, DirectMessage has no read/unread flag at all, so
-  // even summing over /dm/threads can't produce a real unread count.
-  // Nothing real to compute this from — always mock, not a Pattern-A case.
-  return getMockUnreadDmCount();
+  const { data } = await apiFetchPaginated<RawDirectMessage>("/api/hub/dm/inbox", { authed: true });
+  return data.filter((dm) => dm.status === "awaiting_response").length;
 }
 
 // SEAM: replace with GET /api/hub/dm/inbox

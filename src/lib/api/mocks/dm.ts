@@ -1,13 +1,6 @@
 import type { DmStatus, DmThreadDetail, DmThreadMessage, DmThreadSummary } from "@/types/dm";
 import { delay } from "../client";
 
-/** Unread paid-DM count for the Messages nav badge. */
-// SEAM: replace with GET /api/hub/dm/inbox
-export async function getMockUnreadDmCount(): Promise<number> {
-  await delay(80);
-  return 3;
-}
-
 const MOCK_THREADS: DmThreadSummary[] = [
   {
     id: "t-adaeze",

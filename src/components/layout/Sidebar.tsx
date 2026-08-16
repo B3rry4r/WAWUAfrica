@@ -85,6 +85,12 @@ export function Sidebar() {
 
   const [unread, setUnread] = useState(0);
   useEffect(() => {
+    // /api/hub/dm/inbox is creator-only (CreatorAccountGuard) — a plain
+    // user has no paid-questions inbox to badge a count against.
+    if (!isCreator) {
+      setUnread(0);
+      return;
+    }
     let cancelled = false;
     fetchUnreadDmCount()
       .then((n) => {
@@ -96,7 +102,7 @@ export function Sidebar() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isCreator]);
 
   const dashboardActive = pathname === "/creator";
 
