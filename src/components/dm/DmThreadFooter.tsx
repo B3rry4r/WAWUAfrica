@@ -38,7 +38,7 @@ export function DmThreadFooter({
   };
 
   return (
-    <footer className="sticky bottom-0 border-t border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[10px_16px_calc(10px+env(safe-area-inset-bottom))]">
+    <footer className="sticky bottom-0 border-t border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[12px_16px_calc(24px_+_env(safe-area-inset-bottom))]">
       {status === "awaiting_response" ? (
         <div className="flex h-[46px] items-center gap-[9px] rounded-[var(--radius-chip)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[14px] text-[13.5px] text-[var(--text-muted)]">
           <Icon name="Clock" size={16} color="var(--text-muted)" />

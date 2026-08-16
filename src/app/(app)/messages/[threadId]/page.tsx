@@ -91,7 +91,7 @@ export default function DmThreadPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-[10px] p-[18px_16px_20px]">
+      <div className="flex flex-1 flex-col gap-[14px] p-[18px_16px_20px]">
         {(summary.status === "awaiting_response" || summary.status === "refunded") && (
           <div
             className={[

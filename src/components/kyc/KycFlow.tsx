@@ -73,7 +73,7 @@ export function KycFlow() {
     return (
       <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
         <FlowHeader title="Verify your identity" />
-        <div className="flex-1 pt-[20px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+        <div className="flex-1 pt-[20px] px-[20px] pb-[32px] flex flex-col gap-[14px]">
           <Skeleton height={22} width="60%" />
           <Skeleton height={52} radius="var(--radius-input)" />
           <Skeleton height={52} radius="var(--radius-input)" />
@@ -106,7 +106,7 @@ export function KycFlow() {
         onBack={view === "form" && step === 1 ? undefined : view === "form" ? () => backStep(step, docUploaded, setStep, setDocUploaded) : undefined}
       />
 
-      <div className="flex-1 pt-[20px] px-[16px] pb-[32px] flex flex-col gap-[18px]">
+      <div className="flex-1 pt-[20px] px-[20px] pb-[32px] flex flex-col gap-[18px]">
         {submitError ? <ErrorState title="Could not submit" description={submitError} onRetry={submit} /> : null}
         {!submitError && view === "form" && step === 1 ? (
           <NationalIdStep bvn={bvn} nin={nin} onBvnChange={setBvn} onNinChange={setNin} />

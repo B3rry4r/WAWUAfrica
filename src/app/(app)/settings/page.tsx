@@ -94,10 +94,10 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:hidden">
+      <div className="flex flex-col gap-[11px] p-[14px_16px_96px] xl:hidden">
         {!profile ? (
           <>
-            <div className="flex items-center gap-[13px] p-[6px]">
+            <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
               <Skeleton variant="circle" className="h-[52px] w-[52px]" />
               <Skeleton variant="row" className="h-9 flex-1" />
             </div>
@@ -106,7 +106,7 @@ export default function SettingsPage() {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-[13px] p-[6px]">
+            <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
               <Avatar initial={profile.name.charAt(0)} size={52} />
               <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
                 <span className="text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">{profile.name}</span>

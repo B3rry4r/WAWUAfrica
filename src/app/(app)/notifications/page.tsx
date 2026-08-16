@@ -26,6 +26,18 @@ const toneIconClass: Record<NotificationTone, string> = {
   neutral: "text-text-muted",
 };
 
+// Card border tone per design (WAWU Notifications Search.dc.html L50-144): each
+// notification is its own bordered card, tinted by tone -- danger/accent/warning
+// get a colored border, success/info/neutral stay hairline.
+const toneBorderClass: Record<NotificationTone, string> = {
+  danger: "border-danger/40",
+  accent: "border-accent",
+  success: "border-hairline",
+  warning: "border-warning/40",
+  info: "border-hairline",
+  neutral: "border-hairline",
+};
+
 export default function NotificationsPage() {
   const router = useRouter();
   const [items, setItems] = useState<AppNotification[] | null>(null);
@@ -132,24 +144,20 @@ export default function NotificationsPage() {
   );
 }
 
-function NotificationGroup({ label, items, urgent = false }: { label: string; items: AppNotification[]; urgent?: boolean }) {
+function NotificationGroup({ label, items }: { label: string; items: AppNotification[]; urgent?: boolean }) {
   return (
     <section className="flex flex-col gap-2">
       <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-text-muted">{label}</span>
-      <div
-        className={`flex flex-col overflow-hidden rounded-card border bg-card ${
-          urgent ? "border-danger/40" : "border-hairline"
-        }`}
-      >
-        {items.map((n, i) => (
-          <NotificationRow key={n.id} notification={n} last={i === items.length - 1} />
+      <div className="flex flex-col gap-3">
+        {items.map((n) => (
+          <NotificationRow key={n.id} notification={n} />
         ))}
       </div>
     </section>
   );
 }
 
-function NotificationRow({ notification: n, last }: { notification: AppNotification; last: boolean }) {
+function NotificationRow({ notification: n }: { notification: AppNotification }) {
   const time = new Date(n.createdAt);
   const timeLabel =
     time.toLocaleDateString("en-NG", { day: "numeric", month: "short" }) === new Date().toLocaleDateString("en-NG", { day: "numeric", month: "short" })
@@ -157,7 +165,11 @@ function NotificationRow({ notification: n, last }: { notification: AppNotificat
       : time.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
 
   return (
-    <div className={`flex gap-3 px-4 py-3.5 ${last ? "" : "border-b border-hairline"} ${n.read ? "" : "bg-accent-tint/40"}`}>
+    <div
+      className={`flex gap-3 rounded-card border ${toneBorderClass[n.tone]} bg-card px-4 py-3.5 ${
+        n.read ? "" : "bg-accent-tint/40"
+      }`}
+    >
       <span className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full border border-hairline bg-tag ${toneIconClass[n.tone]}`}>
         <Icon name={toneIcon[n.tone]} size={17} />
       </span>

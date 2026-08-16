@@ -35,7 +35,7 @@ export default async function MarketplacePage() {
             <Link
               key={shop.id}
               href={`/marketplace/${shop.id}`}
-              className="flex flex-col gap-2.5 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline"
+              className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px] no-underline"
             >
               <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
                 <Icon
@@ -60,9 +60,12 @@ export default async function MarketplacePage() {
           ))}
         </div>
 
-        <p className="px-0.5 text-[12px] leading-[1.5] text-[var(--text-muted)]">
-          Basket and Beauty are separate WAWU apps. Paying and delivery happen there.
-        </p>
+        <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
+          <Icon name="Info" size={15} color="var(--text-muted)" className="mt-[1px]" />
+          <span className="flex-1 text-[12px] leading-[1.5] text-[var(--text-muted)]">
+            Basket and Beauty are separate WAWU apps. Paying and delivery happen there.
+          </span>
+        </div>
       </div>
 
       {/* D10 pattern: satellite shops sit side by side, each a card carrying its own handoff pill. */}
@@ -105,9 +108,12 @@ export default async function MarketplacePage() {
             ))}
           </div>
 
-          <p className="px-0.5 text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-            Basket and Beauty are separate WAWU apps. Paying and delivery happen there.
-          </p>
+          <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
+            <Icon name="Info" size={15} color="var(--text-muted)" className="mt-[1px]" />
+            <span className="flex-1 text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
+              Basket and Beauty are separate WAWU apps. Paying and delivery happen there.
+            </span>
+          </div>
         </div>
       </div>
     </>

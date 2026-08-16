@@ -168,7 +168,7 @@ export default function CommunityDetailPage() {
             </span>
           </div>
 
-          <div className="flex flex-1 flex-col gap-[10px] px-4 pb-3 pt-4">
+          <div className="flex flex-1 flex-col gap-[22px] px-4 pb-[18px] pt-[18px]">
             {messages.map((m) => {
               const mine = m.sender.wawuId === user?.wawuId;
               return (
@@ -198,7 +198,7 @@ export default function CommunityDetailPage() {
             })}
           </div>
 
-          <footer className="sticky bottom-0 border-t border-hairline bg-elevated px-4 pb-[calc(10px_+_env(safe-area-inset-bottom))] pt-[10px]">
+          <footer className="sticky bottom-0 border-t border-hairline bg-elevated px-4 pb-[calc(22px_+_env(safe-area-inset-bottom))] pt-3">
             {sendError && <p className="m-0 mb-2 text-[12.5px] text-[var(--danger)]">{sendError}</p>}
             {balance < 1 ? (
               <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>

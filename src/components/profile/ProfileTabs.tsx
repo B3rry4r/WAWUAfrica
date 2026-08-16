@@ -8,10 +8,33 @@ const TABS: { id: ProfileTab; label: string }[] = [
   { id: "about", label: "About" },
 ];
 
-/** Profile tab bar. Active tab gets the accent underline. */
-export function ProfileTabs({ wawuId, active }: { wawuId: string; active: ProfileTab }) {
+/**
+ * Profile tab bar. Active tab gets the accent underline.
+ *
+ * `compact` mirrors the page's `isDeepTab` state: under the sticky
+ * CompactHeader the strip sits directly below the header bar (design:
+ * `padding:12px 18px 0`, no extra gap). Under the full-size FullHeader it
+ * needs breathing room below the Message/Tip action row (design:
+ * `padding:14px 18px 0;margin-top:14px` — 28px total). The extra gap is
+ * mobile-only (`xl:mt-0`) — desktop uses DesktopIdentity, not FullHeader,
+ * and has no approved spec for this gap yet.
+ */
+export function ProfileTabs({
+  wawuId,
+  active,
+  compact = false,
+}: {
+  wawuId: string;
+  active: ProfileTab;
+  compact?: boolean;
+}) {
   return (
-    <div className="flex gap-[22px] border-b border-[var(--border-hairline)] p-[12px_18px_0]">
+    <div
+      className={[
+        "flex gap-[22px] border-b border-[var(--border-hairline)] p-[12px_18px_0]",
+        compact ? "" : "mt-[14px] xl:mt-0",
+      ].join(" ")}
+    >
       {TABS.map((tab) => {
         const on = tab.id === active;
         return (

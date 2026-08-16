@@ -46,7 +46,7 @@ export function AppHeader() {
 
   return (
     <header
-      className="sticky top-0 z-30 flex items-center gap-[11px] border-b border-hairline bg-[rgba(19,19,22,0.86)] px-4 py-4 backdrop-blur xl:hidden"
+      className="sticky top-0 z-30 flex items-center gap-[11px] border-b border-hairline bg-[rgba(19,19,22,0.86)] px-4 pt-4 pb-3 backdrop-blur xl:hidden"
       style={{ backdropFilter: "var(--blur-chrome)" }}
     >
       <img src="/wawu-icon-white.png" alt="WAWU" className="h-[26px] w-[26px] object-contain" />

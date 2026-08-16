@@ -175,7 +175,7 @@ export function CreatorOnboarding() {
             </div>
 
             <div
-              className={`flex flex-col gap-[15px] p-0 rounded-[var(--radius-card)] border ${
+              className={`flex flex-col gap-[15px] p-[20px] rounded-[var(--radius-card)] border ${
                 proSelected
                   ? "bg-[var(--surface-elevated)] border-[var(--border-accent)]"
                   : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
