@@ -1,13 +1,11 @@
 import type { CreatorProfile } from "@/types/profile";
 import { apiFetch } from "./client";
 import {
-  getMockCreatorProfile,
   getMockProfileFollowing,
   isMockCommunityJoined,
   setMockCommunityJoined,
   setMockProfileFollowing,
   toggleMockCommunityJoin,
-  toggleMockProfileFollow,
 } from "./mocks/profile";
 
 /**
@@ -62,38 +60,33 @@ function formatFollowerCount(n: number): string {
  *    external apps (CLAUDE.md); Hub API never carries their product data.
  */
 export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile> {
-  try {
-    const real = await apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
-      authed: true,
-    });
-    return {
-      wawuId: real.wawuUserId,
-      name: real.handle ?? real.wawuUserId,
-      handle: real.handle ?? real.wawuUserId,
-      bio: real.bio ?? "",
-      verification: "basic",
-      plan: real.tier,
-      stats: {
-        followers: formatFollowerCount(real.followerCount),
-        piecesLabel: "Pieces",
-        pieces: real.contentCount,
-        evg: real.evgScore,
-      },
-      dmEnabled: false,
-      dmPrice: 0,
-      categories: real.interests,
-      socials: {
-        instagram: real.instagramHandle ?? undefined,
-        website: real.websiteUrl ?? undefined,
-      },
-      content: [],
-      communities: [],
-      products: [],
-    };
-  } catch {
-    // SEAM: replace with GET /api/hub/creators/:wawuId
-    return getMockCreatorProfile(wawuId);
-  }
+  const real = await apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
+    authed: true,
+  });
+  return {
+    wawuId: real.wawuUserId,
+    name: real.handle ?? real.wawuUserId,
+    handle: real.handle ?? real.wawuUserId,
+    bio: real.bio ?? "",
+    verification: "basic",
+    plan: real.tier,
+    stats: {
+      followers: formatFollowerCount(real.followerCount),
+      piecesLabel: "Pieces",
+      pieces: real.contentCount,
+      evg: real.evgScore,
+    },
+    dmEnabled: false,
+    dmPrice: 0,
+    categories: real.interests,
+    socials: {
+      instagram: real.instagramHandle ?? undefined,
+      website: real.websiteUrl ?? undefined,
+    },
+    content: [],
+    communities: [],
+    products: [],
+  };
 }
 
 /**
@@ -116,18 +109,13 @@ export async function isFollowing(wawuId: string): Promise<boolean> {
  */
 export async function toggleFollowProfile(wawuId: string): Promise<boolean> {
   const currentlyFollowing = await getMockProfileFollowing(wawuId);
-  try {
-    await apiFetch(`/api/hub/creators/${wawuId}/follow`, {
-      method: currentlyFollowing ? "DELETE" : "POST",
-      authed: true,
-    });
-    const next = !currentlyFollowing;
-    setMockProfileFollowing(wawuId, next);
-    return next;
-  } catch {
-    // SEAM: replace with POST /api/hub/creators/:wawuId/follow
-    return toggleMockProfileFollow(wawuId);
-  }
+  await apiFetch(`/api/hub/creators/${wawuId}/follow`, {
+    method: currentlyFollowing ? "DELETE" : "POST",
+    authed: true,
+  });
+  const next = !currentlyFollowing;
+  setMockProfileFollowing(wawuId, next);
+  return next;
 }
 
 /**
@@ -160,16 +148,11 @@ export async function toggleCommunityJoin(wawuId: string, communityId: string): 
     // SEAM: replace with DELETE /api/hub/communities/:id/join once it exists
     return toggleMockCommunityJoin(wawuId, communityId);
   }
-  try {
-    const membership = await apiFetch<RealCommunityMembership>(`/api/hub/communities/${communityId}/join`, {
-      method: "POST",
-      authed: true,
-    });
-    const joined = membership.status === "joined";
-    setMockCommunityJoined(wawuId, communityId, joined);
-    return joined;
-  } catch {
-    // SEAM: replace with POST /api/hub/communities/:id/join
-    return toggleMockCommunityJoin(wawuId, communityId);
-  }
+  const membership = await apiFetch<RealCommunityMembership>(`/api/hub/communities/${communityId}/join`, {
+    method: "POST",
+    authed: true,
+  });
+  const joined = membership.status === "joined";
+  setMockCommunityJoined(wawuId, communityId, joined);
+  return joined;
 }

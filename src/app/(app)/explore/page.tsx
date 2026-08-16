@@ -25,7 +25,7 @@ export default async function ExplorePage() {
     // Below xl: unchanged single-column mobile stack. At xl (design D10): the
     // eleven categories move into a permanent content-area filter aside next
     // to this main column — a second aside, not the app Sidebar.
-    <div className="flex flex-col gap-[18px] xl:flex-row xl:items-start xl:gap-10 xl:p-[26px]">
+    <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:flex-row xl:items-start xl:gap-10 xl:p-[26px]">
       <CategoryFilterAside />
 
       <div className="flex min-w-0 flex-1 flex-col gap-[18px] xl:gap-6">
@@ -128,10 +128,7 @@ const SHOPS = {
 function ShopCard({ id }: { id: keyof typeof SHOPS }) {
   const shop = SHOPS[id];
   return (
-    <Link
-      href={`/marketplace/${id}`}
-      className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:gap-[14px] xl:p-[22px]"
-    >
+    <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] xl:gap-[14px] xl:p-[22px]">
       <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
         <Icon name={shop.icon} size={18} color="var(--accent)" />
       </span>
@@ -141,6 +138,6 @@ function ShopCard({ id }: { id: keyof typeof SHOPS }) {
         <HandoffPill app={shop.name} />
       </div>
       <span className="text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{shop.stat}</span>
-    </Link>
+    </div>
   );
 }

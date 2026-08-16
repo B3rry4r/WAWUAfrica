@@ -8,18 +8,11 @@ import type { ContentPiece } from "@/types/content";
 
 /**
  * Horizontally scrollable creator showcase. Data is fetched server-side and
- * passed in.
- *
- * `isLive` distinguishes a real read of the feed from the fixture set
- * getFeaturedContent() falls back to for every anonymous visitor (see its
- * doc comment in src/lib/api/content.ts) — an anonymous visitor has no
- * session token and there is no public/unauthenticated content scope on the
- * real API, so this is not a rare failure case, it is what every signed-out
- * visitor sees. When `isLive` is false this labels the section as example
- * content instead of presenting fixture names/stats as live creator
- * activity.
+ * passed in — always a real read of the feed (getFeaturedContent() throws
+ * rather than substituting fixture creators on failure; see its doc comment
+ * in src/lib/api/content.ts and LandingContent's handling of that error).
  */
-export function CreatorCarousel({ items, isLive }: { items: ContentPiece[]; isLive: boolean }) {
+export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
   const router = useRouter();
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -47,21 +40,16 @@ export function CreatorCarousel({ items, isLive }: { items: ContentPiece[]; isLi
     <section className="pb-11 pt-2 xl:mx-auto xl:max-w-[1440px]">
       <div className="px-5 xl:px-14">
         <SectionHeader
-          caption={isLive ? "Earning on WAWU now" : "Example content"}
+          caption="Earning on WAWU now"
           title="Creators to watch"
           action="See all"
           onAction={() => router.push("/explore/creators")}
         />
-        {isLive ? null : (
-          <p className="-mt-1.5 mb-[18px] text-[13px] leading-normal text-text-muted">
-            Illustrative only — sign up to see who is actually live on WAWU right now.
-          </p>
-        )}
       </div>
       <div
         ref={railRef}
         onScroll={onScroll}
-        className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 py-4 xl:px-14"
+        className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 pt-4 xl:px-14"
       >
         {items.map((c) => (
           <div key={c.id} className="w-[306px] shrink-0 snap-center">
@@ -70,7 +58,7 @@ export function CreatorCarousel({ items, isLive }: { items: ContentPiece[]; isLi
         ))}
       </div>
       {items.length > 1 ? (
-        <div className="flex justify-center gap-[7px] xl:hidden">
+        <div className="mt-4 flex justify-center gap-[7px] xl:hidden">
           {items.map((c, i) => (
             <span
               key={c.id}

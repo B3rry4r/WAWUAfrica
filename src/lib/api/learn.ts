@@ -2,19 +2,7 @@ import type { CourseEntitlementState, LearnCourse, LearnEntitlement, LearnGuide,
 import { apiFetch } from "./client";
 import { currentSession } from "@/lib/api/mocks/session";
 import { creatorGates } from "@/lib/auth/gates";
-import {
-  enrolInCourseMock,
-  getMockCourse,
-  getMockCourses,
-  getMockCourseUsage,
-  getMockGuides,
-  getMockPlaybook,
-} from "./mocks/learn";
-
-/** Basic tier → 1 free course; Pro tier → up to 3. Never invent a different split. */
-function freeCoursesTotalFor(tier: "basic" | "pro"): number {
-  return tier === "pro" ? 3 : 1;
-}
+import { getMockGuides, getMockPlaybook } from "./mocks/learn";
 
 /** Wire shape of GET /learn/entitlement and the entitlement half of POST /learn/courses/:id/enrol. */
 interface LearnEntitlementWire {
@@ -53,32 +41,8 @@ function toLearnEntitlement(wire: LearnEntitlementWire): LearnEntitlement {
 }
 
 export async function getLearnEntitlement(): Promise<LearnEntitlement> {
-  try {
-    const wire = await apiFetch<LearnEntitlementWire>("/api/hub/learn/entitlement", { authed: true });
-    return toLearnEntitlement(wire);
-  } catch {
-    // SEAM: replace with GET /api/hub/learn/entitlement
-    // Two independent facts, per docs/01_SPEC.md: the tier comes from the one
-    // real gate (creatorGates), never a disconnected mock switch. Usage against
-    // that entitlement is the only thing this mock module tracks itself.
-    const gates = creatorGates(currentSession);
-    const tier = gates.tier ?? "basic";
-    const freeCoursesTotal = gates.isCreator ? freeCoursesTotalFor(tier) : 0;
-
-    const usage = await getMockCourseUsage();
-    const freeCoursesUsed = Math.min(usage.enrolledCourseIds.length, freeCoursesTotal);
-
-    return {
-      tier,
-      isCreator: gates.isCreator,
-      freeCoursesTotal,
-      freeCoursesUsed,
-      freeCoursesRemaining: Math.max(0, freeCoursesTotal - freeCoursesUsed),
-      enrolledCourseIds: usage.enrolledCourseIds,
-      progressByCourseId: usage.progressByCourseId,
-      canDownloadPlaybook: true,
-    };
-  }
+  const wire = await apiFetch<LearnEntitlementWire>("/api/hub/learn/entitlement", { authed: true });
+  return toLearnEntitlement(wire);
 }
 
 /** Pure — derives a single course's entitlement state from the entitlement snapshot. */
@@ -102,20 +66,11 @@ export function getCourseEntitlementState(courseId: string, entitlement: LearnEn
  * out of this return type to leave the LearnEntitlement contract stable.
  */
 export async function enrolInCourse(courseId: string): Promise<LearnEntitlement> {
-  try {
-    const wire = await apiFetch<LearnEntitlementWire & { externalHostUrl: string }>(
-      `/api/hub/learn/courses/${courseId}/enrol`,
-      { method: "POST", authed: true },
-    );
-    return toLearnEntitlement(wire);
-  } catch {
-    // SEAM: replace with POST /api/hub/learn/courses/:id/enrol
-    const gates = creatorGates(currentSession);
-    const tier = gates.tier ?? "basic";
-    const cap = gates.isCreator ? freeCoursesTotalFor(tier) : 0;
-    await enrolInCourseMock(courseId, cap);
-    return getLearnEntitlement();
-  }
+  const wire = await apiFetch<LearnEntitlementWire & { externalHostUrl: string }>(
+    `/api/hub/learn/courses/${courseId}/enrol`,
+    { method: "POST", authed: true },
+  );
+  return toLearnEntitlement(wire);
 }
 
 /**
@@ -131,21 +86,11 @@ export function alisonHandoffUrl(courseId: string): string {
 }
 
 export async function getCourses(): Promise<LearnCourse[]> {
-  try {
-    return await apiFetch<LearnCourse[]>("/api/hub/learn/courses");
-  } catch {
-    // SEAM: replace with GET /api/hub/learn/courses
-    return getMockCourses();
-  }
+  return await apiFetch<LearnCourse[]>("/api/hub/learn/courses");
 }
 
 export async function getCourse(id: string): Promise<LearnCourse | null> {
-  try {
-    return await apiFetch<LearnCourse>(`/api/hub/learn/courses/${id}`);
-  } catch {
-    // SEAM: replace with GET /api/hub/learn/courses/:id
-    return getMockCourse(id);
-  }
+  return await apiFetch<LearnCourse>(`/api/hub/learn/courses/${id}`);
 }
 
 /**

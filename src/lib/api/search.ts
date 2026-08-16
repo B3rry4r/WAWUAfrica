@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import { mockSearch, mockSearchCommunities, mockSearchCreators, mockSearchResults, mockClosestResults, mockRecentSearches } from "./mocks/mockSearch";
+import { mockSearchCommunities, mockSearchResults } from "./mocks/mockSearch";
 import type { SearchResponse, SearchResults, SearchCreatorResult, SearchCommunityResult } from "@/types/search";
 import type { ContentPiece, CreatorProfile as ContentCreatorProfile } from "@/types/content";
 
@@ -173,57 +173,37 @@ function toSearchResults(wire: WireSearchResults): SearchResults {
 }
 
 export async function getRecentSearches(): Promise<string[]> {
-  try {
-    const res = await apiFetch<WireSearchSuggestions>("/api/hub/search/suggestions", { authed: true });
-    // Always [] today — no per-user search-history table exists yet
-    // (search-response.service.ts's own documented gap), authenticated or not.
-    return res.recentSearches;
-  } catch {
-    return mockRecentSearches;
-  }
+  const res = await apiFetch<WireSearchSuggestions>("/api/hub/search/suggestions", { authed: true });
+  // Always [] today — no per-user search-history table exists yet
+  // (search-response.service.ts's own documented gap), authenticated or not.
+  return res.recentSearches;
 }
 
 export async function searchAll(query: string): Promise<SearchResponse> {
-  try {
-    const results = await apiFetch<WireSearchResults>(`/api/hub/search?q=${encodeURIComponent(query)}`, { authed: true });
-    // GET /search returns SearchResults directly (no {query, results} envelope
-    // beyond the Hub's standard {statusCode,message,data} wrapper, which
-    // apiFetch already strips) — `query` is echoed back client-side since we
-    // already know it, matching this file's existing SearchResponse contract.
-    return { query, results: toSearchResults(results) };
-  } catch {
-    return mockSearch(query);
-  }
+  const results = await apiFetch<WireSearchResults>(`/api/hub/search?q=${encodeURIComponent(query)}`, { authed: true });
+  // GET /search returns SearchResults directly (no {query, results} envelope
+  // beyond the Hub's standard {statusCode,message,data} wrapper, which
+  // apiFetch already strips) — `query` is echoed back client-side since we
+  // already know it, matching this file's existing SearchResponse contract.
+  return { query, results: toSearchResults(results) };
 }
 
 /** Fuzzy "closest matches" shown on a no-results screen. */
 export async function getClosestResults(query: string): Promise<ContentPiece[]> {
-  try {
-    const res = await apiFetch<WireClosestResult>(`/api/hub/search/closest?q=${encodeURIComponent(query)}`, {
-      authed: true,
-    });
-    return res.items.map(toContentPiece);
-  } catch {
-    return mockClosestResults(query);
-  }
+  const res = await apiFetch<WireClosestResult>(`/api/hub/search/closest?q=${encodeURIComponent(query)}`, {
+    authed: true,
+  });
+  return res.items.map(toContentPiece);
 }
 
 export async function getPopularSearches(): Promise<string[]> {
-  try {
-    const res = await apiFetch<WireSearchSuggestions>("/api/hub/search/suggestions", { authed: true });
-    return res.popularSearches;
-  } catch {
-    return ["bookkeeping", "export to ghana", "poultry feed", "tailoring", "invoice template"];
-  }
+  const res = await apiFetch<WireSearchSuggestions>("/api/hub/search/suggestions", { authed: true });
+  return res.popularSearches;
 }
 
 export async function getSuggestedCreators() {
-  try {
-    const res = await apiFetch<WireSearchSuggestions>("/api/hub/search/suggestions", { authed: true });
-    return res.suggestedCreators.map(toSearchCreatorResult);
-  } catch {
-    return mockSearchCreators;
-  }
+  const res = await apiFetch<WireSearchSuggestions>("/api/hub/search/suggestions", { authed: true });
+  return res.suggestedCreators.map(toSearchCreatorResult);
 }
 
 /**

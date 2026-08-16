@@ -100,6 +100,7 @@ export interface MarketplaceSave {
   savedAt: string;
 }
 
+// SEAM: replace with POST /api/hub/marketplace/saves
 /**
  * Bookmark an external marketplace product. Idempotent on the backend — a
  * repeat save for the same (user, productId, shop) returns the existing row
@@ -109,39 +110,24 @@ export async function saveMarketplaceItem(
   shop: ShopId,
   productId: string,
 ): Promise<MarketplaceSave> {
-  try {
-    return await apiFetch<MarketplaceSave>("/api/hub/marketplace/saves", {
-      method: "POST",
-      authed: true,
-      body: { productId, shop },
-    });
-  } catch {
-    // SEAM: replace with POST /api/hub/marketplace/saves
-    return {
-      id: `mock-save-${productId}`,
-      userWawuId: "mock-user",
-      productId,
-      shop,
-      savedAt: new Date().toISOString(),
-    };
-  }
+  return await apiFetch<MarketplaceSave>("/api/hub/marketplace/saves", {
+    method: "POST",
+    authed: true,
+    body: { productId, shop },
+  });
 }
 
+// SEAM: replace with DELETE /api/hub/marketplace/saves/:productId
 /**
  * Remove a bookmark. The backend route only carries :productId (no shop) —
  * it removes any save matching that productId for this user, since a given
  * opaque productId is expected to belong to exactly one shop in practice.
- * The backend 404s if the item was never saved; per this file's try/catch→
- * mock resilience pattern that's swallowed here rather than surfaced, so a
- * stale-local-state 404 currently looks identical to a successful no-op.
+ * A real 404 (item was never saved) is a real rejection and must reach the
+ * caller as one, not be swallowed into a silent no-op.
  */
 export async function unsaveMarketplaceItem(productId: string): Promise<void> {
-  try {
-    await apiFetch<void>(`/api/hub/marketplace/saves/${productId}`, {
-      method: "DELETE",
-      authed: true,
-    });
-  } catch {
-    // SEAM: replace with DELETE /api/hub/marketplace/saves/:productId
-  }
+  await apiFetch<void>(`/api/hub/marketplace/saves/${productId}`, {
+    method: "DELETE",
+    authed: true,
+  });
 }

@@ -8,14 +8,7 @@ import type {
   VerificationSubmissionStatus,
 } from "@/types/verification";
 import { apiFetch, isMockModeError } from "./client";
-import {
-  getMockLadder,
-  getMockOwnProfile,
-  getMockVerificationSubmissions,
-  resubmitMockVerification,
-  saveMockOwnProfile,
-  submitMockVerification,
-} from "./mocks/verification";
+import { getMockOwnProfile, saveMockOwnProfile } from "./mocks/verification";
 
 /**
  * Hub API wire shapes — verification-submission.service.ts /
@@ -184,14 +177,12 @@ function mapVerificationTier(tier: string): VerificationLevel {
  * field) — left undefined rather than invented; profile/page.tsx only
  * renders them when present.
  *
- * The secondary creator/state, earnings, and credits calls degrade
- * gracefully on their own failure (bare catch, same as auth.ts's signIn()
- * creator/state read) rather than failing the whole profile — a creator
- * account with no CreatorState row yet, or a transient earnings/credits
- * hiccup, should not block the identity block from rendering. The PRIMARY
- * users/me call is the one Pattern-A-gated: a real failure there throws
- * (never silently substitutes the mock identity), and only a genuine
- * no-backend-configured dev/demo mode falls back to mock data.
+ * Per the no-mock-fallback policy, a real failure from ANY of these calls
+ * (users/me, creator/state, earnings, or credits) throws and propagates to
+ * the caller — no bare catch silently substitutes a default or a mock value
+ * for a real backend error. Only the outer Pattern-A gate below distinguishes
+ * a genuine no-backend-configured dev/demo mode (MockModeError) from a real
+ * failure: the former falls back to the full mock profile, the latter throws.
  */
 export async function getOwnProfile(): Promise<OwnProfile> {
   try {
@@ -205,36 +196,22 @@ export async function getOwnProfile(): Promise<OwnProfile> {
     let earningsThisMonth: number | undefined;
 
     if (accountType === "creator") {
-      try {
-        const state = await apiFetch<HubCreatorStateForProfile>("/api/hub/creator/state", { authed: true });
-        plan = state.tier;
-        contentSlots = { published: state.slotsUsed, total: state.slotsTotal };
-        published = state.slotsUsed;
-      } catch {
-        // SEAM: GET /api/hub/creator/state — a creator account with no
-        // CreatorState row yet (pre-tier-selection). Leave plan/contentSlots
-        // at their defaults; creatorGates() already treats this the same way.
-      }
-      try {
-        const earnings = await apiFetch<HubEarningsForProfile>("/api/hub/content/mine/earnings", { authed: true });
-        // KNOWN BACKEND GAP: `total` is an all-time aggregate — the real
-        // contract has no month-scoped figure at all (confirmed against
-        // creator-earnings.service.ts: no date filtering anywhere in it).
-        // Using it as the best available stand-in for "this month" rather
-        // than inventing a monthly figure that doesn't exist.
-        earningsThisMonth = earnings.total;
-      } catch {
-        // SEAM: GET /api/hub/content/mine/earnings
-      }
+      const state = await apiFetch<HubCreatorStateForProfile>("/api/hub/creator/state", { authed: true });
+      plan = state.tier;
+      contentSlots = { published: state.slotsUsed, total: state.slotsTotal };
+      published = state.slotsUsed;
+
+      const earnings = await apiFetch<HubEarningsForProfile>("/api/hub/content/mine/earnings", { authed: true });
+      // KNOWN BACKEND GAP: `total` is an all-time aggregate — the real
+      // contract has no month-scoped figure at all (confirmed against
+      // creator-earnings.service.ts: no date filtering anywhere in it).
+      // Using it as the best available stand-in for "this month" rather
+      // than inventing a monthly figure that doesn't exist.
+      earningsThisMonth = earnings.total;
     }
 
-    let credits = 0;
-    try {
-      const creditsState = await apiFetch<HubCreditsForProfile>("/api/hub/credits", { authed: true });
-      credits = creditsState.creditBalance;
-    } catch {
-      // SEAM: GET /api/hub/credits
-    }
+    const creditsState = await apiFetch<HubCreditsForProfile>("/api/hub/credits", { authed: true });
+    const credits = creditsState.creditBalance;
 
     return {
       wawuId: me.wawuUserId,
@@ -294,27 +271,17 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
 }
 
 export async function getVerificationLadder(): Promise<VerificationLevelEntry[]> {
-  try {
-    const entries = await apiFetch<HubVerificationLadderEntry[]>("/api/hub/verification/ladder", {
-      authed: true,
-    });
-    return fromHubLadder(entries);
-  } catch {
-    // SEAM: replace with GET /api/hub/verification/ladder
-    return getMockLadder();
-  }
+  const entries = await apiFetch<HubVerificationLadderEntry[]>("/api/hub/verification/ladder", {
+    authed: true,
+  });
+  return fromHubLadder(entries);
 }
 
 export async function getVerificationSubmissions(): Promise<VerificationSubmission[]> {
-  try {
-    const submissions = await apiFetch<HubVerificationSubmission[]>("/api/hub/verification/submissions", {
-      authed: true,
-    });
-    return submissions.map(fromHubSubmission);
-  } catch {
-    // SEAM: replace with GET /api/hub/verification/submissions
-    return getMockVerificationSubmissions();
-  }
+  const submissions = await apiFetch<HubVerificationSubmission[]>("/api/hub/verification/submissions", {
+    authed: true,
+  });
+  return submissions.map(fromHubSubmission);
 }
 
 /**
@@ -322,25 +289,19 @@ export async function getVerificationSubmissions(): Promise<VerificationSubmissi
  * collect real document URLs — see VerificationApplyForm's `uploaded`
  * state, local filenames only) keep compiling unchanged. An empty array
  * makes the real POST 400 (ArrayNotEmpty on the Hub's
- * CreateVerificationSubmissionDto), which the try/catch below treats the
- * same as any other real-call failure and falls back to the mock — see
- * report for the follow-up this implies.
+ * CreateVerificationSubmissionDto) — that real rejection now propagates to
+ * the caller as a real error rather than being masked by a mock fallback.
  */
 export async function submitVerification(
   tier: VerificationLevel,
   documents: string[] = [],
 ): Promise<VerificationSubmission> {
-  try {
-    const hub = await apiFetch<HubVerificationSubmission>("/api/hub/verification/submissions", {
-      method: "POST",
-      authed: true,
-      body: { tier, documents },
-    });
-    return fromHubSubmission(hub);
-  } catch {
-    // SEAM: replace with POST /api/hub/verification/submissions
-    return submitMockVerification(tier);
-  }
+  const hub = await apiFetch<HubVerificationSubmission>("/api/hub/verification/submissions", {
+    method: "POST",
+    authed: true,
+    body: { tier, documents },
+  });
+  return fromHubSubmission(hub);
 }
 
 /**
@@ -354,19 +315,14 @@ export async function resubmitVerification(
   tier: VerificationLevel,
   documents: string[] = [],
 ): Promise<VerificationSubmission> {
-  try {
-    const mine = await apiFetch<HubVerificationSubmission[]>("/api/hub/verification/submissions", {
-      authed: true,
-    });
-    const target = mine.find((s) => s.tier === tier && s.status === "rejected");
-    if (!target) throw new Error(`No rejected ${tier} submission to resubmit`);
-    const hub = await apiFetch<HubVerificationSubmission>(
-      `/api/hub/verification/submissions/${target.id}/resubmit`,
-      { method: "POST", authed: true, body: { documents } },
-    );
-    return fromHubSubmission(hub);
-  } catch {
-    // SEAM: replace with GET /api/hub/verification/submissions + POST /api/hub/verification/submissions/:id/resubmit
-    return resubmitMockVerification(tier);
-  }
+  const mine = await apiFetch<HubVerificationSubmission[]>("/api/hub/verification/submissions", {
+    authed: true,
+  });
+  const target = mine.find((s) => s.tier === tier && s.status === "rejected");
+  if (!target) throw new Error(`No rejected ${tier} submission to resubmit`);
+  const hub = await apiFetch<HubVerificationSubmission>(
+    `/api/hub/verification/submissions/${target.id}/resubmit`,
+    { method: "POST", authed: true, body: { documents } },
+  );
+  return fromHubSubmission(hub);
 }

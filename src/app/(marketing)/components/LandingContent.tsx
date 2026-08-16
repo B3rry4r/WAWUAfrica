@@ -3,6 +3,7 @@ import { ContentCard } from "@/components/content/ContentCard";
 import { AccessBadge } from "@/components/ui/AccessBadge";
 import { Button } from "@/components/ui/Button";
 import { ComingSoonPill } from "@/components/ui/ComingSoonPill";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -10,6 +11,7 @@ import { StatBlock } from "@/components/ui/StatBlock";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { formatNaira } from "@/lib/format";
 import { getFeaturedContent } from "@/lib/api/content";
+import type { ContentPiece } from "@/types/content";
 import { CreatorCarousel } from "./CreatorCarousel";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
@@ -49,7 +51,19 @@ const FAQ = [
 ];
 
 export async function LandingContent() {
-  const { items: toWatch, isLive } = await getFeaturedContent();
+  // getFeaturedContent() 401s for every signed-out visitor (GET /content has
+  // no public scope — see its doc comment in src/lib/api/content.ts) and
+  // throws on any other real failure too. Scoping the try/catch to just this
+  // call means a failure here shows a real, visible error for the "Creators
+  // to watch" section instead of either faking live data or crashing the
+  // entire marketing page for 100% of anonymous traffic.
+  let toWatch: ContentPiece[] = [];
+  let featuredError = false;
+  try {
+    toWatch = await getFeaturedContent();
+  } catch {
+    featuredError = true;
+  }
 
   // Desktop hero collage reuses the same featured items the mobile carousel
   // shows below — no separate mock, just a different arrangement of it.
@@ -61,9 +75,14 @@ export async function LandingContent() {
       <header className="sticky top-0 z-20 flex items-center gap-1 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-3.5 py-3 backdrop-blur xl:gap-[34px] xl:px-14 xl:py-0 xl:h-[74px]">
         <img src="/wawu-logo-white.png" alt="WAWU" className="mr-auto h-[22px] w-auto object-contain xl:mr-0 xl:h-[26px]" />
         <nav className="hidden items-center gap-[26px] xl:flex" aria-label="Marketing">
-          {["For creators", "Explore", "Learn", "Services", "Pricing"].map((label) => (
-            // SEAM: these link to marketing sub-pages that do not exist yet — placeholder anchors, same pattern the footer already uses.
-            <a key={label} href="#" className="text-[14.5px] font-medium text-text-secondary hover:text-text-primary">
+          {[
+            ["For creators", "/sign-up?type=creator"],
+            ["Explore", "/explore"],
+            ["Learn", "/learn"],
+            ["Services", "/services"],
+            ["Pricing", "#pricing"],
+          ].map(([label, href]) => (
+            <a key={label} href={href} className="text-[14.5px] font-medium text-text-secondary hover:text-text-primary">
               {label}
             </a>
           ))}
@@ -141,7 +160,13 @@ export async function LandingContent() {
       </section>
 
       {/* Creators to watch */}
-      <CreatorCarousel items={toWatch} isLive={isLive} />
+      {featuredError ? (
+        <section className="px-5 pb-8 xl:mx-auto xl:max-w-[1440px] xl:px-14">
+          <ErrorState title="Could not load creators to watch" body="Sign up to see who is live on WAWU right now." />
+        </section>
+      ) : (
+        <CreatorCarousel items={toWatch} />
+      )}
 
       {/* Stats */}
       <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
@@ -164,22 +189,15 @@ export async function LandingContent() {
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
           From agriculture to fintech, Nigerians are monetising what they already know.
         </p>
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-6">
+        <div className="flex flex-wrap gap-2">
           {FIELDS.map((field) => (
-            <div
+            <span
               key={field}
-              className="relative aspect-square overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]"
+              className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,10,13,0.88)_0%,rgba(11,10,13,0.32)_42%,transparent_68%)]" />
-              <span className="absolute bottom-3 left-[13px] text-[15px] font-semibold text-text-primary">{field}</span>
-            </div>
+              {field}
+            </span>
           ))}
-          <div
-            className="relative col-span-2 aspect-[2.1/1] overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] xl:col-span-3"
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,10,13,0.88)_0%,rgba(11,10,13,0.32)_42%,transparent_68%)]" />
-            <span className="absolute bottom-3 left-[13px] text-[15px] font-semibold text-text-primary">Culture</span>
-          </div>
         </div>
       </section>
 
@@ -215,7 +233,7 @@ export async function LandingContent() {
          first, but xl:order- swaps the visual order so "more than content" leads,
          matching the design's left/right arrangement without reordering the DOM. */}
       <div className="contents xl:grid xl:mx-auto xl:max-w-[1440px] xl:grid-cols-2 xl:gap-[22px] xl:px-14 xl:pb-[52px]">
-        <section className="px-5 pb-[52px] xl:order-2 xl:px-0 xl:pb-0">
+        <section id="pricing" className="px-5 pb-[52px] xl:order-2 xl:px-0 xl:pb-0">
           <SectionHeader caption="Earnings calculator" title="What could you make?" />
           <div className="mt-4">
             <EarningsCalculator />
@@ -352,7 +370,7 @@ export async function LandingContent() {
       </section>
 
       {/* CTA */}
-      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card p-7 bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] xl:mx-auto xl:mb-14 xl:max-w-[1440px] xl:flex-row xl:items-center xl:justify-between xl:px-14 xl:py-12">
+      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card py-7 px-[22px] bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] xl:mx-auto xl:mb-14 xl:max-w-[1440px] xl:flex-row xl:items-center xl:justify-between xl:px-14 xl:py-12">
         <div className="flex flex-col gap-3.5 xl:gap-2">
           <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent xl:text-[32px]">Ready to get paid for what you know?</h2>
           <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)] xl:text-[15px]">No entry fee. Publish your first piece free, price the next one yourself.</p>
@@ -366,42 +384,14 @@ export async function LandingContent() {
         </Link>
       </section>
 
-      {/* Newsletter */}
-      <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
-        <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5 xl:mx-auto xl:max-w-[560px] xl:p-7">
-          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Stay in the loop</span>
-          <p className="m-0 text-[15px] leading-normal text-text-secondary">
-            Monthly notes on what is selling on WAWU and how creators are pricing it.
-          </p>
-          {/* No newsletter/subscribe endpoint exists anywhere in the backend
-             (grepped WAWU-Hub-API for "newsletter"/"subscribe" — nothing).
-             The control used to be a live-looking button with no handler at
-             all; disabling it and labeling it "Coming soon" is honest about
-             that instead of leaving an inert control that looks functional. */}
-          <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-hairline bg-input px-4 opacity-60">
-            <Icon name="Mail" size={16} color="var(--text-muted)" />
-            <input
-              type="email"
-              placeholder="you@email.com"
-              disabled
-              className="w-full bg-transparent text-[15px] text-text-primary outline-none placeholder:text-text-disabled disabled:cursor-not-allowed"
-              aria-label="Email"
-            />
-          </div>
-          <Button full variant="secondary" disabled>Subscribe — coming soon</Button>
-          <span className="text-[12px] text-text-muted">Not live yet. No spam when it is — leave whenever you like.</span>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="flex flex-col gap-[26px] border-t border-hairline px-5 pb-[46px] pt-[30px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[20px] w-auto self-start object-contain opacity-80" />
         <div className="grid grid-cols-2 gap-x-5 gap-y-[26px] xl:grid-cols-4">
           {[
-            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Become a creator", "/sign-up?type=creator"], ["Creator tiers", "/sign-up?type=creator"]] },
-            { label: "Services", links: [["CAC registration", "#cac"], ["NEPC registration", "#nepc"], ["Mentors", "#mentors"], ["Learn", "#learn"]] },
-            { label: "Marketplace", links: [["WAWUBasket", "#basket"], ["WAWUBeauty", "#beauty"], ["Partners", "#partners"]] },
-            { label: "Company", links: [["About", "#about"], ["Help", "#help"], ["Terms", "#terms"], ["Privacy", "#privacy"]] },
+            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Become a creator", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
+            { label: "Services", links: [["CAC registration", "/services/cac"], ["NEPC registration", "/services/nepc"], ["Mentors", "/services/mentors"], ["Learn", "/learn"]] },
+            { label: "Company", links: [["Terms", "/terms"], ["Privacy", "/privacy/policy"]] },
           ].map((col) => (
             <div key={col.label} className="flex flex-col gap-[11px]">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">{col.label}</span>
@@ -415,19 +405,6 @@ export async function LandingContent() {
         </div>
         <div className="flex items-center gap-3.5 border-t border-hairline pt-5">
           <span className="flex-1 text-[12px] text-text-muted">© 2026 WAWUAfrica</span>
-          {[
-            { label: "WhatsApp", icon: "MessageCircle" },
-            { label: "Instagram", icon: "Instagram" },
-          ].map((s) => (
-            <a
-              key={s.label}
-              href="#social"
-              aria-label={s.label}
-              className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary"
-            >
-              <Icon name={s.icon as "MessageCircle"} size={16} />
-            </a>
-          ))}
         </div>
       </footer>
     </div>

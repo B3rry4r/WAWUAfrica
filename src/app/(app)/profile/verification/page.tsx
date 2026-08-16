@@ -1,3 +1,6 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { VerificationLevelEntry, VerificationSubmission } from "@/types/verification";
 import { getVerificationLadder, getVerificationSubmissions } from "@/lib/api/verification";
@@ -9,16 +12,48 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
 
-export default async function VerificationPage() {
-  let ladder: VerificationLevelEntry[];
-  let submissions: VerificationSubmission[];
-  try {
-    [ladder, submissions] = await Promise.all([getVerificationLadder(), getVerificationSubmissions()]);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title={message ?? "We couldn't load your verification."} />;
+export default function VerificationPage() {
+  const [ladder, setLadder] = useState<VerificationLevelEntry[] | null>(null);
+  const [submissions, setSubmissions] = useState<VerificationSubmission[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    setError(null);
+    setLadder(null);
+    setSubmissions(null);
+    Promise.all([getVerificationLadder(), getVerificationSubmissions()])
+      .then(([l, s]) => {
+        setLadder(l);
+        setSubmissions(s);
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : "We couldn't load your verification.");
+      });
+  }, []);
+
+  useEffect(load, [load]);
+
+  if (error) {
+    return (
+      <div className="px-4 pt-4 xl:mx-auto xl:w-full xl:max-w-[700px] xl:px-0 xl:pt-8">
+        <ErrorState title="We couldn't load your verification." body={error} onRetry={load} />
+      </div>
+    );
   }
+
+  if (!ladder || !submissions) {
+    return (
+      <div className="flex flex-col gap-5 px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[700px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
+        <Skeleton className="h-[26px] w-[140px] rounded" />
+        <Skeleton className="h-[96px] w-full rounded-[var(--radius-card)]" />
+        <Skeleton className="h-[74px] w-full rounded-[var(--radius-card)]" />
+        <Skeleton className="h-[260px] w-full rounded-[var(--radius-card)]" />
+      </div>
+    );
+  }
+
   const current = ladder.find((l) => l.status === "yours");
   const next = ladder.find((l) => l.status === "next");
   const nextTier = next?.tier ?? "verified_business";

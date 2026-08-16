@@ -417,7 +417,7 @@ export function SignUpFlow() {
 
   if (step === "otp") {
     return (
-      <AuthScaffold title="Verify your email" stepLabel={stepLabel} onBack={() => setStep("details")}>
+      <AuthScaffold title="Verify your email" stepLabel={stepLabel} onBack={() => setStep("details")} spaciousTop>
         <div className="flex flex-col gap-[26px]">
           <div className="flex flex-col gap-2.5">
             <h2 className="m-0 text-[26px] font-bold tracking-[-0.025em]">Enter the 6-digit code</h2>
@@ -534,12 +534,14 @@ function AuthScaffold({
   onBack,
   children,
   noBorder = false,
+  spaciousTop = false,
 }: {
   title: string;
   stepLabel?: string;
   onBack?: () => void;
   children: React.ReactNode;
   noBorder?: boolean;
+  spaciousTop?: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col xl:min-h-0">
@@ -556,7 +558,11 @@ function AuthScaffold({
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-4 px-5 pb-5 pt-[18px] xl:flex-none xl:px-0 xl:pb-0">{children}</div>
+      <div
+        className={`flex flex-1 flex-col gap-4 px-5 pb-5 xl:flex-none xl:px-0 xl:pb-0 ${spaciousTop ? "pt-8" : "pt-[18px]"}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }

@@ -117,20 +117,6 @@ export async function getFeed(): Promise<ContentFeedResponse> {
   }
 }
 
-/** Result of {@link getFeaturedContent} — see `isLive` doc below before rendering `items` as fact. */
-export interface FeaturedContentResult {
-  items: ContentPiece[];
-  /**
-   * False whenever `items` is the local fixture set rather than a real read
-   * of the live feed. Callers on the public marketing page MUST check this
-   * before presenting `items` as real creator activity (names, view/like
-   * counts) — see the doc comment on {@link getFeaturedContent} for why this
-   * branch is not a rare failure case but the only thing an anonymous
-   * visitor will ever see.
-   */
-  isLive: boolean;
-}
-
 /**
  * Featured creators for the marketing landing ("Creators to watch").
  *
@@ -145,43 +131,32 @@ export interface FeaturedContentResult {
  * `WawuAuthGuard` for every scope and there is no public/anonymous scope on
  * the real contract. An anonymous visitor has no session token to send, so
  * this call structurally 401s for them every single time — this is not a
- * "backend unreachable, fall back to a demo" situation Pattern A's mock
- * fallback exists for; it is the permanent, expected path for 100% of the
- * audience this function serves. Confirmed live: a signed-out visitor was
- * being shown the fixture creators/content with zero indication it wasn't
- * real, right next to a section header ("Earning on WAWU now") asserting it
- * was. Fixing that honestly means the caller must be able to tell the two
- * cases apart and label accordingly — hence returning `isLive` instead of
- * silently equating "real data" and "fixture data" the way the old
- * `ContentPiece[]`-only return did. (Proposed backend change, not made: a
- * public preview scope on GET /content would let this become genuinely
- * live for anonymous visitors — flagging per the task brief rather than
- * inventing one server-side.)
+ * rare failure, it is the permanent, expected path for 100% of the audience
+ * this function serves. Per the no-mock-fallback policy this throws on that
+ * 401 like any other real failure; the caller (LandingContent) is
+ * responsible for rendering a real, visible error for the "Creators to
+ * watch" section rather than ever substituting fixture creators/content
+ * labelled as live. (Proposed backend change, not made: a public preview
+ * scope on GET /content would let this become genuinely live for anonymous
+ * visitors — flagging per the task brief rather than inventing one
+ * server-side.)
  */
-export async function getFeaturedContent(): Promise<FeaturedContentResult> {
-  try {
-    const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content?scope=feed&perPage=3", {
-      authed: true,
-    });
-    return { items: res.data.map(mapContentPiece).map(guardLocked), isLive: true };
-  } catch {
-    // SEAM: replace with GET /api/hub/content?scope=feed (no dedicated featured/public
-    // scope exists) — every anonymous visitor hits this branch today, real backend or not.
-    return {
-      items: mockContent.filter((c) => ["cac-in-7-days", "ankara-pattern-drafting", "dry-season-poultry"].includes(c.id)),
-      isLive: false,
-    };
-  }
+export async function getFeaturedContent(): Promise<ContentPiece[]> {
+  const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content?scope=feed&perPage=3", {
+    authed: true,
+  });
+  return res.data.map(mapContentPiece).map(guardLocked);
 }
 
 /**
  * Real GET /users/:wawuId/public-profile response carries the creator's
  * tier — see profile.ts's RealPublicCreatorProfile for the full shape. Only
  * `tier` is read here, to drive creatorSplitRate() (CLAUDE.md: 85/15
- * standard, 90/10 Pro — never invent a rate). Best-effort: the content piece
- * itself already loaded successfully, so a real failure on this secondary
- * lookup degrades to the safe default (85%, isPro undefined) instead of
- * failing the whole content-detail load.
+ * standard, 90/10 Pro — never invent a rate). This is money-bearing (it
+ * decides whether 85% or 90% is displayed as the creator's cut), so only
+ * genuine mock mode (no backend configured) degrades to the safe default —
+ * a real failure propagates and fails the whole content-detail load rather
+ * than risk silently showing the wrong split.
  */
 async function getCreatorIsPro(creatorWawuId: string): Promise<boolean> {
   try {
@@ -189,9 +164,9 @@ async function getCreatorIsPro(creatorWawuId: string): Promise<boolean> {
       authed: true,
     });
     return profile.tier === "pro";
-  } catch {
-    // SEAM: GET /api/hub/users/:wawuId/public-profile — mock mode and a real
-    // failure both degrade to the safe default split rate here.
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: GET /api/hub/users/:wawuId/public-profile
     return false;
   }
 }

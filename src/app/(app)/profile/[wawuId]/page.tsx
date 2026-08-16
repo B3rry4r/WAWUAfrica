@@ -1,4 +1,8 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { CreatorProfile, ProfileTab } from "@/types/profile";
 import { getCreatorProfile, isFollowing } from "@/lib/api/profile";
@@ -14,6 +18,7 @@ import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ProfileActions } from "@/components/profile/ProfileActions";
@@ -26,22 +31,64 @@ import { formatNaira } from "@/lib/format";
 
 const VALID_TABS: ProfileTab[] = ["content", "community", "shop", "about"];
 
-interface FanProfilePageProps {
-  params: { wawuId: string };
-  searchParams: { tab?: string };
+/**
+ * Server Component here always 401'd (no session token exists during SSR)
+ * and, after profile.ts's real-failure fix (no more catch-and-return-mock),
+ * that surfaced as a scary thrown error instead of the signed-in viewer's
+ * real view of this creator. Client Component + useEffect fetch, same
+ * pattern as content/[id]/page.tsx and communities/page.tsx. useSearchParams
+ * needs a Suspense boundary, hence the wrapper below.
+ */
+export default function FanProfilePage() {
+  return (
+    <Suspense>
+      <FanProfilePageContent />
+    </Suspense>
+  );
 }
 
-export default async function FanProfilePage({ params, searchParams }: FanProfilePageProps) {
-  const { wawuId } = params;
-  const tab: ProfileTab = VALID_TABS.includes(searchParams.tab as ProfileTab) ? (searchParams.tab as ProfileTab) : "content";
+function FanProfilePageContent() {
+  const params = useParams<{ wawuId: string }>();
+  const wawuId = String(params?.wawuId ?? "");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const tab: ProfileTab = VALID_TABS.includes(tabParam as ProfileTab) ? (tabParam as ProfileTab) : "content";
 
-  let profile: CreatorProfile;
-  let following = false;
-  try {
-    [profile, following] = await Promise.all([getCreatorProfile(wawuId), isFollowing(wawuId)]);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title="Creator not found" body={message ?? "This profile doesn't exist or was removed."} />;
+  const [profile, setProfile] = useState<CreatorProfile | null>(null);
+  const [following, setFollowing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    let active = true;
+    setError(null);
+    setProfile(null);
+    Promise.all([getCreatorProfile(wawuId), isFollowing(wawuId)])
+      .then(([p, f]) => {
+        if (!active) return;
+        setProfile(p);
+        setFollowing(f);
+      })
+      .catch((e) => {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : "This profile doesn't exist or was removed.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [wawuId]);
+
+  useEffect(load, [load]);
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <ErrorState title="Creator not found" body={error} onRetry={load} />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <ProfileSkeleton />;
   }
 
   const isDeepTab = tab === "shop" || tab === "about";
@@ -59,7 +106,7 @@ export default async function FanProfilePage({ params, searchParams }: FanProfil
       {/* Desktop chrome (design D16) — cover + one wide identity row on every tab, not just Content. */}
       <DesktopIdentity profile={profile} following={following} />
 
-      <ProfileTabs wawuId={wawuId} active={tab} />
+      <ProfileTabs wawuId={wawuId} active={tab} compact={isDeepTab} />
 
       <div className="flex flex-1 flex-col px-4 pb-24 pt-3 xl:hidden">
         <TabBody profile={profile} tab={tab} following={following} />
@@ -434,5 +481,49 @@ function SocialPill({ icon, label }: { icon: string; label: string }) {
       <Icon name={icon as IconName} size={15} color="var(--text-secondary)" strokeWidth={2} />
       {label}
     </span>
+  );
+}
+
+/* ---------------- Loading ---------------- */
+
+function ProfileSkeleton() {
+  return (
+    <div className="flex min-h-dvh flex-col xl:min-h-0 xl:flex-1 xl:overflow-hidden">
+      <div className="flex flex-col gap-4 px-4 pb-6 pt-4 xl:hidden">
+        <div className="flex items-center gap-3">
+          <Skeleton variant="circle" className="h-9 w-9 shrink-0" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton variant="circle" className="h-[72px] w-[72px] shrink-0" />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <Skeleton className="h-[18px] w-[55%] rounded" />
+            <Skeleton className="h-[13px] w-[35%] rounded" />
+          </div>
+        </div>
+        <Skeleton className="h-[14px] w-full rounded" />
+        <Skeleton className="h-[14px] w-[80%] rounded" />
+        <div className="flex gap-5">
+          <Skeleton className="h-[38px] w-[64px] rounded" />
+          <Skeleton className="h-[38px] w-[64px] rounded" />
+          <Skeleton className="h-[38px] w-[64px] rounded" />
+        </div>
+        <Skeleton className="h-11 w-full rounded-button" />
+      </div>
+      <div className="hidden xl:block">
+        <Skeleton className="h-[180px] w-full rounded-none" />
+        <div className="-mt-[66px] flex items-end gap-5 border-b border-hairline px-[26px] pb-5">
+          <Skeleton variant="circle" className="h-[96px] w-[96px] shrink-0 border-[3px] border-page" />
+          <div className="flex min-w-0 flex-1 flex-col gap-2 pb-1.5">
+            <Skeleton className="h-[22px] w-[220px] rounded" />
+            <Skeleton className="h-[14px] w-[160px] rounded" />
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-3 px-4 py-4 xl:hidden">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} variant="row" className="h-[82px]" />
+        ))}
+      </div>
+    </div>
   );
 }

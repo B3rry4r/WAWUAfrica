@@ -25,6 +25,7 @@ export default function OwnProfilePage() {
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [ladder, setLadder] = useState<VerificationLevelEntry[]>([]);
   const [purchasesCount, setPurchasesCount] = useState<number | null>(null);
+  const [purchasesError, setPurchasesError] = useState(false);
   const [savedCount, setSavedCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,10 +34,17 @@ export default function OwnProfilePage() {
     setProfile(null);
     // Purchases/saved counts are read independently of the profile/ladder —
     // a hiccup fetching either just means the count shows a skeleton a beat
-    // longer, never blocks the identity block from rendering.
+    // longer, never blocks the identity block from rendering. A real
+    // purchases-fetch failure still has to be visible, though — it surfaces
+    // as an inline "—" + error subtitle on the row below rather than
+    // silently showing no count at all.
+    setPurchasesError(false);
     getPurchases()
       .then((res) => setPurchasesCount(res.items.length))
-      .catch(() => setPurchasesCount(null));
+      .catch(() => {
+        setPurchasesCount(null);
+        setPurchasesError(true);
+      });
     getSavedItems()
       .then((items) => setSavedCount(items.length))
       .catch(() => setSavedCount(null));
@@ -70,7 +78,7 @@ export default function OwnProfilePage() {
   const isCreator = profile.accountType === "creator";
   const currentLevel = ladder.find((l) => l.status === "yours");
   const nextLevel = ladder.find((l) => l.status === "next");
-  const purchasesMeta = purchasesCount === null ? undefined : String(purchasesCount);
+  const purchasesMeta = purchasesError ? "—" : purchasesCount === null ? undefined : String(purchasesCount);
   const savedMeta = savedCount === null ? undefined : String(savedCount);
 
   return (
@@ -98,7 +106,13 @@ export default function OwnProfilePage() {
             <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
             <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
             <ListRow title="Verification" icon="ShieldCheck" href="/profile/verification" />
-            <ListRow title="My purchases" icon="Package" meta={purchasesMeta} href="/purchases" />
+            <ListRow
+              title="My purchases"
+              subtitle={purchasesError ? "Could not load" : undefined}
+              icon="Package"
+              meta={purchasesMeta}
+              href="/purchases"
+            />
             <ListRow title="Saved" icon="Bookmark" meta={savedMeta} href="/saved" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
@@ -106,7 +120,7 @@ export default function OwnProfilePage() {
           <>
             <ListRow
               title="My purchases"
-              subtitle={purchasesCount === null ? undefined : `${purchasesCount} pieces unlocked`}
+              subtitle={purchasesError ? "Could not load" : purchasesCount === null ? undefined : `${purchasesCount} pieces unlocked`}
               icon="Package"
               meta={purchasesMeta}
               href="/purchases"

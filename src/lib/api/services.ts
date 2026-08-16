@@ -8,15 +8,12 @@ import type {
 } from "@/types/services";
 import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import {
-  getMockApplication,
   getMockCacBusinessRecord,
   getMockCacTimeline,
   getMockOtherApplications,
   getMockService,
   getMockServices,
   notifyMockComingSoon,
-  payMockCacApplication,
-  submitMockNepcApplication,
 } from "./mocks/services";
 import type {
   CacApplicationPayload,
@@ -163,13 +160,23 @@ export async function getService(id: string): Promise<PartnerService | null> {
   try {
     const service = await apiFetch<RealPartnerService>(`/api/hub/services/${id}`, { authed: true });
     return mapPartnerService(service);
-  } catch {
-    // Also covers the two hand-routed pages (`/services/cac`, `/services/nepc`)
-    // that call this with the literal slug "cac"/"nepc": the real endpoint is
-    // keyed by UUID (ParseUUIDPipe) and the seeded rows use fixed UUID ids
-    // (prisma/seed.ts PARTNER_SERVICE_CAC/_NEPC), not those slugs — a slug
-    // request always 400s against the real backend and lands here.
-    return getMockService(id);
+  } catch (e) {
+    if (isMockModeError(e)) return getMockService(id);
+    // The two hand-routed pages (`/services/cac`, `/services/nepc`) call this
+    // with the literal slug "cac"/"nepc": the real endpoint is keyed by UUID
+    // (ParseUUIDPipe) and the seeded rows use fixed UUID ids (prisma/seed.ts
+    // PARTNER_SERVICE_CAC/_NEPC), not those slugs — a slug request always
+    // 400s against the real backend. That's a known client-side routing
+    // mismatch, not a backend failure, so resolve it against the real list
+    // (same name-match deriveCta already uses) instead of masking it with
+    // mock data. Any other id, or a genuine failure to resolve, is a real
+    // error and must reach the caller as one.
+    if (id === "cac" || id === "nepc") {
+      const services = await getServices();
+      const match = services.find((s) => s.name.toLowerCase().includes(id));
+      if (match) return match;
+    }
+    throw e;
   }
 }
 
@@ -199,14 +206,10 @@ export async function notifyComingSoon(id: string): Promise<boolean> {
 
 // SEAM: replace with GET /api/hub/services/applications/:id
 export async function getApplication(id: string): Promise<ServiceApplication | null> {
-  try {
-    const application = await apiFetch<RealServiceApplication>(`/api/hub/services/applications/${id}`, {
-      authed: true,
-    });
-    return mapServiceApplication(application);
-  } catch {
-    return getMockApplication(id);
-  }
+  const application = await apiFetch<RealServiceApplication>(`/api/hub/services/applications/${id}`, {
+    authed: true,
+  });
+  return mapServiceApplication(application);
 }
 
 /**
@@ -257,48 +260,38 @@ export async function getCacBusinessRecord(): Promise<CacBusinessRecord | null> 
  * on MockFlutterwaveAdapter, which treats any non-magic transaction id as a
  * successful charge.
  *
- * CAVEAT: because the outer try/catch here also falls back to the always-
- * succeeding mock on ANY thrown error, a real Flutterwave decline
- * (verifyCac's 400) is currently indistinguishable from "backend
- * unreachable" — both resolve to a fake `result: "success"`. That's the same
- * shape of tradeoff already accepted in `content.ts`'s verifyUnlock, not a
- * new one introduced here; flagged since it's a genuine payment-correctness
- * concern once this app is live-payment-facing, not just a demo fallback.
+ * A real Flutterwave decline (verifyCac's 400) is a real payment failure and
+ * must reach the caller as a thrown error — never silently substituted with
+ * an always-succeeding mock. `payCacApplication`'s own caller
+ * (`/services/cac/apply`) already turns any thrown error here into its
+ * visible "your bank didn't confirm the payment" failure state.
  */
 export async function payCacApplication(payload: CacApplicationPayload): Promise<CacPaymentResponse> {
-  try {
-    const applied = await apiFetch<{ flutterwaveConfig: { txRef: string; amount: number; currency: string; publicKey: string } }>(
-      "/api/hub/services/cac/apply",
-      { method: "POST", authed: true, body: payload },
-    );
-    const txRef = applied.flutterwaveConfig.txRef;
-    const verified = await apiFetch<RealServiceApplication>("/api/hub/services/cac/apply/verify", {
-      method: "POST",
-      authed: true,
-      body: { transaction_id: `txn-${Date.now()}`, tx_ref: txRef },
-    });
-    return {
-      result: "success",
-      applicationId: verified.id,
-      reference: verified.reference,
-      amountPaid: verified.amountPaid ?? applied.flutterwaveConfig.amount ?? CAC_FEE_NAIRA,
-      certificateExpectedBy: verified.certificateExpectedBy ? formatLongDate(verified.certificateExpectedBy) : "",
-    };
-  } catch {
-    return payMockCacApplication(payload);
-  }
+  const applied = await apiFetch<{ flutterwaveConfig: { txRef: string; amount: number; currency: string; publicKey: string } }>(
+    "/api/hub/services/cac/apply",
+    { method: "POST", authed: true, body: payload },
+  );
+  const txRef = applied.flutterwaveConfig.txRef;
+  const verified = await apiFetch<RealServiceApplication>("/api/hub/services/cac/apply/verify", {
+    method: "POST",
+    authed: true,
+    body: { transaction_id: `txn-${Date.now()}`, tx_ref: txRef },
+  });
+  return {
+    result: "success",
+    applicationId: verified.id,
+    reference: verified.reference,
+    amountPaid: verified.amountPaid ?? applied.flutterwaveConfig.amount ?? CAC_FEE_NAIRA,
+    certificateExpectedBy: verified.certificateExpectedBy ? formatLongDate(verified.certificateExpectedBy) : "",
+  };
 }
 
 // SEAM: replace with POST /api/hub/services/nepc/apply
 export async function submitNepcApplication(payload: NepcApplicationPayload): Promise<NepcSubmitResponse> {
-  try {
-    const created = await apiFetch<RealServiceApplication>("/api/hub/services/nepc/apply", {
-      method: "POST",
-      authed: true,
-      body: payload,
-    });
-    return { applicationId: created.id, reference: created.reference };
-  } catch {
-    return submitMockNepcApplication(payload);
-  }
+  const created = await apiFetch<RealServiceApplication>("/api/hub/services/nepc/apply", {
+    method: "POST",
+    authed: true,
+    body: payload,
+  });
+  return { applicationId: created.id, reference: created.reference };
 }

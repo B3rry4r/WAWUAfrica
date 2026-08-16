@@ -1,6 +1,5 @@
 import { apiFetchPaginated } from "./client";
 import { getContent } from "./content";
-import { mockPurchases } from "./mocks/mockPurchases";
 import type { Purchase, PurchasesResponse } from "@/types/purchase";
 
 /**
@@ -46,28 +45,22 @@ async function mapPurchase(raw: HubPurchaseResponse): Promise<Purchase> {
     purchasedAt: raw.purchasedAt,
   };
   if (!raw.contentId) return fallback;
-  try {
-    const { content } = await getContent(raw.contentId);
-    return {
-      ...fallback,
-      contentType: content.contentType,
-      title: content.title,
-      creatorName: content.creator.fullName, // still a placeholder — see content.ts's own creator-embed gap
-    };
-  } catch {
-    return fallback;
-  }
+  // No catch here: a real failure enriching this row (e.g. the content was
+  // deleted, or a transient error) must fail the whole purchases read rather
+  // than silently substituting a fabricated title/type for real data.
+  const { content } = await getContent(raw.contentId);
+  return {
+    ...fallback,
+    contentType: content.contentType,
+    title: content.title,
+    creatorName: content.creator.fullName, // still a placeholder — see content.ts's own creator-embed gap
+  };
 }
 
 export async function getPurchases(): Promise<PurchasesResponse> {
-  try {
-    const res = await apiFetchPaginated<HubPurchaseResponse>("/api/hub/content/purchases", { authed: true });
-    const items = await Promise.all(
-      res.data.filter((p) => p.type === "content").map(mapPurchase),
-    );
-    return { items };
-  } catch {
-    // SEAM: replace with GET /api/hub/content/purchases
-    return mockPurchases;
-  }
+  const res = await apiFetchPaginated<HubPurchaseResponse>("/api/hub/content/purchases", { authed: true });
+  const items = await Promise.all(
+    res.data.filter((p) => p.type === "content").map(mapPurchase),
+  );
+  return { items };
 }

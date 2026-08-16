@@ -11,30 +11,22 @@ export default async function CategoriesPage() {
       <div className="xl:hidden">
         <ScreenHeader title="Categories" />
       </div>
-      <div className="grid flex-1 auto-rows-min grid-cols-2 gap-3 overflow-hidden p-[14px_16px_96px] xl:grid-cols-4 xl:gap-4 xl:p-[26px]">
-        {categories.map((category, i) => (
-          <CategoryTile
-            key={category.id}
-            id={category.id}
-            name={category.name}
-            fullWidth={i === categories.length - 1 && categories.length % 2 === 1}
-          />
+      <div className="flex flex-1 content-start flex-wrap gap-2 overflow-hidden p-[14px_16px_96px] xl:gap-3 xl:p-[26px]">
+        {categories.map((category) => (
+          <CategoryTile key={category.id} id={category.id} name={category.name} />
         ))}
       </div>
     </div>
   );
 }
 
-function CategoryTile({ id, name, fullWidth }: { id: ExploreCategoryId; name: string; fullWidth: boolean }) {
+function CategoryTile({ id, name }: { id: ExploreCategoryId; name: string }) {
   return (
     <Link
       href={`/explore/creators?category=${id}`}
-      className={`relative block h-[104px] overflow-hidden rounded-[var(--radius-media)] border border-[var(--border-hairline)] bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] no-underline xl:h-[130px] ${
-        fullWidth ? "col-span-2 xl:col-span-1" : ""
-      }`}
+      className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary no-underline"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(11,10,13,0.88)_0%,rgba(11,10,13,0.32)_42%,transparent_68%)]" />
-      <span className="absolute bottom-[11px] left-3 text-[14.5px] font-semibold text-[var(--text-primary)]">{name}</span>
+      {name}
     </Link>
   );
 }
