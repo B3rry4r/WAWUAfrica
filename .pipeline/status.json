@@ -1,6 +1,6 @@
 {
   "phase": 5,
-  "wave": 1,
+  "wave": 2,
   "completed": {
     "phase0": [
       "framework-decision",
@@ -29,7 +29,8 @@
     ],
     "build": [
       "wave 0: 22/22 resources landed, verified holistically",
-      "wave 1: 9/9 resources landed (BlockedAccount, ContentPiece, CreditPurchase, KycSubmission, LearnEntitlement, MentorRequest, NotificationSettings, PrivacySettings, UserProfile), verified holistically -- 31/31 modules boot, 31/31 suites / 293/293 tests green, tsc + nest build clean"
+      "wave 1: 9/9 resources landed (BlockedAccount, ContentPiece, CreditPurchase, KycSubmission, LearnEntitlement, MentorRequest, NotificationSettings, PrivacySettings, UserProfile), verified holistically -- 31/31 modules boot, 31/31 suites / 293/293 tests green, tsc + nest build clean",
+      "wave 2: 3/3 resources landed (CourseEnrollment, CreatorSubscription, SearchResponse), verified holistically TWICE consecutively (to confirm pollution fixes hold) -- 34/34 modules boot, 34/34 suites / 360/360 tests green both runs, tsc + nest build clean"
     ]
   },
   "failed": [],
@@ -39,6 +40,14 @@
   "postgresRunning": true,
   "devDb": "postgresql://postgres:postgres@localhost:5432/wawu_hub_dev",
   "testDb": "postgresql://postgres:postgres@localhost:5432/wawu_hub_test",
-  "updatedAt": "2026-08-16T05:05:00Z",
-  "note": "Autonomous overnight run per explicit user directive. Phase 0 gates not interactively confirmed (user asleep) -- decisions recorded in framework-decision.json/conventions.md/supersedes.json for morning review instead. Wave 0 hit a git-worktree-isolation race (Workflow's isolation:'worktree' only covers the primary session repo, not sibling repos agents cd into); fixed for wave 1 onward by having every build agent run `git worktree add` on the backend repo itself as its literal first step -- no contamination reported in wave 1. Wave 1 also surfaced CreditPurchase's contract tests permanently incrementing the seeded users' real CreditsState balance in place (not a throwaway row); extended scripts/clean-test-pollution.ts with a scoped reset back to seed.ts's default of 48. Next: wave 2 (CourseEnrollment, CreatorSubscription, SearchResponse)."
+  "updatedAt": "2026-08-16T05:40:00Z",
+  "openItems": [
+    "CreatorSubscription: billing-history endpoint returns a correctly-shaped but always-empty page -- no ledger table exists in the frozen schema to read individual subscription charge line items from.",
+    "CreatorSubscription: downgrade (pro->basic) validates and returns the row UNCHANGED -- the frozen schema has no field for a pending future tier, so the actual tier flip at period-end is deferred to the renewal-reconciliation cron job (declared/scheduled-jobs.json), not yet built.",
+    "Flutterwave webhook (POST /api/hub/webhooks/flutterwave) and both cron jobs (sweepMissedDmDeadlines, attemptSubscriptionRenewals) from declared/scheduled-jobs.json are NOT built -- deliberately deferred, they span CreatorSubscription (wave 2, done) and DirectMessage (wave 3, not yet built). Needs a dedicated pass after wave 3.",
+    "SearchResponse: community search (GET /search's `communities` array) is hardcoded [] -- src/community doesn't exist until wave 3. Revisit search-response.service.ts once Community lands.",
+    "SearchResponse: recentSearches always returns [] -- no per-user search-history table in the frozen schema. Known gap, not silently hidden.",
+    "SearchResponse: /search/closest uses tokenized ILIKE, not real fuzzy/trigram matching -- pg_trgm is not enabled in any migration and enabling it is a schema change out of this resource's scope."
+  ],
+  "note": "Autonomous overnight run per explicit user directive. Phase 0 gates not interactively confirmed (user asleep) -- decisions recorded in framework-decision.json/conventions.md/supersedes.json for morning review instead. Wave 0 hit a git-worktree-isolation race (Workflow's isolation:'worktree' only covers the primary session repo, not sibling repos agents cd into); fixed for wave 1 onward by having every build agent run `git worktree add` on the backend repo itself as its literal first step -- no contamination reported in wave 1 or wave 2. Test-DB pollution recurred in wave 2 (CreditPurchase balance drift again, plus a new ContentPiece row-leak from POST/unlock tests with no cleanup) -- fixed at the SOURCE this time (afterAll cleanup added to both spec files) rather than only patching clean-test-pollution.ts, then verified by running the full suite twice consecutively. Next: wave 3 (Community, CommunityMembership, CommunityMessage, CreatorEarnings, DirectMessage) -- the last build wave -- then the deferred webhook/cron pass, then Phase 6 (wire frontend), Phase 7 (API smoke pass), Phase 8 (mandatory live E2E gate)."
 }
