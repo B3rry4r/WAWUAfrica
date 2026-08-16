@@ -144,11 +144,15 @@ export default function CommunityDetailPage() {
       {!joined ? (
         <div className="flex flex-1 flex-col items-center gap-2 px-7 pb-[60px] pt-[60px] text-center">
           <span className="mb-2 grid h-16 w-16 place-items-center rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-            <Icon name="Lock" size={26} color="var(--accent)" strokeWidth={1.9} />
+            <Icon name={community.kind === "private" ? "Lock" : "Users"} size={26} color="var(--accent)" strokeWidth={1.9} />
           </span>
-          <span className="text-[18px] font-bold text-text-primary">Private community</span>
+          <span className="text-[18px] font-bold text-text-primary">
+            {community.kind === "private" ? "Private community" : "Join to read and post"}
+          </span>
           <p className="m-0 max-w-[300px] text-[14px] leading-[1.5] text-text-secondary">
-            {community.name} is a closed circle. Join to read and post — reading is free, sending costs one credit.
+            {community.kind === "private"
+              ? `${community.name} is a closed circle. Join to read and post — reading is free, sending costs one credit.`
+              : `${community.name} is open to everyone. Join to read and post — reading is free, sending costs one credit.`}
           </p>
           <Button onClick={handleJoin} className="mt-3.5">
             Join community

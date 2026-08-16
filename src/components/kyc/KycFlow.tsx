@@ -27,6 +27,9 @@ export function KycFlow() {
   const [consented, setConsented] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [bvn, setBvn] = useState("");
+  const [nin, setNin] = useState("");
+  const [payoutAccountNumber, setPayoutAccountNumber] = useState("");
 
   const loadStatus = () => {
     setView("loading");
@@ -44,11 +47,11 @@ export function KycFlow() {
     kycApi
       .submit({
         country: "Nigeria",
-        bvn: "22123456789",
-        nin: "98765432101",
+        bvn,
+        nin,
         idDocumentType: "passport",
         payoutBankName: "Guaranty Trust Bank",
-        payoutAccountNumber: "0123456789",
+        payoutAccountNumber,
         status: "pending",
       })
       .then(() => {
@@ -105,12 +108,22 @@ export function KycFlow() {
 
       <div className="flex-1 pt-[20px] px-[16px] pb-[32px] flex flex-col gap-[18px]">
         {submitError ? <ErrorState title="Could not submit" description={submitError} onRetry={submit} /> : null}
-        {!submitError && view === "form" && step === 1 ? <NationalIdStep /> : null}
+        {!submitError && view === "form" && step === 1 ? (
+          <NationalIdStep bvn={bvn} nin={nin} onBvnChange={setBvn} onNinChange={setNin} />
+        ) : null}
         {!submitError && view === "form" && step === 2 && !docUploaded ? <DocumentStep onCaptured={() => setDocUploaded(true)} /> : null}
         {!submitError && view === "form" && step === 2 && docUploaded ? <CheckPhotoStep onRetake={() => setDocUploaded(false)} /> : null}
-        {!submitError && view === "form" && step === 3 ? <PayoutStep /> : null}
+        {!submitError && view === "form" && step === 3 ? (
+          <PayoutStep accountNumber={payoutAccountNumber} onAccountNumberChange={setPayoutAccountNumber} />
+        ) : null}
         {!submitError && view === "form" && step === "review" ? (
-          <ReviewStep consented={consented} onConsent={() => setConsented((c) => !c)} />
+          <ReviewStep
+            bvn={bvn}
+            nin={nin}
+            payoutAccountNumber={payoutAccountNumber}
+            consented={consented}
+            onConsent={() => setConsented((c) => !c)}
+          />
         ) : null}
         {view === "pending" ? <PendingState /> : null}
         {view === "approved" ? <ApprovedState /> : null}
@@ -119,7 +132,7 @@ export function KycFlow() {
 
       <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
         {submitError ? null : view === "form" && step === 1 ? (
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep(2)}>
+          <Button full size="lg" iconRight="ArrowRight" disabled={bvn.length !== 11 || nin.length !== 11} onClick={() => setStep(2)}>
             Continue
           </Button>
         ) : null}
@@ -134,7 +147,13 @@ export function KycFlow() {
           </div>
         ) : null}
         {view === "form" && step === 3 ? (
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep("review")}>
+          <Button
+            full
+            size="lg"
+            iconRight="ArrowRight"
+            disabled={payoutAccountNumber.length !== 10}
+            onClick={() => setStep("review")}
+          >
             Review
           </Button>
         ) : null}
@@ -175,7 +194,17 @@ function backStep(step: Step, docUploaded: boolean, setStep: (s: Step) => void, 
   else if (step === 2) setStep(1);
 }
 
-function NationalIdStep() {
+function NationalIdStep({
+  bvn,
+  nin,
+  onBvnChange,
+  onNinChange,
+}: {
+  bvn: string;
+  nin: string;
+  onBvnChange: (v: string) => void;
+  onNinChange: (v: string) => void;
+}) {
   return (
     <>
       <div className="flex flex-col gap-[8px]">
@@ -189,8 +218,20 @@ function NationalIdStep() {
         <span className="text-[13.5px] font-semibold">Nigeria</span>
       </div>
 
-      <Input label="BVN" defaultValue="22123456789" hint="11 digits." />
-      <Input label="NIN" defaultValue="98765432101" hint="11 digits." />
+      <Input
+        label="BVN"
+        value={bvn}
+        onChange={(e) => onBvnChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
+        inputMode="numeric"
+        hint="11 digits."
+      />
+      <Input
+        label="NIN"
+        value={nin}
+        onChange={(e) => onNinChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
+        inputMode="numeric"
+        hint="11 digits."
+      />
 
       <div className="flex items-start gap-[10px] p-[14px] rounded-[var(--radius-input)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
         <Icon name="ShieldCheck" size={16} color="var(--text-muted)" className="mt-[1px]" />
@@ -272,7 +313,13 @@ function CheckPhotoStep({ onRetake }: { onRetake: () => void }) {
   );
 }
 
-function PayoutStep() {
+function PayoutStep({
+  accountNumber,
+  onAccountNumberChange,
+}: {
+  accountNumber: string;
+  onAccountNumberChange: (v: string) => void;
+}) {
   return (
     <>
       <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">The account must be in your own name.</p>
@@ -285,7 +332,12 @@ function PayoutStep() {
         </button>
       </div>
 
-      <Input label="Account number" defaultValue="0123456789" />
+      <Input
+        label="Account number"
+        value={accountNumber}
+        onChange={(e) => onAccountNumberChange(e.target.value.replace(/\D/g, "").slice(0, 10))}
+        inputMode="numeric"
+      />
 
       <div className="flex flex-col gap-[8px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Account name</span>
@@ -299,15 +351,33 @@ function PayoutStep() {
   );
 }
 
-function ReviewStep({ consented, onConsent }: { consented: boolean; onConsent: () => void }) {
+/** Masks a digit string as the first four digits, a bullet run, then the last four — e.g. "22123456789" -> "2212•••6789". */
+function maskMiddle(value: string): string {
+  if (value.length <= 8) return value;
+  return `${value.slice(0, 4)}•••${value.slice(-4)}`;
+}
+
+function ReviewStep({
+  bvn,
+  nin,
+  payoutAccountNumber,
+  consented,
+  onConsent,
+}: {
+  bvn: string;
+  nin: string;
+  payoutAccountNumber: string;
+  consented: boolean;
+  onConsent: () => void;
+}) {
   return (
     <>
       <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] overflow-hidden">
         {[
-          ["BVN", "2212•••6789"],
-          ["NIN", "9876•••2101"],
+          ["BVN", maskMiddle(bvn)],
+          ["NIN", maskMiddle(nin)],
           ["Document", "Passport"],
-          ["Payout", "GTB ••••6789"],
+          ["Payout", `GTB ••••${payoutAccountNumber.slice(-4)}`],
         ].map(([k, v]) => (
           <div key={k} className="flex items-center gap-[12px] py-[15px] px-[18px] border-b border-b-[var(--border-hairline)]">
             <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{k}</span>
