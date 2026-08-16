@@ -1,6 +1,7 @@
 {
   "phase": 5,
-  "wave": 2,
+  "wave": 3,
+  "buildComplete": true,
   "completed": {
     "phase0": [
       "framework-decision",
@@ -30,7 +31,8 @@
     "build": [
       "wave 0: 22/22 resources landed, verified holistically",
       "wave 1: 9/9 resources landed (BlockedAccount, ContentPiece, CreditPurchase, KycSubmission, LearnEntitlement, MentorRequest, NotificationSettings, PrivacySettings, UserProfile), verified holistically -- 31/31 modules boot, 31/31 suites / 293/293 tests green, tsc + nest build clean",
-      "wave 2: 3/3 resources landed (CourseEnrollment, CreatorSubscription, SearchResponse), verified holistically TWICE consecutively (to confirm pollution fixes hold) -- 34/34 modules boot, 34/34 suites / 360/360 tests green both runs, tsc + nest build clean"
+      "wave 2: 3/3 resources landed (CourseEnrollment, CreatorSubscription, SearchResponse), verified holistically TWICE consecutively (to confirm pollution fixes hold) -- 34/34 modules boot, 34/34 suites / 360/360 tests green both runs, tsc + nest build clean",
+      "wave 3 (FINAL): 4/4 resources landed (Community, CommunityMessage, CreatorEarnings, DirectMessage -- CommunityMembership has zero endpoints per registry.json, implemented via Prisma directly inside Community/CommunityMessage rather than as its own module), verified holistically TWICE consecutively -- 38/38 modules boot, 38/38 suites / 419/419 tests green both runs (first-try clean, wave-2's test-hygiene fixes held), tsc + nest build clean. All 39 registry.json resources now built."
     ]
   },
   "failed": [],
@@ -40,14 +42,16 @@
   "postgresRunning": true,
   "devDb": "postgresql://postgres:postgres@localhost:5432/wawu_hub_dev",
   "testDb": "postgresql://postgres:postgres@localhost:5432/wawu_hub_test",
-  "updatedAt": "2026-08-16T05:40:00Z",
+  "updatedAt": "2026-08-16T05:50:00Z",
   "openItems": [
     "CreatorSubscription: billing-history endpoint returns a correctly-shaped but always-empty page -- no ledger table exists in the frozen schema to read individual subscription charge line items from.",
     "CreatorSubscription: downgrade (pro->basic) validates and returns the row UNCHANGED -- the frozen schema has no field for a pending future tier, so the actual tier flip at period-end is deferred to the renewal-reconciliation cron job (declared/scheduled-jobs.json), not yet built.",
-    "Flutterwave webhook (POST /api/hub/webhooks/flutterwave) and both cron jobs (sweepMissedDmDeadlines, attemptSubscriptionRenewals) from declared/scheduled-jobs.json are NOT built -- deliberately deferred, they span CreatorSubscription (wave 2, done) and DirectMessage (wave 3, not yet built). Needs a dedicated pass after wave 3.",
-    "SearchResponse: community search (GET /search's `communities` array) is hardcoded [] -- src/community doesn't exist until wave 3. Revisit search-response.service.ts once Community lands.",
+    "Flutterwave webhook (POST /api/hub/webhooks/flutterwave) and both cron jobs (sweepMissedDmDeadlines, attemptSubscriptionRenewals) from declared/scheduled-jobs.json are NOT built -- deliberately deferred, spanning CreatorSubscription + DirectMessage, both of which now exist. This is the next task before Phase 6.",
+    "SearchResponse: community search (GET /search's `communities` array) is hardcoded [] -- Community now exists (wave 3). Needs a follow-up pass to wire real community search into search-response.service.ts.",
     "SearchResponse: recentSearches always returns [] -- no per-user search-history table in the frozen schema. Known gap, not silently hidden.",
-    "SearchResponse: /search/closest uses tokenized ILIKE, not real fuzzy/trigram matching -- pg_trgm is not enabled in any migration and enabling it is a schema change out of this resource's scope."
+    "SearchResponse: /search/closest uses tokenized ILIKE, not real fuzzy/trigram matching -- pg_trgm is not enabled in any migration and enabling it is a schema change out of this resource's scope.",
+    "Community: private-community join creates a real status=pending CommunityMembership row, but the frontend has no UI for that pending state at all (ui-align-tasks.json) -- a Phase-6 task, not a backend gap.",
+    "CommunityMessage: no product-owner confirmation that the community host should be subject to the same credit gate as any other member when posting in their own community -- built literally per the frozen contract (no exemption specified), flagged for a real decision."
   ],
-  "note": "Autonomous overnight run per explicit user directive. Phase 0 gates not interactively confirmed (user asleep) -- decisions recorded in framework-decision.json/conventions.md/supersedes.json for morning review instead. Wave 0 hit a git-worktree-isolation race (Workflow's isolation:'worktree' only covers the primary session repo, not sibling repos agents cd into); fixed for wave 1 onward by having every build agent run `git worktree add` on the backend repo itself as its literal first step -- no contamination reported in wave 1 or wave 2. Test-DB pollution recurred in wave 2 (CreditPurchase balance drift again, plus a new ContentPiece row-leak from POST/unlock tests with no cleanup) -- fixed at the SOURCE this time (afterAll cleanup added to both spec files) rather than only patching clean-test-pollution.ts, then verified by running the full suite twice consecutively. Next: wave 3 (Community, CommunityMembership, CommunityMessage, CreatorEarnings, DirectMessage) -- the last build wave -- then the deferred webhook/cron pass, then Phase 6 (wire frontend), Phase 7 (API smoke pass), Phase 8 (mandatory live E2E gate)."
+  "note": "Autonomous overnight run per explicit user directive. Phase 0 gates not interactively confirmed (user asleep) -- decisions recorded in framework-decision.json/conventions.md/supersedes.json for morning review instead. Wave 0 hit a git-worktree-isolation race (Workflow's isolation:'worktree' only covers the primary session repo, not sibling repos agents cd into); fixed for wave 1 onward by having every build agent run `git worktree add` on the backend repo itself as its literal first step -- zero contamination in waves 1-3. Test-DB pollution recurred in wave 2 (CreditPurchase balance drift again, plus a new ContentPiece row-leak) -- fixed at the SOURCE (afterAll cleanup added to both spec files, not just re-patched in clean-test-pollution.ts), then wave 3's build brief explicitly required afterAll cleanup for anything a test creates/mutates -- wave 3 landed clean on the FIRST run, no pollution introduced. PHASE 5 BUILD IS COMPLETE: all 39 registry.json resources built across 4 waves, 38 modules registered, 419/419 tests green, verified twice. Next: the deferred Flutterwave-webhook + scheduled-job-cron pass (spans CreatorSubscription + DirectMessage), then Phase 6 (wire WAWU-Web frontend, replacing mocks per ui-align-tasks.json -- 20 tasks, critically including S-4's frontend-auth-goes-directly-to-WAWU-ID rewiring), Phase 7 (API smoke pass), Phase 8 (MANDATORY live E2E gate via headless Chrome -- not optional, do not report done without running it)."
 }
