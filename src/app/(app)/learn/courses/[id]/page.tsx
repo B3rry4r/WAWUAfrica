@@ -99,7 +99,12 @@ function CourseDetail({
         </div>
       </div>
 
-      <EnrolCourseCta courseId={course.id} alreadyEnrolled={alreadyEnrolled} onEnrolled={onEnrolled} />
+      <EnrolCourseCta
+        courseId={course.id}
+        externalHostUrl={course.externalHostUrl}
+        alreadyEnrolled={alreadyEnrolled}
+        onEnrolled={onEnrolled}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { delay } from "../client";
 export const MOCK_COURSES: LearnCourse[] = [
   {
     id: "c-bookkeeping",
+    externalHostUrl: "https://alison.com/course/c-bookkeeping",
     title: "Bookkeeping for small business",
     category: "Business",
     hours: 8,
@@ -18,6 +19,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   },
   {
     id: "c-marketing",
+    externalHostUrl: "https://alison.com/course/c-marketing",
     title: "Digital marketing basics",
     category: "Marketing",
     hours: 6,
@@ -31,6 +33,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   },
   {
     id: "c-export-docs",
+    externalHostUrl: "https://alison.com/course/c-export-docs",
     title: "Export documentation",
     category: "Trade",
     hours: 10,
@@ -44,6 +47,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   },
   {
     id: "c-customer-service",
+    externalHostUrl: "https://alison.com/course/c-customer-service",
     title: "Customer service that keeps people",
     category: "Business",
     hours: 4,
@@ -57,6 +61,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   },
   {
     id: "c-ankara-brand",
+    externalHostUrl: "https://alison.com/course/c-ankara-brand",
     title: "Building an ankara brand",
     category: "Fashion",
     hours: 5,
@@ -70,6 +75,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   },
   {
     id: "c-pricing-creators",
+    externalHostUrl: "https://alison.com/course/c-pricing-creators",
     title: "Pricing for creators",
     category: "Creator business",
     hours: 4,

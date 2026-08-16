@@ -16,6 +16,8 @@ export interface LearnCourse {
   certificate: boolean;
   overview: string;
   whatItCovers: string[];
+  /** The real per-course handoff URL (backend field) — never guess this from the id. */
+  externalHostUrl: string;
 }
 
 export interface Playbook {

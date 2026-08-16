@@ -14,7 +14,7 @@ export function FollowButton({ wawuId, initial, size = "sm" }: { wawuId: string;
       onClick={() => {
         const next = !following;
         setFollowing(next);
-        void toggleFollow(wawuId).catch(() => setFollowing(!next));
+        void toggleFollow(wawuId, following).catch(() => setFollowing(!next));
       }}
     >
       {following ? "Following" : "Follow"}

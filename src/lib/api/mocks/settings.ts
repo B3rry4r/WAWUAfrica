@@ -9,9 +9,10 @@ import { delay } from "../client";
  * "WAWU Settings States" frame 5 — All / Content / Guides / Products).
  * video/course/audio are the media the app streams; pdf is written material
  * to learn from ("Guides"); template/image are downloadable deliverables
- * ("Products").
+ * ("Products"). Exported: settings.ts's real getSavedItems() reuses this
+ * same mapping when enriching real GET /users/me/saved rows.
  */
-function kindForContentType(type: ContentType): SavedItemKind {
+export function kindForContentType(type: ContentType): SavedItemKind {
   if (type === "pdf") return "guide";
   if (type === "template" || type === "image") return "product";
   return "content";

@@ -27,6 +27,7 @@ type Step = "type" | "identity" | "details" | "otp" | "done" | "interests";
 
 interface OtpState {
   email: string;
+  phone: string;
   fullName: string;
   accountType: AccountType;
 }
@@ -96,7 +97,7 @@ export function SignUpFlow() {
         ...details,
         accountType,
       });
-      setOtpState({ email: identity.email, fullName: identity.fullName, accountType });
+      setOtpState({ email: identity.email, phone: identity.phone, fullName: identity.fullName, accountType });
       setStep("otp");
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Could not create your account.");
@@ -110,7 +111,11 @@ export function SignUpFlow() {
     setSubmitting(true);
     setOtpError(null);
     try {
-      const res = await verifyOtp({ email: otpState.email, code: otp });
+      // NOTE: WAWU ID's OTP is phone-only (see OtpVerifyPayload's doc comment
+      // in src/types/auth.ts) — this screen's copy still says "email" per the
+      // approved design, a known product-contract mismatch flagged in the
+      // Phase 6 report, not fixed here (out of scope: field-name-only change).
+      const res = await verifyOtp({ phone: otpState.phone, code: otp });
       signInUser({ ...res.user, fullName: otpState.fullName, accountType: otpState.accountType }, res.token);
       setStep("done");
     } catch (e) {

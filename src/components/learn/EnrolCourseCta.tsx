@@ -13,10 +13,13 @@ import type { LearnEntitlement } from "@/types/learn";
  */
 export function EnrolCourseCta({
   courseId,
+  externalHostUrl,
   alreadyEnrolled,
   onEnrolled,
 }: {
   courseId: string;
+  /** The course's real handoff URL. Falls back to a guessed URL only if unavailable. */
+  externalHostUrl?: string;
   alreadyEnrolled: boolean;
   onEnrolled: (entitlement: LearnEntitlement) => void;
 }) {
@@ -32,7 +35,7 @@ export function EnrolCourseCta({
       }
     } finally {
       setPending(false);
-      window.open(alisonHandoffUrl(courseId), "_blank", "noopener,noreferrer");
+      window.open(externalHostUrl ?? alisonHandoffUrl(courseId), "_blank", "noopener,noreferrer");
     }
   };
 

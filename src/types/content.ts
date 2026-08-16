@@ -86,8 +86,15 @@ export interface UnlockInitiateResponse {
   flutterwaveConfig: FlutterwaveConfig;
 }
 
+/**
+ * Real shape of POST /content/:id/unlock/verify's success response (flat —
+ * apiFetch already unwraps the Hub's `{statusCode,message,data}` envelope,
+ * so there is no second `data` layer on top of this). The service either
+ * returns this or throws (400/404) — it never returns `{purchased:false}`.
+ */
 export interface UnlockVerifyResponse {
-  data: { purchased: true; fullAssetUrl: string } | { purchased: false };
+  purchased: true;
+  fullAssetUrl: string | null;
 }
 
 export interface FlutterwaveConfig {
@@ -95,7 +102,8 @@ export interface FlutterwaveConfig {
   txRef: string;
   amount: number;
   currency: "NGN";
-  customerEmail: string;
+  /** Not returned by the real backend's unlock/tip-init responses — optional for that reason. Nothing in the UI reads it today. */
+  customerEmail?: string;
   customerName?: string;
 }
 
@@ -148,4 +156,17 @@ export interface ContentItem {
   isFirstUpload?: boolean;
   /** Rejection reason shown to the creator. */
   rejectionReason?: string;
+  /**
+   * GAP: required by the real POST /content contract (CreateContentDto:
+   * description, category, previewAsset, fullAsset) but nothing in
+   * PublishingWizard.tsx collects them today — it only gathers
+   * type/title/price. Optional here so publish() can pass them through the
+   * day an upload step actually supplies them; until then, real publish
+   * calls 400 on validation and fall back to the local mock library (see
+   * src/lib/api/creator-content.ts).
+   */
+  description?: string;
+  category?: string;
+  previewAssetUrl?: string;
+  fullAssetUrl?: string;
 }

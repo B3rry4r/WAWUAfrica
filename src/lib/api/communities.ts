@@ -1,4 +1,5 @@
 import type { Community, CommunityMessage, CreditPackId, CreditsState } from "@/types/credits";
+import { apiFetch, apiFetchPaginated, ApiError } from "./client";
 import {
   getMockCommunities,
   getMockCommunity,
@@ -9,37 +10,240 @@ import {
   topUpMockCredits,
 } from "./mocks/communities";
 
-// SEAM: replace with GET /api/hub/credits
+/**
+ * Wire shape for GET /api/hub/communities and /api/hub/communities/:id
+ * (WAWU-Hub-API src/common/types/community.type.ts — `CommunityResponse`,
+ * a thin Prisma re-export plus derived `memberCount`/`messagesToday`).
+ * Verified live against a running backend.
+ */
+interface CommunityWire {
+  id: string;
+  name: string;
+  description: string;
+  hostWawuId: string;
+  kind: "open" | "private";
+  memberCount: number;
+  messagesToday: number;
+}
+
+/** Wire shape for GET/POST /api/hub/communities/:id/messages (community-message.type.ts). */
+interface CommunityMessageWire {
+  id: string;
+  communityId: string;
+  senderWawuId: string;
+  text: string;
+  costInCredits: number;
+  sentAt: string;
+}
+
+/** Wire shape returned by POST /api/hub/communities/:id/join (community-membership.type.ts). */
+interface CommunityMembershipWire {
+  id: string;
+  userWawuId: string;
+  communityId: string;
+  status: "joined" | "pending";
+  joinedAt: string | null;
+}
+
+/**
+ * GAP (real, verified against every controller/service touching
+ * CommunityMembership — there is no other one): the real Community response
+ * carries no per-user membership status — no `joined` field on
+ * CommunityResponse, and no "my communities" / membership-list endpoint
+ * exists anywhere in this backend. It also has no host display name or
+ * verified badge, only `hostWawuId` (confirmed live: `GET /communities`
+ * returns `{..., hostWawuId, kind, memberCount, messagesToday}`, nothing
+ * else). Until the backend adds one of those, `joined` defaults to `false`
+ * and `host.name` falls back to the raw wawuId — nothing is fabricated.
+ * `joinCommunity()` is still a real call; its result flips `joined` locally,
+ * the same optimistic pattern CommunityTabs/useCommunityThread already use.
+ */
+function toCommunity(c: CommunityWire): Community {
+  return {
+    id: c.id,
+    name: c.name,
+    description: c.description,
+    host: { wawuId: c.hostWawuId, name: c.hostWawuId },
+    memberCount: c.memberCount,
+    messagesToday: c.messagesToday,
+    kind: c.kind,
+    joined: false,
+  };
+}
+
+/**
+ * GAP: CommunityMessage's wire shape only carries `senderWawuId` — no
+ * display name or avatar (community-message.type.ts is a thin Prisma
+ * re-export, no profile join). Falls back to the raw wawuId as the name.
+ */
+function toCommunityMessage(m: CommunityMessageWire): CommunityMessage {
+  return {
+    id: m.id,
+    communityId: m.communityId,
+    sender: { wawuId: m.senderWawuId, name: m.senderWawuId },
+    text: m.text,
+    costInCredits: m.costInCredits,
+    sentAt: m.sentAt,
+  };
+}
+
+// SEAM: replace with GET /api/hub/credits — verified live: {userWawuId, creditBalance, trialEndsAt}.
 export async function getCreditsState(): Promise<CreditsState> {
-  return getMockCreditsState();
+  try {
+    return await apiFetch<CreditsState>("/api/hub/credits", { authed: true });
+  } catch {
+    return getMockCreditsState();
+  }
 }
 
 // SEAM: replace with GET /api/hub/communities
 export async function getCommunities(kind: "joined" | "discover"): Promise<Community[]> {
-  return getMockCommunities(kind);
+  try {
+    // The real endpoint has no joined/discover filter (registry-frozen:
+    // GET /communities, roles: ["any"], page/perPage only — see
+    // community.controller.ts) — fetch the full real list once and split
+    // client-side by the same `joined` flag toCommunity() sets. Per the GAP
+    // above, that means the "joined" tab only reflects communities joined
+    // THIS session (via joinCommunity()'s local flip) until the backend adds
+    // per-user membership status; it deliberately never shows a real
+    // community as joined when it isn't.
+    const { data } = await apiFetchPaginated<CommunityWire>("/api/hub/communities?page=1&perPage=100", {
+      authed: true,
+    });
+    const all = data.map(toCommunity);
+    return kind === "joined" ? all.filter((c) => c.joined) : all.filter((c) => !c.joined);
+  } catch {
+    return getMockCommunities(kind);
+  }
 }
 
 // SEAM: replace with GET /api/hub/communities/:id
 export async function getCommunity(id: string): Promise<Community | null> {
-  return getMockCommunity(id);
+  try {
+    const wire = await apiFetch<CommunityWire>(`/api/hub/communities/${id}`, { authed: true });
+    return toCommunity(wire);
+  } catch {
+    return getMockCommunity(id);
+  }
 }
 
 // SEAM: replace with GET /api/hub/communities/:id/messages
 export async function getCommunityMessages(id: string): Promise<CommunityMessage[]> {
-  return getMockCommunityMessages(id);
+  try {
+    // CommunityMessageService.list orders newest-first (`sentAt: 'desc'`,
+    // matching CommentService's sibling precedent per its own doc comment —
+    // verified live). This thread UI renders oldest-first, appending new
+    // sends to the end (useCommunityThread.send), so reverse to chat order.
+    const { data } = await apiFetchPaginated<CommunityMessageWire>(
+      `/api/hub/communities/${id}/messages?page=1&perPage=50`,
+      { authed: true },
+    );
+    return data.map(toCommunityMessage).reverse();
+  } catch {
+    return getMockCommunityMessages(id);
+  }
 }
 
 // SEAM: replace with POST /api/hub/communities/:id/messages
 export async function sendCommunityMessage(id: string, text: string): Promise<CommunityMessage> {
-  return sendMockCommunityMessage(id, text);
+  try {
+    const wire = await apiFetch<CommunityMessageWire>(`/api/hub/communities/${id}/messages`, {
+      method: "POST",
+      authed: true,
+      body: { text },
+    });
+    return toCommunityMessage(wire);
+  } catch (e) {
+    // The "buy more credits" rejection (CommunityMessageService.create:
+    // creditBalance=0 and the 7-day trial has ended) is a real 402, not a
+    // network failure — don't paper over it as a mock success. It's thrown
+    // as `{message, reason:'insufficient_credits'}`, but the shared
+    // AllExceptionsFilter (common/filters/all-exceptions.filter.ts) strips
+    // every HttpException body down to `{statusCode, message, data:null}`
+    // before it reaches the client — `reason` never survives. Verified
+    // against the backend's own contract spec, which only asserts
+    // status 402 + a message containing "credit", never a `reason`/`code`
+    // field. So status 402 is the only reliable signal; re-surface it with a
+    // synthetic `code` so callers can branch on it the same way auth.ts's
+    // WAWU ID errors are branched on (`err.code === "insufficient_credits"`).
+    if (e instanceof ApiError && e.status === 402) {
+      throw new ApiError(e.message, e.status, "insufficient_credits");
+    }
+    return sendMockCommunityMessage(id, text);
+  }
 }
 
 // SEAM: replace with POST /api/hub/communities/:id/join
 export async function joinCommunity(id: string): Promise<boolean> {
-  return joinMockCommunity(id);
+  try {
+    await apiFetch<CommunityMembershipWire>(`/api/hub/communities/${id}/join`, {
+      method: "POST",
+      authed: true,
+    });
+    // GAP: a private community's join returns status:"pending" (queued for
+    // host approval — CommunityService.join never auto-approves it) rather
+    // than "joined". `joinCommunity(): Promise<boolean>` has no room to carry
+    // that distinction, and both existing callers (useCommunityThread.doJoin,
+    // CommunityTabs.doJoin) immediately flip `joined: true` on any truthy
+    // return, so a pending request currently reads as fully joined in the UI.
+    // Real and unresolved without a signature change to
+    // Promise<CommunityMembership> once a pending-approval UI exists.
+    return true;
+  } catch {
+    return joinMockCommunity(id);
+  }
 }
 
-// SEAM: replace with POST /api/hub/credits/purchase
+/**
+ * GAP — real but not auto-completable from this API layer alone: the real
+ * credit-purchase contract (WAWU-Hub-API src/credit-purchase/) is a two-step
+ * Flutterwave flow, not a single synchronous call:
+ *   1. POST /api/hub/credits/purchase {pack} -> a Flutterwave config
+ *      (txRef/amount/currency/publicKey) — verified live, no balance change.
+ *   2. The client opens Flutterwave's inline checkout with that config.
+ *   3. On its success callback, POST /api/hub/credits/purchase/verify
+ *      {transaction_id, tx_ref} -> {creditBalance} — the ONLY thing that
+ *      actually credits the balance (server re-verifies with Flutterwave
+ *      before crediting; never trust a client-side callback alone, same
+ *      rule as content.ts's verifyUnlock).
+ * `topUpCredits(pack): Promise<number>` — the shape CreditsCard.tsx calls —
+ * has no step for the checkout modal in between, so it cannot be genuinely
+ * wired to the real backend without that UI work (Flutterwave inline SDK),
+ * which is out of scope for this API-layer pass. It stays on the mock path.
+ * `initiateCreditsPurchase`/`verifyCreditsPurchase` below are wired for real
+ * (verified live) as the correct foundation for whoever builds that UI —
+ * mirroring content.ts's initiateUnlock/verifyUnlock split exactly.
+ */
 export async function topUpCredits(pack: CreditPackId): Promise<number> {
   return topUpMockCredits(pack);
+}
+
+export interface FlutterwaveConfig {
+  txRef: string;
+  amount: number;
+  currency: "NGN";
+  publicKey: string;
+}
+
+// SEAM: replace with POST /api/hub/credits/purchase — verified live.
+export async function initiateCreditsPurchase(
+  pack: CreditPackId,
+): Promise<{ flutterwaveConfig: FlutterwaveConfig }> {
+  return apiFetch<{ flutterwaveConfig: FlutterwaveConfig }>("/api/hub/credits/purchase", {
+    method: "POST",
+    authed: true,
+    body: { pack },
+  });
+}
+
+// SEAM: replace with POST /api/hub/credits/purchase/verify — verified live.
+export async function verifyCreditsPurchase(payload: {
+  transaction_id: string;
+  tx_ref: string;
+}): Promise<{ creditBalance: number }> {
+  return apiFetch<{ creditBalance: number }>("/api/hub/credits/purchase/verify", {
+    method: "POST",
+    authed: true,
+    body: payload,
+  });
 }

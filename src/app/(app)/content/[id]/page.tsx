@@ -154,10 +154,9 @@ export default function ContentDetailPage() {
       const paid = await new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 2400));
       if (paid) {
         const verify = await verifyUnlock(content!.id, { transaction_id: `txn-${Date.now()}`, tx_ref: `unlock-${content!.id}-${Date.now()}` });
-        const data = verify.data;
-        if (data.purchased) {
+        if (verify.purchased) {
           setPayment("success");
-          setContent((prev) => (prev ? { ...prev, purchased: true, fullAssetLocked: false, fullAssetUrl: data.fullAssetUrl } : prev));
+          setContent((prev) => (prev ? { ...prev, purchased: true, fullAssetLocked: false, fullAssetUrl: verify.fullAssetUrl ?? undefined } : prev));
         } else {
           setPayment("failure");
         }

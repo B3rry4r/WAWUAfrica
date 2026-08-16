@@ -24,6 +24,18 @@ export async function toggleMockProfileFollow(wawuId: string): Promise<boolean> 
   return true;
 }
 
+/**
+ * Sync point for a REAL POST/DELETE /api/hub/creators/:wawuId/follow write
+ * (see profile.ts toggleFollowProfile) — keeps this local state consistent
+ * after a real write succeeds, since isFollowing has no real backend
+ * equivalent to re-check against (follow-relationship.controller.ts only
+ * exposes the two write endpoints, no GET).
+ */
+export function setMockProfileFollowing(wawuId: string, following: boolean): void {
+  if (following) MOCK_PROFILE_FOLLOWING.add(wawuId);
+  else MOCK_PROFILE_FOLLOWING.delete(wawuId);
+}
+
 export const MOCK_PROFILES: Record<string, CreatorProfile> = {
   "wawu-adaeze": {
     wawuId: "wawu-adaeze",
@@ -187,4 +199,18 @@ export async function toggleMockCommunityJoin(wawuId: string, communityId: strin
 // SEAM: replace with GET /api/hub/communities/:id/joined
 export function isMockCommunityJoined(wawuId: string, communityId: string): boolean {
   return MOCK_JOINED.has(`${wawuId}:${communityId}`);
+}
+
+/**
+ * Sync point for a REAL POST /api/hub/communities/:id/join write (see
+ * profile.ts toggleCommunityJoin) — keeps this local state consistent after
+ * a real join succeeds. There is no equivalent for leaving: the real
+ * Community contract (community.controller.ts) has no DELETE/unjoin
+ * endpoint at all, so that direction stays mock-only indefinitely until one
+ * exists.
+ */
+export function setMockCommunityJoined(wawuId: string, communityId: string, joined: boolean): void {
+  const key = `${wawuId}:${communityId}`;
+  if (joined) MOCK_JOINED.add(key);
+  else MOCK_JOINED.delete(key);
 }

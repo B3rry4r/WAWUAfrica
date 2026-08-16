@@ -5,28 +5,37 @@ import type {
   Shop,
   ShopId,
 } from "@/types/marketplace";
-import { delay } from "./client";
+import { apiFetch, delay } from "./client";
 import { ALSO_ON_WAWU, MARKETPLACE_ITEMS, SHOPS } from "./mocks/marketplace";
 
 /**
  * Read-only surface over WAWUBasket and WAWUBeauty. Those are separate apps —
  * there is deliberately no cart, checkout, or order call here. The user is
  * handed over at the product page.
+ *
+ * Per .pipeline/supersedes.json S-5: this backend does NOT own the
+ * WAWUBasket/WAWUBeauty product catalog (CLAUDE.md non-negotiable — never
+ * rebuild their commerce engine). Everything below that reads Shop/item/
+ * product/search data stays on mocks, SEAM-tagged as external-integration,
+ * out of scope for this backend. Only the save/bookmark functions at the
+ * bottom of this file call the real backend — MarketplaceSave is the one
+ * marketplace resource this backend legitimately owns
+ * (/workspace/projects/WAWU-Hub-API/src/marketplace-save/).
  */
 
-// SEAM: replace with GET /api/hub/marketplace/shops
+// SEAM: external WAWUBasket/WAWUBeauty integration, out of scope for this backend (S-5) — stays on mocks
 export async function getShops(): Promise<Shop[]> {
   await delay(120);
   return [SHOPS.basket, SHOPS.beauty];
 }
 
-// SEAM: replace with GET /api/hub/marketplace/shops/:shop
+// SEAM: external WAWUBasket/WAWUBeauty integration, out of scope for this backend (S-5) — stays on mocks
 export async function getShop(shop: ShopId): Promise<Shop> {
   await delay(100);
   return SHOPS[shop];
 }
 
-// SEAM: replace with GET /api/hub/marketplace/:shop/items
+// SEAM: external WAWUBasket/WAWUBeauty integration, out of scope for this backend (S-5) — stays on mocks
 export async function getShopItems(
   shop: ShopId,
   category = "All",
@@ -37,7 +46,7 @@ export async function getShopItems(
   );
 }
 
-// SEAM: replace with GET /api/hub/marketplace/:shop/items/:id
+// SEAM: external WAWUBasket/WAWUBeauty integration, out of scope for this backend (S-5) — stays on mocks
 export async function getProduct(
   shop: ShopId,
   id: string,
@@ -46,7 +55,7 @@ export async function getProduct(
   return MARKETPLACE_ITEMS.find((i) => i.shop === shop && i.id === id);
 }
 
-// SEAM: replace with GET /api/hub/marketplace/search
+// SEAM: external WAWUBasket/WAWUBeauty integration, out of scope for this backend (S-5) — stays on mocks
 export async function searchMarketplace(
   query: string,
 ): Promise<MarketplaceSearchResults> {
@@ -74,4 +83,65 @@ export function shopHandoffUrl(shop: ShopId, productId?: string): string {
   const base =
     shop === "basket" ? "https://basket.wawuafrica.com" : "https://beauty.wawuafrica.com";
   return productId ? `${base}/p/${productId}` : base;
+}
+
+/**
+ * A WAWU-side bookmark referencing an external (WAWUBasket/WAWUBeauty)
+ * productId by string — no product data duplicated. Matches
+ * MarketplaceSave in /workspace/projects/WAWU-Hub-API/src/common/types
+ * (Prisma model), returned verbatim by POST /marketplace/saves.
+ */
+export interface MarketplaceSave {
+  id: string;
+  userWawuId: string;
+  productId: string;
+  shop: ShopId;
+  /** ISO timestamp. */
+  savedAt: string;
+}
+
+/**
+ * Bookmark an external marketplace product. Idempotent on the backend — a
+ * repeat save for the same (user, productId, shop) returns the existing row
+ * rather than erroring, so this is safe to call as a plain "save" toggle-on.
+ */
+export async function saveMarketplaceItem(
+  shop: ShopId,
+  productId: string,
+): Promise<MarketplaceSave> {
+  try {
+    return await apiFetch<MarketplaceSave>("/api/hub/marketplace/saves", {
+      method: "POST",
+      authed: true,
+      body: { productId, shop },
+    });
+  } catch {
+    // SEAM: replace with POST /api/hub/marketplace/saves
+    return {
+      id: `mock-save-${productId}`,
+      userWawuId: "mock-user",
+      productId,
+      shop,
+      savedAt: new Date().toISOString(),
+    };
+  }
+}
+
+/**
+ * Remove a bookmark. The backend route only carries :productId (no shop) —
+ * it removes any save matching that productId for this user, since a given
+ * opaque productId is expected to belong to exactly one shop in practice.
+ * The backend 404s if the item was never saved; per this file's try/catch→
+ * mock resilience pattern that's swallowed here rather than surfaced, so a
+ * stale-local-state 404 currently looks identical to a successful no-op.
+ */
+export async function unsaveMarketplaceItem(productId: string): Promise<void> {
+  try {
+    await apiFetch<void>(`/api/hub/marketplace/saves/${productId}`, {
+      method: "DELETE",
+      authed: true,
+    });
+  } catch {
+    // SEAM: replace with DELETE /api/hub/marketplace/saves/:productId
+  }
 }

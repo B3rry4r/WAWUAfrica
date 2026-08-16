@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -11,6 +11,11 @@ import { saveNewPassword } from "@/lib/api/auth";
 
 export function ResetPasswordForm() {
   const router = useRouter();
+  // WAWU ID's forgot-password (email-link path) builds the reset URL as
+  // /reset-password?token=...&email=... — see auth.service.ts resetPasswordByToken.
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") ?? "";
+  const email = searchParams.get("email") ?? "";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +32,7 @@ export function ResetPasswordForm() {
     setSubmitting(true);
     setError(null);
     try {
-      await saveNewPassword({ password, confirmPassword: confirm });
+      await saveNewPassword({ password, confirmPassword: confirm, token, email });
       setDone(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update your password. Try again.");
