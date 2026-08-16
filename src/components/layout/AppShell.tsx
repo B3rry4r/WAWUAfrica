@@ -6,6 +6,7 @@ import { BottomNav } from "./BottomNav";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
+import { RequireAuth } from "./RequireAuth";
 
 interface AppShellProps {
   children: ReactNode;
@@ -69,7 +70,9 @@ export function AppShell({ children, header = true, elevatedHeader = false }: Ap
               <DesktopHeader />
             </>
           ) : null}
-          <main className="pb-[96px] xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pb-0">{children}</main>
+          <main className="pb-[96px] xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pb-0">
+            <RequireAuth>{children}</RequireAuth>
+          </main>
         </div>
       </div>
       <div className="xl:hidden">

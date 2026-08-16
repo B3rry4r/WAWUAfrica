@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { AccountType } from "@/types/account";
 import type { SessionUser } from "@/types/auth";
@@ -10,6 +10,18 @@ interface SessionContextValue {
   user: SessionUser | null;
   accountType: AccountType | null;
   isAuthenticated: boolean;
+  /**
+   * False until the client has hydrated real session state from
+   * localStorage. Server-rendered HTML and the client's very first paint
+   * both always show signed-out (localStorage doesn't exist during SSR) --
+   * reading it synchronously on mount used to cause a real, live-observed
+   * hydration mismatch (React discarding and replacing the server HTML on
+   * every authenticated page load) plus meant there was no reliable moment
+   * to gate a route on auth. Callers that need to avoid a flash of
+   * protected content (see RequireAuth) should wait for this to flip true
+   * before deciding anything.
+   */
+  hydrated: boolean;
   signInUser: (user: SessionUser, token: string) => void;
   signOut: () => void;
   setAccountType: (type: AccountType) => void;
@@ -19,12 +31,20 @@ interface SessionContextValue {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  // Lazy initializers read the current session synchronously on first render,
-  // so a client-side navigation after sign-in shows the feed immediately with
-  // no landing-page flash. The store is in-memory, so a fresh page load starts
-  // signed out on the landing page.
-  const [user, setUser] = useState<SessionUser | null>(() => sessionStorage.getUser());
-  const [accountType, setAccountTypeState] = useState<AccountType | null>(() => sessionStorage.getAccountType());
+  // Deliberately NOT read synchronously here (see `hydrated` doc comment) --
+  // both SSR and the client's first paint start signed-out/null, matching
+  // exactly, then a mount-time effect below hydrates the real value from
+  // localStorage. This trades a brief post-hydration flash for a page that
+  // never mismatches server vs. client output.
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [accountType, setAccountTypeState] = useState<AccountType | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setUser(sessionStorage.getUser());
+    setAccountTypeState(sessionStorage.getAccountType());
+    setHydrated(true);
+  }, []);
 
   const signInUser = useCallback((nextUser: SessionUser, token: string) => {
     sessionStorage.setToken(token);
@@ -59,12 +79,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       user,
       accountType,
       isAuthenticated: user !== null,
+      hydrated,
       signInUser,
       signOut,
       setAccountType,
       setInterests,
     }),
-    [user, accountType, signInUser, signOut, setAccountType, setInterests],
+    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { SessionProvider } from "@/lib/auth/session-provider";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
+import { RequireAuth } from "./RequireAuth";
 
 interface FocusedFlowShellProps {
   children: ReactNode;
@@ -41,7 +42,9 @@ export function FocusedFlowShell({ children }: FocusedFlowShellProps) {
         <Sidebar />
         <div className="w-full xl:min-w-0 xl:flex-1 xl:flex xl:h-screen xl:flex-col xl:overflow-hidden">
           <DesktopHeader />
-          <div className="xl:min-h-0 xl:flex-1 xl:overflow-y-auto">{children}</div>
+          <div className="xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
+            <RequireAuth>{children}</RequireAuth>
+          </div>
         </div>
       </div>
     </SessionProvider>
