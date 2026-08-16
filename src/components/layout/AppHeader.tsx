@@ -5,11 +5,6 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { useSession } from "@/lib/auth/session-provider";
 
-interface AppHeaderProps {
-  /** Sticky header with a backdrop, used on the home feed. */
-  elevated?: boolean;
-}
-
 /**
  * Route prefixes that render their own local back/title header and must not
  * get the global one stacked on top. A route "owns" its header if it matches
@@ -39,18 +34,20 @@ export function hasOwnHeader(pathname: string) {
  * App chrome — search pill and notifications bell live on every authenticated
  * screen (CLAUDE.md). Renders nothing on routes that supply their own header.
  * Hidden at the xl breakpoint, where AppShell swaps in DesktopHeader instead.
+ * The translucent blurred backdrop is the header's one treatment in every
+ * design frame that shows it (Home Feed, Nav IA Board, Nav Locked, User vs
+ * Creator, and DesktopHeader's own xl equivalent) — there is no bare/flat
+ * variant in the designs, so it is not a per-route opt-in.
  */
-export function AppHeader({ elevated = false }: AppHeaderProps) {
+export function AppHeader() {
   const pathname = usePathname();
   const { accountType } = useSession();
   if (hasOwnHeader(pathname)) return null;
 
   return (
     <header
-      className={`sticky top-0 z-30 flex items-center gap-[11px] px-4 py-4 xl:hidden ${
-        elevated ? "bg-[rgba(19,19,22,0.86)] backdrop-blur" : "border-b border-hairline"
-      }`}
-      style={elevated ? { backdropFilter: "var(--blur-chrome)" } : undefined}
+      className="sticky top-0 z-30 flex items-center gap-[11px] border-b border-hairline bg-[rgba(19,19,22,0.86)] px-4 py-4 backdrop-blur xl:hidden"
+      style={{ backdropFilter: "var(--blur-chrome)" }}
     >
       <img src="/wawu-icon-white.png" alt="WAWU" className="h-[26px] w-[26px] object-contain" />
       <Link

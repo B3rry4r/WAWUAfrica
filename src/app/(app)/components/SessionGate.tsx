@@ -15,7 +15,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useSession();
   if (!isAuthenticated) return <>{children}</>;
   return (
-    <AppShell elevatedHeader>
+    <AppShell>
       <HomeFeed />
     </AppShell>
   );

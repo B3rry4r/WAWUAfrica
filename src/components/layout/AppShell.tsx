@@ -12,8 +12,6 @@ interface AppShellProps {
   children: ReactNode;
   /** Show the app header (search pill + bell). Defaults to true. */
   header?: boolean;
-  /** Backdrop-blur sticky header, used on the home feed. */
-  elevatedHeader?: boolean;
 }
 
 /**
@@ -58,7 +56,7 @@ interface AppShellProps {
  * genuinely needs a sidebar-less focused layout, that's a per-route decision
  * for that screen's task, not a shell-level exception.
  */
-export function AppShell({ children, header = true, elevatedHeader = false }: AppShellProps) {
+export function AppShell({ children, header = true }: AppShellProps) {
   return (
     <SessionProvider>
       <div className="w-full xl:flex xl:h-screen xl:overflow-hidden">
@@ -66,7 +64,7 @@ export function AppShell({ children, header = true, elevatedHeader = false }: Ap
         <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-hairline bg-page xl:mx-0 xl:flex xl:h-screen xl:max-w-none xl:min-w-0 xl:flex-1 xl:flex-col xl:overflow-hidden xl:border-0">
           {header ? (
             <>
-              <AppHeader elevated={elevatedHeader} />
+              <AppHeader />
               <DesktopHeader />
             </>
           ) : null}
