@@ -29,6 +29,20 @@ class MockModeError extends Error {
   }
 }
 
+/**
+ * True only when there's genuinely no backend configured (dev/demo mode) --
+ * false for every other failure, including a real backend's 4xx/5xx and a
+ * network/timeout error. Callers that fall back to mock data on catch MUST
+ * gate that fallback on this check for anything security- or money-bearing
+ * (auth, payments) -- see auth.ts's doc comment for the incident this
+ * distinction fixes. A bare `catch {}` cannot tell "no backend to call"
+ * apart from "backend said no", and silently treating the latter as the
+ * former converts real rejections into fake successes.
+ */
+export function isMockModeError(e: unknown): boolean {
+  return e instanceof MockModeError;
+}
+
 interface ApiRequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
   /** Attach the WAWU ID session token. */

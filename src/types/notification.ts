@@ -50,6 +50,25 @@ export interface AppNotification {
   createdAt: string;
 }
 
+/**
+ * Real wire shape (WAWU-Hub-API's NotificationService.list, registry.json
+ * response.shape "{unreadCount, items: PaginatedList<Notification>}"):
+ * `items` is itself a full envelope (statusCode/message/data/pagination),
+ * not a bare array -- the ResponseInterceptor only auto-wraps a top-level
+ * Paginated<T> return, so the service builds this nested envelope by hand.
+ * The frontend was reading `res.items` as if it were the array directly,
+ * which crashed every load of /notifications.
+ */
+export interface NotificationsWireResponse {
+  unreadCount: number;
+  items: {
+    statusCode: number;
+    message: string;
+    data: AppNotification[];
+    pagination: { currentPage: number; nextPage: number | null; perPage: number; total: number };
+  };
+}
+
 export interface NotificationsResponse {
   items: AppNotification[];
   unreadCount: number;

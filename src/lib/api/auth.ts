@@ -10,8 +10,23 @@ import type {
   SessionUser,
 } from "@/types/auth";
 import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "@/types/account";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, isMockModeError } from "@/lib/api/client";
 import { WAWU_ID_BASE } from "@/lib/api/config";
+
+/**
+ * CRITICAL: never widen this to a bare `catch {}` that returns a fabricated
+ * session. Confirmed live (Phase-8-style audit) that doing so meant a WRONG
+ * PASSWORD, an INVALID OTP CODE, and an EXPIRED RESET TOKEN all silently
+ * logged the user in / showed "success" anyway, because the real backend's
+ * 401/400 was being treated identically to "no backend configured, fall
+ * back to a demo". Those are not the same failure: `isMockModeError` is
+ * true only when there's genuinely no backend to call (dev/demo mode) --
+ * every other error means the real backend was reached and said no, and
+ * that must reach the caller as a real, visible failure.
+ */
+function isIntentionalMockMode(e: unknown): boolean {
+  return isMockModeError(e);
+}
 
 /**
  * S-4 (.pipeline/supersedes.json): WAWU ID owns 100% of signup/login/OTP/
@@ -165,7 +180,8 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       creator: null,
     };
     return { token: result.accessToken, user };
-  } catch {
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/register (WAWU ID) + PATCH /api/hub/users/me
     const user: SessionUser = {
       wawuId: `wawu_${payload.email.split("@")[0] ?? "new"}`,
@@ -204,7 +220,8 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
       creator: null,
     };
     return { token: result.accessToken, user };
-  } catch {
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/otp/verify (WAWU ID)
     const user: SessionUser = {
       wawuId: `wawu_${payload.phone}`,
@@ -263,7 +280,8 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       creator,
     };
     return { token: result.accessToken, user };
-  } catch {
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/login (WAWU ID) + GET /api/hub/users/me [+ GET /api/hub/creator/state]
     const stored = sessionStorage.getUser();
     const user: SessionUser = stored ?? {
@@ -287,7 +305,8 @@ export async function requestPasswordReset(payload: ResetPasswordPayload): Promi
       // Web hub explicitly requests the email-link delivery channel (default is 'sms').
       body: { identifier: payload.email, method: "email" },
     });
-  } catch {
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/forgot-password (WAWU ID)
     return;
   }
@@ -302,7 +321,8 @@ export async function saveNewPassword(payload: NewPasswordPayload): Promise<void
       // the caller redirects to sign-in after this resolves.
       body: { token: payload.token, email: payload.email, password: payload.password },
     });
-  } catch {
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/reset-password (WAWU ID, email-link path)
     return;
   }
