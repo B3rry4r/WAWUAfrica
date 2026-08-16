@@ -51,8 +51,12 @@ interface HubContentPieceResponse {
  * There is no batch profile-lookup endpoint wired into this domain either.
  * Until the Hub API joins UserProfile onto this response (or ships a
  * batch-profile endpoint the frontend can call alongside), every real
- * `ContentPiece.creator` is a placeholder built from the id alone — never a
- * fabricated name. Same for `saved` (that lives on the separate SavedItem
+ * `ContentPiece.creator` this function returns is seeded from the id alone
+ * — never a fabricated name. `getContent` (single-piece detail) upgrades
+ * this placeholder to the real handle via a follow-up public-profile call
+ * once mapping is done; list/feed callers (getFeed, getFeaturedContent)
+ * still show the bare id today, same gap, no per-item fetch added for a
+ * list. Same for `saved` (that lives on the separate SavedItem
  * resource, `GET /users/me/saved` — not exposed on this response) and
  * `courseLessons`/`lessonCount` (CourseLesson is a related-but-separate
  * resource; the list/detail queries here never `include` it).
@@ -150,24 +154,30 @@ export async function getFeaturedContent(): Promise<ContentPiece[]> {
 
 /**
  * Real GET /users/:wawuId/public-profile response carries the creator's
- * tier — see profile.ts's RealPublicCreatorProfile for the full shape. Only
- * `tier` is read here, to drive creatorSplitRate() (CLAUDE.md: 85/15
- * standard, 90/10 Pro — never invent a rate). This is money-bearing (it
- * decides whether 85% or 90% is displayed as the creator's cut), so only
- * genuine mock mode (no backend configured) degrades to the safe default —
- * a real failure propagates and fails the whole content-detail load rather
- * than risk silently showing the wrong split.
+ * tier and handle — see profile.ts's RealPublicCreatorProfile for the full
+ * shape. `tier` drives creatorSplitRate() (CLAUDE.md: 85/15 standard, 90/10
+ * Pro — never invent a rate). `handle` is the only real, non-fabricated
+ * display identity this endpoint exposes for another user (there is no
+ * display-name field — see getCreatorProfile in profile.ts for the same
+ * documented gap); it replaces the raw internal `creatorWawuId` that
+ * mapContentPiece falls back to when this call can't be made. This is
+ * money-bearing (it decides whether 85% or 90% is displayed as the
+ * creator's cut), so only genuine mock mode (no backend configured)
+ * degrades to the safe default — a real failure propagates and fails the
+ * whole content-detail load rather than risk silently showing the wrong
+ * split.
  */
-async function getCreatorIsPro(creatorWawuId: string): Promise<boolean> {
+async function getCreatorSummary(creatorWawuId: string): Promise<{ isPro: boolean; handle: string | null }> {
   try {
-    const profile = await apiFetch<{ tier: "basic" | "pro" }>(`/api/hub/users/${creatorWawuId}/public-profile`, {
-      authed: true,
-    });
-    return profile.tier === "pro";
+    const profile = await apiFetch<{ tier: "basic" | "pro"; handle: string | null }>(
+      `/api/hub/users/${creatorWawuId}/public-profile`,
+      { authed: true },
+    );
+    return { isPro: profile.tier === "pro", handle: profile.handle };
   } catch (e) {
     if (!isMockModeError(e)) throw e;
     // SEAM: GET /api/hub/users/:wawuId/public-profile
-    return false;
+    return { isPro: false, handle: null };
   }
 }
 
@@ -175,7 +185,17 @@ export async function getContent(id: string): Promise<ContentDetailResponse> {
   try {
     const res = await apiFetch<HubContentPieceResponse>(`/api/hub/content/${id}`, { authed: true });
     const content = guardLocked(mapContentPiece(res));
-    content.creator.isPro = await getCreatorIsPro(res.creatorWawuId);
+    const summary = await getCreatorSummary(res.creatorWawuId);
+    content.creator.isPro = summary.isPro;
+    // GAP (see mapContentPiece doc comment): the content response never
+    // embeds a creator profile, so mapContentPiece seeds fullName/handle
+    // with the bare wawuId. Overwrite with the real handle from the
+    // public-profile endpoint the moment it's available — never leave the
+    // raw internal id as the visible identity when a real field exists.
+    if (summary.handle) {
+      content.creator.fullName = summary.handle;
+      content.creator.handle = summary.handle;
+    }
     return { content };
   } catch (e) {
     if (!isMockModeError(e)) throw e;

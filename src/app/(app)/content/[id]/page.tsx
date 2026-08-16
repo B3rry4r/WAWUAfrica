@@ -144,12 +144,18 @@ export default function ContentDetailPage() {
     commentInputRef.current?.focus();
   };
 
-  const startUnlock = async () => {
+  // Opens the review dialog only — no charge is started yet. The user must
+  // then tap the dialog's own "Pay" button (chargeUnlock) to authorize the
+  // real charge; that distinct gesture is the point of the two-step D4 design.
+  const openUnlock = () => {
     setUnlockOpen(true);
     setPayment("idle");
+  };
+
+  const chargeUnlock = async () => {
+    setPayment("processing");
     try {
       const init = await initiateUnlock(content!.id);
-      setPayment("processing");
       // SEAM: replace this fake delay with a real Flutterwave inline checkout
       // once the SDK is wired — see tips.ts's identical stand-in.
       await new Promise((resolve) => setTimeout(resolve, 2400));
@@ -198,7 +204,7 @@ export default function ContentDetailPage() {
             <div className="flex flex-col gap-5 xl:hidden">
               {content.contentType === "course" ? <LessonList content={content} /> : null}
               {state === "locked" ? (
-                <LockedCta content={content} onUnlock={startUnlock} />
+                <LockedCta content={content} onUnlock={openUnlock} />
               ) : state === "unlocked" ? (
                 <UnlockedActions
                   content={content}
@@ -236,7 +242,7 @@ export default function ContentDetailPage() {
           <PurchasePanel
             content={content}
             state={state}
-            onUnlock={startUnlock}
+            onUnlock={openUnlock}
             onDownload={() => downloadAsset(content.fullAssetUrl, content.title)}
             onTip={() => setTipOpen(true)}
           />
@@ -248,7 +254,7 @@ export default function ContentDetailPage() {
         onClose={() => setUnlockOpen(false)}
         content={content}
         payment={payment}
-        onRetry={startUnlock}
+        onRetry={chargeUnlock}
         onDownload={() => downloadAsset(content?.fullAssetUrl, content?.title ?? "download")}
         onDone={() => {
           setUnlockOpen(false);
@@ -375,9 +381,11 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
               <span className="truncate text-[14px] font-semibold">{content.creator.fullName}</span>
               <VerificationBadge tier={content.creator.verificationLevel} />
             </span>
-            <span className="truncate text-[12px] text-text-muted">
-              {content.creator.headline} · {content.creator.location}
-            </span>
+            {(content.creator.headline || content.creator.location) && (
+              <span className="truncate text-[12px] text-text-muted">
+                {[content.creator.headline, content.creator.location].filter(Boolean).join(" · ")}
+              </span>
+            )}
           </span>
         </Link>
         <span className="ml-auto">

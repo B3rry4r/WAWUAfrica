@@ -418,11 +418,13 @@ function AboutTab({ profile }: { profile: CreatorProfile }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-hairline bg-card p-4">
-        {profile.location && <InfoRow icon="MapPin" text={profile.location} />}
-        {profile.memberSince && <InfoRow icon="Calendar" text={`On WAWU since ${profile.memberSince}`} />}
-        {profile.replyTime && <InfoRow icon="Clock" text={profile.replyTime} />}
-      </div>
+      {(profile.location || profile.memberSince || profile.replyTime) && (
+        <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-hairline bg-card p-4">
+          {profile.location && <InfoRow icon="MapPin" text={profile.location} />}
+          {profile.memberSince && <InfoRow icon="Calendar" text={`On WAWU since ${profile.memberSince}`} />}
+          {profile.replyTime && <InfoRow icon="Clock" text={profile.replyTime} />}
+        </div>
+      )}
 
       <div className="flex flex-col gap-[10px]">
         <SectionLabel>Verified as</SectionLabel>

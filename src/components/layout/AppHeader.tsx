@@ -23,6 +23,7 @@ const OWN_HEADER_ROUTES = [
   "/messages",
   "/settings",
   "/marketplace",
+  "/creator",
 ];
 
 /** Exported so DesktopHeader can hide on the same routes at xl width. */

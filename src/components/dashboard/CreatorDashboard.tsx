@@ -92,11 +92,54 @@ export function CreatorDashboard() {
   const urgentThread = currentMessaging.threads.find((t) => t.expiresAt);
   const { responded, total } = currentMessaging.responseStats;
   const answeredPct = total > 0 ? Math.round((responded / total) * 100) : 0;
+  const monthLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  // D6 "Statement" export — a downloadable record of this month's earnings,
+  // not a wallet/withdrawal action (CLAUDE.md's no-wallet rule is about cash
+  // balances and cash-out UI, not a plain-text statement of what already
+  // rendered on screen). Built client-side from the same figures already
+  // shown in this dashboard; no backend statement endpoint exists yet.
+  const handleDownloadStatement = () => {
+    const rows = [
+      ["WAWUAfrica creator statement", monthLabel],
+      [],
+      ["Stream", "Amount (NGN)"],
+      ...STREAMS.map((s) => [s.label, String(s.amount)]),
+      [],
+      ["Earned this month", earned !== null ? String(earned) : ""],
+      ["Revenue split", `${keep}/${100 - keep} (${tierLabel})`],
+      ["Payout status", approved ? "Paid out to GTB ••••6789" : "Held — not payable yet"],
+    ];
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `wawu-statement-${monthLabel.replace(" ", "-").toLowerCase()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div>
       <div className="xl:hidden">
         <FlowHeader title="Creator dashboard" right={<TierBadge tier={tier} />} />
+      </div>
+
+      {/* D6 desktop-only sticky page header — suppresses the global DesktopHeader
+          (see hasOwnHeader) so this route shows exactly one header at xl. */}
+      <div
+        className="sticky top-0 z-20 hidden h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur xl:flex"
+        style={{ backdropFilter: "var(--blur-chrome)" }}
+      >
+        <span className="text-[19px] font-semibold tracking-[-0.02em] text-text-primary">Dashboard</span>
+        <span className="flex-1" />
+        <span className="text-[13.5px] text-text-muted">{monthLabel}</span>
+        <Button size="sm" variant="secondary" icon="Download" onClick={handleDownloadStatement}>
+          Statement
+        </Button>
       </div>
 
       <div className="xl:hidden pt-[18px] px-[20px] pb-[32px] flex flex-col gap-[16px]">

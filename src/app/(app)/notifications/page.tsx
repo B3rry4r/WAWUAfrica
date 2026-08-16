@@ -157,7 +157,37 @@ function NotificationGroup({ label, items }: { label: string; items: AppNotifica
   );
 }
 
+// The action buttons are read-only decoration if they don't navigate anywhere
+// (confirmed live: clicking "View earnings" on a real sale notification did
+// nothing). The wire notification carries no thread/target id, so the button
+// routes by `kind` to the screen that actually resolves it -- same pattern as
+// the actionHref props used elsewhere in this app (communities ?topup=1 etc).
+function actionHrefFor(n: AppNotification): string {
+  switch (n.kind) {
+    case "dm_deadline":
+    case "dm_received":
+    case "dm_refunded":
+      return "/messages";
+    case "sale":
+    case "tip_received":
+      return "/earnings";
+    case "credits_low":
+    case "trial_ending":
+      return "/communities?topup=1";
+    case "subscription_renewal":
+      return "/subscription";
+    case "content_published":
+    case "content_rejected":
+      return "/create/library";
+    case "kyc_verified":
+      return "/profile/verification";
+    default:
+      return "/notifications";
+  }
+}
+
 function NotificationRow({ notification: n }: { notification: AppNotification }) {
+  const router = useRouter();
   const time = new Date(n.createdAt);
   const timeLabel =
     time.toLocaleDateString("en-NG", { day: "numeric", month: "short" }) === new Date().toLocaleDateString("en-NG", { day: "numeric", month: "short" })
@@ -194,6 +224,7 @@ function NotificationRow({ notification: n }: { notification: AppNotification })
           <span className="mt-1">
             <button
               type="button"
+              onClick={() => router.push(actionHrefFor(n))}
               className={`inline-flex h-[32px] items-center rounded-button px-3.5 text-[12.5px] font-semibold ${
                 n.kind === "dm_deadline" ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
               }`}

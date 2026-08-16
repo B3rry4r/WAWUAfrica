@@ -6,7 +6,9 @@ import Link from "next/link";
 import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { ContentCard } from "@/components/content/ContentCard";
+import { FollowButton } from "@/components/shared/FollowButton";
 import { searchAll, getPopularSearches, getSuggestedCreators, getClosestResults, getRecentSearches } from "@/lib/api/search";
+import { joinCommunity } from "@/lib/api/communities";
 import type { ContentPiece, ContentType } from "@/types/content";
 import type { SearchCommunityResult, SearchCreatorResult, SearchResults, SearchTab } from "@/types/search";
 
@@ -171,10 +173,10 @@ export default function SearchPage() {
             <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card">
               {suggestedCreators.map((c, i) => (
                 <div key={c.wawuId} className={`flex items-center gap-3 px-4 py-3.5 ${i ? "border-t border-hairline" : ""}`}>
-                  <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
+                  <Link href={`/profile/${c.wawuId}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
                     {c.fullName.charAt(0)}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  </Link>
+                  <Link href={`/profile/${c.wawuId}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[14px] font-semibold">{c.fullName}</span>
                       <VerificationBadge tier={c.verificationLevel} />
@@ -182,10 +184,8 @@ export default function SearchPage() {
                     <span className="truncate text-[12px] text-text-muted">
                       {c.headline} · {c.pieceCount} pieces{c.location ? ` · ${c.location}` : ""}
                     </span>
-                  </span>
-                  <button type="button" className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold">
-                    Follow
-                  </button>
+                  </Link>
+                  <FollowButton wawuId={c.wawuId} initial={false} size="sm" />
                 </div>
               ))}
             </div>
@@ -247,10 +247,10 @@ export default function SearchPage() {
             <section className="flex flex-col gap-2">
               {(tab === "all" ? results.creators.slice(0, 2) : results.creators).map((c) => (
                 <div key={c.wawuId} className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5">
-                  <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
+                  <Link href={`/profile/${c.wawuId}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
                     {c.fullName.charAt(0)}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  </Link>
+                  <Link href={`/profile/${c.wawuId}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[14px] font-semibold">{c.fullName}</span>
                       <VerificationBadge tier={c.verificationLevel} />
@@ -258,10 +258,8 @@ export default function SearchPage() {
                     <span className="truncate text-[12px] text-text-muted">
                       {c.headline} · {c.pieceCount} pieces{c.location ? ` · ${c.location}` : ""}
                     </span>
-                  </span>
-                  <button type="button" className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold">
-                    Follow
-                  </button>
+                  </Link>
+                  <FollowButton wawuId={c.wawuId} initial={false} size="sm" />
                 </div>
               ))}
             </section>
@@ -311,19 +309,32 @@ export default function SearchPage() {
 }
 
 function CommunityRow({ community }: { community: SearchCommunityResult }) {
+  const [joined, setJoined] = useState(false);
+  const [joining, setJoining] = useState(false);
+
   return (
     <div className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5">
-      <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-tag text-text-secondary">
+      <Link href={`/communities/${community.id}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-tag text-text-secondary">
         <Icon name="Users" size={18} />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      </Link>
+      <Link href={`/communities/${community.id}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate text-[14px] font-semibold">{community.name}</span>
         <span className="truncate text-[12px] text-text-muted">
           {community.memberCount.toLocaleString("en-NG")} members · {community.visibility}
         </span>
-      </span>
-      <button type="button" className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold">
-        Join
+      </Link>
+      <button
+        type="button"
+        disabled={joined || joining}
+        onClick={() => {
+          setJoining(true);
+          joinCommunity(community.id)
+            .then(() => setJoined(true))
+            .finally(() => setJoining(false));
+        }}
+        className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold disabled:opacity-60"
+      >
+        {joined ? "Joined" : "Join"}
       </button>
     </div>
   );
