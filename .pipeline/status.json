@@ -1,6 +1,6 @@
 {
   "phase": 5,
-  "wave": 0,
+  "wave": 1,
   "completed": {
     "phase0": [
       "framework-decision",
@@ -28,7 +28,8 @@
       "35 Prisma models, migrations clean both DBs, seed data, shared types"
     ],
     "build": [
-      "wave 0: 22/22 resources landed, verified holistically"
+      "wave 0: 22/22 resources landed, verified holistically",
+      "wave 1: 9/9 resources landed (BlockedAccount, ContentPiece, CreditPurchase, KycSubmission, LearnEntitlement, MentorRequest, NotificationSettings, PrivacySettings, UserProfile), verified holistically -- 31/31 modules boot, 31/31 suites / 293/293 tests green, tsc + nest build clean"
     ]
   },
   "failed": [],
@@ -38,6 +39,6 @@
   "postgresRunning": true,
   "devDb": "postgresql://postgres:postgres@localhost:5432/wawu_hub_dev",
   "testDb": "postgresql://postgres:postgres@localhost:5432/wawu_hub_test",
-  "updatedAt": "2026-08-15T23:00:00Z",
-  "note": "Autonomous overnight run per explicit user directive. Phase 0 gates not interactively confirmed (user asleep) -- decisions recorded in framework-decision.json/conventions.md/supersedes.json for morning review instead. Phase 2 (Extract) launched as workflow w5g1ih2h8, 32 screens."
+  "updatedAt": "2026-08-16T05:05:00Z",
+  "note": "Autonomous overnight run per explicit user directive. Phase 0 gates not interactively confirmed (user asleep) -- decisions recorded in framework-decision.json/conventions.md/supersedes.json for morning review instead. Wave 0 hit a git-worktree-isolation race (Workflow's isolation:'worktree' only covers the primary session repo, not sibling repos agents cd into); fixed for wave 1 onward by having every build agent run `git worktree add` on the backend repo itself as its literal first step -- no contamination reported in wave 1. Wave 1 also surfaced CreditPurchase's contract tests permanently incrementing the seeded users' real CreditsState balance in place (not a throwaway row); extended scripts/clean-test-pollution.ts with a scoped reset back to seed.ts's default of 48. Next: wave 2 (CourseEnrollment, CreatorSubscription, SearchResponse)."
 }
