@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getServices, getOtherApplications } from "@/lib/api/services";
 import type { PartnerService, ServiceApplication } from "@/types/services";
@@ -58,26 +61,51 @@ const TIMELINE_DOT: Record<"done" | "current" | "upcoming", string> = {
   upcoming: "bg-[var(--surface-tag)]",
 };
 
-export default async function ServicesPage() {
-  let services;
-  try {
-    services = await getServices();
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title="We couldn't load services." body={message} />;
+export default function ServicesPage() {
+  const [services, setServices] = useState<PartnerService[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  // SEAM: no dedicated "list my applications" endpoint exists yet — getOtherApplications("")
+  // with a non-matching id returns the full mock set. Swap for GET /api/hub/services/applications.
+  const [applications, setApplications] = useState<ServiceApplication[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    setError(null);
+    getServices()
+      .then((res) => {
+        if (active) setServices(res);
+      })
+      .catch((e) => {
+        if (active) setError(e instanceof Error ? e.message : "We couldn't load services.");
+      });
+    getOtherApplications("")
+      .then((res) => {
+        if (active) setApplications(res);
+      })
+      .catch(() => {
+        if (active) setApplications([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (error) {
+    return <ErrorState title="We couldn't load services." body={error} />;
+  }
+
+  if (!services) {
+    return (
+      <div className="flex flex-col gap-[12px] p-[14px_16px_96px]">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-[76px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
+        ))}
+      </div>
+    );
   }
 
   const live = services.filter((s) => s.status === "live");
   const coming = services.filter((s) => s.status === "coming");
-
-  // SEAM: no dedicated "list my applications" endpoint exists yet — getOtherApplications("")
-  // with a non-matching id returns the full mock set. Swap for GET /api/hub/services/applications.
-  let applications: ServiceApplication[] = [];
-  try {
-    applications = await getOtherApplications("");
-  } catch {
-    applications = [];
-  }
   const featured = applications.find((a) => a.status === "under_review" || a.status === "pending") ?? applications[0] ?? null;
 
   return (

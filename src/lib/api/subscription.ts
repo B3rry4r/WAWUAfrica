@@ -1,13 +1,14 @@
 import { PLANS } from "@/types/subscription";
 import type { Subscription, SubscriptionState } from "@/types/subscription";
 import type { KycStatus, CreatorTier } from "@/types/account";
-import { apiFetch, apiFetchPaginated, mockRequest } from "./client";
+import { apiFetch, apiFetchPaginated, isMockModeError, mockRequest } from "./client";
 
 /** Basic ₦5,999/yr, Pro ₦18,999/yr. Yearly, paid up front. */
 export const currentSubscription: Subscription = {
   plan: { tier: "pro", price: 18999, slots: 7, freeSlots: 2, split: 90, features: [] },
   state: "active",
   renewsAt: "2027-08-14T00:00:00.000Z",
+  cardLast4: "4412",
 };
 
 // ── real backend wire shapes (creator-subscription.controller.ts / service.ts) ──
@@ -52,6 +53,7 @@ function toSubscription(row: CreatorSubscriptionRow): Subscription {
     state: mapSubscriptionState(row.status),
     renewsAt: row.currentPeriodEnd,
     cancelsAt: row.cancelsAt ?? undefined,
+    cardLast4: row.cardLast4 ?? undefined,
   };
 }
 
@@ -108,7 +110,8 @@ export const subscriptionApi: SubscriptionApi = {
     try {
       const row = await apiFetch<CreatorSubscriptionRow>("/api/hub/creator-subscription", { authed: true });
       return toSubscription(row);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/creator-subscription — also 404s
       // (falls here) for a creator account that has never subscribed.
       return mockRequest({ ...currentSubscription });
@@ -124,7 +127,8 @@ export const subscriptionApi: SubscriptionApi = {
       });
       const row = await verifySubscriptionCharge(init.flutterwaveConfig.txRef);
       return toSubscription(row);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       currentSubscription.plan = { ...PLANS[tier] };
       currentSubscription.state = "active";
       // SEAM: replace with POST /api/hub/creator-subscription (tier=basic|pro) + POST .../verify
@@ -140,7 +144,8 @@ export const subscriptionApi: SubscriptionApi = {
       });
       const row = await verifySubscriptionCharge(init.flutterwaveConfig.txRef);
       return toSubscription(row);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       currentSubscription.plan = { ...PLANS.pro };
       currentSubscription.state = "active";
       currentSubscription.cancelsAt = undefined;
@@ -163,7 +168,8 @@ export const subscriptionApi: SubscriptionApi = {
       // Basic tier: a UI that quietly lies about server state is worse than
       // one that visibly hasn't caught up yet. Flagged in the wiring report.
       return toSubscription(row);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       currentSubscription.plan = { ...PLANS.basic };
       currentSubscription.state = "active";
       currentSubscription.cancelsAt = undefined;
@@ -185,7 +191,8 @@ export const subscriptionApi: SubscriptionApi = {
       });
       const row = await apiFetch<CreatorSubscriptionRow>("/api/hub/creator-subscription", { authed: true });
       return toSubscription(row);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       currentSubscription.state = "active";
       // SEAM: replace with POST /api/hub/creator-subscription/retry-payment
       return mockRequest({ ...currentSubscription }, 700);
@@ -199,7 +206,8 @@ export const subscriptionApi: SubscriptionApi = {
         authed: true,
       });
       return toSubscription(row);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       currentSubscription.state = "active";
       currentSubscription.cancelsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
       // SEAM: replace with DELETE /api/hub/creator-subscription
@@ -220,7 +228,9 @@ export const subscriptionApi: SubscriptionApi = {
         authed: true,
         body: { flutterwaveCardToken: last4 },
       });
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
+      currentSubscription.cardLast4 = last4;
       // SEAM: replace with PATCH /api/hub/creator-subscription/card
       return mockRequest({ last4 }, 500);
     }
@@ -239,7 +249,8 @@ export const subscriptionApi: SubscriptionApi = {
         { authed: true },
       );
       return { items: res.data, pagination: res.pagination };
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/creator-subscription/billing-history
       // Real backend gap (creator-subscription.service.ts's
       // listBillingHistory() doc comment): no ledger table exists for this

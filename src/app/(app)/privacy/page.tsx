@@ -28,6 +28,7 @@ export default function PrivacyPage() {
   const [settings, setSettings] = useState<PrivacySettings | null>(null);
   const [blockedCount, setBlockedCount] = useState<number | null>(null);
   const [error, setError] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [exportState, setExportState] = useState<ExportState>("idle");
 
   const load = useCallback(() => {
@@ -45,9 +46,16 @@ export default function PrivacyPage() {
 
   const toggle = (key: ToggleKey) => {
     if (!settings) return;
+    const previous = settings;
     const next = { ...settings, [key]: !settings[key] };
     setSettings(next);
-    void savePrivacySettings(next);
+    setSaveError(false);
+    savePrivacySettings(next).catch(() => {
+      // Real save failed — revert the optimistic flip so the switch never
+      // shows a state that was never actually persisted.
+      setSettings(previous);
+      setSaveError(true);
+    });
   };
 
   const runExport = () => {
@@ -94,6 +102,12 @@ export default function PrivacyPage() {
 
       <ToggleGroup label="Your profile" rows={PROFILE_ROWS} settings={settings} onToggle={toggle} />
       <ToggleGroup label="Communities" rows={COMMUNITY_ROWS} settings={settings} onToggle={toggle} />
+      {saveError ? (
+        <span className="flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--danger)]">
+          <Icon name="CircleAlert" size={14} color="var(--danger)" />
+          That didn&apos;t save. Try again.
+        </span>
+      ) : null}
 
       <div className="flex flex-col gap-[10px]">
         <span className="px-[4px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">

@@ -1,16 +1,48 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { getMentor } from "@/lib/api/mentors";
+import type { Mentor } from "@/types/mentors";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar, ErrorState, Icon, StatBlock, StatusPill, VerificationBadge } from "@/components/ui";
 import { MentorBookButton } from "@/components/services/MentorBookButton";
 
-export default async function MentorDetailPage({ params }: { params: { id: string } }) {
-  const mentor = await getMentor(params.id);
+export default function MentorDetailPage() {
+  const params = useParams<{ id: string }>();
+  const [mentor, setMentor] = useState<Mentor | null>(null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  if (!mentor) {
+  useEffect(() => {
+    let active = true;
+    getMentor(params.id)
+      .then((m) => {
+        if (!active) return;
+        if (!m) setError(true);
+        else setMentor(m);
+      })
+      .catch(() => active && setError(true))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [params.id]);
+
+  if (error) {
     return (
       <div className="p-[16px] xl:p-[26px]">
         <ErrorState title="Mentor not found" body="This mentor may be on a break." />
+      </div>
+    );
+  }
+
+  if (loading || !mentor) {
+    return (
+      <div className="flex flex-col gap-[14px] p-[14px_16px_96px] xl:p-[26px]">
+        <div className="h-[72px] w-[72px] rounded-full bg-[var(--surface-tag)]" />
+        <div className="h-[120px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
       </div>
     );
   }

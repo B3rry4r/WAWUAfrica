@@ -40,10 +40,18 @@ export interface AppNotification {
   title: string;
   body: string;
   tone: NotificationTone;
-  /** Money-bearing notifications carry an amount; everything else stays quiet. */
-  amount?: number;
-  /** Credits always render as a COUNT via formatCredits(), never naira. */
-  creditsCount?: number;
+  /**
+   * Money-bearing notifications carry an amount; everything else stays
+   * quiet. Nullable on the wire (Prisma `amount Int?` serializes unset as
+   * `null`, not a missing key) — callers must null-check with `!= null`,
+   * not `!== undefined`.
+   */
+  amount?: number | null;
+  /**
+   * Credits always render as a COUNT via formatCredits(), never naira.
+   * Nullable on the wire, same as `amount` above.
+   */
+  creditsCount?: number | null;
   /** Show an inline CTA (e.g. "Reply now", "Buy credits"). */
   actionLabel?: string;
   read: boolean;

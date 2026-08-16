@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCommunityThread } from "@/hooks/useCommunityThread";
+import { useSession } from "@/lib/auth/session-provider";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -19,10 +20,17 @@ import { formatCredits } from "@/lib/format";
  * so join-gating, the credit spend on send, and the loading/error/empty
  * states all match the mobile thread exactly.
  */
-export function CommunityThreadDesktop({ id }: { id: string }) {
+export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?: () => void }) {
   const router = useRouter();
+  const { user } = useSession();
   const [text, setText] = useState("");
-  const { community, messages, balance, errorKind, load, doJoin, send, sending } = useCommunityThread(id);
+  const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError } =
+    useCommunityThread(id);
+
+  const handleJoin = async () => {
+    const ok = await doJoin();
+    if (ok) onJoined?.();
+  };
 
   if (errorKind === "not-found") {
     return (
@@ -55,10 +63,10 @@ export function CommunityThreadDesktop({ id }: { id: string }) {
     );
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!text.trim()) return;
-    send(text);
-    setText("");
+    const ok = await send(text);
+    if (ok) setText("");
   };
 
   return (
@@ -85,9 +93,10 @@ export function CommunityThreadDesktop({ id }: { id: string }) {
           <p className="m-0 max-w-[340px] text-[14px] leading-[1.5] text-text-secondary">
             {community.name} is a closed circle. Join to read and post — reading is free, sending costs one credit.
           </p>
-          <Button onClick={doJoin} className="mt-3.5">
+          <Button onClick={handleJoin} className="mt-3.5">
             Join community
           </Button>
+          {joinError && <p className="m-0 text-[13px] text-[var(--danger)]">{joinError}</p>}
         </div>
       ) : (
         <>
@@ -96,7 +105,7 @@ export function CommunityThreadDesktop({ id }: { id: string }) {
               <EmptyState icon="MessageCircle" title="No messages yet" caption="Be the first to say something here." />
             ) : (
               messages.map((m) => {
-                const mine = m.sender.wawuId === "wawu-me";
+                const mine = m.sender.wawuId === user?.wawuId;
                 return (
                   <div key={m.id} className={`flex flex-col gap-[5px] ${mine ? "items-end" : "items-start"}`}>
                     {mine ? (
@@ -126,6 +135,7 @@ export function CommunityThreadDesktop({ id }: { id: string }) {
           </div>
 
           <div className="mt-auto shrink-0 p-[18px]">
+            {sendError && <p className="m-0 mb-2 text-[12.5px] text-[var(--danger)]">{sendError}</p>}
             {balance < 1 ? (
               <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>
                 Top up credits to send a message

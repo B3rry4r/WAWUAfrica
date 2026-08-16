@@ -1,15 +1,32 @@
+"use client";
+
 import { ContentLibrary } from "@/components/create/ContentLibrary";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-
-export const metadata = {
-  title: "My content · WAWUAfrica",
-};
+import { Skeleton } from "@/components/ui/Feedback";
 
 export default function LibraryPage() {
-  const gates = creatorGates(currentSession);
+  const { user, hydrated } = useSession();
+  const { creator, loading } = useCreatorState();
+  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+
+  // Real session hasn't hydrated from localStorage yet (SSR / first paint) —
+  // hold off on any gate decision until we actually know who is signed in,
+  // same pattern as /create and /create/new.
+  if (!hydrated || (loading && !creator && user?.accountType === "creator")) {
+    return (
+      <div className="flex flex-col min-h-[100%]">
+        <FlowHeader title="My content" />
+        <div className="flex flex-col gap-[12px] p-[16px]">
+          <Skeleton height={100} radius="var(--radius-card)" />
+          <Skeleton height={100} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
 
   if (!gates.isCreator) {
     return (

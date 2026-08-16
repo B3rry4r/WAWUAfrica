@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getOwnProfile } from "@/lib/api/verification";
 import type { OwnProfile } from "@/types/verification";
 import { Avatar } from "@/components/ui/Avatar";
@@ -34,8 +34,10 @@ export default function SettingsPage() {
   const [error, setError] = useState<string>();
   const [selected, setSelected] = useState<InternalSettingsKey>("notifications");
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let active = true;
+    setError(undefined);
+    setProfile(null);
     getOwnProfile()
       .then((p) => active && setProfile(p))
       .catch((e) => active && setError(e instanceof Error ? e.message : undefined));
@@ -44,8 +46,10 @@ export default function SettingsPage() {
     };
   }, []);
 
+  useEffect(load, [load]);
+
   if (error) {
-    return <ErrorState title="Couldn't load settings" body={error} />;
+    return <ErrorState title="Couldn't load settings" body={error} onRetry={load} />;
   }
 
   const isCreator = profile?.accountType === "creator";

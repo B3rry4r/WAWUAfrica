@@ -50,6 +50,7 @@ export function MentorRequestSheet({
   const [selectedDay, setSelectedDay] = useState<DayOption | null>(null);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const firstName = mentor.name.split(" ")[0];
   const canSend = selectedTopics.length > 0 && note.trim().length > 0 && selectedDay !== null && timeOfDay !== null;
@@ -62,10 +63,12 @@ export function MentorRequestSheet({
   const send = async () => {
     if (!canSend) return;
     setPhase("processing");
+    setSendError(null);
     try {
       await requestMentor(mentor.id, { topics: selectedTopics, note: note.trim(), slot: slotLabel });
       setPhase("done");
-    } catch {
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Something went wrong sending your request. Try again.");
       setPhase("idle");
     }
   };
@@ -76,6 +79,7 @@ export function MentorRequestSheet({
     setSelectedDay(null);
     setTimeOfDay(null);
     setPhase("idle");
+    setSendError(null);
   };
 
   const close = () => {
@@ -180,6 +184,13 @@ export function MentorRequestSheet({
               })}
             </div>
           </div>
+
+          {sendError ? (
+            <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,90,90,0.32)] bg-[var(--danger-tint)] p-[12px_14px]">
+              <Icon name="TriangleAlert" size={16} color="var(--danger)" />
+              <span className="text-[13px] font-medium text-[var(--text-primary)]">{sendError}</span>
+            </div>
+          ) : null}
 
           <Button full disabled={!canSend} onClick={send}>
             Send the request

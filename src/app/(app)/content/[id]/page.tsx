@@ -148,21 +148,25 @@ export default function ContentDetailPage() {
     setUnlockOpen(true);
     setPayment("idle");
     try {
-      const res = await initiateUnlock(content!.id);
-      void res;
+      const init = await initiateUnlock(content!.id);
       setPayment("processing");
-      const paid = await new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 2400));
-      if (paid) {
-        const verify = await verifyUnlock(content!.id, { transaction_id: `txn-${Date.now()}`, tx_ref: `unlock-${content!.id}-${Date.now()}` });
-        if (verify.purchased) {
-          setPayment("success");
-          setContent((prev) => (prev ? { ...prev, purchased: true, fullAssetLocked: false, fullAssetUrl: verify.fullAssetUrl ?? undefined } : prev));
-        } else {
-          setPayment("failure");
-        }
-      } else {
-        setPayment("failure");
-      }
+      // SEAM: replace this fake delay with a real Flutterwave inline checkout
+      // once the SDK is wired — see tips.ts's identical stand-in.
+      await new Promise((resolve) => setTimeout(resolve, 2400));
+      // Reuse the server's real tx_ref from the initiate response — the
+      // /unlock/verify call 404s ("No matching unlock attempt found") for any
+      // tx_ref it didn't itself hand out, so a client-invented one can never
+      // verify. verifyUnlock() either returns a genuine purchase or throws
+      // (real decline / real backend error), so reaching past this line means
+      // a real, verified unlock.
+      const verify = await verifyUnlock(content!.id, {
+        transaction_id: `txn-${Date.now()}`,
+        tx_ref: init.flutterwaveConfig.txRef,
+      });
+      setPayment("success");
+      setContent((prev) =>
+        prev ? { ...prev, purchased: true, fullAssetLocked: false, fullAssetUrl: verify.fullAssetUrl ?? undefined } : prev,
+      );
     } catch {
       setPayment("failure");
     }

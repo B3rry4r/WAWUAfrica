@@ -16,6 +16,8 @@ export default function ComingSoonServicePage() {
   const [service, setService] = useState<PartnerService | null>(null);
   const [notified, setNotified] = useState(false);
   const [error, setError] = useState(false);
+  const [notifyError, setNotifyError] = useState<string | null>(null);
+  const [notifying, setNotifying] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -32,8 +34,16 @@ export default function ComingSoonServicePage() {
   }, [id]);
 
   const notify = async () => {
-    await notifyComingSoon(id);
-    setNotified(true);
+    setNotifying(true);
+    setNotifyError(null);
+    try {
+      await notifyComingSoon(id);
+      setNotified(true);
+    } catch (e) {
+      setNotifyError(e instanceof Error ? e.message : "Couldn't add you to the list. Try again.");
+    } finally {
+      setNotifying(false);
+    }
   };
 
   if (error) {
@@ -114,9 +124,17 @@ export default function ComingSoonServicePage() {
             </span>
           </div>
         ) : (
-          <Button full size="lg" onClick={notify}>
-            Notify me when it launches
-          </Button>
+          <>
+            {notifyError ? (
+              <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,90,90,0.32)] bg-[var(--danger-tint)] p-[14px]">
+                <Icon name="TriangleAlert" size={17} color="var(--danger)" />
+                <span className="text-[13px] font-medium text-[var(--text-primary)]">{notifyError}</span>
+              </div>
+            ) : null}
+            <Button full size="lg" onClick={notify} disabled={notifying}>
+              {notifying ? "Adding you…" : "Notify me when it launches"}
+            </Button>
+          </>
         )}
       </div>
 
@@ -171,9 +189,17 @@ export default function ComingSoonServicePage() {
               </span>
             </div>
           ) : (
-            <Button size="lg" className="w-full max-w-[440px]" onClick={notify}>
-              Notify me when it launches
-            </Button>
+            <>
+              {notifyError ? (
+                <div className="flex w-full max-w-[440px] items-center gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,90,90,0.32)] bg-[var(--danger-tint)] p-[16px]">
+                  <Icon name="TriangleAlert" size={18} color="var(--danger)" />
+                  <span className="text-[14px] font-medium text-[var(--text-primary)]">{notifyError}</span>
+                </div>
+              ) : null}
+              <Button size="lg" className="w-full max-w-[440px]" onClick={notify} disabled={notifying}>
+                {notifying ? "Adding you…" : "Notify me when it launches"}
+              </Button>
+            </>
           )}
         </div>
       </div>

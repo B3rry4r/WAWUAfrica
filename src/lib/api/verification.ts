@@ -1,4 +1,4 @@
-import type { VerificationLevel } from "@/types/account";
+import type { AccountType, CreatorTier, VerificationLevel } from "@/types/account";
 import type {
   OwnProfile,
   OwnProfileDraft,
@@ -7,7 +7,7 @@ import type {
   VerificationSubmission,
   VerificationSubmissionStatus,
 } from "@/types/verification";
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 import {
   getMockLadder,
   getMockOwnProfile,
@@ -114,28 +114,183 @@ function fromHubLadder(entries: HubVerificationLadderEntry[]): VerificationLevel
 }
 
 /**
- * NOT wired against a real endpoint in this pass. This module's assigned
- * scope is the VerificationSubmission workflow (see doc comment above);
- * "own profile" assembly is a different, cross-cutting resource — Hub API's
- * GET/PATCH /api/hub/users/me (UserProfileController) returns only
- * handle/bio/interests/accountType plus the WAWU-ID JWT claims merged in.
- * It has no stats/plan/credits/earningsThisMonth/contentSlots fields at
- * all — those live on CreatorState, CreditsState, and CreatorEarnings,
- * resources this file has no business touching. Wiring only the
- * users/me-shaped subset here would produce an OwnProfile that's half
- * real, half stale mock data with no way for a caller to tell which half
- * is which — worse than staying mock until a dedicated profile-assembly
- * pass (or the /api/hub/profile aggregate the SEAM comment below assumes)
- * exists. Left as-is; see report.
+ * GET /api/hub/users/me response — UserProfile columns merged with the
+ * caller's WAWU ID JWT claims (Hub API's `UserProfileWithClaims`; verified
+ * directly against WAWU-Hub-API's user-profile.controller.ts /
+ * user-profile.service.ts / wawu-jwt-claims.interface.ts). Only the fields
+ * this module actually reads are declared — `fullName` does not exist here
+ * (WAWU ID splits it into firstName/lastName; the combined `fullName` only
+ * comes back from WAWU ID's own /auth/login response, see auth.ts).
  */
-// SEAM: replace with GET /api/hub/profile
-export async function getOwnProfile(): Promise<OwnProfile> {
-  return getMockOwnProfile();
+interface HubMeResponse {
+  wawuUserId: string;
+  email: string | null;
+  firstName: string;
+  lastName: string;
+  verificationTier: string;
+  accountType: AccountType | null;
+  handle: string | null;
+  bio: string | null;
+  interests: string[];
+  instagramHandle: string | null;
+  whatsappHandle: string | null;
 }
 
-// SEAM: replace with PATCH /api/hub/profile
+/** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubMeResponse doc comment) — never invent one. */
+interface UpdateUserProfileBody {
+  interests?: string[];
+  bio?: string;
+  handle?: string;
+  instagramHandle?: string;
+  whatsappHandle?: string;
+}
+
+/** GET /api/hub/creator/state subset this module reads — see auth.ts's identical HubCreatorStateResponse for the full shape. */
+interface HubCreatorStateForProfile {
+  tier: CreatorTier;
+  slotsUsed: number;
+  slotsTotal: number;
+}
+
+/** GET /api/hub/content/mine/earnings subset this module reads — see earnings.ts's EarningsSummary for the full shape. */
+interface HubEarningsForProfile {
+  total: number;
+}
+
+/** GET /api/hub/credits — see communities.ts's CreditsState for the full shape (creditBalance, trialEndsAt). */
+interface HubCreditsForProfile {
+  creditBalance: number;
+}
+
+/**
+ * WAWU ID's verificationTier is a 6-value union; local copy of auth.ts's
+ * mapVerificationTier (not exported there) — folds the admin/partner-only
+ * 'official' tier onto 'trusted_partner', same reasoning as auth.ts.
+ */
+function mapVerificationTier(tier: string): VerificationLevel {
+  if (tier === "official") return "trusted_partner";
+  return (TIER_ORDER as string[]).includes(tier) ? (tier as VerificationLevel) : "basic";
+}
+
+/**
+ * Assembles the real OwnProfile from every endpoint that genuinely has a
+ * piece of it: GET /api/hub/users/me (identity/handle/bio/interests/socials,
+ * always) plus, for creator accounts only, GET /api/hub/creator/state
+ * (plan/contentSlots), GET /api/hub/content/mine/earnings (earningsThisMonth),
+ * and GET /api/hub/credits (credits, both account types).
+ *
+ * `stats.sales`, `stats.followers`, and `toReply` have NO real source in any
+ * of the above (see OwnProfileStats' doc comments and OwnProfile's `toReply`
+ * field) — left undefined rather than invented; profile/page.tsx only
+ * renders them when present.
+ *
+ * The secondary creator/state, earnings, and credits calls degrade
+ * gracefully on their own failure (bare catch, same as auth.ts's signIn()
+ * creator/state read) rather than failing the whole profile — a creator
+ * account with no CreatorState row yet, or a transient earnings/credits
+ * hiccup, should not block the identity block from rendering. The PRIMARY
+ * users/me call is the one Pattern-A-gated: a real failure there throws
+ * (never silently substitutes the mock identity), and only a genuine
+ * no-backend-configured dev/demo mode falls back to mock data.
+ */
+export async function getOwnProfile(): Promise<OwnProfile> {
+  try {
+    const me = await apiFetch<HubMeResponse>("/api/hub/users/me", { authed: true });
+    const accountType: AccountType = me.accountType ?? "user";
+    const name = `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || me.handle || "WAWU member";
+
+    let plan: CreatorTier = "basic";
+    let contentSlots: OwnProfile["contentSlots"];
+    let published = 0;
+    let earningsThisMonth: number | undefined;
+
+    if (accountType === "creator") {
+      try {
+        const state = await apiFetch<HubCreatorStateForProfile>("/api/hub/creator/state", { authed: true });
+        plan = state.tier;
+        contentSlots = { published: state.slotsUsed, total: state.slotsTotal };
+        published = state.slotsUsed;
+      } catch {
+        // SEAM: GET /api/hub/creator/state — a creator account with no
+        // CreatorState row yet (pre-tier-selection). Leave plan/contentSlots
+        // at their defaults; creatorGates() already treats this the same way.
+      }
+      try {
+        const earnings = await apiFetch<HubEarningsForProfile>("/api/hub/content/mine/earnings", { authed: true });
+        // KNOWN BACKEND GAP: `total` is an all-time aggregate — the real
+        // contract has no month-scoped figure at all (confirmed against
+        // creator-earnings.service.ts: no date filtering anywhere in it).
+        // Using it as the best available stand-in for "this month" rather
+        // than inventing a monthly figure that doesn't exist.
+        earningsThisMonth = earnings.total;
+      } catch {
+        // SEAM: GET /api/hub/content/mine/earnings
+      }
+    }
+
+    let credits = 0;
+    try {
+      const creditsState = await apiFetch<HubCreditsForProfile>("/api/hub/credits", { authed: true });
+      credits = creditsState.creditBalance;
+    } catch {
+      // SEAM: GET /api/hub/credits
+    }
+
+    return {
+      wawuId: me.wawuUserId,
+      name,
+      handle: me.handle ?? "",
+      email: me.email ?? "",
+      bio: me.bio ?? "",
+      accountType,
+      verification: mapVerificationTier(me.verificationTier),
+      plan,
+      stats: { published, sales: undefined, followers: undefined },
+      interests: me.interests ?? [],
+      socials: { instagram: me.instagramHandle ?? undefined, whatsapp: me.whatsappHandle ?? undefined },
+      credits,
+      earningsThisMonth,
+      toReply: undefined,
+      contentSlots,
+    };
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/users/me [+ GET /api/hub/creator/state, GET /api/hub/content/mine/earnings, GET /api/hub/credits]
+    return getMockOwnProfile();
+  }
+}
+
+/**
+ * Wires PATCH /api/hub/users/me exactly to UpdateUserProfileDto's field set
+ * (interests/bio/handle/instagramHandle/whatsappHandle) — `draft.name` is
+ * deliberately NOT sent; the DTO has no name/fullName field at all (WAWU ID
+ * owns firstName/lastName, not writable through this endpoint). See
+ * ProfileEditPage's disabled name field, which reflects this same real
+ * constraint instead of pretending the save persisted it.
+ */
 export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
-  return saveMockOwnProfile(draft);
+  try {
+    await apiFetch<unknown>("/api/hub/users/me", {
+      method: "PATCH",
+      authed: true,
+      body: {
+        interests: draft.interests,
+        bio: draft.bio,
+        handle: draft.handle,
+        instagramHandle: draft.socials.instagram ?? "",
+        whatsappHandle: draft.socials.whatsapp ?? "",
+      } satisfies UpdateUserProfileBody,
+    });
+    // Re-fetch rather than hand-map the PATCH response: upsertMe's response
+    // is the raw UserProfile row only (no merged JWT claims), so it can't
+    // produce a correct OwnProfile on its own — getOwnProfile already knows
+    // how to assemble the full real shape.
+    return await getOwnProfile();
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with PATCH /api/hub/users/me
+    return saveMockOwnProfile(draft);
+  }
 }
 
 export async function getVerificationLadder(): Promise<VerificationLevelEntry[]> {

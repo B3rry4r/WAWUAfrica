@@ -1,12 +1,26 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ContentCard } from "@/components/content/ContentCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import type { ContentPiece } from "@/types/content";
 
-/** Horizontally scrollable creator showcase. Data is fetched server-side and passed in. */
-export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
+/**
+ * Horizontally scrollable creator showcase. Data is fetched server-side and
+ * passed in.
+ *
+ * `isLive` distinguishes a real read of the feed from the fixture set
+ * getFeaturedContent() falls back to for every anonymous visitor (see its
+ * doc comment in src/lib/api/content.ts) — an anonymous visitor has no
+ * session token and there is no public/unauthenticated content scope on the
+ * real API, so this is not a rare failure case, it is what every signed-out
+ * visitor sees. When `isLive` is false this labels the section as example
+ * content instead of presenting fixture names/stats as live creator
+ * activity.
+ */
+export function CreatorCarousel({ items, isLive }: { items: ContentPiece[]; isLive: boolean }) {
+  const router = useRouter();
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -32,7 +46,17 @@ export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
   return (
     <section className="pb-11 pt-2 xl:mx-auto xl:max-w-[1440px]">
       <div className="px-5 xl:px-14">
-        <SectionHeader caption="Earning on WAWU now" title="Creators to watch" action="See all" />
+        <SectionHeader
+          caption={isLive ? "Earning on WAWU now" : "Example content"}
+          title="Creators to watch"
+          action="See all"
+          onAction={() => router.push("/explore/creators")}
+        />
+        {isLive ? null : (
+          <p className="-mt-1.5 mb-[18px] text-[13px] leading-normal text-text-muted">
+            Illustrative only — sign up to see who is actually live on WAWU right now.
+          </p>
+        )}
       </div>
       <div
         ref={railRef}

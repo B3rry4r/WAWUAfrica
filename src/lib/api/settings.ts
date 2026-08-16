@@ -1,7 +1,7 @@
 import type { NotificationSettings, SavedItem } from "@/types/settings";
 import { CONTENT_TYPE_META } from "@/types/content";
 import type { PrivacySettings, BlockedAccount } from "./mocks/settings";
-import { apiFetch, apiFetchPaginated } from "./client";
+import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import { getContent } from "./content";
 import {
   deleteMockAccount,
@@ -62,7 +62,8 @@ export async function getSavedItems(): Promise<SavedItem[]> {
       }),
     );
     return items.filter((item): item is SavedItem => item !== null);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/saved
     return getMockSavedItems();
   }
@@ -77,21 +78,40 @@ export async function getSavedItems(): Promise<SavedItem[]> {
 export async function getNotificationSettings(): Promise<NotificationSettings> {
   try {
     return await apiFetch<NotificationSettings>("/api/hub/settings/notifications", { authed: true });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/notifications/settings
     return getMockNotificationSettings();
   }
 }
 
-/** PATCH /api/hub/settings/notifications — DTO accepts a partial update; sending the full object is a valid (if redundant) partial update. */
+/**
+ * PATCH /api/hub/settings/notifications — UpdateNotificationSettingsDto is
+ * whitelist-validated with forbidNonWhitelisted (main.ts), and the real GET
+ * row carries an extra `userWawuId` column the frontend type doesn't declare
+ * (see getNotificationSettings's doc comment). `next` is whatever the caller
+ * has in state, which — since it originated from a GET response — often
+ * still carries that extra field; spreading it straight into the PATCH body
+ * used to 400 every single save. The body is rebuilt here from exactly the
+ * six DTO fields so nothing outside the whitelist ever goes over the wire.
+ */
 export async function saveNotificationSettings(next: NotificationSettings): Promise<NotificationSettings> {
+  const body: NotificationSettings = {
+    newReplies: next.newReplies,
+    newFollowers: next.newFollowers,
+    dmReminders: next.dmReminders,
+    refunds: next.refunds,
+    promotions: next.promotions,
+    communityDigest: next.communityDigest,
+  };
   try {
     return await apiFetch<NotificationSettings>("/api/hub/settings/notifications", {
       method: "PATCH",
       authed: true,
-      body: next,
+      body,
     });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with PUT /api/hub/notifications/settings
     return saveMockNotificationSettings(next);
   }
@@ -114,7 +134,8 @@ export async function deleteAccount(): Promise<boolean> {
   try {
     await apiFetch<RealAccountDeletionResponse>("/api/hub/account", { method: "DELETE", authed: true });
     return true;
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with DELETE /api/hub/account
     return deleteMockAccount();
   }
@@ -124,21 +145,39 @@ export async function deleteAccount(): Promise<boolean> {
 export async function getPrivacySettings(): Promise<PrivacySettings> {
   try {
     return await apiFetch<PrivacySettings>("/api/hub/settings/privacy", { authed: true });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/privacy/settings
     return getMockPrivacySettings();
   }
 }
 
-/** PATCH /api/hub/settings/privacy — partial-update DTO; sending the full object is valid. */
+/**
+ * PATCH /api/hub/settings/privacy — UpdatePrivacySettingsDto is
+ * whitelist-validated with forbidNonWhitelisted (main.ts), and the real GET
+ * row carries an extra `userWawuId` column the frontend type doesn't
+ * declare (see getPrivacySettings's doc comment). `next` is whatever the
+ * caller has in state, which — since it originated from a GET response —
+ * often still carries that extra field; spreading it straight into the
+ * PATCH body used to 400 every single save. The body is rebuilt here from
+ * exactly the four DTO fields so nothing outside the whitelist ever goes
+ * over the wire.
+ */
 export async function savePrivacySettings(next: PrivacySettings): Promise<PrivacySettings> {
+  const body: PrivacySettings = {
+    showPurchases: next.showPurchases,
+    showSavedItems: next.showSavedItems,
+    showFollowing: next.showFollowing,
+    showInMemberLists: next.showInMemberLists,
+  };
   try {
     return await apiFetch<PrivacySettings>("/api/hub/settings/privacy", {
       method: "PATCH",
       authed: true,
-      body: next,
+      body,
     });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with PUT /api/hub/privacy/settings
     return saveMockPrivacySettings(next);
   }
@@ -176,7 +215,8 @@ export async function getBlockedAccounts(): Promise<BlockedAccount[]> {
       handle: row.blockedWawuId,
       blockedAt: row.blockedAt,
     }));
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/privacy/blocked
     return getMockBlockedAccounts();
   }
@@ -192,7 +232,8 @@ export async function unblockAccount(id: string): Promise<boolean> {
   try {
     await apiFetch<void>(`/api/hub/settings/privacy/blocked/${id}`, { method: "DELETE", authed: true });
     return true;
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with DELETE /api/hub/privacy/blocked/:id
     return unblockMockAccount(id);
   }
@@ -215,7 +256,8 @@ export async function requestDataExport(): Promise<{ requestedAt: string }> {
       method: "POST",
       authed: true,
     });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with POST /api/hub/privacy/export
     return requestMockDataExport();
   }

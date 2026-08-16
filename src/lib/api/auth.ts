@@ -129,6 +129,18 @@ function mapVerificationTier(tier: string): VerificationLevel {
   return (KNOWN_VERIFICATION_LEVELS as string[]).includes(tier) ? (tier as VerificationLevel) : "basic";
 }
 
+function toCreatorState(state: HubCreatorStateResponse): CreatorState {
+  return {
+    tier: state.tier,
+    subscriptionPaid: state.subscriptionPaid,
+    kyc: state.kycStatus,
+    slotsUsed: state.slotsUsed,
+    slotsTotal: state.slotsTotal,
+    dmPrice: state.dmPrice ?? 0,
+    dmEnabled: state.dmEnabled,
+  };
+}
+
 /**
  * WAWUAfrica-specific onboarding field WAWU ID doesn't own. Best-effort: the
  * WAWU ID session is already valid even if this fails, so we still let the
@@ -254,15 +266,7 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
     if (accountType === "creator") {
       try {
         const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { token: result.accessToken });
-        creator = {
-          tier: state.tier,
-          subscriptionPaid: state.subscriptionPaid,
-          kyc: state.kycStatus,
-          slotsUsed: state.slotsUsed,
-          slotsTotal: state.slotsTotal,
-          dmPrice: state.dmPrice ?? 0,
-          dmEnabled: state.dmEnabled,
-        };
+        creator = toCreatorState(state);
       } catch {
         // SEAM: GET /api/hub/creator/state — a creator account with no
         // CreatorState row yet (pre-tier-selection). Leave creator null;
@@ -325,5 +329,27 @@ export async function saveNewPassword(payload: NewPasswordPayload): Promise<void
     if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/reset-password (WAWU ID, email-link path)
     return;
+  }
+}
+
+/**
+ * Live creator tier/slots/KYC status, read fresh from the Hub API rather
+ * than the snapshot captured at sign-in (SessionUser.creator). Used by
+ * screens that gate or display slot counts / tier / KYC status and need it
+ * current, not just "as of last login" — e.g. after an upgrade, a KYC
+ * decision, or a publish that used a slot.
+ *
+ * Creator-only: returns null for a plain user (no CreatorState row) or a
+ * creator account pre-tier-selection, exactly like the sign-in path already
+ * treats a 404 here (see signIn above).
+ */
+export async function getCreatorState(): Promise<CreatorState | null> {
+  try {
+    const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { authed: true });
+    return toCreatorState(state);
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
+    // SEAM: replace with GET /api/hub/creator/state
+    return sessionStorage.getUser()?.creator ?? null;
   }
 }

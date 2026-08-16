@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
-import { currentEarnings } from "@/lib/api/earnings";
+import { earningsApi } from "@/lib/api/earnings";
+import type { EarningsSummary } from "@/types/earnings";
 import { currentMessaging } from "@/lib/api/messaging";
 import { libraryItems } from "@/lib/api/creator-content";
 import { PLANS } from "@/types/subscription";
@@ -41,16 +44,46 @@ const STREAMS: { label: string; amount: number; pct: number }[] = [
 
 export function CreatorDashboard() {
   const router = useRouter();
-  const creator = currentSession.creator;
-  if (!creator) return null;
+  const { user, hydrated } = useSession();
+  const { creator, loading } = useCreatorState();
+  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
 
-  const gates = creatorGates(currentSession);
+  // Real GET /api/hub/content/mine/earnings — never the frozen mock. Starts
+  // null (nothing rendered for the earned figure) until the real call
+  // resolves, same "no fake number while loading" discipline as
+  // useCreatorState's snapshot-then-refresh pattern above.
+  const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
+  const [earningsFailed, setEarningsFailed] = useState(false);
+
+  useEffect(() => {
+    if (!gates.isCreator) return;
+    let cancelled = false;
+    setEarningsFailed(false);
+    earningsApi
+      .getSummary()
+      .then((s) => {
+        if (!cancelled) setEarnings(s);
+      })
+      .catch(() => {
+        if (!cancelled) setEarningsFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [gates.isCreator]);
+
+  // Real session hasn't hydrated yet, or the creator snapshot hasn't loaded
+  // (e.g. a creator account with no CreatorState row yet) — hold off rather
+  // than render with nothing.
+  if (!hydrated || (loading && !creator) || !creator) return null;
+
   const tier = gates.tier ?? creator.tier;
   const approved = gates.canEarn;
   const keep = PLANS[tier].split;
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
   const slotsLeft = gates.slotsRemaining;
-  const earned = approved ? currentEarnings.payable + currentEarnings.held : currentEarnings.held;
+  const earned = earnings ? (approved ? earnings.payable + earnings.held : earnings.held) : null;
+  const earnedDisplay = earned !== null ? formatNaira(earned) : earningsFailed ? "—" : "···";
   const urgentCount = currentMessaging.threads.filter((t) => !t.opened).length;
   const live = libraryItems.filter((i) => i.status === "live");
 
@@ -97,7 +130,7 @@ export function CreatorDashboard() {
               approved ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"
             }`}
           >
-            {formatNaira(earned)}
+            {earnedDisplay}
           </span>
           <div className="flex gap-[8px] flex-wrap">
             {approved ? (
@@ -197,7 +230,7 @@ export function CreatorDashboard() {
 
             <div className="grid grid-cols-4 gap-[16px]">
               <div className="rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[linear-gradient(140deg,#5A0B7D,#9411C9)] p-[20px]">
-                <StatBlock value={formatNaira(earned)} label="Earned this month" align="start" size="md" />
+                <StatBlock value={earnedDisplay} label="Earned this month" align="start" size="md" />
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
                 <StatBlock value="86" label="Unlocks" align="start" size="md" />
@@ -331,7 +364,7 @@ export function CreatorDashboard() {
                 Payout is automatic and non-actionable, matching the mobile
                 dashboard's existing "Paid out to GTB" treatment above. */}
             <div className="mt-auto flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[18px]">
-              <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{formatNaira(earned)}</span>
+              <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{earnedDisplay}</span>
               {approved ? (
                 <StatusPill kind="success">Paid out to GTB ••••6789</StatusPill>
               ) : (

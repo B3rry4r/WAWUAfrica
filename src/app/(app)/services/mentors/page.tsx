@@ -1,24 +1,51 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { getMentors } from "@/lib/api/mentors";
 import type { Mentor } from "@/types/mentors";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar, EmptyState, ErrorState, Icon, StatusPill, VerificationBadge } from "@/components/ui";
 
-export default async function MentorsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const { category = "All" } = await searchParams;
+export default function MentorsPage() {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category") ?? "All";
 
-  let allMentors;
-  let mentors;
-  try {
-    allMentors = await getMentors();
-    mentors = category === "All" ? allMentors : await getMentors(category);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title="We couldn't load mentors." body={message} />;
+  const [allMentors, setAllMentors] = useState<Mentor[] | null>(null);
+  const [mentors, setMentors] = useState<Mentor[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setError(null);
+    getMentors()
+      .then(async (all) => {
+        if (!active) return;
+        setAllMentors(all);
+        const scoped = category === "All" ? all : await getMentors(category);
+        if (active) setMentors(scoped);
+      })
+      .catch((e) => {
+        if (active) setError(e instanceof Error ? e.message : "We couldn't load mentors.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [category]);
+
+  if (error) {
+    return <ErrorState title="We couldn't load mentors." body={error} />;
+  }
+
+  if (!allMentors || !mentors) {
+    return (
+      <div className="flex flex-col gap-[10px] p-[14px_16px_96px]">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-[86px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
+        ))}
+      </div>
+    );
   }
 
   const categories = Array.from(new Set(allMentors.map((m) => m.category)));

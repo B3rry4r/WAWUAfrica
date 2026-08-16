@@ -6,8 +6,8 @@
 import type { ContentItem, ContentStatus } from "@/types/content";
 import { CONTENT_TYPE_META } from "@/types/content";
 import { formatNaira } from "@/lib/format";
-import { apiFetch, apiFetchPaginated, ApiError, mockRequest } from "./client";
-import { currentSession } from "./mocks/session";
+import { apiFetch, apiFetchPaginated, isMockModeError, ApiError, mockRequest } from "./client";
+import { sessionStorage } from "@/lib/auth/session-storage";
 
 export const libraryItems: ContentItem[] = [
   {
@@ -122,7 +122,8 @@ export const contentApi: ContentApi = {
     try {
       const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content/mine", { authed: true });
       return res.data.map(mapToContentItem);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/content/mine
       return mockRequest([...libraryItems]);
     }
@@ -132,7 +133,8 @@ export const contentApi: ContentApi = {
     try {
       const res = await apiFetch<HubContentPieceResponse>(`/api/hub/content/${id}`, { authed: true });
       return mapToContentItem(res);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       const item = libraryItems.find((i) => i.id === id);
       // SEAM: replace with GET /api/hub/content/:id
       return mockRequest(item ? { ...item } : undefined, 150);
@@ -140,11 +142,22 @@ export const contentApi: ContentApi = {
   },
 
   publish: async (item) => {
-    const creator = currentSession.creator;
+    // Real gate: the session WAWU ID / the Hub actually issued, not the
+    // frozen dev mock (src/lib/api/mocks/session.ts). A plain user reaching
+    // this function at all would mean the page-level gate (creatorGates on
+    // the real session) already failed to block them upstream, so this is a
+    // second, independent check against the real signed-in user.
+    const creator = sessionStorage.getUser()?.creator ?? null;
     if (!creator) {
       throw new ApiError("Only creator accounts can publish.", 403);
     }
 
+    // Both checks below are optimistic, client-side pre-checks only — the
+    // mock `libraryItems` list they read isn't kept in sync with the real
+    // backend's content rows now that GET /api/hub/content/mine is live, so
+    // this is best-effort UX (fail fast on the obvious case), never the
+    // actual enforcement. The real POST below is the source of truth and
+    // returns its own 400/409 if either rule is violated.
     const firstUpload = !libraryItems.some((i) => i.status === "live");
     if (firstUpload && item.price > 0) {
       throw new ApiError("Your first upload has to be free. Publish it free, then price everything after.", 400);
@@ -163,29 +176,31 @@ export const contentApi: ContentApi = {
         body: {
           contentType: item.type,
           title: item.title,
-          // GAP: none of these four are collected by PublishingWizard.tsx
-          // today (it only gathers type/title/price) — see the ContentItem
-          // doc comment in src/types/content.ts. Sending them empty means
-          // CreateContentDto's validation rejects the request (empty
-          // description/category, invalid preview/full asset URLs), which
-          // falls straight into the catch below rather than silently
-          // publishing a garbage row.
           description: item.description ?? "",
           category: item.category ?? "",
           accessType: item.price > 0 ? "paid" : "free",
           price: item.price,
+          // GAP: previewAsset/fullAsset still fall back to "" — there is no
+          // real file-upload endpoint anywhere in this API layer yet
+          // (PublishingWizard's upload step is decorative; no file is ever
+          // actually selected or stored). Sending them empty means
+          // CreateContentDto's IsUrl validation genuinely rejects the
+          // request. That is a real, honest 400 surfacing a real gap
+          // (building real upload is out of scope here), not something to
+          // paper over in this catch — description/category ARE now
+          // collected by the wizard and sent for real.
           previewAsset: item.previewAssetUrl ?? "",
           fullAsset: item.fullAssetUrl ?? "",
         },
       });
       created = mapToContentItem(res);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       // SEAM: replace with POST /api/hub/content
       created = await mockRequest({ ...item, id: `c${Date.now()}`, status: "review" as ContentStatus }, 800);
     }
 
     libraryItems.unshift(created);
-    creator.slotsUsed = inUse + 1;
     return created;
   },
 };

@@ -20,6 +20,8 @@ export interface Subscription {
   state: SubscriptionState;
   renewsAt?: string;
   cancelsAt?: string;
+  /** Last 4 digits of the card on file, as the backend actually returns it. */
+  cardLast4?: string;
 }
 
 export const PLANS: Record<CreatorTier, Plan> = {

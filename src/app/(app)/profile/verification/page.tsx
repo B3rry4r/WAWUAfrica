@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { VerificationLevelEntry, VerificationSubmission } from "@/types/verification";
 import { getVerificationLadder, getVerificationSubmissions } from "@/lib/api/verification";
-import { getOwnProfile } from "@/lib/api/verification";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { VerificationLadderList } from "@/components/profile/VerificationLadderList";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
@@ -20,8 +19,6 @@ export default async function VerificationPage() {
     const message = e instanceof Error ? e.message : undefined;
     return <ErrorState title={message ?? "We couldn't load your verification."} />;
   }
-  const own = await getOwnProfile();
-
   const current = ladder.find((l) => l.status === "yours");
   const next = ladder.find((l) => l.status === "next");
   const nextTier = next?.tier ?? "verified_business";

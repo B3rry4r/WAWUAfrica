@@ -1,5 +1,5 @@
 import type { Mentor } from "@/types/mentors";
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 import { getMockMentor, getMockMentors, requestMockMentor } from "./mocks/mentors";
 
 /**
@@ -29,7 +29,8 @@ export async function getMentors(category = "All"): Promise<Mentor[]> {
     const query = category === "All" ? "" : `?category=${encodeURIComponent(category)}`;
     const mentors = await apiFetch<RealMentor[]>(`/api/hub/services/mentors${query}`, { authed: true });
     return mentors.map(fromRealMentor);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockMentors(category);
   }
 }
@@ -39,7 +40,8 @@ export async function getMentor(id: string): Promise<Mentor | null> {
   try {
     const mentor = await apiFetch<RealMentor>(`/api/hub/services/mentors/${id}`, { authed: true });
     return fromRealMentor(mentor);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockMentor(id);
   }
 }
@@ -64,7 +66,8 @@ export async function requestMentor(
       body: request,
     });
     return { id: created.id, status: "sent" };
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return requestMockMentor(mentorId, request);
   }
 }

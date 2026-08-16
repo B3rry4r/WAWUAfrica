@@ -49,7 +49,7 @@ const FAQ = [
 ];
 
 export async function LandingContent() {
-  const toWatch = await getFeaturedContent();
+  const { items: toWatch, isLive } = await getFeaturedContent();
 
   // Desktop hero collage reuses the same featured items the mobile carousel
   // shows below — no separate mock, just a different arrangement of it.
@@ -141,7 +141,7 @@ export async function LandingContent() {
       </section>
 
       {/* Creators to watch */}
-      <CreatorCarousel items={toWatch} />
+      <CreatorCarousel items={toWatch} isLive={isLive} />
 
       {/* Stats */}
       <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
@@ -373,17 +373,23 @@ export async function LandingContent() {
           <p className="m-0 text-[15px] leading-normal text-text-secondary">
             Monthly notes on what is selling on WAWU and how creators are pricing it.
           </p>
-          <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-hairline bg-input px-4">
+          {/* No newsletter/subscribe endpoint exists anywhere in the backend
+             (grepped WAWU-Hub-API for "newsletter"/"subscribe" — nothing).
+             The control used to be a live-looking button with no handler at
+             all; disabling it and labeling it "Coming soon" is honest about
+             that instead of leaving an inert control that looks functional. */}
+          <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-hairline bg-input px-4 opacity-60">
             <Icon name="Mail" size={16} color="var(--text-muted)" />
             <input
               type="email"
               placeholder="you@email.com"
-              className="w-full bg-transparent text-[15px] text-text-primary outline-none placeholder:text-text-disabled"
+              disabled
+              className="w-full bg-transparent text-[15px] text-text-primary outline-none placeholder:text-text-disabled disabled:cursor-not-allowed"
               aria-label="Email"
             />
           </div>
-          <Button full variant="secondary">Subscribe</Button>
-          <span className="text-[12px] text-text-muted">No spam. Leave whenever you like.</span>
+          <Button full variant="secondary" disabled>Subscribe — coming soon</Button>
+          <span className="text-[12px] text-text-muted">Not live yet. No spam when it is — leave whenever you like.</span>
         </div>
       </section>
 

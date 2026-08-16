@@ -34,13 +34,24 @@ export function CreatorOnboarding() {
 
   const pay = () => {
     setStep("processing");
-    subscriptionApi.subscribe(tier).then(() => {
-      // Subscription payment succeeded: the session must reflect the paid
-      // tier so canUpload flips on for the rest of the app.
-      setSubscriptionPaid(true);
-      setCreatorTier(tier);
-      setStep("success");
-    });
+    subscriptionApi
+      .subscribe(tier)
+      .then(() => {
+        // Subscription payment succeeded: the session must reflect the paid
+        // tier so canUpload flips on for the rest of the app.
+        setSubscriptionPaid(true);
+        setCreatorTier(tier);
+        setStep("success");
+      })
+      .catch(() => {
+        // A real backend rejection (e.g. a duplicate/declined charge —
+        // already subscribed, card declined) must land on the real failure
+        // screen, not be silently swallowed into a fake success. Pattern A:
+        // subscriptionApi.subscribe() now only falls back to mock data when
+        // there's genuinely no backend configured; every other error reaches
+        // here as a real rejection.
+        setStep("failed");
+      });
   };
 
   if (step === "processing") {

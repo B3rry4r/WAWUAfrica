@@ -3,30 +3,47 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Community } from "@/types/credits";
-import { joinCommunity } from "@/lib/api/communities";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 type Tab = "joined" | "discover";
 
-export function CommunityTabs({ joined, discover }: { joined: Community[]; discover: Community[] }) {
+/**
+ * `joined`/`discover` and the join action itself are owned by the parent
+ * (communities/page.tsx) rather than copied into local state here — the
+ * page's desktop Rooms sidebar (RoomsDesktopList) reads the same `joined`
+ * array, so a real join needs to land in one shared place to show up in
+ * both the mobile tab list and the desktop sidebar without a second fetch.
+ */
+export function CommunityTabs({
+  joined,
+  discover,
+  onJoin,
+}: {
+  joined: Community[];
+  discover: Community[];
+  onJoin: (id: string) => Promise<void>;
+}) {
   const [tab, setTab] = useState<Tab>("joined");
-  const [joinedList, setJoinedList] = useState<Community[]>(joined);
-  const [discoverList, setDiscoverList] = useState<Community[]>(discover);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const doJoin = async (id: string) => {
-    const community = discoverList.find((c) => c.id === id);
-    if (!community) return;
-    await joinCommunity(id);
-    setDiscoverList((l) => l.filter((c) => c.id !== id));
-    setJoinedList((l) => [...l, { ...community, joined: true }]);
+    setJoinError(null);
+    try {
+      await onJoin(id);
+    } catch (e) {
+      // A real backend rejection (e.g. a stale/nonexistent community id)
+      // must show up as a real failure, not a fake move to "Yours".
+      setJoinError(e instanceof Error ? e.message : "Couldn't join this community. Try again.");
+    }
   };
 
-  const list = tab === "joined" ? joinedList : discoverList;
+  const list = tab === "joined" ? joined : discover;
 
   return (
     <div className="flex flex-col gap-3">
+      {joinError && <p className="m-0 text-[13px] text-[var(--danger)]">{joinError}</p>}
       <div className="flex gap-1 rounded-[var(--radius-input)] border border-hairline bg-tag p-1">
         {(["joined", "discover"] as Tab[]).map((t) => (
           <button

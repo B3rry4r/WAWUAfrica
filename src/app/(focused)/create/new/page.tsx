@@ -1,21 +1,63 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CONTENT_TYPES, type ContentType } from "@/types/content";
-import { libraryItems } from "@/lib/api/creator-content";
+import { contentApi } from "@/lib/api/creator-content";
+import type { ContentItem } from "@/types/content";
 import { PublishingWizard } from "@/components/create/PublishingWizard";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
 import { creatorGates } from "@/lib/auth/gates";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Skeleton } from "@/components/ui/Feedback";
 
-export const metadata = {
-  title: "New content · WAWUAfrica",
-};
+export default function NewContentPage() {
+  const searchParams = useSearchParams();
+  const { user, hydrated } = useSession();
+  const gates = creatorGates(user);
 
-interface Props {
-  searchParams: { type?: string; first?: string; resubmit?: string };
-}
+  const resubmitId = searchParams.get("resubmit");
+  const [resubmitItem, setResubmitItem] = useState<ContentItem | null | undefined>(resubmitId ? undefined : null);
+  // Whether this creator has anything live yet — determines whether this
+  // upload is the free first one. Read fresh from the real library rather
+  // than the frozen mock array, since that's what actually changes as
+  // uploads get published.
+  const [hasPublished, setHasPublished] = useState<boolean | undefined>(undefined);
 
-export default function NewContentPage({ searchParams }: Props) {
-  const gates = creatorGates(currentSession);
+  useEffect(() => {
+    if (!resubmitId) return;
+    let cancelled = false;
+    contentApi.getLibraryItem(resubmitId).then((item) => {
+      if (!cancelled) setResubmitItem(item ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [resubmitId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    contentApi.getLibrary().then((items) => {
+      if (!cancelled) setHasPublished(items.some((i) => i.status === "live"));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Real session hasn't hydrated from localStorage yet (SSR / first paint) —
+  // hold off on any gate decision until we actually know who is signed in.
+  if (!hydrated) {
+    return (
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:max-w-none">
+        <FlowHeader title="Upload" />
+        <div className="flex flex-col gap-[12px] p-[16px]">
+          <Skeleton height={80} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
 
   // This route is a direct URL, not just a button behind CreateHub — it needs
   // the same two gates CreateHub enforces, or it's a bypass of "paid
@@ -82,18 +124,30 @@ export default function NewContentPage({ searchParams }: Props) {
     );
   }
 
-  const resubmitItem = searchParams.resubmit
-    ? libraryItems.find((i) => i.id === searchParams.resubmit)
-    : undefined;
+  // Waiting on the resubmit item and/or the live library to load.
+  if (resubmitItem === undefined || hasPublished === undefined) {
+    return (
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:max-w-none">
+        <FlowHeader title="Upload" />
+        <div className="flex flex-col gap-[12px] p-[16px]">
+          <Skeleton height={80} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
 
+  const typeParam = searchParams.get("type");
   const type: ContentType = resubmitItem
     ? resubmitItem.type
-    : CONTENT_TYPES.includes(searchParams.type as ContentType)
-      ? (searchParams.type as ContentType)
+    : CONTENT_TYPES.includes(typeParam as ContentType)
+      ? (typeParam as ContentType)
       : "video";
 
-  const hasPublished = libraryItems.some((i) => i.status === "live");
-  const firstUpload = resubmitItem ? !!resubmitItem.isFirstUpload : searchParams.first === "1" ? true : !hasPublished;
+  const firstUpload = resubmitItem
+    ? !!resubmitItem.isFirstUpload
+    : searchParams.get("first") === "1"
+      ? true
+      : !hasPublished;
 
   return (
     <PublishingWizard

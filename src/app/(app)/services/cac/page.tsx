@@ -1,16 +1,50 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getCacTimeline, getService } from "@/lib/api/services";
+import type { PartnerService, ServiceApplicationTimeline } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ErrorState, Icon, StatusPill } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 
-export default async function CacServicePage() {
-  const [service, timeline] = await Promise.all([getService("cac"), getCacTimeline()]);
+export default function CacServicePage() {
+  const [service, setService] = useState<PartnerService | null>(null);
+  const [timeline, setTimeline] = useState<ServiceApplicationTimeline[]>([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  if (!service) {
+  useEffect(() => {
+    let active = true;
+    Promise.all([getService("cac"), getCacTimeline()])
+      .then(([s, t]) => {
+        if (!active) return;
+        if (!s) setError(true);
+        else {
+          setService(s);
+          setTimeline(t);
+        }
+      })
+      .catch(() => active && setError(true))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (error) {
     return (
       <div className="p-[16px]">
         <ErrorState title="Service not found" />
+      </div>
+    );
+  }
+
+  if (loading || !service) {
+    return (
+      <div className="flex flex-col gap-[12px] p-[14px_16px_96px]">
+        <div className="h-[56px] w-[56px] rounded-[16px] bg-[var(--surface-tag)]" />
+        <div className="h-[120px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
       </div>
     );
   }

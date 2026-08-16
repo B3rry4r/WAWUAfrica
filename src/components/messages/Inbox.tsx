@@ -3,17 +3,21 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { messagingApi } from "@/lib/api/messaging";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
+import { creatorGates } from "@/lib/auth/gates";
 import { PLANS } from "@/types/subscription";
 import type { MessagingState } from "@/types/messaging";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { formatNaira } from "@/lib/format";
 
 export function Inbox() {
+  const { user } = useSession();
+  const { creator } = useCreatorState();
+  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
   const [state, setState] = useState<MessagingState | null>(null);
   const [error, setError] = useState(false);
 
@@ -44,8 +48,8 @@ export function Inbox() {
     );
   }
 
-  const price = currentSession.creator?.dmPrice ?? 300;
-  const keep = PLANS[currentSession.creator?.tier ?? "basic"].split;
+  const price = gates.dmPrice || 300;
+  const keep = PLANS[gates.tier ?? "basic"].split;
   const dmEarn = Math.round((price * keep) / 100);
   const urgent = state.threads.filter((t) => !t.opened);
   const answered = state.threads.filter((t) => t.opened);
@@ -133,65 +137,48 @@ export function Inbox() {
                   {formatNaira(dmEarn)} to earn
                 </span>
               </div>
-              <Button full className="h-[48px]" onClick={() => routerTo(t.id)}>
-                Reply now
-              </Button>
+              {/* No reply composer on mobile yet — the only working reply
+                  flow is the desktop three-pane inbox (see QuestionsDesktop's
+                  doc comment: "mobile has no creator-side thread/reply
+                  view"). A "Reply now" button here used to render with no
+                  destination (routerTo was a literal no-op) — removed rather
+                  than shipping a control that does nothing when tapped. */}
             </div>
           );
         })}
 
-        {answered.map((t) => (
-          <div
-            key={t.id}
-            className={`flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] ${
-              t.unread ? "opacity-100" : "opacity-70"
-            }`}
-          >
-            <Avatar initials={t.buyerInitials} size={40} />
-            <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
-              <div className="flex items-center gap-[8px]">
-                <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">{t.buyerName}</span>
-                <StatusPill kind="success" size="xs">
-                  Answered
-                </StatusPill>
-              </div>
-              <span
-                className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
-              >
-                {t.preview}
-              </span>
-              <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-                Earned {formatNaira(dmEarn)} · replied in 3h
-              </span>
-            </div>
-          </div>
-        ))}
-
-        <div
-          className="flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] opacity-[0.7]"
-        >
-          <Avatar initials="C" size={40} />
-          <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
-            <div className="flex items-center gap-[8px]">
-              <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">Chidi Umeh</span>
-              <StatusPill kind="info" size="xs">
-                Refunded
-              </StatusPill>
-            </div>
-            <span
-              className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
+        {answered.map((t) => {
+          const refunded = t.status === "refunded";
+          return (
+            <div
+              key={t.id}
+              className={`flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] ${
+                t.unread ? "opacity-100" : "opacity-70"
+              }`}
             >
-              Do you review business plans?
-            </span>
-            <span className="text-[12px] text-[var(--text-muted)]">Missed the window · earned nothing</span>
-          </div>
-        </div>
+              <Avatar initials={t.buyerInitials} size={40} />
+              <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+                <div className="flex items-center gap-[8px]">
+                  <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">{t.buyerName}</span>
+                  <StatusPill kind={refunded ? "info" : "success"} size="xs">
+                    {refunded ? "Refunded" : "Answered"}
+                  </StatusPill>
+                </div>
+                <span
+                  className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
+                >
+                  {t.preview}
+                </span>
+                <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+                  {refunded
+                    ? "Missed the window · earned nothing"
+                    : `Earned ${formatNaira(dmEarn)}${t.repliedIn ? ` · replied in ${t.repliedIn}` : ""}`}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-}
-
-function routerTo(id: string) {
-  // Conversation view is a separate flow; nothing to navigate to yet.
-  void id;
 }

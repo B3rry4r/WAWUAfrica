@@ -20,6 +20,7 @@ export default function EditProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [draft, setDraft] = useState<OwnProfileDraft>({
     name: "",
     handle: "",
@@ -52,13 +53,15 @@ export default function EditProfilePage() {
   const submit = async () => {
     if (!draft.name.trim() || !draft.handle.trim()) return;
     setSaving(true);
+    setSaveError(null);
     try {
       await saveProfile({
         ...draft,
         handle: draft.handle.trim().replace(/^@/, ""),
       });
       router.push("/profile");
-    } finally {
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "That didn't save. Try again.");
       setSaving(false);
     }
   };
@@ -92,20 +95,17 @@ export default function EditProfilePage() {
       ) : (
         <>
           <div className="flex justify-center">
-            <div className="relative">
-              <Avatar initial={draft.name.charAt(0) || "A"} size={84} />
-              <button
-                type="button"
-                aria-label="Change photo"
-                className="absolute -bottom-0.5 -right-0.5 grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-full border-2 border-page bg-card shadow-[0_2px_10px_rgba(0,0,0,0.28)]"
-              >
-                <Icon name="Camera" size={14} color="var(--text-secondary)" strokeWidth={2} />
-              </button>
-            </div>
+            <Avatar initial={draft.name.charAt(0) || "A"} size={84} />
           </div>
 
           <div className="flex flex-col gap-[14px]">
-            <Input label="Full name" value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} />
+            <Input
+              label="Full name"
+              value={draft.name}
+              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+              disabled
+              hint="Your name is managed by your WAWU ID account and can't be changed here yet."
+            />
             <Input
               label="Handle"
               value={draft.handle}
@@ -168,6 +168,13 @@ export default function EditProfilePage() {
               />
             </section>
           </div>
+
+          {saveError ? (
+            <span className="flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--danger)]">
+              <Icon name="CircleAlert" size={14} color="var(--danger)" />
+              {saveError}
+            </span>
+          ) : null}
 
           <Button full disabled={saving || !draft.name.trim() || !draft.handle.trim()} onClick={submit}>
             {saving ? "Saving…" : "Save changes"}

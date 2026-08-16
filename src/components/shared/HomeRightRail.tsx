@@ -12,7 +12,6 @@ import { creatorGates } from "@/lib/auth/gates";
 import { getPopularSearches, getSuggestedCreators } from "@/lib/api/search";
 import { messagingApi } from "@/lib/api/messaging";
 import { earningsApi } from "@/lib/api/earnings";
-import { libraryItems } from "@/lib/api/creator-content";
 import { formatNaira } from "@/lib/format";
 import type { EarningsSummary } from "@/types/earnings";
 import type { Thread } from "@/types/messaging";
@@ -162,7 +161,15 @@ function CreatorRail() {
           <StatBlock value={formatNaira(earned)} label="Earned" align="start" size="md" />
         )}
         <div className="flex gap-[18px] border-t border-hairline pt-3">
-          <StatBlock value={String(salesCount())} label="Sales" align="start" size="sm" />
+          {/* GET /api/hub/content/mine has no units-sold/sales-count field
+             (see the GAP note on mapToContentItem in creator-content.ts) --
+             there is no Purchase aggregation wired into this resource. This
+             used to show a hardcoded "34" from static mock library items
+             directly beside the genuinely live "Earned" figure above, with
+             nothing telling the creator one was real and the other wasn't.
+             Showing "Soon" instead of a number is honest about the gap
+             rather than inventing or silently reusing a fake count. */}
+          <StatBlock value="Soon" label="Sales" align="start" size="sm" />
           {/* EVG isn't backed by an API yet — CreatorDashboard shows this same
               static placeholder for the same reason (src/components/dashboard/CreatorDashboard.tsx). */}
           <StatBlock value="1,240" label="EVG" align="start" size="sm" />
@@ -170,18 +177,6 @@ function CreatorRail() {
       </RailCard>
     </>
   );
-}
-
-/**
- * Sums "N sold" out of each library item's activity string — there is no
- * dedicated units-sold field yet (ContentItem.activity is display text).
- * SEAM: replace with a real units-sold figure once GET /api/hub/content/mine/earnings exposes one.
- */
-function salesCount(): number {
-  return libraryItems.reduce((total, item) => {
-    const match = item.activity?.match(/^([\d,]+)\s*sold/);
-    return match ? total + Number(match[1].replace(/,/g, "")) : total;
-  }, 0);
 }
 
 function TrendingCard() {

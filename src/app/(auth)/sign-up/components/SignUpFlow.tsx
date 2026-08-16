@@ -281,24 +281,66 @@ export function SignUpFlow() {
       <AuthScaffold title="A bit about you" stepLabel={stepLabel} onBack={() => setStep("identity")}>
         <div className="flex flex-col gap-[18px]">
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold text-text-secondary">Country</span>
-            <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-hairline bg-input px-4 text-[15px]">
-              <span className="flex-1">{details.country}</span>
-              <Icon name="ChevronDown" size={16} color="var(--text-muted)" strokeWidth={2.2} />
+            <label htmlFor="signup-country" className="text-[13px] font-semibold text-text-secondary">
+              Country
+            </label>
+            <div className="relative flex h-[52px] items-center rounded-input border border-hairline bg-input">
+              <select
+                id="signup-country"
+                value={details.country}
+                onChange={(e) => {
+                  const country = e.target.value;
+                  const regions = COUNTRIES[country] ?? [];
+                  setDetails({ ...details, country, region: regions[0] ?? "" });
+                }}
+                className="h-full w-full appearance-none bg-transparent px-4 pr-10 text-[15px] text-text-primary outline-none"
+              >
+                {Object.keys(COUNTRIES).map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+              <Icon
+                name="ChevronDown"
+                size={16}
+                color="var(--text-muted)"
+                strokeWidth={2.2}
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
+              />
             </div>
             <span className="text-[12px] text-text-muted">Sets your national-ID field at verification.</span>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold text-text-secondary">{details.country === "Ghana" ? "Region" : "State"}</span>
+            <label htmlFor="signup-region" className="text-[13px] font-semibold text-text-secondary">
+              {details.country === "Ghana" ? "Region" : "State"}
+            </label>
             {regionEmpty ? (
               <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-dashed border-hairline bg-input px-4 opacity-70">
                 <span className="flex-1 text-[15px] text-text-disabled">No regions listed</span>
                 <Icon name="Minus" size={16} color="var(--text-disabled)" strokeWidth={2.2} />
               </div>
             ) : (
-              <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-hairline bg-input px-4 text-[15px]">
-                <span className="flex-1">{details.region}</span>
-                <Icon name="ChevronDown" size={16} color="var(--text-muted)" strokeWidth={2.2} />
+              <div className="relative flex h-[52px] items-center rounded-input border border-hairline bg-input">
+                <select
+                  id="signup-region"
+                  value={details.region}
+                  onChange={(e) => setDetails({ ...details, region: e.target.value })}
+                  className="h-full w-full appearance-none bg-transparent px-4 pr-10 text-[15px] text-text-primary outline-none"
+                >
+                  {regionOptions.map((region) => (
+                    <option key={region} value={region}>
+                      {region}
+                    </option>
+                  ))}
+                </select>
+                <Icon
+                  name="ChevronDown"
+                  size={16}
+                  color="var(--text-muted)"
+                  strokeWidth={2.2}
+                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
+                />
               </div>
             )}
             {regionEmpty ? <span className="text-[12px] text-text-muted">Ghana has no regions on file yet — skip this and continue.</span> : null}

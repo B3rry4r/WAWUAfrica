@@ -35,7 +35,15 @@ export function ListRow({ title, subtitle, icon, meta, onAction, trailing = "che
       {meta}
     </Button>
   </span>
-) : trailing === "chevron" ? (
+) : meta ? (
+  // Plain text badge (design system's ListRow.jsx: meta renders as its own
+  // bold tabular-number span, independent of and alongside the chevron —
+  // not a replacement for it).
+  <span className="shrink-0 text-[13.5px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
+    {meta}
+  </span>
+) : null}
+{!(meta && onAction) && trailing === "chevron" ? (
   <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
 ) : null}
     </>

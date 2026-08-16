@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { messagingApi } from "@/lib/api/messaging";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
+import { creatorGates } from "@/lib/auth/gates";
 import { PLANS } from "@/types/subscription";
 import type { PenaltyKind } from "@/types/messaging";
 import { NairaInput } from "@/components/ui/NairaInput";
@@ -10,57 +12,140 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { FlowHeader } from "@/components/layout/FlowHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Skeleton } from "@/components/ui/Feedback";
 import { formatNaira } from "@/lib/format";
 
 const penalties: PenaltyKind[] = ["none", "warned", "disabled7", "disabled30"];
 
+/** Non-production only — see the switcher's own doc comment below. */
+const DEV_TOOLS_ENABLED = process.env.NODE_ENV !== "production";
+
 export function PaidMessagesSettings() {
-  const [price, setPrice] = useState(300);
+  const { user, hydrated } = useSession();
+  const { creator, reload: reloadCreatorState } = useCreatorState();
+  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+  const [price, setPrice] = useState(gates.dmPrice || 300);
   const [penalty, setPenalty] = useState<PenaltyKind>("none");
-  const [rate, setRate] = useState(4);
-  const [enabled, setEnabled] = useState(true);
+  const [rate, setRate] = useState(0);
+  const [statsError, setStatsError] = useState(false);
+  const [enabled, setEnabled] = useState(gates.dmEnabled);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  // Real price/accept-toggle come from the session's creator state (GET
+  // /api/hub/creator/state at login) — re-sync if that changes under us.
+  useEffect(() => {
+    setPrice(gates.dmPrice || 300);
+    setEnabled(gates.dmEnabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gates.dmPrice, gates.dmEnabled]);
 
   useEffect(() => {
+    if (!gates.isCreator) return;
     let alive = true;
-    messagingApi.getState().then((s) => {
-      if (!alive) return;
-      setPrice(300);
-      setPenalty(s.penalty);
-      setRate(s.responseStats.rate);
-    });
+    messagingApi
+      .getState()
+      .then((s) => {
+        if (!alive) return;
+        setPenalty(s.penalty);
+        setRate(s.responseStats.rate);
+      })
+      .catch(() => {
+        if (alive) setStatsError(true);
+      });
     return () => {
       alive = false;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gates.isCreator]);
 
-  const tier = currentSession.creator?.tier ?? "basic";
+  const tier = gates.tier ?? "basic";
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
   const keep = PLANS[tier].split;
   const dmEarn = Math.round((price * keep) / 100);
   const locked = penalty === "disabled7" || penalty === "disabled30";
 
+  const save = async () => {
+    setSaveState("saving");
+    try {
+      await messagingApi.updateDmSettings({ dmEnabled: enabled, dmPrice: price });
+      setSaveState("saved");
+      reloadCreatorState();
+      setTimeout(() => setSaveState("idle"), 2000);
+    } catch {
+      setSaveState("error");
+    }
+  };
+
+  if (!hydrated) {
+    return (
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+        <FlowHeader title="Paid messages" />
+        <div className="flex flex-col gap-[12px] p-[16px]">
+          <Skeleton height={80} radius="var(--radius-card)" />
+          <Skeleton height={80} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
+
+  // Paid-message pricing/penalty settings are a creator-only surface — a
+  // plain user account has no creator record and the real backend 403s on
+  // every one of these endpoints (same root cause as the /messages gate).
+  if (!gates.isCreator) {
+    return (
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+        <FlowHeader title="Paid messages" />
+        <EmptyState
+          icon="Lock"
+          title="This setting is for creators"
+          caption="Paid messages are something creators turn on to answer fan questions. Switch to a creator account to set this up."
+          action="Set up a creator account"
+          actionHref="/onboarding"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
       <FlowHeader title="Paid messages" />
 
-      <div className="flex justify-center gap-[4px] pt-[10px] px-[16px] pb-0">
-        {penalties.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => setPenalty(p)}
-            className={`h-[30px] py-0 px-[12px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
-              penalty === p
-                ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
-                : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
-            }`}
-          >
-            {p === "none" ? "Good" : p === "warned" ? "Warning" : p === "disabled7" ? "Off 7d" : "Off 30d"}
-          </button>
-        ))}
-      </div>
+      {/*
+        DEV ONLY — lets every penalty state (good/warned/disabled7/disabled30)
+        be previewed without waiting for the real backend's no-response
+        tracker to reach that state. It mutates local UI state only (never
+        the real `penalty` the backend computed) and must never render in
+        production — gated on NODE_ENV rather than shipped unconditionally.
+      */}
+      {DEV_TOOLS_ENABLED ? (
+        <div className="flex justify-center gap-[4px] pt-[10px] px-[16px] pb-0">
+          {penalties.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPenalty(p)}
+              className={`h-[30px] py-0 px-[12px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
+                penalty === p
+                  ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
+              }`}
+            >
+              {p === "none" ? "Good" : p === "warned" ? "Warning" : p === "disabled7" ? "Off 7d" : "Off 30d"}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="flex-1 py-[18px] px-[16px] flex flex-col gap-[18px]">
+        {statsError ? (
+          <div className="flex items-center gap-[10px] py-[12px] px-[14px] rounded-[var(--radius-card)] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.32)]">
+            <Icon name="TriangleAlert" size={16} strokeWidth={2.2} color="var(--danger)" />
+            <span className="flex-1 text-[12.5px] font-semibold text-[var(--text-primary)]">
+              Couldn&apos;t load your reply record — the numbers below may be out of date.
+            </span>
+          </div>
+        ) : null}
         {locked ? (
           <div
             className="flex items-center gap-[14px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] opacity-[0.6]"
@@ -317,9 +402,14 @@ export function PaidMessagesSettings() {
         ) : null}
       </div>
 
-      <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)]">
-        <Button full size="lg" disabled={locked}>
-          Save
+      <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[8px]">
+        {saveState === "error" ? (
+          <span className="text-[12.5px] font-semibold text-[var(--danger)] text-center">
+            Couldn&apos;t save — check your connection and try again.
+          </span>
+        ) : null}
+        <Button full size="lg" disabled={locked || saveState === "saving"} onClick={save}>
+          {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save"}
         </Button>
       </div>
     </div>

@@ -30,9 +30,14 @@ export function DeleteAccountBody({ variant }: { variant: "mobile" | "desktop" }
       return;
     }
     setDeleting(true);
-    await deleteAccount();
-    setDeleting(false);
-    setDone(true);
+    try {
+      await deleteAccount();
+      setDone(true);
+    } catch {
+      setError("That didn't go through. Try again.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (done) {

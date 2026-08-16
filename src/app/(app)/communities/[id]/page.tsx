@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Community } from "@/types/credits";
 import { getCommunities } from "@/lib/api/communities";
 import { useCommunityThread } from "@/hooks/useCommunityThread";
+import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -25,14 +26,16 @@ export default function CommunityDetailPage() {
   const router = useRouter();
   const id = String(params?.id ?? "");
 
-  const { community, messages, balance, errorKind, load, doJoin, send, sending } = useCommunityThread(id);
+  const { user } = useSession();
+  const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError } =
+    useCommunityThread(id);
   const [text, setText] = useState("");
 
   // Rooms list for the xl: three-pane view (design D14) — only needed above
   // the xl breakpoint, but fetched unconditionally like Inbox/QuestionsDesktop
   // each own their fetch for the mobile/desktop split (see messages/page.tsx).
   const [joinedRooms, setJoinedRooms] = useState<Community[]>([]);
-  useEffect(() => {
+  const refreshJoinedRooms = useCallback(() => {
     let active = true;
     getCommunities("joined")
       .then((rooms) => active && setJoinedRooms(rooms))
@@ -41,11 +44,21 @@ export default function CommunityDetailPage() {
       active = false;
     };
   }, []);
+  useEffect(() => refreshJoinedRooms(), [refreshJoinedRooms]);
 
   const handleSend = async () => {
     if (!text.trim()) return;
-    await send(text);
-    setText("");
+    const ok = await send(text);
+    if (ok) setText("");
+  };
+
+  // Refresh the sidebar's real joined-communities list after a real join —
+  // toCommunity() derives `joined` from session-tracked ids (see
+  // lib/api/communities.ts), so a successful join here needs a refetch to
+  // show up in the Rooms list, mobile Join button included.
+  const handleJoin = async () => {
+    const ok = await doJoin();
+    if (ok) refreshJoinedRooms();
   };
 
   if (errorKind === "not-found") {
@@ -63,7 +76,7 @@ export default function CommunityDetailPage() {
           listWidth={340}
           listHeader={ROOMS_LIST_HEADER}
           list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
-          detail={<CommunityThreadDesktop id={id} />}
+          detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
         />
       </>
     );
@@ -83,7 +96,7 @@ export default function CommunityDetailPage() {
           listWidth={340}
           listHeader={ROOMS_LIST_HEADER}
           list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
-          detail={<CommunityThreadDesktop id={id} />}
+          detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
         />
       </>
     );
@@ -104,7 +117,7 @@ export default function CommunityDetailPage() {
           listWidth={340}
           listHeader={ROOMS_LIST_HEADER}
           list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
-          detail={<CommunityThreadDesktop id={id} />}
+          detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
         />
       </>
     );
@@ -137,22 +150,23 @@ export default function CommunityDetailPage() {
           <p className="m-0 max-w-[300px] text-[14px] leading-[1.5] text-text-secondary">
             {community.name} is a closed circle. Join to read and post — reading is free, sending costs one credit.
           </p>
-          <Button onClick={doJoin} className="mt-3.5">
+          <Button onClick={handleJoin} className="mt-3.5">
             Join community
           </Button>
+          {joinError && <p className="m-0 text-[13px] text-[var(--danger)]">{joinError}</p>}
         </div>
       ) : (
         <>
           <div className="flex items-center gap-[9px] border-b border-hairline bg-card px-4 py-[10px]">
             <Icon name="Ticket" size={15} color="var(--accent)" strokeWidth={2} />
             <span className="text-[12.5px] text-text-secondary">
-              Reading is free · sending costs <b>{balance}</b> credit{balance === 1 ? "" : "s"}
+              Reading is free · sending costs <b>1</b> credit
             </span>
           </div>
 
           <div className="flex flex-1 flex-col gap-[10px] px-4 pb-3 pt-4">
             {messages.map((m) => {
-              const mine = m.sender.wawuId === "wawu-me";
+              const mine = m.sender.wawuId === user?.wawuId;
               return (
                 <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                   <div
@@ -181,6 +195,7 @@ export default function CommunityDetailPage() {
           </div>
 
           <footer className="sticky bottom-0 border-t border-hairline bg-elevated px-4 pb-[calc(10px_+_env(safe-area-inset-bottom))] pt-[10px]">
+            {sendError && <p className="m-0 mb-2 text-[12.5px] text-[var(--danger)]">{sendError}</p>}
             {balance < 1 ? (
               <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>
                 Top up credits
@@ -226,7 +241,7 @@ export default function CommunityDetailPage() {
       listWidth={340}
       listHeader={ROOMS_LIST_HEADER}
       list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
-      detail={<CommunityThreadDesktop id={id} />}
+      detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
     />
     </>
   );

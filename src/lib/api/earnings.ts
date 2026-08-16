@@ -1,5 +1,5 @@
 import type { EarningsRecentSale, EarningsSummary } from "@/types/earnings";
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 
 /**
  * Mirrors a real GET /api/hub/content/mine/earnings response (verified live
@@ -38,7 +38,8 @@ export const earningsApi: EarningsApi = {
       // computed at request time, not a running balance (see backend
       // service doc comment). Creator-only: WawuAuthGuard + CreatorAccountGuard.
       return await apiFetch<EarningsSummary>("/api/hub/content/mine/earnings", { authed: true });
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/content/mine/earnings
       return { ...currentEarnings };
     }
@@ -49,7 +50,8 @@ export const earningsApi: EarningsApi = {
       // separate list endpoint on the real backend.
       const summary = await apiFetch<EarningsSummary>("/api/hub/content/mine/earnings", { authed: true });
       return summary.recentSales;
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/content/mine/earnings
       return [...currentEarnings.recentSales];
     }

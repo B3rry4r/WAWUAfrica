@@ -1,5 +1,5 @@
 import type { DmStatus, DmThreadDetail, DmThreadMessage, DmThreadSummary } from "@/types/dm";
-import { apiFetch, apiFetchPaginated, delay } from "./client";
+import { apiFetch, apiFetchPaginated, ApiError, delay, isMockModeError } from "./client";
 import {
   getMockDmThread,
   getMockDmThreads,
@@ -103,15 +103,11 @@ function toDmThreadDetail(dm: RawDirectMessage): DmThreadDetail {
 }
 
 export async function fetchUnreadDmCount(): Promise<number> {
-  try {
-    // GAP: no dedicated unread-count endpoint exists on DirectMessage — and
-    // per the GAP above, DirectMessage has no read/unread flag at all, so
-    // even summing over /dm/threads can't produce a real unread count.
-    // Falls straight to mock; there is nothing real to compute this from.
-    return await getMockUnreadDmCount();
-  } catch {
-    return getMockUnreadDmCount();
-  }
+  // GAP: no dedicated unread-count endpoint exists on DirectMessage — and
+  // per the GAP above, DirectMessage has no read/unread flag at all, so
+  // even summing over /dm/threads can't produce a real unread count.
+  // Nothing real to compute this from — always mock, not a Pattern-A case.
+  return getMockUnreadDmCount();
 }
 
 // SEAM: replace with GET /api/hub/dm/inbox
@@ -119,7 +115,8 @@ export async function getDmThreads(): Promise<DmThreadSummary[]> {
   try {
     const { data } = await apiFetchPaginated<RawDirectMessage>("/api/hub/dm/threads", { authed: true });
     return data.map(toDmThreadSummary);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockDmThreads();
   }
 }
@@ -129,8 +126,13 @@ export async function getDmThread(threadId: string): Promise<DmThreadDetail | nu
   try {
     const dm = await apiFetch<RawDirectMessage>(`/api/hub/dm/${threadId}`, { authed: true });
     return toDmThreadDetail(dm);
-  } catch {
-    return getMockDmThread(threadId);
+  } catch (e) {
+    if (isMockModeError(e)) return getMockDmThread(threadId);
+    // A real 404 means the thread genuinely doesn't exist — that's the
+    // page's "Conversation not found" state, not a retry-able error. Any
+    // other real rejection (5xx, network) must surface as a real failure.
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
   }
 }
 
@@ -168,7 +170,12 @@ export async function sendPaidDm(
       // not a reason to fall back to mock data.
       return { threadId: init.threadId, result: "payment_failed" };
     }
-  } catch {
+  } catch (e) {
+    // A real rejection of the init call (e.g. DM disabled, bad price) means
+    // no charge was ever created — that must reach the caller as a real
+    // failure, not a fabricated "sent" thread. Only genuine mock mode (no
+    // backend configured) falls back.
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with POST /api/hub/dm/:creatorId/send
     return sendMockPaidDm(creator, text, amount);
   }

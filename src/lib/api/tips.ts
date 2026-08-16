@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 import type { TipResult } from "./mocks/tips";
 import { sendMockTip, TIP_PRESETS } from "./mocks/tips";
 
@@ -50,7 +50,13 @@ export async function sendTip(
     });
 
     return { result: "success", amount };
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) {
+      // Real backend reached and rejected the tip (decline, validation, 5xx)
+      // — same failure class as content-unlock's real /verify rejection.
+      // Report it as a real failure, not a fabricated "success".
+      return { result: "payment_failed", amount };
+    }
     // SEAM: replace with POST /api/hub/tips + POST /api/hub/tips/verify
     return sendMockTip(creator, amount, note);
   }

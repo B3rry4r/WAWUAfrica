@@ -1,5 +1,5 @@
 import type { MessagingState, ResponseStats, PenaltyKind, Thread, ThreadDetail, ThreadMessage, ThreadStatus } from "@/types/messaging";
-import { apiFetch, apiFetchPaginated, mockRequest } from "./client";
+import { apiFetch, apiFetchPaginated, isMockModeError, mockRequest } from "./client";
 
 export const currentMessaging: MessagingState = {
   threads: [
@@ -136,10 +136,16 @@ interface RawDirectMessage {
   flutterwaveTxRef: string;
 }
 
-/** Wire shape of GET /dm/response-stats (CreatorNoResponseTracker). */
+/**
+ * Wire shape of GET /dm/response-stats (CreatorNoResponseTracker).
+ *
+ * `noResponseRatePct` is already the missed/unanswered percentage the UI
+ * wants for `ResponseStats.rate` (see that type's doc comment) — map it
+ * straight across, do not invert it.
+ */
 interface RawResponseStats {
   creatorWawuId: string;
-  /** The NO-response rate — inverse of the fan-facing "response rate" concept. */
+  /** The NO-response (missed) rate — maps directly to ResponseStats.rate. */
   noResponseRatePct: number;
   penaltyState: "none" | "warned" | "disabled_7d" | "disabled_30d";
   dmDisabledUntil: string | null;
@@ -181,6 +187,13 @@ function formatDuration(ms: number): { minutes: number; label: string } {
   return { minutes: totalMinutes, label: `${hours}h ${String(minutes).padStart(2, "0")}m` };
 }
 
+/** Concise "3h" / "45m" elapsed label — matches the Inbox's "replied in X" copy style. */
+function formatElapsed(ms: number): string {
+  const totalMinutes = Math.max(1, Math.round(ms / 60_000));
+  if (totalMinutes < 60) return `${totalMinutes}m`;
+  return `${Math.round(totalMinutes / 60)}h`;
+}
+
 function toThreadStatus(status: RawDirectMessage["status"]): ThreadStatus {
   if (status === "awaiting_response") return "awaiting";
   if (status === "responded") return "answered";
@@ -190,6 +203,7 @@ function toThreadStatus(status: RawDirectMessage["status"]): ThreadStatus {
 function toThread(dm: RawDirectMessage): Thread {
   const { buyerName, buyerInitials } = buyerDisplay(dm.senderWawuId);
   const remainingMs = new Date(dm.deadlineAt).getTime() - Date.now();
+  const awaiting = dm.status === "awaiting_response";
   return {
     id: dm.id,
     buyerName,
@@ -197,15 +211,21 @@ function toThread(dm: RawDirectMessage): Thread {
     preview: dm.text,
     price: dm.amount,
     // GAP: DirectMessage has no separate "opened" state — the mock model's
-    // held-until-opened window doesn't exist on the real backend, whose
-    // 24h deadline runs from `sentAt` unconditionally (registry note:
-    // "single locked deadline"). Every awaiting DM is already "open" and
-    // counting down from send time, so this is always true.
-    opened: true,
-    expiresAt:
-      dm.status === "awaiting_response" && remainingMs > 0 ? `in ${formatDuration(remainingMs).label}` : undefined,
+    // held-until-opened window doesn't exist on the real backend (registry
+    // note: "single locked deadline" running from `sentAt` unconditionally).
+    // Repurposed here as what Inbox.tsx's urgent/answered split actually
+    // needs: false while still awaiting a reply, true once resolved
+    // (answered or refunded) — NOT unconditionally true. A prior version
+    // hardcoded this true for every real thread, which put every awaiting,
+    // needs-a-reply DM in the "answered" bucket instead of "urgent".
+    opened: !awaiting,
+    expiresAt: awaiting && remainingMs > 0 ? `in ${formatDuration(remainingMs).label}` : undefined,
     // GAP: no per-thread unread counter on the backend.
     unread: undefined,
+    status: toThreadStatus(dm.status),
+    repliedIn: dm.respondedAt
+      ? formatElapsed(new Date(dm.respondedAt).getTime() - new Date(dm.sentAt).getTime())
+      : undefined,
   };
 }
 
@@ -245,6 +265,8 @@ export interface MessagingApi {
   getThread: (id: string) => Promise<ThreadDetail | undefined>;
   /** Creator's answer — releases the held payment. */
   replyToThread: (id: string, text: string) => Promise<ThreadDetail>;
+  /** Paid-messages settings Save — persists price + accept-toggle. */
+  updateDmSettings: (input: { dmEnabled: boolean; dmPrice: number }) => Promise<void>;
 }
 
 export const messagingApi: MessagingApi = {
@@ -260,29 +282,32 @@ export const messagingApi: MessagingApi = {
         // GAP: response-stats has no responded/total counts, only a rolling
         // no-response percentage — see RawResponseStats doc comment. There
         // is nothing on the real backend to populate these two counts from.
-        responseStats: { responded: 0, total: 0, rate: Math.round(100 - stats.noResponseRatePct) },
+        responseStats: { responded: 0, total: 0, rate: Math.round(stats.noResponseRatePct) },
         penalty: toPenaltyKind(stats.penaltyState),
       };
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       return mockRequest({ ...currentMessaging, threads: [...currentMessaging.threads] });
     }
   },
-  // SEAM: replace with GET /api/hub/dm/stats
+  // SEAM: replace with GET /api/hub/dm/response-stats
   getStats: async () => {
     try {
       const stats = await apiFetch<RawResponseStats>("/api/hub/dm/response-stats", { authed: true });
       // GAP: see RawResponseStats doc comment — responded/total aren't available.
-      return { responded: 0, total: 0, rate: Math.round(100 - stats.noResponseRatePct) };
-    } catch {
+      return { responded: 0, total: 0, rate: Math.round(stats.noResponseRatePct) };
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       return mockRequest({ ...currentMessaging.responseStats });
     }
   },
-  // SEAM: replace with GET /api/hub/dm/penalty
+  // SEAM: replace with GET /api/hub/dm/response-stats
   getPenalty: async () => {
     try {
       const stats = await apiFetch<RawResponseStats>("/api/hub/dm/response-stats", { authed: true });
       return toPenaltyKind(stats.penaltyState);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       return mockRequest(currentMessaging.penalty);
     }
   },
@@ -291,7 +316,8 @@ export const messagingApi: MessagingApi = {
     try {
       const { data } = await apiFetchPaginated<RawDirectMessage>("/api/hub/dm/inbox", { authed: true });
       return data.map(toThreadDetail);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       return mockRequest(paidQuestions.map(cloneThread));
     }
   },
@@ -300,7 +326,8 @@ export const messagingApi: MessagingApi = {
     try {
       const dm = await apiFetch<RawDirectMessage>(`/api/hub/dm/${id}`, { authed: true });
       return toThreadDetail(dm);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       const found = paidQuestions.find((t) => t.id === id);
       return mockRequest(found ? cloneThread(found) : undefined);
     }
@@ -314,7 +341,8 @@ export const messagingApi: MessagingApi = {
         body: { text },
       });
       return toThreadDetail(dm);
-    } catch {
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
       const thread = paidQuestions.find((t) => t.id === id);
       if (!thread) return Promise.reject(new Error(`Unknown thread ${id}`));
       thread.messages.push({ id: `${id}-m${thread.messages.length + 1}`, from: "creator", text });
@@ -322,6 +350,19 @@ export const messagingApi: MessagingApi = {
       thread.deadlineMinutes = undefined;
       thread.deadlineLabel = undefined;
       return mockRequest(cloneThread(thread));
+    }
+  },
+  // SEAM: replace with PATCH /api/hub/creator/dm-settings { dmEnabled, dmPrice }
+  updateDmSettings: async (input) => {
+    try {
+      await apiFetch<unknown>("/api/hub/creator/dm-settings", {
+        method: "PATCH",
+        authed: true,
+        body: input,
+      });
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
+      await mockRequest(undefined);
     }
   },
 };

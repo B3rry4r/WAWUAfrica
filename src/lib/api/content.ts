@@ -1,4 +1,4 @@
-import { apiFetch, apiFetchPaginated } from "./client";
+import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import { mockContent, mockContentById, mockPurchasedIds } from "./mocks/mockContent";
 import type {
   ContentDetailResponse,
@@ -110,10 +110,25 @@ export async function getFeed(): Promise<ContentFeedResponse> {
   try {
     const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content?scope=feed", { authed: true });
     return { items: res.data.map(mapContentPiece).map(guardLocked) };
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/content?scope=feed
     return { items: mockContent.map((c) => guardLocked(mockContentById(c.id)!.content)) };
   }
+}
+
+/** Result of {@link getFeaturedContent} — see `isLive` doc below before rendering `items` as fact. */
+export interface FeaturedContentResult {
+  items: ContentPiece[];
+  /**
+   * False whenever `items` is the local fixture set rather than a real read
+   * of the live feed. Callers on the public marketing page MUST check this
+   * before presenting `items` as real creator activity (names, view/like
+   * counts) — see the doc comment on {@link getFeaturedContent} for why this
+   * branch is not a rare failure case but the only thing an anonymous
+   * visitor will ever see.
+   */
+  isLive: boolean;
 }
 
 /**
@@ -124,29 +139,71 @@ export async function getFeed(): Promise<ContentFeedResponse> {
  * guessing `scope=featured` was wrong). There is also no curation/ranking
  * field on ContentPiece to select "featured" pieces server-side. This calls
  * the real feed and takes the first few items as a stand-in for curation.
- * Separately: this function is called from the PUBLIC marketing landing page
- * (before sign-in), but GET /content is behind `WawuAuthGuard` for every
- * scope — an anonymous visitor has no token, so this call 401s and the mock
- * fallback below is what actually renders on that page today. A public,
- * unauthenticated content-listing endpoint doesn't exist yet.
+ *
+ * Separately, and more importantly: this function is called from the PUBLIC
+ * marketing landing page (before sign-in), but GET /content is behind
+ * `WawuAuthGuard` for every scope and there is no public/anonymous scope on
+ * the real contract. An anonymous visitor has no session token to send, so
+ * this call structurally 401s for them every single time — this is not a
+ * "backend unreachable, fall back to a demo" situation Pattern A's mock
+ * fallback exists for; it is the permanent, expected path for 100% of the
+ * audience this function serves. Confirmed live: a signed-out visitor was
+ * being shown the fixture creators/content with zero indication it wasn't
+ * real, right next to a section header ("Earning on WAWU now") asserting it
+ * was. Fixing that honestly means the caller must be able to tell the two
+ * cases apart and label accordingly — hence returning `isLive` instead of
+ * silently equating "real data" and "fixture data" the way the old
+ * `ContentPiece[]`-only return did. (Proposed backend change, not made: a
+ * public preview scope on GET /content would let this become genuinely
+ * live for anonymous visitors — flagging per the task brief rather than
+ * inventing one server-side.)
  */
-export async function getFeaturedContent(): Promise<ContentPiece[]> {
+export async function getFeaturedContent(): Promise<FeaturedContentResult> {
   try {
     const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content?scope=feed&perPage=3", {
       authed: true,
     });
-    return res.data.map(mapContentPiece).map(guardLocked);
+    return { items: res.data.map(mapContentPiece).map(guardLocked), isLive: true };
   } catch {
-    // SEAM: replace with GET /api/hub/content?scope=feed (no dedicated featured scope exists)
-    return mockContent.filter((c) => ["cac-in-7-days", "ankara-pattern-drafting", "dry-season-poultry"].includes(c.id));
+    // SEAM: replace with GET /api/hub/content?scope=feed (no dedicated featured/public
+    // scope exists) — every anonymous visitor hits this branch today, real backend or not.
+    return {
+      items: mockContent.filter((c) => ["cac-in-7-days", "ankara-pattern-drafting", "dry-season-poultry"].includes(c.id)),
+      isLive: false,
+    };
+  }
+}
+
+/**
+ * Real GET /users/:wawuId/public-profile response carries the creator's
+ * tier — see profile.ts's RealPublicCreatorProfile for the full shape. Only
+ * `tier` is read here, to drive creatorSplitRate() (CLAUDE.md: 85/15
+ * standard, 90/10 Pro — never invent a rate). Best-effort: the content piece
+ * itself already loaded successfully, so a real failure on this secondary
+ * lookup degrades to the safe default (85%, isPro undefined) instead of
+ * failing the whole content-detail load.
+ */
+async function getCreatorIsPro(creatorWawuId: string): Promise<boolean> {
+  try {
+    const profile = await apiFetch<{ tier: "basic" | "pro" }>(`/api/hub/users/${creatorWawuId}/public-profile`, {
+      authed: true,
+    });
+    return profile.tier === "pro";
+  } catch {
+    // SEAM: GET /api/hub/users/:wawuId/public-profile — mock mode and a real
+    // failure both degrade to the safe default split rate here.
+    return false;
   }
 }
 
 export async function getContent(id: string): Promise<ContentDetailResponse> {
   try {
     const res = await apiFetch<HubContentPieceResponse>(`/api/hub/content/${id}`, { authed: true });
-    return { content: guardLocked(mapContentPiece(res)) };
-  } catch {
+    const content = guardLocked(mapContentPiece(res));
+    content.creator.isPro = await getCreatorIsPro(res.creatorWawuId);
+    return { content };
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/content/:id
     const mock = mockContentById(id);
     if (!mock) throw new Error("Content not found");
@@ -168,7 +225,8 @@ export async function initiateUnlock(id: string): Promise<UnlockInitiateResponse
       method: "POST",
       authed: true,
     });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with POST /api/hub/content/:id/unlock
     return {
       flutterwaveConfig: {
@@ -204,7 +262,8 @@ export async function verifyUnlock(
       authed: true,
       body: payload,
     });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     // SEAM: replace with POST /api/hub/content/:id/unlock/verify
     mockPurchasedIds.add(id);
     const content = mockContentById(id)?.content;

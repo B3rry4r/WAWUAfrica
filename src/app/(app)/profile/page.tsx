@@ -1,9 +1,13 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { VerificationLevel } from "@/types/account";
 import type { OwnProfile, VerificationLevelEntry } from "@/types/verification";
 import { VERIFY_TIER_LABELS } from "@/types/verification";
 import { getOwnProfile, getVerificationLadder } from "@/lib/api/verification";
 import { getPurchases } from "@/lib/api/purchases";
+import { getSavedItems } from "@/lib/api/settings";
 import { formatNaira } from "@/lib/format";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -13,29 +17,61 @@ import { StatBlock } from "@/components/ui/StatBlock";
 import { ListRow } from "@/components/ui/ListRow";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const eyebrowClass = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted";
 
-export default async function OwnProfilePage() {
-  let profile: OwnProfile;
-  let ladder: VerificationLevelEntry[];
-  let purchasesCount: number;
-  try {
-    const [profileRes, ladderRes, purchasesRes] = await Promise.all([
-      getOwnProfile(),
-      getVerificationLadder(),
-      getPurchases(),
-    ]);
-    profile = profileRes;
-    ladder = ladderRes;
-    purchasesCount = purchasesRes.items.length;
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title={message ?? "We couldn't load your profile."} />;
+export default function OwnProfilePage() {
+  const [profile, setProfile] = useState<OwnProfile | null>(null);
+  const [ladder, setLadder] = useState<VerificationLevelEntry[]>([]);
+  const [purchasesCount, setPurchasesCount] = useState<number | null>(null);
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    setError(null);
+    setProfile(null);
+    // Purchases/saved counts are read independently of the profile/ladder —
+    // a hiccup fetching either just means the count shows a skeleton a beat
+    // longer, never blocks the identity block from rendering.
+    getPurchases()
+      .then((res) => setPurchasesCount(res.items.length))
+      .catch(() => setPurchasesCount(null));
+    getSavedItems()
+      .then((items) => setSavedCount(items.length))
+      .catch(() => setSavedCount(null));
+    Promise.all([getOwnProfile(), getVerificationLadder()])
+      .then(([profileRes, ladderRes]) => {
+        setProfile(profileRes);
+        setLadder(ladderRes);
+      })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "We couldn't load your profile."));
+  }, []);
+
+  useEffect(load, [load]);
+
+  if (error) {
+    return <ErrorState title={error} onRetry={load} />;
   }
+
+  if (!profile) {
+    return (
+      <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
+        <div className="flex items-center gap-3">
+          <Skeleton variant="circle" className="h-[66px] w-[66px]" />
+          <Skeleton variant="row" className="h-10 flex-1" />
+        </div>
+        <Skeleton variant="row" className="h-[70px]" />
+        <Skeleton variant="row" className="h-[120px]" />
+      </div>
+    );
+  }
+
   const isCreator = profile.accountType === "creator";
   const currentLevel = ladder.find((l) => l.status === "yours");
   const nextLevel = ladder.find((l) => l.status === "next");
+  const purchasesMeta = purchasesCount === null ? undefined : String(purchasesCount);
+  const savedMeta = savedCount === null ? undefined : String(savedCount);
 
   return (
     <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
@@ -62,20 +98,20 @@ export default async function OwnProfilePage() {
             <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
             <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
             <ListRow title="Verification" icon="ShieldCheck" href="/profile/verification" />
-            <ListRow title="My purchases" icon="Package" meta="2" href="/purchases" />
-            <ListRow title="Saved" icon="Bookmark" href="/saved" />
+            <ListRow title="My purchases" icon="Package" meta={purchasesMeta} href="/purchases" />
+            <ListRow title="Saved" icon="Bookmark" meta={savedMeta} href="/saved" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
         ) : (
           <>
             <ListRow
               title="My purchases"
-              subtitle={`${purchasesCount} pieces unlocked`}
+              subtitle={purchasesCount === null ? undefined : `${purchasesCount} pieces unlocked`}
               icon="Package"
-              meta={String(purchasesCount)}
+              meta={purchasesMeta}
               href="/purchases"
             />
-            <ListRow title="Saved" icon="Bookmark" meta="14" href="/saved" />
+            <ListRow title="Saved" icon="Bookmark" meta={savedMeta} href="/saved" />
             <ListRow title="Credits" subtitle="1 per community message" icon="Ticket" meta={String(profile.credits)} href="/communities" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
@@ -115,8 +151,12 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
       {profile.accountType === "creator" && (
         <div className="flex gap-7 border-b border-t border-hairline py-[14px]">
           <StatBlock value={String(profile.stats.published)} label="Published" align="start" size="sm" />
-          <StatBlock value={String(profile.stats.sales)} label="Sales" align="start" size="sm" />
-          <StatBlock value={profile.stats.followers} label="Followers" align="start" size="sm" />
+          {profile.stats.sales !== undefined && (
+            <StatBlock value={String(profile.stats.sales)} label="Sales" align="start" size="sm" />
+          )}
+          {profile.stats.followers !== undefined && (
+            <StatBlock value={profile.stats.followers} label="Followers" align="start" size="sm" />
+          )}
         </div>
       )}
     </section>
@@ -139,7 +179,9 @@ function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
         </div>
         <div className="flex gap-5 border-t border-hairline pt-3">
           <StatBlock value={formatNaira(profile.earningsThisMonth ?? 0)} label="This month" align="start" size="sm" />
-          <StatBlock value={String(profile.toReply)} label="To reply" align="start" size="sm" />
+          {profile.toReply !== undefined && (
+            <StatBlock value={String(profile.toReply)} label="To reply" align="start" size="sm" />
+          )}
         </div>
       </div>
     </Link>

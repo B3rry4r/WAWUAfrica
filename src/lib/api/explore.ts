@@ -1,6 +1,6 @@
 import type { ExploreCategory, ExploreCategoryId } from "@/types/explore";
 import { EXPLORE_CATEGORIES } from "@/types/explore";
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 import { getMockCategories, getMockCreators, toggleMockFollow } from "./mocks/explore";
 
 /**
@@ -36,6 +36,17 @@ export async function getCreators(category?: ExploreCategoryId) {
  * endpoints, no single toggle route. `currentlyFollowing` (the state before
  * this call) picks which one to call; see the FollowButton.tsx call-site fix
  * required by this signature change.
+ *
+ * GAP (genuine, not a wiring miss): /explore and /explore/creators' entire
+ * creator list is mock data with fabricated wawuIds (e.g. "wawu-adaeze")
+ * that do not exist in the real DB — there is no creator-discovery endpoint
+ * to source a real list from (see getCreators' doc comment). So a real
+ * backend is genuinely unreachable for these ids and this POST/DELETE will
+ * always 404 against it. Only fall back to the mock toggle when there is
+ * truly no backend configured (isMockModeError) — a real 404/error must
+ * propagate so FollowButton's existing rollback (`.catch(() => setFollowing(!next))`)
+ * actually fires instead of the button lying that a follow against a
+ * nonexistent creator succeeded.
  */
 export async function toggleFollow(wawuId: string, currentlyFollowing: boolean): Promise<boolean> {
   try {
@@ -44,7 +55,8 @@ export async function toggleFollow(wawuId: string, currentlyFollowing: boolean):
       authed: true,
     });
     return res.following;
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return toggleMockFollow(wawuId);
   }
 }

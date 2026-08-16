@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ContentCard } from "@/components/content/ContentCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -9,16 +8,20 @@ import { HomeRightRail } from "@/components/shared/HomeRightRail";
 import { getFeed } from "@/lib/api/content";
 import type { ContentPiece } from "@/types/content";
 
+// "Trending" used to sit here as a third tab, but there is no distinct
+// trending query on the real contract (ListContentQueryDto only accepts
+// `scope: 'feed' | 'mine'` — no ranking/sort param) and no client-side signal
+// to derive one from honestly. It rendered the exact same items as "For
+// you" with nothing behind the label. Removed rather than left as a fake
+// sort — see the "Following" doc comment below for the sibling fix.
 const TABS = [
   { id: "for-you", label: "For you" },
   { id: "following", label: "Following" },
-  { id: "trending", label: "Trending" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
 export function HomeFeed() {
-  const router = useRouter();
   const [items, setItems] = useState<ContentPiece[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabId>("for-you");
@@ -75,12 +78,19 @@ export function HomeFeed() {
           ) : !items ? (
             <FeedSkeleton />
           ) : tab === "following" ? (
+            // Real gap, not a wiring miss: there is no GET endpoint to list
+            // who the signed-in user follows (follow-relationship.controller.ts
+            // only exposes POST/DELETE .../follow) and no batch creator-profile
+            // lookup to resolve one against the feed even if there were. This
+            // tab used to always show the same "you haven't followed anyone"
+            // empty state regardless of real follow state, which is a false
+            // claim for anyone who actually follows creators. Labeling the
+            // real limitation instead of implying "go follow someone and this
+            // will populate" (it won't yet).
             <EmptyState
-              icon="Users"
-              title="Worth following"
-              caption="Follow creators to see their work surface here."
-              action="Browse creators"
-              onAction={() => router.push("/search")}
+              icon="Clock"
+              title="Following feed isn't ready yet"
+              caption="We can't filter your feed by who you follow just yet — check 'For you' in the meantime."
             />
           ) : feed.length === 0 ? (
             <EmptyState

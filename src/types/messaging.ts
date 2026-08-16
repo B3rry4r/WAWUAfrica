@@ -1,8 +1,19 @@
-/** DM response rate over the last 28 days — drives penalties. */
+/**
+ * DM reply record over the last 30 days — drives penalties.
+ *
+ * `rate` is the MISSED/UNANSWERED percentage, not an answered/response
+ * rate — every UI consumer (Inbox's penalty banner, PaidMessagesSettings'
+ * "Your reply record") displays it as "X% unanswered" / "X% missed". It is
+ * backed directly by the real backend's CreatorNoResponseTracker.
+ * noResponseRatePct (see messaging.ts) — never invert it when mapping the
+ * wire response; a prior version of that mapping did (`100 - pct`) and
+ * confirmed live as "100% missed" for a creator with a perfect 0%
+ * no-response record.
+ */
 export interface ResponseStats {
   responded: number;
   total: number;
-  /** Percentage 0–100. */
+  /** Percentage 0–100, missed/unanswered — NOT an answered-rate. */
   rate: number;
 }
 
@@ -18,6 +29,15 @@ export interface Thread {
   opened: boolean;
   expiresAt?: string;
   unread?: number;
+  /**
+   * Real thread status when known (from the backend's DirectMessage.status),
+   * used to tell an answered thread from a refunded one within the
+   * "opened" bucket. Undefined for mock data, which doesn't model refunds
+   * on this shape — Inbox treats undefined as answered (its prior default).
+   */
+  status?: ThreadStatus;
+  /** How long the creator took to reply, e.g. "3h" / "45m". Undefined if not yet replied or unknown. */
+  repliedIn?: string;
 }
 
 export interface MessagingState {

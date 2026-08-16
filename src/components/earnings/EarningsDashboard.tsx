@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
-import { currentEarnings } from "@/lib/api/earnings";
+import { earningsApi } from "@/lib/api/earnings";
+import type { EarningsSummary } from "@/types/earnings";
 import { PLANS } from "@/types/subscription";
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
@@ -12,6 +14,7 @@ import { ListRow } from "@/components/ui/ListRow";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { formatNaira } from "@/lib/format";
 
@@ -25,13 +28,69 @@ interface StreamRow {
 }
 
 export function EarningsDashboard() {
-  const gates = creatorGates(currentSession);
-  const [approved, setApproved] = useState(gates.canEarn);
+  const { user, hydrated } = useSession();
+  const { creator, loading: creatorLoading } = useCreatorState();
+  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+  const approved = gates.canEarn;
 
-  const tier = currentSession.creator?.tier ?? "basic";
+  // Real GET /api/hub/content/mine/earnings — never the frozen mock.
+  const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
+  const [earningsError, setEarningsError] = useState(false);
+
+  const loadEarnings = () => {
+    setEarnings(null);
+    setEarningsError(false);
+    earningsApi
+      .getSummary()
+      .then(setEarnings)
+      .catch(() => setEarningsError(true));
+  };
+
+  useEffect(() => {
+    if (!hydrated || !gates.isCreator) return;
+    loadEarnings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, gates.isCreator]);
+
+  if (!hydrated || (creatorLoading && !creator)) {
+    return (
+      <div>
+        <FlowHeader title="Earnings" />
+        <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+          <Skeleton height={120} radius="var(--radius-card)" />
+          <Skeleton height={160} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!gates.isCreator) return null;
+
+  if (earningsError) {
+    return (
+      <div>
+        <FlowHeader title="Earnings" />
+        <ErrorState title="Could not load your earnings" onRetry={loadEarnings} />
+      </div>
+    );
+  }
+
+  if (!earnings) {
+    return (
+      <div>
+        <FlowHeader title="Earnings" />
+        <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+          <Skeleton height={120} radius="var(--radius-card)" />
+          <Skeleton height={160} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
+
+  const tier = gates.tier ?? "basic";
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
   const keep = PLANS[tier].split;
-  const earned = approved ? currentEarnings.payable + currentEarnings.held : currentEarnings.held;
+  const earned = approved ? earnings.payable + earnings.held : earnings.held;
 
   const streams: StreamRow[] = approved
     ? [
@@ -65,23 +124,6 @@ export function EarningsDashboard() {
           <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">August</span>
         }
       />
-
-      <div className="flex justify-center gap-[4px] pt-[10px] px-[16px] pb-0">
-        {[false, true].map((v) => (
-          <button
-            key={String(v)}
-            type="button"
-            onClick={() => setApproved(v)}
-            className={`h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
-              approved === v
-                ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
-                : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
-            }`}
-          >
-            {v ? "KYC approved" : "KYC pending"}
-          </button>
-        ))}
-      </div>
 
       <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
         {!approved ? (

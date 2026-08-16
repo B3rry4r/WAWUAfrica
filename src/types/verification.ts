@@ -31,8 +31,18 @@ export interface VerificationSubmission {
 
 export interface OwnProfileStats {
   published: number;
-  sales: number;
-  followers: string;
+  /**
+   * No real endpoint returns a lifetime sales count (GET /api/hub/content/mine/earnings
+   * only exposes naira totals + a capped recent-sales feed, never a count).
+   * Undefined means "not available", not "zero" — render only when present.
+   */
+  sales?: number;
+  /**
+   * No real endpoint returns a follower count for the caller's own profile
+   * (that field lives on the separate public-creator-profile aggregate, keyed
+   * by another user's wawuId, not "me"). Undefined means "not available".
+   */
+  followers?: string;
 }
 
 /** The signed-in user's own profile, read from session + profile records. */

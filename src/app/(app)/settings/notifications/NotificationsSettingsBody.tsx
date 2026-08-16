@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { NotificationSettings } from "@/types/settings";
 import { getNotificationSettings, saveNotificationSettings } from "@/lib/api/settings";
 import { Icon } from "@/components/ui/Icon";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 type Row = { key: keyof NotificationSettings; label: string; caption: string };
 
@@ -39,21 +40,36 @@ const GROUPS: { title: string; rows: Row[] }[] = [
  */
 export function NotificationsSettingsBody() {
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    getNotificationSettings().then((s) => active && setSettings(s));
-    return () => {
-      active = false;
-    };
-  }, []);
+  const load = () => {
+    setSettings(null);
+    setLoadError(false);
+    getNotificationSettings()
+      .then(setSettings)
+      .catch(() => setLoadError(true));
+  };
+
+  useEffect(load, []);
 
   const toggle = (key: keyof NotificationSettings) => {
     if (!settings) return;
+    const previous = settings;
     const next = { ...settings, [key]: !settings[key] };
     setSettings(next);
-    void saveNotificationSettings(next);
+    setSaveError(false);
+    saveNotificationSettings(next).catch(() => {
+      // Real save failed — revert the optimistic flip so the switch never
+      // shows a state that was never actually persisted.
+      setSettings(previous);
+      setSaveError(true);
+    });
   };
+
+  if (loadError) {
+    return <ErrorState title="Couldn't load your notification settings" onRetry={load} />;
+  }
 
   if (!settings) {
     return (
@@ -105,6 +121,12 @@ export function NotificationsSettingsBody() {
         <Icon name="Info" size={14} color="var(--text-muted)" />
         Paid-message alerts never get switched off — refunds depend on them.
       </p>
+      {saveError ? (
+        <p className="m-0 flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--danger)]">
+          <Icon name="CircleAlert" size={14} color="var(--danger)" />
+          That didn&apos;t save. Try again.
+        </p>
+      ) : null}
     </>
   );
 }

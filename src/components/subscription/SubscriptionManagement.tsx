@@ -87,8 +87,10 @@ export function SubscriptionManagement() {
   const [downgrading, setDowngrading] = useState(false);
 
   const [showCard, setShowCard] = useState(false);
-  const [cardLast4, setCardLast4] = useState("4412");
   const [cardBusy, setCardBusy] = useState<string | null>(null);
+  // Real value from the fetched subscription (subscription.cardLast4), not a
+  // hardcoded placeholder — falls back only while nothing has loaded yet.
+  const cardLast4 = subscription?.cardLast4 ?? "4412";
 
   const load = () => {
     setLoadState("loading");
@@ -163,7 +165,7 @@ export function SubscriptionManagement() {
     setCardBusy(last4);
     await subscriptionApi.updateCard(last4);
     // SEAM: replace with POST /api/hub/creator-subscription/card
-    setCardLast4(last4);
+    setSubscription((s) => (s ? { ...s, cardLast4: last4 } : s));
     setCardBusy(null);
     setShowCard(false);
   };

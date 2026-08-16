@@ -1,32 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { kycApi, devSetKycStatus } from "@/lib/api/kyc";
-import type { KycStatus } from "@/types/account";
+import { kycApi } from "@/lib/api/kyc";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
+import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { StatusPill } from "@/components/ui/StatusPill";
 
-type View = "form" | "pending" | "approved" | "rejected";
+type View = "loading" | "load-error" | "form" | "pending" | "approved" | "rejected";
 type Step = 1 | 2 | 3 | "review";
 
 const docTypes = ["Passport", "Driver's licence", "Voter's card", "National ID card"];
 
-export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
+function viewForStatus(status: "not_started" | "pending" | "approved" | "rejected"): View {
+  return status === "not_started" ? "form" : status;
+}
+
+export function KycFlow() {
   const router = useRouter();
-  const [view, setView] = useState<View>(
-    initialStatus === "approved" ? "approved" : initialStatus === "rejected" ? "rejected" : initialStatus === "pending" ? "pending" : "form",
-  );
+  const [view, setView] = useState<View>("loading");
   const [step, setStep] = useState<Step>(1);
   const [docUploaded, setDocUploaded] = useState(false);
   const [consented, setConsented] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const loadStatus = () => {
+    setView("loading");
+    kycApi
+      .getStatus()
+      .then((submission) => setView(viewForStatus(submission.status)))
+      .catch(() => setView("load-error"));
+  };
+
+  useEffect(loadStatus, []);
 
   const submit = () => {
     setSubmitting(true);
+    setSubmitError(null);
     kycApi
       .submit({
         country: "Nigeria",
@@ -40,6 +54,10 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
       .then(() => {
         setSubmitting(false);
         setView("pending");
+      })
+      .catch((err) => {
+        setSubmitting(false);
+        setSubmitError(err instanceof Error ? err.message : "Could not submit your verification. Try again.");
       });
   };
 
@@ -47,6 +65,29 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
     view === "pending" ? "Verify your identity" : view === "approved" ? "Verify your identity" : view === "rejected" ? "Verify your identity" : step === 1 ? "Verify your identity" : step === 2 ? (docUploaded ? "Check your photo" : "Verify your identity") : step === 3 ? "Where you get paid" : "Review and submit";
 
   const stepCount = step === "review" ? "3 of 3" : `${step} of 3`;
+
+  if (view === "loading") {
+    return (
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+        <FlowHeader title="Verify your identity" />
+        <div className="flex-1 pt-[20px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+          <Skeleton height={22} width="60%" />
+          <Skeleton height={52} radius="var(--radius-input)" />
+          <Skeleton height={52} radius="var(--radius-input)" />
+          <Skeleton height={90} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
+
+  if (view === "load-error") {
+    return (
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+        <FlowHeader title="Verify your identity" />
+        <ErrorState title="Could not load your verification status" onRetry={loadStatus} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
@@ -62,38 +103,13 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
         onBack={view === "form" && step === 1 ? undefined : view === "form" ? () => backStep(step, docUploaded, setStep, setDocUploaded) : undefined}
       />
 
-      {/** DEV ONLY — remove when the session endpoint is live. */}
-      <div className="flex justify-center gap-[4px] pt-[10px] px-[16px] pb-0">
-        {([
-          ["form", "Form"],
-          ["pending", "Pending"],
-          ["approved", "Approved"],
-          ["rejected", "Rejected"],
-        ] as [View, string][]).map(([v, label]) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => {
-              setView(v);
-              devSetKycStatus(v === "form" ? "not_started" : v);
-            }}
-            className={`h-[30px] py-0 px-[14px] rounded-[999] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
-              view === v
-                ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
-                : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
       <div className="flex-1 pt-[20px] px-[16px] pb-[32px] flex flex-col gap-[18px]">
-        {view === "form" && step === 1 ? <NationalIdStep /> : null}
-        {view === "form" && step === 2 && !docUploaded ? <DocumentStep onCaptured={() => setDocUploaded(true)} /> : null}
-        {view === "form" && step === 2 && docUploaded ? <CheckPhotoStep onRetake={() => setDocUploaded(false)} /> : null}
-        {view === "form" && step === 3 ? <PayoutStep /> : null}
-        {view === "form" && step === "review" ? (
+        {submitError ? <ErrorState title="Could not submit" description={submitError} onRetry={submit} /> : null}
+        {!submitError && view === "form" && step === 1 ? <NationalIdStep /> : null}
+        {!submitError && view === "form" && step === 2 && !docUploaded ? <DocumentStep onCaptured={() => setDocUploaded(true)} /> : null}
+        {!submitError && view === "form" && step === 2 && docUploaded ? <CheckPhotoStep onRetake={() => setDocUploaded(false)} /> : null}
+        {!submitError && view === "form" && step === 3 ? <PayoutStep /> : null}
+        {!submitError && view === "form" && step === "review" ? (
           <ReviewStep consented={consented} onConsent={() => setConsented((c) => !c)} />
         ) : null}
         {view === "pending" ? <PendingState /> : null}
@@ -102,7 +118,7 @@ export function KycFlow({ initialStatus }: { initialStatus: KycStatus }) {
       </div>
 
       <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
-        {view === "form" && step === 1 ? (
+        {submitError ? null : view === "form" && step === 1 ? (
           <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep(2)}>
             Continue
           </Button>

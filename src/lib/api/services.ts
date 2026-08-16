@@ -6,7 +6,7 @@ import type {
   ServiceApplication,
   ServiceApplicationTimeline,
 } from "@/types/services";
-import { apiFetch, apiFetchPaginated } from "./client";
+import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import {
   getMockApplication,
   getMockCacBusinessRecord,
@@ -152,7 +152,8 @@ export async function getServices(): Promise<PartnerService[]> {
   try {
     const services = await apiFetch<RealPartnerService[]>("/api/hub/services", { authed: true });
     return services.map(mapPartnerService);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockServices();
   }
 }
@@ -190,7 +191,8 @@ export async function notifyComingSoon(id: string): Promise<boolean> {
       authed: true,
     });
     return res.success;
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return notifyMockComingSoon(id);
   }
 }
@@ -220,7 +222,8 @@ export async function getOtherApplications(excludeId: string): Promise<ServiceAp
       authed: true,
     });
     return res.data.filter((a) => a.id !== excludeId).map(mapServiceApplication);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockOtherApplications(excludeId);
   }
 }

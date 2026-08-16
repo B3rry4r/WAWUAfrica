@@ -50,7 +50,10 @@ export default function NotificationsPage() {
   // above, which stays untouched.
   const needsNow = items?.filter((n) => n.kind === "dm_deadline") ?? [];
   const needsNowIds = new Set(needsNow.map((n) => n.id));
-  const money = items?.filter((n) => n.amount !== undefined && !needsNowIds.has(n.id)) ?? [];
+  // amount/creditsCount are nullable columns on the real Notification model
+  // (prisma schema: `amount Int?`) — the wire response sends `null`, not a
+  // missing key, so this must be a loose null check, not `!== undefined`.
+  const money = items?.filter((n) => n.amount != null && !needsNowIds.has(n.id)) ?? [];
   const moneyIds = new Set(money.map((n) => n.id));
   const laterDesktop = items?.filter((n) => !needsNowIds.has(n.id) && !moneyIds.has(n.id)) ?? [];
 
@@ -163,12 +166,12 @@ function NotificationRow({ notification: n, last }: { notification: AppNotificat
           <span className="min-w-0 flex-1 truncate text-[14.5px] font-semibold">{n.title}</span>
           {!n.read ? <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-accent" aria-label="Unread" /> : null}
         </span>
-        {n.amount !== undefined ? (
+        {n.amount != null ? (
           <span className="text-[13px] font-semibold text-accent [font-feature-settings:var(--font-feature-tabular)]">
             {formatNaira(n.amount)}
           </span>
         ) : null}
-        {n.creditsCount !== undefined ? (
+        {n.creditsCount != null ? (
           <span className="text-[13px] font-semibold text-warning">{formatCredits(n.creditsCount)}</span>
         ) : null}
         <span className="text-[13px] leading-relaxed text-text-secondary">{n.body}</span>

@@ -1,15 +1,65 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { getDmThread } from "@/lib/api/dm";
+import type { DmThreadDetail } from "@/types/dm";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { DmThreadFooter } from "@/components/dm/DmThreadFooter";
 import { formatNaira } from "@/lib/format";
 
-export default async function DmThreadPage({ params }: { params: { threadId: string } }) {
-  const thread = await getDmThread(params.threadId);
+/**
+ * Server Component here always 401'd (no localStorage/session token exists
+ * during SSR) and, after dm.ts's real-failure fix, that would surface as a
+ * scary thrown error instead of the real thread. Client Component +
+ * useEffect fetch, same pattern as content/[id]/page.tsx and
+ * communities/[id]/page.tsx.
+ */
+export default function DmThreadPage() {
+  const params = useParams<{ threadId: string }>();
+  const threadId = String(params?.threadId ?? "");
+
+  // undefined = still loading; null = fetch resolved with no thread (not found).
+  const [thread, setThread] = useState<DmThreadDetail | null | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    let active = true;
+    setError(null);
+    setThread(undefined);
+    getDmThread(threadId)
+      .then((t) => active && setThread(t))
+      .catch((e) => active && setError(e instanceof Error ? e.message : "We couldn't load this conversation."));
+    return () => {
+      active = false;
+    };
+  }, [threadId]);
+
+  useEffect(() => load(), [load]);
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <ErrorState title="Couldn't load this conversation" body={error} onRetry={load} />
+      </div>
+    );
+  }
+
+  if (thread === undefined) {
+    return (
+      <div className="flex min-h-dvh flex-col gap-3 p-4">
+        <Skeleton variant="row" className="h-[52px]" />
+        <Skeleton variant="row" className="h-[68px]" />
+        <Skeleton variant="row" className="h-[68px]" />
+      </div>
+    );
+  }
 
   if (!thread) {
     return (

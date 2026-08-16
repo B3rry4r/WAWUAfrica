@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
 import { PLANS } from "@/types/subscription";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
 import { creatorGates } from "@/lib/auth/gates";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
@@ -83,6 +83,8 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const [paid, setPaid] = useState(!firstUpload);
   const [price, setPrice] = useState(1500);
   const [title, setTitle] = useState(resubmit ? resubmit.title : firstUpload ? "" : "The trader's playbook");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Business");
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -94,13 +96,14 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const steps = ["Upload", "Free preview", "Details", "Price"];
   const stepLabel = `Step ${step + 1} of 4`;
 
-  const tier = currentSession.creator?.tier ?? "basic";
+  const { user } = useSession();
+  const gates = creatorGates(user);
+  const tier = gates.tier ?? "basic";
   const tierIsPro = tier === "pro";
   const keep = PLANS[tier].split;
   const youEarn = Math.round((price * keep) / 100);
   const wawuTakes = price - youEarn;
   const proEarn = Math.round(price * 0.9);
-  const gates = creatorGates(currentSession);
   // The slot this upload would land in, ahead of publishing.
   const nextSlot = Math.min(gates.slotsUsed + 1, gates.slotsTotal);
 
@@ -109,7 +112,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
     setPublishing(true);
     setPublishError(null);
     try {
-      await contentPublish({ type, title, price: paid && !firstUpload ? price : 0 });
+      await contentPublish({ type, title, description, category, price: paid && !firstUpload ? price : 0 });
       setSubmitted(true);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : "Something went wrong submitting your upload.");
@@ -157,7 +160,16 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
           <>
             {step === 0 ? <UploadStep type={type} /> : null}
             {step === 1 ? <PreviewStep type={type} /> : null}
-            {step === 2 ? <DetailsStep title={title} onTitle={setTitle} /> : null}
+            {step === 2 ? (
+              <DetailsStep
+                title={title}
+                onTitle={setTitle}
+                description={description}
+                onDescription={setDescription}
+                category={category}
+                onCategory={setCategory}
+              />
+            ) : null}
             {step === 3 ? (
               <PriceStep
                 firstUpload={firstUpload}
@@ -252,9 +264,11 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
         {publishError ? (
           <span className="text-[13px] text-danger">{publishError}</span>
         ) : null}
-        <Button size="sm" variant="secondary">
-          Save draft
-        </Button>
+        {/* "Save draft" (design D7) removed — there is no draft-persistence
+            endpoint anywhere in this API layer, so a wired version would
+            need to fake success. A dead button with no onClick is worse
+            (looks real, does nothing silently); cutting it until a real
+            drafts resource exists is the honest option. */}
         <Button size="sm" iconRight="ArrowRight" loading={publishing} onClick={submit}>
           {resubmit ? "Resubmit for review" : firstUpload ? "Publish free" : "Publish"}
         </Button>
@@ -297,9 +311,12 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
             <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="flex flex-col gap-2">
               <span className="text-[13px] font-semibold text-text-secondary">Description</span>
-              <div className="flex min-h-[74px] rounded-input border border-hairline bg-input px-4 py-[14px] text-[14.5px] leading-[1.5] text-text-primary">
-                What will someone be able to do after watching?
-              </div>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="What will someone be able to do after watching?"
+                className="flex min-h-[74px] resize-none rounded-input border border-hairline bg-input px-4 py-[14px] text-[14.5px] leading-[1.5] text-text-primary font-[var(--font-sans)] placeholder:text-text-muted"
+              />
             </div>
             <div className="flex flex-col gap-[9px]">
               <span className="text-[12.5px] font-semibold text-text-secondary">Category</span>
@@ -308,13 +325,18 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
                 and Research publish after an admin check.
               </span>
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-accent px-[14px] py-2 text-[13px] font-semibold text-on-accent">
-                  Construction
-                </span>
-                {["Sell", "Event · admin review", "Opportunity · admin review", "Research · admin review"].map((c) => (
-                  <span key={c} className="rounded-full bg-tag px-[14px] py-2 text-[13px] text-text-secondary">
+                {["Construction", "Sell", "Event", "Opportunity", "Research"].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCategory(c)}
+                    className={`rounded-full px-[14px] py-2 text-[13px] font-semibold ${
+                      category === c ? "bg-accent text-on-accent" : "bg-tag text-text-secondary font-normal"
+                    }`}
+                  >
                     {c}
-                  </span>
+                    {c !== "Construction" && c !== "Sell" ? " · admin review" : ""}
+                  </button>
                 ))}
                 {["Learn", "Question"].map((c) => (
                   <span
@@ -545,26 +567,58 @@ function PreviewStep({ type }: { type: ContentType }) {
   );
 }
 
-function DetailsStep({ title, onTitle }: { title: string; onTitle: (v: string) => void }) {
+const CATEGORY_OPTIONS = ["Business", "Sell", "Construction", "Fashion", "Tech", "Food", "Beauty"];
+
+function DetailsStep({
+  title,
+  onTitle,
+  description,
+  onDescription,
+  category,
+  onCategory,
+}: {
+  title: string;
+  onTitle: (v: string) => void;
+  description: string;
+  onDescription: (v: string) => void;
+  category: string;
+  onCategory: (v: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-[16px]">
       <Input label="Title" value={title} onChange={(e) => onTitle(e.target.value)} />
       <div className="flex flex-col gap-[8px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Description</span>
-        <div className="flex min-h-[104px] py-[14px] px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[14.5px] leading-[1.5] text-[var(--text-primary)]">
-          Everything I learned running a stall for nine years — stock, margin, spoilage, and what to do on a slow day.
-        </div>
+        <textarea
+          value={description}
+          onChange={(e) => onDescription(e.target.value)}
+          placeholder="Everything I learned running a stall for nine years — stock, margin, spoilage, and what to do on a slow day."
+          className="flex min-h-[104px] py-[14px] px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[14.5px] leading-[1.5] text-[var(--text-primary)] resize-none font-[var(--font-sans)] placeholder:text-[var(--text-muted)]"
+        />
         <span className="text-[12px] text-[var(--text-muted)]">Say who it is for and what they will be able to do after.</span>
       </div>
       <div className="flex flex-col gap-[8px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Category</span>
-        <button
-          type="button"
-          className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer text-left font-[var(--font-sans)]"
-        >
-          <span className="flex-1">Business</span>
-          <Icon name="ChevronDown" size={16} strokeWidth={2.2} color="var(--text-muted)" />
-        </button>
+        <div className="relative">
+          <select
+            value={category}
+            onChange={(e) => onCategory(e.target.value)}
+            className="flex w-full items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer appearance-none font-[var(--font-sans)]"
+          >
+            {CATEGORY_OPTIONS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <Icon
+            name="ChevronDown"
+            size={16}
+            strokeWidth={2.2}
+            color="var(--text-muted)"
+            className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-[9px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Tags</span>
@@ -756,13 +810,15 @@ function InfoNote({ text }: { text: string }) {
   );
 }
 
-function contentPublish(payload: { type: ContentType; title: string; price: number }): Promise<void> {
+function contentPublish(payload: { type: ContentType; title: string; description: string; category: string; price: number }): Promise<void> {
   return import("@/lib/api/creator-content").then(({ contentApi }) =>
     contentApi.publish({
       type: payload.type,
       title: payload.title,
       meta: `${CONTENT_TYPE_META[payload.type].label} · ${payload.price > 0 ? formatNaira(payload.price) : "free"}`,
       price: payload.price,
+      description: payload.description,
+      category: payload.category,
     }).then(() => undefined),
   );
 }

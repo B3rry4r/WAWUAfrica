@@ -1,5 +1,3 @@
-import { currentSession } from "@/lib/api/mocks/session";
-import { creatorGates } from "@/lib/auth/gates";
 import { KycFlow } from "@/components/kyc/KycFlow";
 
 export const metadata = {
@@ -7,6 +5,7 @@ export const metadata = {
 };
 
 export default function KycPage() {
-  const { kycStatus } = creatorGates(currentSession);
-  return <KycFlow initialStatus={kycStatus} />;
+  // KycFlow fetches the real submission status itself (GET /api/hub/kyc) on
+  // mount — no session/gate needed here. See src/components/kyc/KycFlow.tsx.
+  return <KycFlow />;
 }

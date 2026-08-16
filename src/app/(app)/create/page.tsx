@@ -1,16 +1,33 @@
+"use client";
+
 import { CreateHub } from "@/components/create/CreateHub";
 import { PLANS } from "@/types/subscription";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-
-export const metadata = {
-  title: "Create · WAWUAfrica",
-};
+import { Skeleton } from "@/components/ui/Feedback";
 
 export default function CreatePage() {
-  const gates = creatorGates(currentSession);
+  const { user, hydrated } = useSession();
+  const { creator, loading } = useCreatorState();
+  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+
+  // Real session hasn't hydrated from localStorage yet (SSR / first paint) —
+  // render nothing gate-shaped until we actually know who is signed in,
+  // rather than flashing an empty state (or worse, the picker) first.
+  if (!hydrated) {
+    return (
+      <div className="flex flex-col min-h-[100%]">
+        <FlowHeader title="Create" />
+        <div className="flex flex-col gap-[12px] p-[16px]">
+          <Skeleton height={80} radius="var(--radius-card)" />
+          <Skeleton height={80} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
 
   // Gate 1 of 2: uploading is only reachable from a creator account. A user
   // account has no `creator` record at all — send them to set one up rather
@@ -49,7 +66,18 @@ export default function CreatePage() {
     );
   }
 
-  const creator = currentSession.creator;
+  if (loading && !creator) {
+    return (
+      <div className="flex flex-col min-h-[100%]">
+        <FlowHeader title="Create" />
+        <div className="flex flex-col gap-[12px] p-[16px]">
+          <Skeleton height={80} radius="var(--radius-card)" />
+          <Skeleton height={80} radius="var(--radius-card)" />
+        </div>
+      </div>
+    );
+  }
+
   const tier = creator?.tier ?? "basic";
   const plan = PLANS[tier];
   const slotsTotal = creator?.slotsTotal ?? plan.slots;

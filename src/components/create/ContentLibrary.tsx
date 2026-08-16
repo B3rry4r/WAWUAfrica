@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { contentApi } from "@/lib/api/creator-content";
-import { currentSession } from "@/lib/api/mocks/session";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
+import { PLANS } from "@/types/subscription";
 import type { ContentItem, ContentStatus } from "@/types/content";
 import { CreatorUploadCard } from "@/components/ui/ContentCard";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
@@ -52,7 +53,10 @@ export function ContentLibrary() {
     return items.filter((i) => i.status === filter);
   }, [items, filter]);
 
-  const slotsTotal = currentSession.creator?.slotsTotal ?? 7;
+  // Real slots total (Basic 3 / Pro 7, derived server-side from tier), never
+  // the frozen mock — see src/lib/api/mocks/session.ts.
+  const { creator } = useCreatorState();
+  const slotsTotal = creator?.slotsTotal ?? PLANS.basic.slots;
 
   return (
     <div>

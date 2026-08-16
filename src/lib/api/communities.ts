@@ -1,5 +1,5 @@
 import type { Community, CommunityMessage, CreditPackId, CreditsState } from "@/types/credits";
-import { apiFetch, apiFetchPaginated, ApiError } from "./client";
+import { apiFetch, apiFetchPaginated, ApiError, isMockModeError } from "./client";
 import {
   getMockCommunities,
   getMockCommunity,
@@ -53,11 +53,20 @@ interface CommunityMembershipWire {
  * exists anywhere in this backend. It also has no host display name or
  * verified badge, only `hostWawuId` (confirmed live: `GET /communities`
  * returns `{..., hostWawuId, kind, memberCount, messagesToday}`, nothing
- * else). Until the backend adds one of those, `joined` defaults to `false`
- * and `host.name` falls back to the raw wawuId — nothing is fabricated.
- * `joinCommunity()` is still a real call; its result flips `joined` locally,
- * the same optimistic pattern CommunityTabs/useCommunityThread already use.
+ * else). Until the backend adds one of those, `host.name` falls back to the
+ * raw wawuId — nothing is fabricated.
+ *
+ * `joined` is derived from `sessionJoinedIds` below rather than hardcoded
+ * `false`: every real, successful `joinCommunity()` call records the id
+ * there, and every subsequent `toCommunity()` call (any list refetch, any
+ * screen) reflects it. This is real for THIS session — it resets on reload
+ * because there is no membership-status endpoint to rehydrate from. A
+ * community this account joined in a previous session will still read as
+ * not-joined until the backend adds a per-user field; nothing here
+ * fabricates a `true` the server never confirmed.
  */
+const sessionJoinedIds = new Set<string>();
+
 function toCommunity(c: CommunityWire): Community {
   return {
     id: c.id,
@@ -67,7 +76,7 @@ function toCommunity(c: CommunityWire): Community {
     memberCount: c.memberCount,
     messagesToday: c.messagesToday,
     kind: c.kind,
-    joined: false,
+    joined: sessionJoinedIds.has(c.id),
   };
 }
 
@@ -91,7 +100,8 @@ function toCommunityMessage(m: CommunityMessageWire): CommunityMessage {
 export async function getCreditsState(): Promise<CreditsState> {
   try {
     return await apiFetch<CreditsState>("/api/hub/credits", { authed: true });
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockCreditsState();
   }
 }
@@ -110,9 +120,13 @@ export async function getCommunities(kind: "joined" | "discover"): Promise<Commu
     const { data } = await apiFetchPaginated<CommunityWire>("/api/hub/communities?page=1&perPage=100", {
       authed: true,
     });
+    // toCommunity() derives `joined` from sessionJoinedIds (see its doc
+    // comment) — a real join made earlier THIS session is reflected here
+    // on every refetch, across every screen that calls getCommunities().
     const all = data.map(toCommunity);
     return kind === "joined" ? all.filter((c) => c.joined) : all.filter((c) => !c.joined);
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockCommunities(kind);
   }
 }
@@ -122,8 +136,14 @@ export async function getCommunity(id: string): Promise<Community | null> {
   try {
     const wire = await apiFetch<CommunityWire>(`/api/hub/communities/${id}`, { authed: true });
     return toCommunity(wire);
-  } catch {
-    return getMockCommunity(id);
+  } catch (e) {
+    if (isMockModeError(e)) return getMockCommunity(id);
+    // A real 404 means the community genuinely doesn't exist — that's
+    // useCommunityThread's "not-found" state, not a retry-able error. Any
+    // other real rejection (5xx, network) must surface as a real failure
+    // ("failed"), not silently mocked or misread as not-found.
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
   }
 }
 
@@ -139,7 +159,8 @@ export async function getCommunityMessages(id: string): Promise<CommunityMessage
       { authed: true },
     );
     return data.map(toCommunityMessage).reverse();
-  } catch {
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
     return getMockCommunityMessages(id);
   }
 }
@@ -169,6 +190,9 @@ export async function sendCommunityMessage(id: string, text: string): Promise<Co
     if (e instanceof ApiError && e.status === 402) {
       throw new ApiError(e.message, e.status, "insufficient_credits");
     }
+    // Any other real rejection (5xx, network) must surface as a real send
+    // failure, not a fake "sent" message the recipient never received.
+    if (!isMockModeError(e)) throw e;
     return sendMockCommunityMessage(id, text);
   }
 }
@@ -180,6 +204,10 @@ export async function joinCommunity(id: string): Promise<boolean> {
       method: "POST",
       authed: true,
     });
+    // Real success — record it so every subsequent toCommunity() call (any
+    // list refetch, on this page or any other) reflects the join. See the
+    // sessionJoinedIds doc comment above.
+    sessionJoinedIds.add(id);
     // GAP: a private community's join returns status:"pending" (queued for
     // host approval — CommunityService.join never auto-approves it) rather
     // than "joined". `joinCommunity(): Promise<boolean>` has no room to carry
@@ -189,7 +217,11 @@ export async function joinCommunity(id: string): Promise<boolean> {
     // Real and unresolved without a signature change to
     // Promise<CommunityMembership> once a pending-approval UI exists.
     return true;
-  } catch {
+  } catch (e) {
+    // A real backend rejection (e.g. 400 for a nonexistent community id)
+    // must reach the caller as a real failure, not a fake success that
+    // moves the row to "Yours" anyway. Only genuine mock mode falls back.
+    if (!isMockModeError(e)) throw e;
     return joinMockCommunity(id);
   }
 }
