@@ -118,6 +118,10 @@ export function EarningsCalculator() {
           <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
           You keep {keepPct} of every naira
         </span>
+        <span className="flex items-center gap-2 text-[13.5px] font-semibold">
+          <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+          No hidden fees — the split is the only cost
+        </span>
         <p className="text-[12px] leading-relaxed text-text-muted">
           Estimate only. Assumes 5 in every 100 followers unlock one piece a month. Standard split is 85/15; Pro-tier creators keep 90%.
         </p>

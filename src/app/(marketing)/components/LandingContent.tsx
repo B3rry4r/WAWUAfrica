@@ -99,16 +99,16 @@ export async function LandingContent() {
           <div className="hidden xl:flex xl:w-full xl:flex-col xl:items-start xl:gap-[22px]">
             <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
             <h1 className="m-0 text-[60px] font-bold leading-[1.02] tracking-[-0.035em] text-text-primary">
-              Sell what you know.
+              Turn your WOW
               <br />
-              Keep up to 90%.
+              into income.
             </h1>
             <p className="m-0 max-w-[520px] text-[18px] leading-relaxed text-text-secondary [text-wrap:pretty]">
-              You already know something people will pay to learn. Publish it, price it, and let your audience unlock it — in naira, on your terms.
+              You&apos;ve already built something real. Publish it, price it, and let your audience unlock it — in naira, on your terms.
             </p>
             <div className="flex gap-3 pt-1.5">
               <Button size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
-                Start earning today
+                Start monetizing today
               </Button>
               <Button size="lg" variant="secondary" href="/sign-up">
                 Browse creators first
@@ -128,16 +128,16 @@ export async function LandingContent() {
             <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
           </span>
           <h1 className="m-0 text-[42px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary xl:hidden">
-            African expertise,
+            Turn your WOW
             <br />
-            finally paid for.
+            into income.
           </h1>
           <p className="m-0 text-[16.5px] leading-relaxed text-text-secondary xl:hidden">
-            You already know something people will pay to learn. Publish it, price it, and let your audience unlock it — in naira, on your terms.
+            You&apos;ve already built something real. Publish it, price it, and let your audience unlock it — in naira, on your terms.
           </p>
           <div className="mt-1 flex w-full flex-col gap-3 xl:hidden">
             <Button full size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
-              Start earning today
+              Start monetizing today
             </Button>
             <Button full variant="ghost" size="md" href="/sign-up">
               Browse creators first
@@ -185,7 +185,7 @@ export async function LandingContent() {
 
       {/* Every field */}
       <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
-        <SectionHeader caption="Every field" title="One platform" />
+        <SectionHeader caption="Find your WOW" title="Every field, one platform" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
           From agriculture to fintech, Nigerians are monetising what they already know.
         </p>
@@ -203,7 +203,7 @@ export async function LandingContent() {
 
       {/* How you earn */}
       <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
-        <SectionHeader caption="Five ways" title="How you earn" />
+        <SectionHeader caption="WOW revenue streams" title="Monetize the WOW about you" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Free to discover. People pay to connect, and pay for value.</p>
         <div className="flex flex-col gap-3 xl:grid xl:grid-cols-5 xl:gap-[18px]">
           {WAYS.map((way) => (
@@ -234,7 +234,7 @@ export async function LandingContent() {
          matching the design's left/right arrangement without reordering the DOM. */}
       <div className="contents xl:grid xl:mx-auto xl:max-w-[1440px] xl:grid-cols-2 xl:gap-[22px] xl:px-14 xl:pb-[52px]">
         <section id="pricing" className="px-5 pb-[52px] xl:order-2 xl:px-0 xl:pb-0">
-          <SectionHeader caption="Earnings calculator" title="What could you make?" />
+          <SectionHeader caption="Earnings calculator" title="See your earning potential" />
           <div className="mt-4">
             <EarningsCalculator />
           </div>
@@ -363,7 +363,8 @@ export async function LandingContent() {
 
       {/* FAQ */}
       <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
-        <SectionHeader caption="Before you ask" title="Questions" />
+        <SectionHeader caption="Questions and concerns?" title="Frequently asked questions" />
+        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Everything you need to know about joining WAWU.</p>
         <div className="mt-4 xl:mx-auto xl:max-w-[760px]">
           <FaqAccordion items={FAQ} />
         </div>
@@ -372,7 +373,7 @@ export async function LandingContent() {
       {/* CTA */}
       <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card py-7 px-[22px] bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] xl:mx-auto xl:mb-14 xl:max-w-[1440px] xl:flex-row xl:items-center xl:justify-between xl:px-14 xl:py-12">
         <div className="flex flex-col gap-3.5 xl:gap-2">
-          <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent xl:text-[32px]">Ready to get paid for what you know?</h2>
+          <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent xl:text-[32px]">Own your WOW. Get paid for it.</h2>
           <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)] xl:text-[15px]">No entry fee. Publish your first piece free, price the next one yourself.</p>
         </div>
         <Link
