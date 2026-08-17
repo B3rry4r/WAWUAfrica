@@ -158,6 +158,26 @@ export async function LandingContent() {
         ) : null}
       </section>
 
+      {/* Value proposition */}
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
+        <div className="grid grid-cols-1 gap-3 dt:grid-cols-4 dt:gap-[18px]">
+          {[
+            { label: "FIND WOW", icon: "Compass" as IconName, body: "Discover Africa's best entrepreneurs, professionals and creators — your front row seat to opportunity." },
+            { label: "GET WOW", icon: "Sparkles" as IconName, body: "Unlock premium content, real products and personalised experiences from top creators." },
+            { label: "MAKE WOW", icon: "Rocket" as IconName, body: "Turn your expertise, skills and products into income, with tools built for exactly that." },
+            { label: "EVERYONE WOW", icon: "Users" as IconName, body: "To turn expertise into income — publish, price, and let people pay for what you know." },
+          ].map((v) => (
+            <div key={v.label} className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5">
+              <span className="grid h-[40px] w-[40px] place-items-center rounded-[13px] border border-accent bg-accent-tint">
+                <Icon name={v.icon} size={18} color="var(--accent)" strokeWidth={2} />
+              </span>
+              <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-accent">{v.label}</span>
+              <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Creators to watch — real failure shows a real error; genuinely no
          content yet (empty backend) shows neither an error nor an empty
          heading, just nothing, same as any other real empty state. */}
@@ -199,6 +219,44 @@ export async function LandingContent() {
               {field}
             </span>
           ))}
+        </div>
+      </section>
+
+      {/* WOW Vault */}
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
+        <SectionHeader caption="Your content, organised" title="The WOW Vault" />
+        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
+          Organise and monetise your content. Set prices, lock exclusives, and keep your audience coming back.
+        </p>
+        <div className="flex flex-col gap-4 dt:grid dt:grid-cols-[1fr_360px] dt:items-start dt:gap-[22px]">
+          <div className="rounded-card border border-hairline bg-card p-5">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "PPV from ₦100", icon: "Lock" as IconName },
+                { label: "Free first upload", icon: "Gift" as IconName },
+                { label: "Audience favourite", icon: "Heart" as IconName },
+                { label: "Exclusive", icon: "Star" as IconName },
+              ].map((chip) => (
+                <span key={chip.label} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary">
+                  <Icon name={chip.icon} size={13} color="var(--text-muted)" />
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+            <p className="m-0 mt-4 text-[13.5px] leading-normal text-text-secondary">
+              Video, courses, audio, ebooks, art and templates — priced by you, from ₦100 to ₦5,000, paid once and kept forever by the buyer.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5">
+            <div className="flex items-center gap-2">
+              <Icon name="Calendar" size={16} color="var(--text-muted)" />
+              <span className="text-[14px] font-semibold text-text-primary">Smart scheduler</span>
+              <ComingSoonPill>Coming soon</ComingSoonPill>
+            </div>
+            <p className="m-0 text-[12.5px] leading-normal text-text-muted">
+              Plan your content calendar weeks ahead and release steadily to keep your audience engaged.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -337,6 +395,27 @@ export async function LandingContent() {
         </div>
       </section>
 
+      {/* Make the switch */}
+      <section className="mx-5 mb-[52px] flex flex-col gap-4 rounded-card border border-hairline bg-card p-6 dt:mx-auto dt:max-w-[1440px] dt:flex-row dt:items-center dt:justify-between dt:p-10">
+        <div className="flex flex-col gap-3">
+          <SectionHeader caption="Own your WOW" title="Ready to build something real?" />
+          <p className="m-0 max-w-[520px] text-[14.5px] leading-normal text-text-secondary">
+            Join a growing community of professionals, entrepreneurs, artisans and creators earning more with lower fees and better tools, all on WAWU.
+          </p>
+          <div className="mt-1 flex flex-col gap-2">
+            {["85% standard, 90% Pro — best split on the platform", "CAC and NEPC registration, mentors and courses built in", "No entry fee — your first piece is free, you price the rest"].map((b) => (
+              <span key={b} className="flex items-center gap-2.5 text-[13.5px] text-text-secondary">
+                <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+                {b}
+              </span>
+            ))}
+          </div>
+        </div>
+        <Button size="lg" iconRight="ArrowRight" href="/sign-up?type=creator" className="shrink-0">
+          Join the Movement Free
+        </Button>
+      </section>
+
       {/* Testimonials */}
       <section className="pb-[52px] dt:mx-auto dt:max-w-[1440px]">
         <div className="px-5 dt:px-14">
@@ -362,6 +441,30 @@ export async function LandingContent() {
         </div>
       </section>
 
+      {/* Strategic ally */}
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
+        <SectionHeader caption="Your strategic ally" title="We WOW you every step of the way" />
+        <p className="-mt-1.5 mb-[18px] max-w-[620px] text-[14.5px] leading-normal text-text-secondary">
+          We don&apos;t just give you tools — from your first upload to your first payout, someone real is on the other end.
+        </p>
+        <div className="grid grid-cols-1 gap-3 dt:grid-cols-4 dt:gap-[18px]">
+          {[
+            { icon: "UserCheck" as IconName, title: "Manual, human review", body: "Every KYC submission is reviewed by a real person. Never automated, never charged for." },
+            { icon: "PieChart" as IconName, title: "Transparent split", body: "85% standard, 90% Pro — shown before you publish, never a hidden fee." },
+            { icon: "Landmark" as IconName, title: "Your own payout", body: "Earnings are paid out to your own bank account once KYC clears — never held in a platform wallet." },
+            { icon: "TrendingUp" as IconName, title: "EVG score", body: "See which of your content is actually driving revenue, so you know what to make more of." },
+          ].map((f) => (
+            <div key={f.title} className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5">
+              <span className="grid h-[40px] w-[40px] place-items-center rounded-[13px] border border-accent bg-accent-tint">
+                <Icon name={f.icon} size={18} color="var(--accent)" strokeWidth={2} />
+              </span>
+              <span className="text-[14.5px] font-semibold text-text-primary">{f.title}</span>
+              <p className="m-0 text-[13px] leading-normal text-text-secondary">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
         <SectionHeader caption="Questions and concerns?" title="Frequently asked questions" />
@@ -369,6 +472,17 @@ export async function LandingContent() {
         <div className="mt-4 dt:mx-auto dt:max-w-[760px]">
           <FaqAccordion items={FAQ} />
         </div>
+      </section>
+
+      {/* Community */}
+      <section className="px-5 pb-[52px] text-center dt:mx-auto dt:max-w-[760px] dt:px-14">
+        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">The community</span>
+        <h2 className="m-0 mt-1.5 text-[24px] font-semibold leading-snug tracking-[-0.02em] text-text-primary dt:text-[30px]">
+          Professionals, entrepreneurs, artisans and creatives
+        </h2>
+        <p className="m-0 mt-2.5 text-[14.5px] leading-normal text-text-secondary">
+          10,000+ creators and 1.5M+ fans are already building for real, in naira, on WAWU.
+        </p>
       </section>
 
       {/* CTA */}
