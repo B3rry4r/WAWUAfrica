@@ -110,10 +110,41 @@ function guardLocked(content: ContentPiece): ContentPiece {
   return content;
 }
 
+/**
+ * mapContentPiece seeds creator.fullName/handle with the bare wawuId (see
+ * its doc comment — list endpoints never embed a creator profile). getContent()
+ * fixes this for a single piece via getCreatorSummary(); list views need the
+ * same fix applied to every distinct creator in the page, batched (one
+ * lookup per unique creator, not per item) so a feed with repeat creators
+ * doesn't re-fetch the same profile. A single creator's lookup failing
+ * (e.g. a genuinely deleted account) only leaves that one card unenriched —
+ * it doesn't fake a name, and it doesn't fail the whole list for everyone
+ * else's real data.
+ */
+async function enrichCreatorIdentities(items: ContentPiece[]): Promise<ContentPiece[]> {
+  const uniqueIds = Array.from(new Set(items.map((i) => i.creator.wawuId)));
+  const summaries = new Map<string, { isPro: boolean; handle: string | null }>();
+  await Promise.all(
+    uniqueIds.map(async (id) => {
+      try {
+        summaries.set(id, await getCreatorSummary(id));
+      } catch {
+        /* leave this one creator unenriched — see doc comment */
+      }
+    }),
+  );
+  return items.map((item) => {
+    const summary = summaries.get(item.creator.wawuId);
+    if (!summary?.handle) return item;
+    return { ...item, creator: { ...item.creator, fullName: summary.handle, handle: summary.handle, isPro: summary.isPro } };
+  });
+}
+
 export async function getFeed(): Promise<ContentFeedResponse> {
   try {
     const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content?scope=feed", { authed: true });
-    return { items: res.data.map(mapContentPiece).map(guardLocked) };
+    const items = await enrichCreatorIdentities(res.data.map(mapContentPiece).map(guardLocked));
+    return { items };
   } catch (e) {
     if (!isMockModeError(e)) throw e;
     // SEAM: replace with GET /api/hub/content?scope=feed
@@ -130,13 +161,6 @@ export async function getFeed(): Promise<ContentFeedResponse> {
  * field on ContentPiece to select "featured" pieces server-side. This calls
  * the real feed and takes the first few items as a stand-in for curation.
  *
- * Separately, and more importantly: this function is called from the PUBLIC
- * marketing landing page (before sign-in), but GET /content is behind
- * `WawuAuthGuard` for every scope and there is no public/anonymous scope on
- * the real contract. An anonymous visitor has no session token to send, so
- * this call structurally 401s for them every single time — this is not a
- * rare failure, it is the permanent, expected path for 100% of the audience
- * this function serves. Per the no-mock-fallback policy this throws on that
  * Genuinely public: GET /api/hub/content/public/featured (a real,
  * unauthenticated Hub API route — see PublicContentController) so the
  * landing page shows real creators to every anonymous visitor instead of
@@ -148,7 +172,7 @@ export async function getFeed(): Promise<ContentFeedResponse> {
  */
 export async function getFeaturedContent(): Promise<ContentPiece[]> {
   const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content/public/featured");
-  return res.data.map(mapContentPiece).map(guardLocked);
+  return enrichCreatorIdentities(res.data.map(mapContentPiece).map(guardLocked));
 }
 
 /**
@@ -168,9 +192,12 @@ export async function getFeaturedContent(): Promise<ContentPiece[]> {
  */
 async function getCreatorSummary(creatorWawuId: string): Promise<{ isPro: boolean; handle: string | null }> {
   try {
+    // Genuinely public (PublicUserProfileController) — not the guarded
+    // /users/:wawuId/public-profile route, so this also works for
+    // getFeaturedContent()'s anonymous landing-page callers, who have no
+    // session token to send at all.
     const profile = await apiFetch<{ tier: "basic" | "pro"; handle: string | null }>(
-      `/api/hub/users/${creatorWawuId}/public-profile`,
-      { authed: true },
+      `/api/hub/users/public/${creatorWawuId}`,
     );
     return { isPro: profile.tier === "pro", handle: profile.handle };
   } catch (e) {
