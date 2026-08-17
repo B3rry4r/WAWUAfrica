@@ -158,14 +158,16 @@ export async function LandingContent() {
         ) : null}
       </section>
 
-      {/* Creators to watch */}
+      {/* Creators to watch — real failure shows a real error; genuinely no
+         content yet (empty backend) shows neither an error nor an empty
+         heading, just nothing, same as any other real empty state. */}
       {featuredError ? (
         <section className="px-5 pb-8 xl:mx-auto xl:max-w-[1440px] xl:px-14">
           <ErrorState title="Could not load creators to watch" body="Sign up to see who is live on WAWU right now." />
         </section>
-      ) : (
+      ) : toWatch.length > 0 ? (
         <CreatorCarousel items={toWatch} />
-      )}
+      ) : null}
 
       {/* Stats */}
       <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
