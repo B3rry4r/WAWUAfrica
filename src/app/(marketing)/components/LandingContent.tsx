@@ -71,9 +71,9 @@ export async function LandingContent() {
   return (
     <div className="min-h-screen bg-surface-page">
       {/* Header */}
-      <header className="sticky top-0 z-20 flex items-center gap-1 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-3.5 py-3 backdrop-blur xl:gap-[34px] xl:px-14 xl:py-0 xl:h-[74px]">
-        <img src="/wawu-logo-white.png" alt="WAWU" className="mr-auto h-[22px] w-auto object-contain xl:mr-0 xl:h-[26px]" />
-        <nav className="hidden items-center gap-[26px] xl:flex" aria-label="Marketing">
+      <header className="sticky top-0 z-20 flex items-center gap-1 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-3.5 py-3 backdrop-blur dt:gap-[34px] dt:px-14 dt:py-0 dt:h-[74px]">
+        <img src="/wawu-logo-white.png" alt="WAWU" className="mr-auto h-[22px] w-auto object-contain dt:mr-0 dt:h-[26px]" />
+        <nav className="hidden items-center gap-[26px] dt:flex" aria-label="Marketing">
           {[
             ["For creators", "/sign-up?type=creator"],
             ["Explore", "/explore"],
@@ -86,21 +86,21 @@ export async function LandingContent() {
             </a>
           ))}
         </nav>
-        <span className="hidden flex-1 xl:block" />
+        <span className="hidden flex-1 dt:block" />
         <Button variant="ghost" size="sm" href="/sign-in">Sign in</Button>
-        <Button variant="secondary" size="sm" href="/sign-up" className="xl:hidden">Sign up</Button>
+        <Button variant="secondary" size="sm" href="/sign-up" className="dt:hidden">Sign up</Button>
         <Button size="sm" href="/sign-up?type=creator">Become a creator</Button>
       </header>
 
       {/* Hero */}
-      <section className="flex flex-col items-start gap-[18px] px-5 pb-9 pt-10 xl:mx-auto xl:grid xl:w-full xl:max-w-[1440px] xl:grid-cols-[1fr_560px] xl:items-center xl:gap-14 xl:px-14 xl:pb-14 xl:pt-16">
-        <div className="flex flex-col items-start gap-[18px] xl:contents">
-          <div className="hidden xl:flex xl:w-full xl:flex-col xl:items-start xl:gap-[22px]">
+      <section className="flex flex-col items-start gap-[18px] px-5 pb-9 pt-10 dt:mx-auto dt:grid dt:w-full dt:max-w-[1440px] dt:grid-cols-[1fr_560px] dt:items-center dt:gap-14 dt:px-14 dt:pb-14 dt:pt-16">
+        <div className="flex flex-col items-start gap-[18px] dt:contents">
+          <div className="hidden dt:flex dt:w-full dt:flex-col dt:items-start dt:gap-[22px]">
             <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
             <h1 className="m-0 text-[60px] font-bold leading-[1.02] tracking-[-0.035em] text-text-primary">
               Turn your WOW
               <br />
-              into income.
+              <span className="text-accent">into income.</span>
             </h1>
             <p className="m-0 max-w-[520px] text-[18px] leading-relaxed text-text-secondary [text-wrap:pretty]">
               You&apos;ve already built something real. Publish it, price it, and let your audience unlock it — in naira, on your terms.
@@ -123,18 +123,18 @@ export async function LandingContent() {
               ))}
             </div>
           </div>
-          <span className="xl:hidden">
+          <span className="dt:hidden">
             <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
           </span>
-          <h1 className="m-0 text-[42px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary xl:hidden">
+          <h1 className="m-0 text-[42px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary dt:hidden">
             Turn your WOW
             <br />
-            into income.
+            <span className="text-accent">into income.</span>
           </h1>
-          <p className="m-0 text-[16.5px] leading-relaxed text-text-secondary xl:hidden">
+          <p className="m-0 text-[16.5px] leading-relaxed text-text-secondary dt:hidden">
             You&apos;ve already built something real. Publish it, price it, and let your audience unlock it — in naira, on your terms.
           </p>
-          <div className="mt-1 flex w-full flex-col gap-3 xl:hidden">
+          <div className="mt-1 flex w-full flex-col gap-3 dt:hidden">
             <Button full size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
               Start monetizing today
             </Button>
@@ -145,7 +145,7 @@ export async function LandingContent() {
         </div>
 
         {collage.length === 4 ? (
-          <div className="hidden xl:grid xl:grid-cols-2 xl:gap-[18px]">
+          <div className="hidden dt:grid dt:grid-cols-2 dt:gap-[18px]">
             <div className="flex flex-col gap-[18px] pt-[34px]">
               <ContentCard content={collage[0]} state="locked" ratio="4 / 5" href="/sign-up" />
               <ContentCard content={collage[1]} state="free" ratio="1 / 1" href="/sign-up" />
@@ -162,7 +162,7 @@ export async function LandingContent() {
          content yet (empty backend) shows neither an error nor an empty
          heading, just nothing, same as any other real empty state. */}
       {featuredError ? (
-        <section className="px-5 pb-8 xl:mx-auto xl:max-w-[1440px] xl:px-14">
+        <section className="px-5 pb-8 dt:mx-auto dt:max-w-[1440px] dt:px-14">
           <ErrorState title="Could not load creators to watch" body="Sign up to see who is live on WAWU right now." />
         </section>
       ) : toWatch.length > 0 ? (
@@ -170,8 +170,8 @@ export async function LandingContent() {
       ) : null}
 
       {/* Stats */}
-      <section className="px-5 pb-12 xl:mx-auto xl:max-w-[1440px] xl:px-14">
-        <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card xl:hidden">
+      <section className="px-5 pb-12 dt:mx-auto dt:max-w-[1440px] dt:px-14">
+        <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card dt:hidden">
           {[
             { value: "10,000+", label: "Creators on WAWU" },
             { value: "₦900M+", label: "Paid to creators" },
@@ -185,7 +185,7 @@ export async function LandingContent() {
       </section>
 
       {/* Every field */}
-      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
         <SectionHeader caption="Find your WOW" title="Every field, one platform" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
           From agriculture to fintech, Nigerians are monetising what they already know.
@@ -203,12 +203,12 @@ export async function LandingContent() {
       </section>
 
       {/* How you earn */}
-      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
         <SectionHeader caption="WOW revenue streams" title="Monetize the WOW about you" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Free to discover. People pay to connect, and pay for value.</p>
-        <div className="flex flex-col gap-3 xl:grid xl:grid-cols-5 xl:gap-[18px]">
+        <div className="flex flex-col gap-3 dt:grid dt:grid-cols-5 dt:gap-[18px]">
           {WAYS.map((way) => (
-            <div key={way.title} className="flex gap-3.5 rounded-card border border-hairline bg-card p-4 xl:flex-col xl:gap-3 xl:p-[22px]">
+            <div key={way.title} className="flex gap-3.5 rounded-card border border-hairline bg-card p-4 dt:flex-col dt:gap-3 dt:p-[22px]">
               <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-accent bg-accent-tint">
                 <Icon name={way.icon} size={19} color="var(--accent)" strokeWidth={2} />
               </span>
@@ -231,10 +231,10 @@ export async function LandingContent() {
       </section>
 
       {/* Earnings calculator + More than content: source order keeps the calculator
-         first, but xl:order- swaps the visual order so "more than content" leads,
+         first, but dt:order- swaps the visual order so "more than content" leads,
          matching the design's left/right arrangement without reordering the DOM. */}
-      <div className="contents xl:grid xl:mx-auto xl:max-w-[1440px] xl:grid-cols-2 xl:gap-[22px] xl:px-14 xl:pb-[52px]">
-        <section id="pricing" className="px-5 pb-[52px] xl:order-2 xl:px-0 xl:pb-0">
+      <div className="contents dt:grid dt:mx-auto dt:max-w-[1440px] dt:grid-cols-2 dt:gap-[22px] dt:px-14 dt:pb-[52px]">
+        <section id="pricing" className="px-5 pb-[52px] dt:order-2 dt:px-0 dt:pb-0">
           <SectionHeader caption="Earnings calculator" title="See your earning potential" />
           <div className="mt-4">
             <EarningsCalculator />
@@ -242,7 +242,7 @@ export async function LandingContent() {
         </section>
 
         {/* More than content */}
-        <section className="px-5 pb-[52px] xl:order-1 xl:px-0 xl:pb-0">
+        <section className="px-5 pb-[52px] dt:order-1 dt:px-0 dt:pb-0">
           <SectionHeader caption="Only on WAWU" title="More than content" />
           <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
             Other platforms sell your content. WAWU also gets your business registered, trained and covered.
@@ -273,10 +273,10 @@ export async function LandingContent() {
       </div>
 
       {/* Creator tiers */}
-      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
         <SectionHeader caption="Creator tiers" title="Go further, keep more" />
-        <div className="mt-4 flex flex-col gap-3 xl:grid xl:grid-cols-3 xl:gap-[18px]">
-          <div className="hidden flex-col gap-3.5 rounded-card border border-hairline bg-card p-5 xl:flex">
+        <div className="mt-4 flex flex-col gap-3 dt:grid dt:grid-cols-3 dt:gap-[18px]">
+          <div className="hidden flex-col gap-3.5 rounded-card border border-hairline bg-card p-5 dt:flex">
             <span className="text-[16px] font-semibold text-text-primary">Free</span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
@@ -338,17 +338,17 @@ export async function LandingContent() {
       </section>
 
       {/* Testimonials */}
-      <section className="pb-[52px] xl:mx-auto xl:max-w-[1440px]">
-        <div className="px-5 xl:px-14">
+      <section className="pb-[52px] dt:mx-auto dt:max-w-[1440px]">
+        <div className="px-5 dt:px-14">
           <SectionHeader caption="In their words" title="Creators on WAWU" />
         </div>
-        <div className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-1 pb-2 xl:grid xl:grid-cols-3 xl:overflow-visible xl:px-14 xl:pb-0">
+        <div className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-1 pb-2 dt:grid dt:grid-cols-3 dt:overflow-visible dt:px-14 dt:pb-0">
           {[
             { initial: "A", quote: "I was answering the same business questions free on WhatsApp for years. Now the answers are a course and they pay for my rent.", name: "Adaeze Okonkwo", meta: "Business Strategist, Enugu" },
             { initial: "I", quote: "The paid DM changed everything. People are serious when they pay ₦300 to ask, and I reply the same day.", name: "Ifeanyi Nwosu", meta: "Fashion Designer, Aba" },
             { initial: "Z", quote: "I got my CAC certificate and sold my first training pack in the same week, on the same app. That is the difference.", name: "Zainab Bello", meta: "Agribusiness Trainer, Kano" },
           ].map((t) => (
-            <div key={t.name} className="flex w-[292px] shrink-0 snap-center flex-col gap-4 rounded-card border border-hairline bg-card p-5 xl:w-auto">
+            <div key={t.name} className="flex w-[292px] shrink-0 snap-center flex-col gap-4 rounded-card border border-hairline bg-card p-5 dt:w-auto">
               <p className="m-0 text-[15px] leading-normal text-text-primary">“{t.quote}”</p>
               <div className="mt-auto flex items-center gap-2.5">
                 <span className="grid h-[38px] w-[38px] place-items-center rounded-full bg-accent-tint text-[15px] font-semibold text-accent-hover">{t.initial}</span>
@@ -363,23 +363,23 @@ export async function LandingContent() {
       </section>
 
       {/* FAQ */}
-      <section className="px-5 pb-[52px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
+      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
         <SectionHeader caption="Questions and concerns?" title="Frequently asked questions" />
         <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Everything you need to know about joining WAWU.</p>
-        <div className="mt-4 xl:mx-auto xl:max-w-[760px]">
+        <div className="mt-4 dt:mx-auto dt:max-w-[760px]">
           <FaqAccordion items={FAQ} />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card py-7 px-[22px] bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] xl:mx-auto xl:mb-14 xl:max-w-[1440px] xl:flex-row xl:items-center xl:justify-between xl:px-14 xl:py-12">
-        <div className="flex flex-col gap-3.5 xl:gap-2">
-          <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent xl:text-[32px]">Own your WOW. Get paid for it.</h2>
-          <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)] xl:text-[15px]">No entry fee. Publish your first piece free, price the next one yourself.</p>
+      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card py-7 px-[22px] bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] dt:mx-auto dt:mb-14 dt:max-w-[1440px] dt:flex-row dt:items-center dt:justify-between dt:px-14 dt:py-12">
+        <div className="flex flex-col gap-3.5 dt:gap-2">
+          <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent dt:text-[32px]">Own your WOW. Get paid for it.</h2>
+          <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)] dt:text-[15px]">No entry fee. Publish your first piece free, price the next one yourself.</p>
         </div>
         <Link
           href="/sign-up?type=creator"
-          className="mt-0.5 inline-flex h-[46px] shrink-0 items-center gap-2 self-start rounded-button bg-white px-[22px] text-[15px] font-semibold text-on-light xl:mt-0 xl:h-[52px] xl:self-auto"
+          className="mt-0.5 inline-flex h-[46px] shrink-0 items-center gap-2 self-start rounded-button bg-white px-[22px] text-[15px] font-semibold text-on-light dt:mt-0 dt:h-[52px] dt:self-auto"
         >
           Become a creator
           <Icon name="ArrowRight" size={17} color="var(--text-on-light)" strokeWidth={2.2} />
@@ -387,9 +387,9 @@ export async function LandingContent() {
       </section>
 
       {/* Footer */}
-      <footer className="flex flex-col gap-[26px] border-t border-hairline px-5 pb-[46px] pt-[30px] xl:mx-auto xl:max-w-[1440px] xl:px-14">
+      <footer className="flex flex-col gap-[26px] border-t border-hairline px-5 pb-[46px] pt-[30px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[20px] w-auto self-start object-contain opacity-80" />
-        <div className="grid grid-cols-2 gap-x-5 gap-y-[26px] xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-[26px] dt:grid-cols-4">
           {[
             { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Become a creator", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
             { label: "Services", links: [["CAC registration", "/services/cac"], ["NEPC registration", "/services/nepc"], ["Mentors", "/services/mentors"], ["Learn", "/learn"]] },

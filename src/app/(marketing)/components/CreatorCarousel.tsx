@@ -37,8 +37,8 @@ export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
   };
 
   return (
-    <section className="pb-11 pt-2 xl:mx-auto xl:max-w-[1440px]">
-      <div className="px-5 xl:px-14">
+    <section className="pb-11 pt-2 dt:mx-auto dt:max-w-[1440px]">
+      <div className="px-5 dt:px-14">
         <SectionHeader
           caption="Earning on WAWU now"
           title="Creators to watch"
@@ -49,7 +49,7 @@ export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
       <div
         ref={railRef}
         onScroll={onScroll}
-        className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 pt-4 xl:px-14"
+        className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 pt-4 dt:px-14"
       >
         {items.map((c) => (
           <div key={c.id} className="w-[306px] shrink-0 snap-center">
@@ -58,7 +58,7 @@ export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
         ))}
       </div>
       {items.length > 1 ? (
-        <div className="mt-4 flex justify-center gap-[7px] xl:hidden">
+        <div className="mt-4 flex justify-center gap-[7px] dt:hidden">
           {items.map((c, i) => (
             <span
               key={c.id}

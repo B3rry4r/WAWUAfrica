@@ -7,6 +7,16 @@ const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // "dt" (desktop) is a lower, more forgiving desktop cutoff than the
+      // app-wide "xl" (1280px) — used only by the signed-out marketing
+      // landing page, which was showing the mobile layout on real laptops
+      // whose effective CSS viewport sits under 1280px (very common with
+      // any OS/browser zoom above 100%, e.g. Windows' default 125%/150%
+      // scaling on a 1366-1920px-wide physical screen). Every other screen
+      // in the app keeps using "xl" unchanged — this doesn't touch them.
+      screens: {
+        dt: "1024px",
+      },
       colors: {
         page: "var(--surface-page)",
         card: "var(--surface-card)",
