@@ -1,5 +1,5 @@
 import { sessionStorage } from "@/lib/auth/session-storage";
-import { API_BASE, USE_MOCKS } from "./config";
+import { API_BASE, USE_MOCKS, WAWU_ID_BASE } from "./config";
 
 const REQUEST_TIMEOUT_MS = 8000;
 
@@ -76,6 +76,51 @@ function hasDataKey(body: unknown): body is { data: unknown } {
 }
 
 /**
+ * A stale access token (15-minute TTL on WAWU ID) used to strand the whole
+ * app: every authed call 401'd forever after, with no path back to sign-in
+ * short of manually clearing storage. WAWU ID has always had a real
+ * POST /auth/refresh (rotates both tokens) that the frontend never called —
+ * this wires it in. Concurrent 401s share one in-flight refresh instead of
+ * each firing their own (a second call would rotate the refresh token out
+ * from under the first and fail it).
+ */
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshSession(): Promise<boolean> {
+  const refreshToken = sessionStorage.getRefreshToken();
+  if (!refreshToken) return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${WAWU_ID_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+      signal: controller.signal,
+    });
+    if (!res.ok) return false;
+    const body = await res.json();
+    const data = (body && typeof body === "object" && "data" in body ? body.data : body) as
+      | { accessToken?: string; refreshToken?: string }
+      | undefined;
+    if (!data?.accessToken || !data?.refreshToken) return false;
+    sessionStorage.setToken(data.accessToken);
+    sessionStorage.setRefreshToken(data.refreshToken);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/** The refresh token itself is dead too — there is genuinely no way back in without a fresh sign-in. */
+function forceSignIn(): void {
+  sessionStorage.clear();
+  if (typeof window !== "undefined") window.location.href = "/sign-in";
+}
+
+/**
  * Thin fetch wrapper — the only place raw fetch lives. Components call the
  * domain modules in src/lib/api/*, never fetch directly.
  *
@@ -109,14 +154,15 @@ export async function apiFetchPaginated<T>(
 }
 
 /** Shared fetch + timeout + auth + error-handling core for apiFetch/apiFetchPaginated. */
-async function rawFetch(path: string, options: ApiRequestOptions): Promise<unknown> {
+async function rawFetch(path: string, options: ApiRequestOptions, isRetry = false): Promise<unknown> {
   if (USE_MOCKS) throw new MockModeError();
 
   const { body, authed, token, baseUrl, ...rest } = options;
+  const isAuthedCall = Boolean(authed || token);
 
   const headers = new Headers(rest.headers);
   if (body !== undefined) headers.set("Content-Type", "application/json");
-  if (authed || token) {
+  if (isAuthedCall) {
     const sessionToken = token ?? sessionStorage.getToken();
     if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
   }
@@ -136,6 +182,21 @@ async function rawFetch(path: string, options: ApiRequestOptions): Promise<unkno
     throw e instanceof Error ? e : new ApiError("Network error", 0);
   } finally {
     clearTimeout(timeout);
+  }
+
+  // A stale access token on an already-signed-in session's own call — try a
+  // silent refresh-and-retry before giving up. Never applies to `token`
+  // (explicit override, e.g. a fresh sign-up flow's own token) or to a call
+  // already retried once, and never to unauthenticated calls (a real 401
+  // from e.g. a wrong sign-in password must reach the caller as-is).
+  if (res.status === 401 && authed && !token && !isRetry) {
+    if (!refreshPromise) refreshPromise = refreshSession().finally(() => { refreshPromise = null; });
+    const refreshed = await refreshPromise;
+    if (refreshed) return rawFetch(path, options, true);
+    forceSignIn();
+    // forceSignIn navigates away; throw so the caller's current render never
+    // sees a resolved value for a session that's already gone.
+    throw new ApiError("Session expired", 401);
   }
 
   if (!res.ok) {
