@@ -43,7 +43,7 @@ export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
           caption="Earning on WAWU now"
           title="Creators to watch"
           action="See all"
-          onAction={() => router.push("/explore/creators")}
+          onAction={() => router.push("/sign-up")}
         />
       </div>
       <div
@@ -53,7 +53,7 @@ export function CreatorCarousel({ items }: { items: ContentPiece[] }) {
       >
         {items.map((c) => (
           <div key={c.id} className="w-[306px] shrink-0 snap-center">
-            <ContentCard content={c} state="free" ratio="4 / 5" />
+            <ContentCard content={c} state="free" ratio="4 / 5" href="/sign-up" />
           </div>
         ))}
       </div>

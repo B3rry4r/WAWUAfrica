@@ -137,18 +137,17 @@ export async function getFeed(): Promise<ContentFeedResponse> {
  * this call structurally 401s for them every single time — this is not a
  * rare failure, it is the permanent, expected path for 100% of the audience
  * this function serves. Per the no-mock-fallback policy this throws on that
- * 401 like any other real failure; the caller (LandingContent) is
- * responsible for rendering a real, visible error for the "Creators to
- * watch" section rather than ever substituting fixture creators/content
- * labelled as live. (Proposed backend change, not made: a public preview
- * scope on GET /content would let this become genuinely live for anonymous
- * visitors — flagging per the task brief rather than inventing one
- * server-side.)
+ * Genuinely public: GET /api/hub/content/public/featured (a real,
+ * unauthenticated Hub API route — see PublicContentController) so the
+ * landing page shows real creators to every anonymous visitor instead of
+ * either locking the section behind a login or faking it. It reuses the
+ * same list()/resolveUnlockedSet() the authed feed uses, just called with
+ * no requester, so every piece correctly comes back locked (never
+ * unlocked) — nothing here that isn't already public-safe. Real failures
+ * still propagate; the caller (LandingContent) renders a visible error.
  */
 export async function getFeaturedContent(): Promise<ContentPiece[]> {
-  const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content?scope=feed&perPage=3", {
-    authed: true,
-  });
+  const res = await apiFetchPaginated<HubContentPieceResponse>("/api/hub/content/public/featured");
   return res.data.map(mapContentPiece).map(guardLocked);
 }
 

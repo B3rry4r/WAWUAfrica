@@ -51,12 +51,11 @@ const FAQ = [
 ];
 
 export async function LandingContent() {
-  // getFeaturedContent() 401s for every signed-out visitor (GET /content has
-  // no public scope — see its doc comment in src/lib/api/content.ts) and
-  // throws on any other real failure too. Scoping the try/catch to just this
-  // call means a failure here shows a real, visible error for the "Creators
-  // to watch" section instead of either faking live data or crashing the
-  // entire marketing page for 100% of anonymous traffic.
+  // getFeaturedContent() now hits a genuinely public Hub API route (see its
+  // doc comment in src/lib/api/content.ts), so this only throws on a real
+  // failure (backend down, network). Scoping the try/catch to just this call
+  // means a failure here shows a real, visible error for the "Creators to
+  // watch" section instead of crashing the entire marketing page.
   let toWatch: ContentPiece[] = [];
   let featuredError = false;
   try {
@@ -148,12 +147,12 @@ export async function LandingContent() {
         {collage.length === 4 ? (
           <div className="hidden xl:grid xl:grid-cols-2 xl:gap-[18px]">
             <div className="flex flex-col gap-[18px] pt-[34px]">
-              <ContentCard content={collage[0]} state="locked" ratio="4 / 5" />
-              <ContentCard content={collage[1]} state="free" ratio="1 / 1" />
+              <ContentCard content={collage[0]} state="locked" ratio="4 / 5" href="/sign-up" />
+              <ContentCard content={collage[1]} state="free" ratio="1 / 1" href="/sign-up" />
             </div>
             <div className="flex flex-col gap-[18px]">
-              <ContentCard content={collage[2]} state="locked" ratio="1 / 1" />
-              <ContentCard content={collage[3]} state="locked" ratio="4 / 5" />
+              <ContentCard content={collage[2]} state="locked" ratio="1 / 1" href="/sign-up" />
+              <ContentCard content={collage[3]} state="locked" ratio="4 / 5" href="/sign-up" />
             </div>
           </div>
         ) : null}
@@ -290,7 +289,7 @@ export async function LandingContent() {
             </Button>
           </div>
           <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5">
-            <TierBadge tier="basic" />
+            <span className="self-start"><TierBadge tier="basic" /></span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
                 {formatNaira(5999)}
@@ -311,7 +310,7 @@ export async function LandingContent() {
           </div>
 
           <div className="flex flex-col gap-3.5 rounded-card border border-accent bg-elevated p-5">
-            <TierBadge tier="pro" />
+            <span className="self-start"><TierBadge tier="pro" /></span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
                 {formatNaira(18999)}
