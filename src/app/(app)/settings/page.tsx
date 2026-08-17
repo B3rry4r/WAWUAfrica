@@ -68,6 +68,7 @@ export default function SettingsPage() {
               {
                 title: "Creator",
                 rows: [
+                  { title: "Subscription", subtitle: "Plan, billing and renewal", icon: "BadgeCheck", href: "/subscription" },
                   { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/messages/settings" },
                   { title: "Earnings", subtitle: "Payouts and history", icon: "Wallet", href: "/earnings" },
                 ],

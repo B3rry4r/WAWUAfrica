@@ -127,6 +127,7 @@ export default function OwnProfilePage() {
             />
             <ListRow title="Saved" icon="Bookmark" meta={savedMeta} href="/saved" />
             <ListRow title="Credits" subtitle="1 per community message" icon="Ticket" meta={String(profile.credits)} href="/communities" />
+            <ListRow title="Become a creator" subtitle="Publish content, host communities, get paid" icon="Sparkles" href="/onboarding" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
         )}
