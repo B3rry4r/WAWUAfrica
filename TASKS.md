@@ -37,12 +37,25 @@ Kept on disk so nothing is lost between messages. Updated as work lands.
 - [x] Branded email header regenerated with the new mark (public/email-header.png)
 - [x] WAWU-ID email header repointed off the legacy production.wawuafrica.com
       domain (code default + EMAIL_HEADER_URL in production)
+- [x] All nine auth emails rebranded to the app's dark/purple identity. The
+      template was a light one carried over from the previous platform, so a
+      new user's first email looked like a different company than the app.
 
-## Blocked: Railway will not deploy
-- [ ] Four consecutive deploys of wawu-web and wawu-api sat in INITIALIZING for
-      7+ minutes and then FAILED, with no build logs produced at all. Builds are
-      not being picked up. Everything above is committed locally and typechecks
-      and lints clean, but is NOT live yet.
+## Deploys: pushed to GitHub for Railway to build from
+- [x] `railway up` is broken from this machine: six consecutive deploys of both
+      services sat in INITIALIZING for ~7 minutes then FAILED, producing no build
+      logs at all, so the builds were never picked up. Not a code problem: a
+      local production build of the web app succeeds (65 routes) once Next's
+      static-generation workers are forced single-process, which is a quirk of
+      this sandbox, not of the app.
+- [x] Backend pushed: github.com/B3rry4r/WAWU-Backend (main)
+- [x] Frontend pushed: github.com/B3rry4r/WAWUAfrica (main)
+- [x] WAWU-ID pushed: github.com/B3rry4r/WAWU-ID (main)
+- [ ] Connect the Railway services to those repos so deploys build from git.
+      wawu-web is already live with everything. wawu-api is one commit behind:
+      /service-applications/partner/apply still 404s, so EasyBuy/Pension/
+      Banking/Grants applications, the KYC not-started fix and the legal
+      awaiting_quote states are not live yet.
 
 ## Needs a decision from you
 - [ ] The new backend (wawu-api) sends NO email at all: no mailer dependency
