@@ -45,7 +45,7 @@ function CourseStateIndicator({ state, freeCoursesTotal }: { state: CourseEntitl
   if (state.status === "enrolled") {
     return (
       <div className="flex">
-        <StatusPill kind="success">Enrolled — free</StatusPill>
+        <StatusPill kind="success">Enrolled, free</StatusPill>
       </div>
     );
   }

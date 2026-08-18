@@ -8,6 +8,7 @@ import { Button, Icon, Input } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { formatNaira } from "@/lib/format";
 import { payCacApplication } from "@/lib/api/services";
+import { FilePicker } from "@/components/ui/FilePicker";
 
 type Step = 1 | 2 | 3;
 const STEP_LABELS = ["Details", "Documents", "Review"];
@@ -42,12 +43,16 @@ interface DocSlot {
   sizeLabel?: string;
   state: DocState;
   progress?: number;
+  /** What to photograph/attach for this slot. */
+  hint?: string;
+  /** Object-storage URL once the file genuinely finished uploading. */
+  url?: string;
 }
 
 const INITIAL_DOCS: DocSlot[] = [
-  { key: "id", label: "Valid ID", icon: "IdCard", filename: "nin-slip.jpg", sizeLabel: "1.2 MB", state: "uploaded" },
-  { key: "signature", label: "Signature", icon: "Signature", filename: "signature.png", state: "uploading", progress: 74 },
-  { key: "passport", label: "Passport photograph", icon: "Image", state: "empty" },
+  { key: "id", label: "Valid ID", icon: "IdCard", hint: "NIN slip, passport or driver's licence.", state: "empty" },
+  { key: "signature", label: "Signature", icon: "Signature", hint: "Sign on white paper and photograph it.", state: "empty" },
+  { key: "passport", label: "Passport photograph", icon: "Image", hint: "Plain background, face clear.", state: "empty" },
 ];
 
 interface NameFieldErrors {
@@ -67,7 +72,7 @@ function validateNames(regType: RegistrationType, first: string, second: string,
       return;
     }
     if (regType === "business_name" && /\b(ltd|limited)\b/i.test(raw)) {
-      errors[key] = "Drop “Ltd” — that is only for a limited company.";
+      errors[key] = "Drop “Ltd”, that is only for a limited company.";
       return;
     }
     if (/\b(federal|national|nigeria)\b/i.test(raw)) {
@@ -106,36 +111,27 @@ export default function CacApplyPage() {
   const nameErrors = validateNames(regType, first, second, third);
   const nameErrorCount = Object.keys(nameErrors).length;
 
-  // Simulate the signature upload finishing so step 2's Continue eventually unlocks.
-  useEffect(() => {
-    const signature = docs.find((d) => d.key === "signature");
-    if (!signature || signature.state !== "uploading") return;
-    const id = setInterval(() => {
-      setDocs((prev) =>
-        prev.map((d) => {
-          if (d.key !== "signature" || d.state !== "uploading") return d;
-          const next = Math.min(100, (d.progress ?? 0) + 9);
-          if (next >= 100) {
-            return { ...d, state: "uploaded", progress: 100, sizeLabel: "640 KB" };
-          }
-          return { ...d, progress: next };
-        }),
-      );
-    }, 320);
-    return () => clearInterval(id);
-  }, [docs]);
+  // Documents upload for real (POST /uploads/presign + direct PUT). This
+  // screen previously ran setInterval/setTimeout progress bars with no file
+  // behind them, so applicants paid the CAC fee having attached nothing.
+  const markUploaded = (key: DocKey, file: { fileUrl: string; name: string; size: number }) => {
+    setDocs((prev) =>
+      prev.map((d) =>
+        d.key === key
+          ? {
+              ...d,
+              state: "uploaded",
+              filename: file.name,
+              sizeLabel: file.size >= 1024 * 1024 ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`,
+              url: file.fileUrl,
+            }
+          : d,
+      ),
+    );
+  };
 
-  const addPassportPhoto = (source: "camera" | "file") => {
-    setDocs((prev) => prev.map((d) => (d.key === "passport" ? { ...d, state: "uploading", progress: 0 } : d)));
-    setTimeout(() => {
-      setDocs((prev) =>
-        prev.map((d) =>
-          d.key === "passport"
-            ? { ...d, state: "uploaded", filename: source === "camera" ? "passport-photo.jpg" : "passport.jpg", sizeLabel: "480 KB" }
-            : d,
-        ),
-      );
-    }, 650);
+  const clearDoc = (key: DocKey) => {
+    setDocs((prev) => prev.map((d) => (d.key === key ? { ...d, state: "empty", filename: undefined, sizeLabel: undefined, url: undefined } : d)));
   };
 
   const allDocsUploaded = docs.every((d) => d.state === "uploaded");
@@ -165,6 +161,7 @@ export default function CacApplyPage() {
         registrationType: regType,
         names: [first.trim(), second.trim(), third.trim()],
         nature,
+        documents: docs.map((d) => d.url).filter((u): u is string => !!u),
       });
       if (res.result === "success") {
         setResult({
@@ -230,7 +227,7 @@ export default function CacApplyPage() {
     <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,92,92,0.32)] bg-[var(--danger-tint)] p-[13px_14px]">
       <Icon name="CircleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-[1px]" />
       <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--danger)]">
-        Your bank didn&apos;t confirm the payment. Nothing was charged — try again.
+        Your bank didn&apos;t confirm the payment. Nothing was charged, try again.
       </span>
     </div>
   );
@@ -341,56 +338,23 @@ export default function CacApplyPage() {
         <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">Photos are fine as long as the text is readable.</p>
       </div>
 
-      {docs.map((doc) =>
-        doc.state === "empty" ? (
-          <div
-            key={doc.key}
-            className="flex flex-col items-center justify-center gap-[11px] rounded-[var(--radius-media)] border border-dashed border-[var(--border-strong)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] p-[26px_20px]"
-          >
-            <span className="grid h-[44px] w-[44px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
-              <Icon name="Plus" size={19} color="var(--text-secondary)" strokeWidth={2.2} />
-            </span>
-            <span className="text-[14px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
-            <span className="text-[12.5px] text-[var(--text-muted)]">Plain background, face clear</span>
+      {docs.map((doc) => (
+        <div key={doc.key} className="flex flex-col gap-[9px]">
+          <div className="flex items-center gap-[9px]">
+            <Icon name={doc.icon} size={16} color="var(--text-secondary)" strokeWidth={2} />
+            <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
           </div>
-        ) : (
-          <div
-            key={doc.key}
-            className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]"
-          >
-            <div className="flex items-center gap-[13px]">
-              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-                <Icon name={doc.icon} size={18} color="var(--accent)" strokeWidth={2} />
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
-                <span className="text-[12px] text-[var(--text-muted)]">
-                  {doc.filename} {doc.state === "uploading" ? "· uploading" : doc.sizeLabel ? `· ${doc.sizeLabel}` : ""}
-                </span>
-              </div>
-              {doc.state === "uploaded" ? (
-                <Icon name="Check" size={18} color="var(--success)" strokeWidth={2.6} />
-              ) : (
-                <span className="text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{doc.progress ?? 0}%</span>
-              )}
-            </div>
-            {doc.state === "uploading" && (
-              <div className="h-[5px] overflow-hidden rounded-full bg-[var(--surface-tag)]">
-                <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-300" style={{ width: `${doc.progress ?? 0}%` }} />
-              </div>
-            )}
-          </div>
-        ),
-      )}
-
-      <div className="flex gap-[10px]">
-        <Button variant="secondary" icon="Camera" className="flex-1" onClick={() => addPassportPhoto("camera")}>
-          Take a photo
-        </Button>
-        <Button variant="secondary" icon="Paperclip" className="flex-1" onClick={() => addPassportPhoto("file")}>
-          Choose file
-        </Button>
-      </div>
+          <FilePicker
+            folder="service-application/document"
+            accept="image/png,image/jpeg,application/pdf"
+            capture={doc.key === "passport"}
+            label={doc.state === "uploaded" ? "Replace file" : `Add your ${doc.label.toLowerCase()}`}
+            hint={doc.hint}
+            onUploaded={(f) => markUploaded(doc.key, f)}
+            onCleared={() => clearDoc(doc.key)}
+          />
+        </div>
+      ))}
     </div>
   );
 
@@ -599,7 +563,7 @@ export default function CacApplyPage() {
             })}
             <div className="mt-auto flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
               <span className="text-[12.5px] font-semibold text-[var(--text-primary)]">Need help?</span>
-              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your answers before you pay — free.</span>
+              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your answers before you pay, free.</span>
             </div>
           </div>
 

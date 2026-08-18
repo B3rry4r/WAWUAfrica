@@ -13,7 +13,7 @@ import { getBlockedAccounts, getPrivacySettings, requestDataExport, savePrivacyS
 type ToggleKey = keyof PrivacySettings;
 
 const PROFILE_ROWS: { key: ToggleKey; label: string; onCaption?: string; offCaption?: string }[] = [
-  { key: "showPurchases", label: "Show what I have bought", offCaption: "Off — nobody sees your purchases" },
+  { key: "showPurchases", label: "Show what I have bought", offCaption: "Off, nobody sees your purchases" },
   { key: "showSavedItems", label: "Show my saved items" },
   { key: "showFollowing", label: "Show who I follow" },
 ];
@@ -156,7 +156,7 @@ export default function PrivacyPage() {
         <Icon name="ShieldCheck" size={15} color="var(--text-muted)" className="mt-[1px]" />
         <span className="flex-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
           Your BVN and NIN are never shown on your profile and never given to another member. They&apos;re used only
-          by our manual review team to verify your identity — there&apos;s no automated liveness or face-matching
+          by our manual review team to verify your identity, there&apos;s no automated liveness or face-matching
           step.
         </span>
       </div>

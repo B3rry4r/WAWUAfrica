@@ -11,7 +11,7 @@ export default function AboutPage() {
         </span>
       </div>
       <p className="m-0 text-[13.5px] leading-[1.6] text-[var(--text-secondary)]">
-        WAWU is a Nigerian marketplace for creators — people who teach, write, draw, sew, cook
+        WAWU is a Nigerian marketplace for creators, people who teach, write, draw, sew, cook
         and build. Creators charge for their content in naira, and members pay for what they
         value. When you pay a creator, 85% goes to them and WAWU keeps 15% (90/10 for Pro).
       </p>

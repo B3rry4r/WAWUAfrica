@@ -3,17 +3,36 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { kycApi } from "@/lib/api/kyc";
+import type { KycSubmission } from "@/types/kyc";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { FilePicker } from "@/components/ui/FilePicker";
 import { StatusPill } from "@/components/ui/StatusPill";
 
 type View = "loading" | "load-error" | "form" | "pending" | "approved" | "rejected";
 type Step = 1 | 2 | 3 | "review";
 
-const docTypes = ["Passport", "Driver's licence", "Voter's card", "National ID card"];
+/** Values the backend accepts (CreateKycSubmissionDto ID_DOCUMENT_TYPE_VALUES). */
+const docTypes = [
+  { value: "passport", label: "Passport" },
+  { value: "drivers_licence", label: "Driver's licence" },
+  { value: "national_id_card", label: "National ID card" },
+] as const;
+
+type DocTypeValue = (typeof docTypes)[number]["value"];
+
+/** Banks WAWU can pay out to. Chosen by the creator, never assumed. */
+const payoutBanks = [
+  "Access Bank", "Citibank Nigeria", "Ecobank Nigeria", "Fidelity Bank", "First Bank of Nigeria",
+  "First City Monument Bank", "Globus Bank", "Guaranty Trust Bank", "Heritage Bank", "Keystone Bank",
+  "Kuda Bank", "Moniepoint MFB", "Opay", "Optimus Bank", "Palmpay", "Parallex Bank", "Polaris Bank",
+  "Providus Bank", "Stanbic IBTC Bank", "Standard Chartered", "Sterling Bank", "SunTrust Bank",
+  "Titan Trust Bank", "Union Bank of Nigeria", "United Bank for Africa", "Unity Bank",
+  "Wema Bank", "Zenith Bank",
+];
 
 function viewForStatus(status: "not_started" | "pending" | "approved" | "rejected"): View {
   return status === "not_started" ? "form" : status;
@@ -30,12 +49,25 @@ export function KycFlow() {
   const [bvn, setBvn] = useState("");
   const [nin, setNin] = useState("");
   const [payoutAccountNumber, setPayoutAccountNumber] = useState("");
+  // Previously hardcoded in the submit payload: every creator was recorded as
+  // holding a passport and banking with GTB regardless of what was true.
+  const [docType, setDocType] = useState<DocTypeValue>("passport");
+  const [payoutBankName, setPayoutBankName] = useState("");
+  /** Short-lived URL, for showing the creator their own upload on this screen only. */
+  const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
+  /** The stored object key — this is what gets persisted. */
+  const [idDocumentKey, setIdDocumentKey] = useState<string | null>(null);
+  /** The stored submission, so the approved screen can name the real payout account. */
+  const [submitted, setSubmitted] = useState<KycSubmission | null>(null);
 
   const loadStatus = () => {
     setView("loading");
     kycApi
       .getStatus()
-      .then((submission) => setView(viewForStatus(submission.status)))
+      .then((submission) => {
+        setSubmitted(submission);
+        setView(viewForStatus(submission.status));
+      })
       .catch(() => setView("load-error"));
   };
 
@@ -49,8 +81,9 @@ export function KycFlow() {
         country: "Nigeria",
         bvn,
         nin,
-        idDocumentType: "passport",
-        payoutBankName: "Guaranty Trust Bank",
+        idDocumentType: docType,
+        idDocumentUrl: idDocumentKey ?? "",
+        payoutBankName,
         payoutAccountNumber,
         status: "pending",
       })
@@ -103,7 +136,7 @@ export function KycFlow() {
             undefined
           )
         }
-        onBack={view === "form" && step === 1 ? undefined : view === "form" ? () => backStep(step, docUploaded, setStep, setDocUploaded) : undefined}
+        onBack={view === "form" && step === 1 ? undefined : view === "form" ? () => backStep(step, docUploaded, setStep, setDocUploaded, () => { setIdDocumentUrl(null); setIdDocumentKey(null); }) : undefined}
       />
 
       <div className="flex-1 pt-[20px] px-[20px] pb-[32px] flex flex-col gap-[18px]">
@@ -111,23 +144,50 @@ export function KycFlow() {
         {!submitError && view === "form" && step === 1 ? (
           <NationalIdStep bvn={bvn} nin={nin} onBvnChange={setBvn} onNinChange={setNin} />
         ) : null}
-        {!submitError && view === "form" && step === 2 && !docUploaded ? <DocumentStep onCaptured={() => setDocUploaded(true)} /> : null}
-        {!submitError && view === "form" && step === 2 && docUploaded ? <CheckPhotoStep onRetake={() => setDocUploaded(false)} /> : null}
+        {!submitError && view === "form" && step === 2 && !docUploaded ? (
+          <DocumentStep
+            docType={docType}
+            onDocType={setDocType}
+            onUploaded={(key, previewUrl) => {
+              setIdDocumentKey(key);
+              setIdDocumentUrl(previewUrl);
+              setDocUploaded(true);
+            }}
+          />
+        ) : null}
+        {!submitError && view === "form" && step === 2 && docUploaded ? (
+          <CheckPhotoStep
+            url={idDocumentUrl}
+            onRetake={() => {
+              setDocUploaded(false);
+              setIdDocumentUrl(null);
+              setIdDocumentKey(null);
+            }}
+          />
+        ) : null}
         {!submitError && view === "form" && step === 3 ? (
-          <PayoutStep accountNumber={payoutAccountNumber} onAccountNumberChange={setPayoutAccountNumber} />
+          <PayoutStep
+            bankName={payoutBankName}
+            onBankNameChange={setPayoutBankName}
+            accountNumber={payoutAccountNumber}
+            onAccountNumberChange={setPayoutAccountNumber}
+          />
         ) : null}
         {!submitError && view === "form" && step === "review" ? (
           <ReviewStep
             bvn={bvn}
             nin={nin}
             payoutAccountNumber={payoutAccountNumber}
+            docType={docType}
+            payoutBankName={payoutBankName}
+            idDocumentUrl={idDocumentUrl}
             consented={consented}
             onConsent={() => setConsented((c) => !c)}
           />
         ) : null}
         {view === "pending" ? <PendingState /> : null}
-        {view === "approved" ? <ApprovedState /> : null}
-        {view === "rejected" ? <RejectedState onResubmit={() => setView("form")} /> : null}
+        {view === "approved" ? <ApprovedState submission={submitted} /> : null}
+        {view === "rejected" ? <RejectedState submission={submitted} onResubmit={() => setView("form")} /> : null}
       </div>
 
       <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
@@ -151,7 +211,7 @@ export function KycFlow() {
             full
             size="lg"
             iconRight="ArrowRight"
-            disabled={payoutAccountNumber.length !== 10}
+            disabled={payoutAccountNumber.length !== 10 || payoutBankName === ""}
             onClick={() => setStep("review")}
           >
             Review
@@ -187,8 +247,17 @@ export function KycFlow() {
   );
 }
 
-function backStep(step: Step, docUploaded: boolean, setStep: (s: Step) => void, setDocUploaded: (v: boolean) => void) {
-  if (step === 2 && docUploaded) setDocUploaded(false);
+function backStep(
+  step: Step,
+  docUploaded: boolean,
+  setStep: (s: Step) => void,
+  setDocUploaded: (v: boolean) => void,
+  clearDocument: () => void,
+) {
+  if (step === 2 && docUploaded) {
+    setDocUploaded(false);
+    clearDocument();
+  }
   else if (step === "review") setStep(3);
   else if (step === 3) setStep(2);
   else if (step === 2) setStep(1);
@@ -241,7 +310,16 @@ function NationalIdStep({
   );
 }
 
-function DocumentStep({ onCaptured }: { onCaptured: () => void }) {
+function DocumentStep({
+  docType,
+  onDocType,
+  onUploaded,
+}: {
+  docType: DocTypeValue;
+  onDocType: (v: DocTypeValue) => void;
+  onUploaded: (key: string, previewUrl: string) => void;
+}) {
+  const chosen = docTypes.find((d) => d.value === docType);
   return (
     <>
       <div className="flex flex-col gap-[8px]">
@@ -250,50 +328,60 @@ function DocumentStep({ onCaptured }: { onCaptured: () => void }) {
       </div>
 
       <div className="flex flex-wrap gap-[8px]">
-        {docTypes.map((d, i) => (
-          <span
-            key={d}
-            className={`inline-flex items-center h-[38px] py-0 px-[15px] rounded-[999] text-[13.5px] ${
-              i === 0
-                ? "bg-[var(--accent)] border-none text-[var(--text-on-accent)] font-semibold"
-                : "bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] font-medium"
-            }`}
-          >
-            {d}
-          </span>
-        ))}
+        {docTypes.map((d) => {
+          const active = d.value === docType;
+          return (
+            <button
+              key={d.value}
+              type="button"
+              onClick={() => onDocType(d.value)}
+              aria-pressed={active}
+              className={`inline-flex h-[38px] cursor-pointer items-center rounded-[999px] px-[15px] text-[13.5px] ${
+                active
+                  ? "border-none bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
+                  : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
+              }`}
+            >
+              {d.label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="flex flex-col items-center justify-center gap-[12px] py-[34px] px-[20px] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border-[1px_dashed_var(--border-strong)]">
-        <span className="grid place-items-center w-[52px] h-[52px] rounded-[16] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
-          <Icon name="IdCard" size={22} strokeWidth={2} color="var(--accent)" />
-        </span>
-        <span className="text-[14.5px] font-semibold">Photo of your passport</span>
-        <span className="text-[12.5px] text-[var(--text-muted)] text-center">All four corners in frame, no glare.</span>
-      </div>
-
-      <div className="flex gap-[10px]">
-        <Button icon="Camera" className="flex-1" onClick={onCaptured}>
-          Take a photo
-        </Button>
-        <Button variant="secondary" icon="Paperclip" className="flex-1" onClick={onCaptured}>
-          Choose file
-        </Button>
-      </div>
-
-      <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">JPG or PNG, up to 10MB.</span>
+      <FilePicker
+        folder="kyc/id-document"
+        accept="image/png,image/jpeg,application/pdf"
+        capture
+        label={`Photo of your ${chosen?.label.toLowerCase() ?? "ID"}`}
+        hint="All four corners in frame, no glare. JPG, PNG or PDF, up to 10MB."
+        onUploaded={(f) => onUploaded(f.key, f.fileUrl)}
+      />
     </>
   );
 }
 
-function CheckPhotoStep({ onRetake }: { onRetake: () => void }) {
+function CheckPhotoStep({ url, onRetake }: { url: string | null; onRetake: () => void }) {
+  const isPdf = !!url && url.split("?")[0].toLowerCase().endsWith(".pdf");
   return (
     <>
-      <div className="w-full aspect-[3_/_2] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-strong)]" />
+      {url && !isPdf ? (
+        // The document the reviewer will actually see, so a blurred or
+        // cropped shot is caught here rather than coming back rejected.
+        <img
+          src={url}
+          alt="The ID document you uploaded"
+          className="w-full aspect-[3_/_2] rounded-[var(--radius-media)] border border-[var(--border-strong)] object-cover"
+        />
+      ) : (
+        <div className="flex w-full aspect-[3_/_2] flex-col items-center justify-center gap-[10px] rounded-[var(--radius-media)] border border-[var(--border-strong)] bg-[var(--surface-card)]">
+          <Icon name="FileText" size={30} color="var(--text-secondary)" />
+          <span className="text-[13px] text-[var(--text-muted)]">{isPdf ? "PDF uploaded" : "Document uploaded"}</span>
+        </div>
+      )}
 
       <div className="flex flex-col gap-[8px]">
         <h2 className="m-0 text-[22px] font-bold tracking-[-0.025em]">Can you read every line?</h2>
-        <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">If the name, number or expiry date is blurred, take it again — a blurred photo comes back rejected.</p>
+        <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">If the name, number or expiry date is blurred, take it again, a blurred photo comes back rejected.</p>
       </div>
 
       <div className="flex flex-col gap-[9px]">
@@ -307,16 +395,20 @@ function CheckPhotoStep({ onRetake }: { onRetake: () => void }) {
         </span>
       </div>
       <span className="text-[12.5px] text-[var(--text-muted)] cursor-pointer" onClick={onRetake}>
-        Not readable — retake the photo
+        Not readable, retake the photo
       </span>
     </>
   );
 }
 
 function PayoutStep({
+  bankName,
+  onBankNameChange,
   accountNumber,
   onAccountNumberChange,
 }: {
+  bankName: string;
+  onBankNameChange: (v: string) => void;
   accountNumber: string;
   onAccountNumberChange: (v: string) => void;
 }) {
@@ -326,10 +418,24 @@ function PayoutStep({
 
       <div className="flex flex-col gap-[8px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Bank</span>
-        <button type="button" className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer text-left font-[family-name:var(--font-sans)]">
-          <span className="flex-1">Guaranty Trust Bank</span>
-          <Icon name="ChevronDown" size={16} strokeWidth={2.2} color="var(--text-muted)" />
-        </button>
+        <div className="relative">
+          <select
+            value={bankName}
+            onChange={(e) => onBankNameChange(e.target.value)}
+            aria-label="Bank"
+            className="h-[52px] w-full cursor-pointer appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] pr-[42px] font-[family-name:var(--font-sans)] text-[15px] text-[var(--text-primary)]"
+          >
+            <option value="">Choose your bank</option>
+            {payoutBanks.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2">
+            <Icon name="ChevronDown" size={16} strokeWidth={2.2} color="var(--text-muted)" />
+          </span>
+        </div>
       </div>
 
       <Input
@@ -339,14 +445,13 @@ function PayoutStep({
         inputMode="numeric"
       />
 
-      <div className="flex flex-col gap-[8px]">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Account name</span>
-        <div className="flex items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
-          <span className="flex-1 text-[15px] font-semibold">ADA OKEKE</span>
-          <Icon name="Check" size={16} color="var(--success)" strokeWidth={2.4} />
-        </div>
-        <span className="text-[12px] text-[var(--text-muted)]">Pulled from your bank. It must match your ID.</span>
-      </div>
+      {/* The design showed a resolved account name with a verified tick. There
+          is no bank-name-resolution endpoint on this backend, so showing one
+          would be inventing a verification that never happened. The reviewer
+          checks the name against the ID during manual review instead. */}
+      <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
+        We check this account against your ID during review. If the names do not match, your payout details come back rejected.
+      </span>
     </>
   );
 }
@@ -361,12 +466,18 @@ function ReviewStep({
   bvn,
   nin,
   payoutAccountNumber,
+  docType,
+  payoutBankName,
+  idDocumentUrl,
   consented,
   onConsent,
 }: {
   bvn: string;
   nin: string;
   payoutAccountNumber: string;
+  docType: DocTypeValue;
+  payoutBankName: string;
+  idDocumentUrl: string | null;
   consented: boolean;
   onConsent: () => void;
 }) {
@@ -376,8 +487,8 @@ function ReviewStep({
         {[
           ["BVN", maskMiddle(bvn)],
           ["NIN", maskMiddle(nin)],
-          ["Document", "Passport"],
-          ["Payout", `GTB ••••${payoutAccountNumber.slice(-4)}`],
+          ["Document", docTypes.find((d) => d.value === docType)?.label ?? "ID document"],
+          ["Payout", `${payoutBankName || "Bank not set"} ••••${payoutAccountNumber.slice(-4)}`],
         ].map(([k, v]) => (
           <div key={k} className="flex items-center gap-[12px] py-[15px] px-[18px] border-b border-b-[var(--border-hairline)]">
             <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{k}</span>
@@ -387,11 +498,21 @@ function ReviewStep({
         ))}
       </div>
 
-      <div className="w-full aspect-[3_/_2] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
+      {idDocumentUrl && !idDocumentUrl.split("?")[0].toLowerCase().endsWith(".pdf") ? (
+        <img
+          src={idDocumentUrl}
+          alt="The ID document you uploaded"
+          className="w-full aspect-[3_/_2] rounded-[var(--radius-media)] border border-[var(--border-hairline)] object-cover"
+        />
+      ) : (
+        <div className="grid w-full aspect-[3_/_2] place-items-center rounded-[var(--radius-media)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
+          <Icon name="FileText" size={28} color="var(--text-secondary)" />
+        </div>
+      )}
 
       <div className="flex items-start gap-[11px]" onClick={onConsent} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onConsent(); }}>
         <span
-          className={`grid place-items-center w-[22px] h-[22px] rounded-[7] shrink-0 mt-[1px] cursor-pointer border ${
+          className={`grid place-items-center w-[22px] h-[22px] rounded-[7px] shrink-0 mt-[1px] cursor-pointer border ${
             consented ? "bg-[var(--accent)] border-none" : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
           }`}
         >
@@ -406,7 +527,7 @@ function ReviewStep({
 function PendingState() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[30px] px-[12px] text-center">
-      <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
+      <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
         <Icon name="Clock" size={36} strokeWidth={2.2} color="var(--warning)" />
       </span>
       <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">KYC submitted</h2>
@@ -430,14 +551,18 @@ function PendingState() {
   );
 }
 
-function ApprovedState() {
+function ApprovedState({ submission }: { submission: KycSubmission | null }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[30px] px-[12px] text-center">
-      <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--success-tint)] border border-[rgba(184,232,62,0.3)]">
+      <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--success-tint)] border border-[rgba(184,232,62,0.3)]">
         <Icon name="ShieldCheck" size={36} strokeWidth={2.2} color="var(--success)" />
       </span>
       <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">You are verified</h2>
-      <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">Earnings will land in your GTB account ending 6789.</p>
+      <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">
+        {submission?.payoutBankName && submission?.payoutAccountNumber
+          ? `Earnings will land in your ${submission.payoutBankName} account ending ${submission.payoutAccountNumber.slice(-4)}.`
+          : "Earnings will land in the bank account on your verified profile."}
+      </p>
       <div className="flex flex-col gap-[14px] w-full p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
         <div className="flex items-center gap-[11px]">
           <span className="flex-1 text-[14px] font-semibold">Uploading and selling</span>
@@ -452,20 +577,27 @@ function ApprovedState() {
   );
 }
 
-function RejectedState({ onResubmit }: { onResubmit: () => void }) {
+function RejectedState({ submission, onResubmit }: { submission: KycSubmission | null; onResubmit: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[30px] px-[12px] text-center">
-      <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.3)]">
+      <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.3)]">
         <Icon name="CircleAlert" size={36} strokeWidth={2.2} color="var(--danger)" />
       </span>
       <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">We could not verify you</h2>
       <div className="flex flex-col gap-[10px] w-full py-[16px] px-[18px] rounded-[var(--radius-card)] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.32)] text-left">
         <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--danger)]">Reason</span>
-        <span className="text-[14px] leading-[1.5] text-[var(--text-primary)]">The name on your passport does not match the name on your bank account.</span>
+        {/* The real reviewer's reason. This was a hardcoded sentence, so
+            every rejected creator was told the same false thing and could
+            never fix the actual problem blocking their payouts. */}
+        <span className="text-[14px] leading-[1.5] text-[var(--text-primary)]">
+          {submission?.rejectionReason?.trim()
+            ? submission.rejectionReason
+            : "Our reviewer did not record a reason. Please resubmit with a clear photo of your ID and matching bank details, or contact support."}
+        </span>
       </div>
       <div className="flex flex-col gap-[9px] w-full text-left">
         <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-          Fix one of the two and send it again — either a document in your bank&apos;s name, or a payout account in your ID&apos;s name.
+          Fix one of the two and send it again, either a document in your bank&apos;s name, or a payout account in your ID&apos;s name.
         </span>
       </div>
       <div className="flex flex-col gap-[14px] w-full p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">

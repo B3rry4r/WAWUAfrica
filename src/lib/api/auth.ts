@@ -10,7 +10,7 @@ import type {
   SessionUser,
 } from "@/types/auth";
 import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "@/types/account";
-import { apiFetch, isMockModeError } from "@/lib/api/client";
+import { apiFetch, ApiError, isMockModeError } from "@/lib/api/client";
 import { WAWU_ID_BASE } from "@/lib/api/config";
 
 /**
@@ -277,10 +277,19 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       try {
         const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { token: result.accessToken });
         creator = toCreatorState(state);
-      } catch {
-        // SEAM: GET /api/hub/creator/state — a creator account with no
-        // CreatorState row yet (pre-tier-selection). Leave creator null;
-        // creatorGates() already treats null as "not yet a creator" downstream.
+      } catch (e) {
+        // 404/403 is the one benign case: a creator account with no
+        // CreatorState row yet (pre-tier-selection). creatorGates() already
+        // treats null as "not yet a creator" downstream.
+        const noRowYet = e instanceof ApiError && (e.status === 404 || e.status === 403);
+        // Anything else — 5xx, timeout, network — is a REQUEST FAILURE, not
+        // evidence about this account. Swallowing it used to hand a real,
+        // paid, KYC-approved creator a session with creator:null, which
+        // silently locked uploading, earnings and every creator surface for
+        // the rest of the session with no error anywhere. Surface it so the
+        // sign-in screen can retry instead of signing them in demoted.
+        // (Genuine mock mode still falls through to the outer catch below.)
+        if (!noRowYet && !isIntentionalMockMode(e)) throw e;
       }
     }
 

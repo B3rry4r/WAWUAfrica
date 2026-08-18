@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { AccountType } from "@/types/account";
-import type { SessionUser } from "@/types/auth";
+import type { CreatorState, SessionUser } from "@/types/auth";
 import { sessionStorage } from "./session-storage";
 
 interface SessionContextValue {
@@ -26,6 +26,13 @@ interface SessionContextValue {
   signOut: () => void;
   setAccountType: (type: AccountType) => void;
   setInterests: (interests: string[]) => void;
+  /**
+   * Applies the creator state the SERVER confirmed (paid tier, KYC, slots).
+   * Onboarding used to flip the upload gate by mutating the dev-only mock
+   * session store, which granted creator access locally whatever the backend
+   * actually said. This writes the real session user instead.
+   */
+  setCreatorState: (creator: CreatorState) => void;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -74,6 +81,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const setCreatorState = useCallback((creator: CreatorState) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next: SessionUser = { ...prev, accountType: "creator", creator };
+      sessionStorage.setUser(next);
+      return next;
+    });
+    sessionStorage.setAccountType("creator");
+    setAccountTypeState("creator");
+  }, []);
+
   const value = useMemo<SessionContextValue>(
     () => ({
       user,
@@ -84,8 +102,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       signOut,
       setAccountType,
       setInterests,
+      setCreatorState,
     }),
-    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests],
+    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests, setCreatorState],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

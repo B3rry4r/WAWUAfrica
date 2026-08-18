@@ -7,7 +7,8 @@ import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { PLANS } from "@/types/subscription";
 import type { ContentItem, ContentStatus } from "@/types/content";
 import { CreatorUploadCard } from "@/components/ui/ContentCard";
-import { ErrorState, Skeleton } from "@/components/ui/Feedback";
+import { Button } from "@/components/ui/Button";
+import { EmptyState, ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
 type Filter = "all" | ContentStatus;
@@ -17,6 +18,14 @@ const filterLabels: Record<Filter, string> = {
   live: "Published",
   review: "In review",
   rejected: "Rejected",
+};
+
+/** Says what the chosen filter actually means, so an empty list isn't a mystery. */
+const emptyDescriptions: Record<Filter, string> = {
+  all: "Nothing uploaded yet. Anything you publish shows up here with its review status.",
+  live: "Nothing published yet. Pieces appear here once review clears them.",
+  review: "Nothing waiting on review. Uploads sit here until we've checked them.",
+  rejected: "Nothing rejected. Anything sent back to fix would land here.",
 };
 
 export function ContentLibrary() {
@@ -78,7 +87,7 @@ export function ContentLibrary() {
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              className={`shrink-0 inline-flex items-center h-[32px] py-0 px-[14px] rounded-[999] text-[13px] cursor-pointer font-[var(--font-sans)] ${
+              className={`shrink-0 inline-flex items-center h-[32px] py-0 px-[14px] rounded-[999px] text-[13px] cursor-pointer font-[var(--font-sans)] ${
                 active
                   ? "bg-[var(--accent)] border-none text-[var(--text-on-accent)] font-semibold"
                   : "bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] font-medium"
@@ -95,6 +104,26 @@ export function ContentLibrary() {
           <ErrorState onRetry={load} />
         ) : !items ? (
           [0, 1, 2, 3].map((i) => <Skeleton key={i} height={100} radius="var(--radius-card)" />)
+        ) : filtered.length === 0 ? (
+          // Without this, picking a filter with no matches rendered a
+          // completely blank screen with no way to tell why.
+          <EmptyState
+            icon={filter === "all" ? "Upload" : "Filter"}
+            title="Nothing here yet"
+            description={emptyDescriptions[filter]}
+            action={
+              filter === "all" ? (
+                // The hub, not /create/new — that route needs a ?type= only the hub can pick.
+                <Button size="md" variant="secondary" onClick={() => router.push("/create")}>
+                  Upload something
+                </Button>
+              ) : (
+                <Button size="md" variant="secondary" onClick={() => setFilter("all")}>
+                  Show all
+                </Button>
+              )
+            }
+          />
         ) : (
           filtered.map((item) => {
             // Rejected items are the only ones with somewhere to go right

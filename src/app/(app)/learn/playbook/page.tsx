@@ -22,7 +22,12 @@ export default function PlaybookPage() {
     setPlaybook(null);
     setError(null);
     getPlaybook()
-      .then(setPlaybook)
+      .then((result) => {
+        // null = nothing published yet, which is an empty state rather than
+        // a load failure.
+        if (result) setPlaybook(result);
+        else setError("The business playbook has not been published yet.");
+      })
       .catch(() => setError("We couldn't load the playbook."));
   }, []);
 

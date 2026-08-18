@@ -37,7 +37,10 @@ export default function ComingSoonServicePage() {
     setNotifying(true);
     setNotifyError(null);
     try {
-      await notifyComingSoon(id);
+      // The resolved record's own id, not the route param — the route may be
+      // a slug (see getService's slug resolution) and the endpoint is keyed
+      // by the real service id.
+      await notifyComingSoon(service?.id ?? id);
       setNotified(true);
     } catch (e) {
       setNotifyError(e instanceof Error ? e.message : "Couldn't add you to the list. Try again.");
@@ -120,7 +123,7 @@ export default function ComingSoonServicePage() {
           <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[rgba(184,232,62,0.32)] bg-[var(--success-tint)] p-[14px]">
             <Icon name="Check" size={17} color="var(--success)" strokeWidth={2.6} />
             <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
-              You&apos;re on the list — we&apos;ll tell you the moment it launches.
+              You&apos;re on the list, we&apos;ll tell you the moment it launches.
             </span>
           </div>
         ) : (
@@ -185,7 +188,7 @@ export default function ComingSoonServicePage() {
             <div className="flex w-full max-w-[440px] items-center gap-[10px] rounded-[var(--radius-input)] border border-[rgba(184,232,62,0.32)] bg-[var(--success-tint)] p-[16px]">
               <Icon name="Check" size={18} color="var(--success)" strokeWidth={2.6} />
               <span className="text-[14px] font-semibold text-[var(--text-primary)]">
-                You&apos;re on the list — we&apos;ll tell you the moment it launches.
+                You&apos;re on the list, we&apos;ll tell you the moment it launches.
               </span>
             </div>
           ) : (

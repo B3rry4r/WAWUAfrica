@@ -1,5 +1,7 @@
 import type { Community, CommunityMessage, CreditPackId, CreditsState } from "@/types/credits";
 import { apiFetch, apiFetchPaginated, ApiError, isMockModeError } from "./client";
+import { openFlutterwaveCheckout, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import {
   getMockCommunities,
   getMockCommunity,
@@ -227,27 +229,54 @@ export async function joinCommunity(id: string): Promise<boolean> {
 }
 
 /**
- * GAP — real but not auto-completable from this API layer alone: the real
- * credit-purchase contract (WAWU-Hub-API src/credit-purchase/) is a two-step
- * Flutterwave flow, not a single synchronous call:
+ * The real credit-purchase contract (WAWU-Hub-API src/credit-purchase/) is a
+ * three-step Flutterwave flow:
  *   1. POST /api/hub/credits/purchase {pack} -> a Flutterwave config
- *      (txRef/amount/currency/publicKey) — verified live, no balance change.
- *   2. The client opens Flutterwave's inline checkout with that config.
- *   3. On its success callback, POST /api/hub/credits/purchase/verify
- *      {transaction_id, tx_ref} -> {creditBalance} — the ONLY thing that
- *      actually credits the balance (server re-verifies with Flutterwave
- *      before crediting; never trust a client-side callback alone, same
- *      rule as content.ts's verifyUnlock).
- * `topUpCredits(pack): Promise<number>` — the shape CreditsCard.tsx calls —
- * has no step for the checkout modal in between, so it cannot be genuinely
- * wired to the real backend without that UI work (Flutterwave inline SDK),
- * which is out of scope for this API-layer pass. It stays on the mock path.
- * `initiateCreditsPurchase`/`verifyCreditsPurchase` below are wired for real
- * (verified live) as the correct foundation for whoever builds that UI —
- * mirroring content.ts's initiateUnlock/verifyUnlock split exactly.
+ *      (txRef/amount/currency/publicKey). No balance change yet.
+ *   2. The payer completes the charge in Flutterwave's inline checkout.
+ *   3. POST /api/hub/credits/purchase/verify {transaction_id, tx_ref} ->
+ *      {creditBalance} — the ONLY thing that actually credits the balance.
+ *      The server re-verifies with Flutterwave before crediting; a
+ *      client-side callback is never trusted on its own, same rule as
+ *      content.ts's verifyUnlock.
+ *
+ * Until the checkout step existed this function returned `topUpMockCredits()`
+ * unconditionally, which handed out real spendable credits for free without
+ * ever contacting the backend. It now runs the genuine flow, falling back to
+ * the mock only in true mock mode (no backend configured).
  */
-export async function topUpCredits(pack: CreditPackId): Promise<number> {
-  return topUpMockCredits(pack);
+/**
+ * `onCharged` fires once Flutterwave reports a completed charge, before the
+ * server verifies it. Callers use it to move from "opening checkout" to
+ * "confirming payment" at the moment that becomes true.
+ */
+export async function topUpCredits(
+  pack: CreditPackId,
+  onCharged?: () => void,
+): Promise<number> {
+  try {
+    const init = await initiateCreditsPurchase(pack);
+
+    const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+    if (!customer) throw new Error("You need to be signed in with a valid email to buy credits.");
+
+    const charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
+      title: "WAWU Credits",
+      description: `Credit pack, ${pack}`,
+    });
+
+    onCharged?.();
+
+    const { creditBalance } = await verifyCreditsPurchase({
+      transaction_id: charge.transaction_id,
+      tx_ref: charge.tx_ref,
+    });
+    return creditBalance;
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with POST /api/hub/credits/purchase + .../verify
+    return topUpMockCredits(pack);
+  }
 }
 
 export interface FlutterwaveConfig {

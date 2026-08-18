@@ -16,15 +16,25 @@ import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { TipSheet } from "@/components/dm/TipSheet";
-import { getContent, initiateUnlock, verifyUnlock } from "@/lib/api/content";
+import { getContent, initiateUnlock, verifyUnlock, setContentSaved, rateContent, postComment, getComments } from "@/lib/api/content";
+import { relativeTime } from "@/lib/earnings-display";
+import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import type { CheckoutResult } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import { isFollowing as fetchIsFollowing } from "@/lib/api/profile";
 import { useSession } from "@/lib/auth/session-provider";
 import { formatNaira, creatorSplitRate } from "@/lib/format";
 import type { ContentPiece, ContentType } from "@/types/content";
-import { mockComments } from "@/lib/api/mocks/mockComments";
 import type { MockComment } from "@/lib/api/mocks/mockComments";
 
-type PaymentState = "idle" | "processing" | "success" | "failure";
+/**
+ * "failure" means nothing was charged (init rejected, bank declined, checkout
+ * never completed). "unconfirmed" means the OPPOSITE: the charge completed and
+ * money moved, but our own /unlock/verify call failed afterwards. The two must
+ * never share a screen — the failure screen offers a retry, which on an
+ * unconfirmed charge would start a SECOND charge for the same piece.
+ */
+type PaymentState = "idle" | "processing" | "success" | "failure" | "unconfirmed";
 
 const typeVisual: Record<ContentType, IconName> = {
   video: "Play",
@@ -58,10 +68,33 @@ export default function ContentDetailPage() {
   const [rateOpen, setRateOpen] = useState(false);
   const [myRating, setMyRating] = useState<number | null>(null);
   const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
-  const [comments, setComments] = useState<MockComment[]>(COMMENTS);
+  const [commentError, setCommentError] = useState<string | null>(null);
+  // Real comments, fetched per piece. This used to initialise from a shared
+  // mock array and never refetch, so every piece of content showed the same
+  // three fake comments to every user, and a posted comment vanished on
+  // reload even though it had persisted server-side.
+  const [comments, setComments] = useState<MockComment[]>([]);
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
+
+  const loadComments = useCallback((contentId: string) => {
+    getComments(contentId)
+      .then((rows) =>
+        setComments(
+          rows.map((c) => ({
+            name: c.authorWawuId,
+            time: relativeTime(c.createdAt),
+            text: c.text,
+            likes: c.likes,
+            author: false,
+          })),
+        ),
+      )
+      // A comments failure must not take the whole piece down — the rest of
+      // the page is still readable and purchasable.
+      .catch(() => setComments([]));
+  }, []);
 
   const load = useCallback(() => {
     setError(null);
@@ -69,6 +102,7 @@ export default function ContentDetailPage() {
     getContent(params.id)
       .then(async (res) => {
         setContent(res.content);
+        loadComments(res.content.id);
         try {
           setFollowing(await fetchIsFollowing(res.content.creator.wawuId));
         } catch {
@@ -76,7 +110,7 @@ export default function ContentDetailPage() {
         }
       })
       .catch(() => setError("We could not load this piece. It may have been removed."));
-  }, [params.id]);
+  }, [params.id, loadComments]);
 
   useEffect(load, [load]);
 
@@ -103,10 +137,15 @@ export default function ContentDetailPage() {
   }, [content]);
 
   const toggleSaved = useCallback(() => {
-    // SEAM: replace with POST /api/hub/content/:id/save — no save-toggle
-    // endpoint exists yet in src/lib/api, so this is an optimistic local toggle.
-    setContent((prev) => (prev ? { ...prev, saved: !prev.saved } : prev));
-  }, []);
+    if (!content) return;
+    const next = !content.saved;
+    // Optimistic, then persisted. This used to be local-only, so a save was
+    // silently lost on reload.
+    setContent((prev) => (prev ? { ...prev, saved: next } : prev));
+    setContentSaved(content.id, next).catch(() => {
+      setContent((prev) => (prev ? { ...prev, saved: !next } : prev));
+    });
+  }, [content]);
 
   const downloadAsset = useCallback((url: string | undefined, title: string) => {
     if (!url) {
@@ -126,16 +165,28 @@ export default function ContentDetailPage() {
     setTimeout(() => setDownloadNotice(null), 2200);
   }, []);
 
-  const submitComment = (e: FormEvent) => {
+  const submitComment = async (e: FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
     if (!text || !content) return;
     const isCreator = user?.wawuId === content.creator.wawuId;
-    setComments((prev) => [{ name: user?.fullName ?? "You", time: "now", text, likes: 0, author: isCreator }, ...prev]);
+    const optimistic = { name: user?.fullName ?? "You", time: "now", text, likes: 0, author: isCreator };
+
+    setComments((prev) => [optimistic, ...prev]);
     setContent((prev) => (prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev));
-    // SEAM: replace with POST /api/hub/content/:id/comments
     setDraft("");
     setReplyTo(null);
+
+    try {
+      await postComment(content.id, text);
+    } catch {
+      // The comment never reached the server — take it back out rather than
+      // leaving a comment on screen that is gone on the next reload.
+      setComments((prev) => prev.filter((c) => c !== optimistic));
+      setContent((prev) => (prev ? { ...prev, commentCount: Math.max(0, prev.commentCount - 1) } : prev));
+      setCommentError("That comment did not send. Please try again.");
+      setTimeout(() => setCommentError(null), 2600);
+    }
   };
 
   const startReply = (name: string) => {
@@ -154,27 +205,62 @@ export default function ContentDetailPage() {
 
   const chargeUnlock = async () => {
     setPayment("processing");
+
+    let charge: CheckoutResult;
     try {
       const init = await initiateUnlock(content!.id);
-      // SEAM: replace this fake delay with a real Flutterwave inline checkout
-      // once the SDK is wired — see tips.ts's identical stand-in.
-      await new Promise((resolve) => setTimeout(resolve, 2400));
-      // Reuse the server's real tx_ref from the initiate response — the
-      // /unlock/verify call 404s ("No matching unlock attempt found") for any
-      // tx_ref it didn't itself hand out, so a client-invented one can never
-      // verify. verifyUnlock() either returns a genuine purchase or throws
-      // (real decline / real backend error), so reaching past this line means
-      // a real, verified unlock.
+
+      const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+      if (!customer) {
+        setPayment("failure");
+        return;
+      }
+
+      // The payer completes the charge on Flutterwave's own surface, which
+      // returns a real transaction_id. Both that id and the server's own
+      // tx_ref go to /unlock/verify — the server re-checks the charge with
+      // Flutterwave before handing back a signed fullAssetUrl, so reaching
+      // past this line means a real, verified, paid-for unlock.
+      charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
+        title: content!.title,
+        description: `Unlock on WAWU`,
+      });
+    } catch (e) {
+      // Nothing has been charged at this point: either the init call was
+      // rejected, or the payer dismissed/failed the checkout itself. Closing
+      // the checkout modal charges nothing — return the user to the review
+      // dialog instead of accusing their bank of declining.
+      setPayment(isFlutterwaveCancelled(e) ? "idle" : "failure");
+      return;
+    }
+
+    // Past this line the charge has COMPLETED — the money has moved. Anything
+    // that fails from here is a confirmation failure, never a decline, so it
+    // must not be offered a retry.
+    try {
       const verify = await verifyUnlock(content!.id, {
-        transaction_id: `txn-${Date.now()}`,
-        tx_ref: init.flutterwaveConfig.txRef,
+        transaction_id: charge.transaction_id,
+        tx_ref: charge.tx_ref,
       });
       setPayment("success");
       setContent((prev) =>
         prev ? { ...prev, purchased: true, fullAssetLocked: false, fullAssetUrl: verify.fullAssetUrl ?? undefined } : prev,
       );
     } catch {
-      setPayment("failure");
+      setPayment("unconfirmed");
+    }
+  };
+
+  /** Re-reads the piece to see whether the paid-for unlock landed server-side. */
+  const refreshUnlock = async () => {
+    if (!content) return;
+    setPayment("processing");
+    try {
+      const res = await getContent(content.id);
+      setContent(res.content);
+      setPayment(res.content.purchased ? "success" : "unconfirmed");
+    } catch {
+      setPayment("unconfirmed");
     }
   };
 
@@ -237,6 +323,12 @@ export default function ContentDetailPage() {
               onReply={startReply}
               inputRef={commentInputRef}
             />
+            {commentError ? (
+              <span className="flex items-center gap-2 text-[12.5px] text-danger">
+                <Icon name="TriangleAlert" size={14} color="var(--danger)" />
+                {commentError}
+              </span>
+            ) : null}
           </div>
 
           <PurchasePanel
@@ -255,6 +347,7 @@ export default function ContentDetailPage() {
         content={content}
         payment={payment}
         onRetry={chargeUnlock}
+        onRefresh={refreshUnlock}
         onDownload={() => downloadAsset(content?.fullAssetUrl, content?.title ?? "download")}
         onDone={() => {
           setUnlockOpen(false);
@@ -273,10 +366,12 @@ export default function ContentDetailPage() {
         onClose={() => setRateOpen(false)}
         value={myRating}
         onRate={(n) => {
+          const previous = myRating;
           setMyRating(n);
           setRateOpen(false);
-          // SEAM: replace with POST /api/hub/content/:id/rate — no rating
-          // endpoint is documented yet; this is a local-only rating.
+          if (content) {
+            rateContent(content.id, n).catch(() => setMyRating(previous));
+          }
         }}
       />
     </div>
@@ -389,7 +484,7 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
           </span>
         </Link>
         <span className="ml-auto">
-          <FollowButton key={`follow-${content.creator.wawuId}-${following}`} wawuId={content.creator.wawuId} initial={following} size="sm" />
+          <FollowButton wawuId={content.creator.wawuId} initial={following} size="sm" />
         </span>
       </div>
       <p className="m-0 text-[14.5px] leading-relaxed text-text-secondary">{content.description}</p>
@@ -468,7 +563,7 @@ function LessonList({ content }: { content: ContentPiece }) {
       <div className="border-t border-hairline px-4 py-2.5 text-[12px] text-text-muted">
         <span className="inline-flex items-center gap-1.5">
           <Icon name="Lock" size={12} color="var(--text-muted)" />
-          Lesson 1 is free{content.accessType === "paid" ? ` — unlock for ${formatNaira(content.price)}` : ""}
+          Lesson 1 is free{content.accessType === "paid" ? `, unlock for ${formatNaira(content.price)}` : ""}
         </span>
       </div>
     </div>
@@ -595,7 +690,6 @@ function Stat({ text }: { text: string }) {
   return <span className="text-[13px] font-medium text-text-secondary">{text}</span>;
 }
 
-const COMMENTS: MockComment[] = mockComments; // SEAM: replace with GET /api/hub/content/:id/comments
 
 function Comments({
   content,
@@ -677,6 +771,7 @@ interface UnlockDialogProps {
   content: ContentPiece | null;
   payment: PaymentState;
   onRetry: () => void;
+  onRefresh: () => void;
   onDownload: () => void;
   onDone: () => void;
 }
@@ -700,16 +795,16 @@ function UnlockSheet(props: UnlockDialogProps) {
   );
 }
 
-function MobileUnlockSheet({ open, onClose, content, payment, onRetry, onDownload, onDone }: UnlockDialogProps) {
+function MobileUnlockSheet({ open, onClose, content, payment, onRetry, onRefresh, onDownload, onDone }: UnlockDialogProps) {
   if (!content) return null;
   return (
     <Sheet open={open} onClose={payment === "processing" ? undefined : onClose} title={payment === "idle" ? "Unlock this piece" : undefined}>
-      <UnlockDialogBody content={content} payment={payment} onRetry={onRetry} onDownload={onDownload} onDone={onDone} onClose={onClose} />
+      <UnlockDialogBody content={content} payment={payment} onRetry={onRetry} onRefresh={onRefresh} onDownload={onDownload} onDone={onDone} onClose={onClose} />
     </Sheet>
   );
 }
 
-function DesktopUnlockDialog({ open, onClose, content, payment, onRetry, onDownload, onDone }: UnlockDialogProps) {
+function DesktopUnlockDialog({ open, onClose, content, payment, onRetry, onRefresh, onDownload, onDone }: UnlockDialogProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!open || !mounted || !content) return null;
@@ -739,7 +834,7 @@ function DesktopUnlockDialog({ open, onClose, content, payment, onRetry, onDownl
             ) : null}
           </div>
         ) : null}
-        <UnlockDialogBody content={content} payment={payment} onRetry={onRetry} onDownload={onDownload} onDone={onDone} onClose={onClose} />
+        <UnlockDialogBody content={content} payment={payment} onRetry={onRetry} onRefresh={onRefresh} onDownload={onDownload} onDone={onDone} onClose={onClose} />
       </div>
     </div>
   );
@@ -749,6 +844,7 @@ function UnlockDialogBody({
   content,
   payment,
   onRetry,
+  onRefresh,
   onDownload,
   onDone,
   onClose,
@@ -756,6 +852,7 @@ function UnlockDialogBody({
   content: ContentPiece;
   payment: PaymentState;
   onRetry: () => void;
+  onRefresh: () => void;
   onDownload: () => void;
   onDone: () => void;
   onClose: () => void;
@@ -854,6 +951,27 @@ function UnlockDialogBody({
           </Button>
           <Button full variant="ghost" onClick={onClose}>
             Use another method
+          </Button>
+        </div>
+      ) : null}
+
+      {payment === "unconfirmed" ? (
+        <div className="flex flex-col items-center gap-4 py-2 text-center">
+          <span className="grid h-[64px] w-[64px] place-items-center rounded-button border border-warning bg-warning-tint">
+            <Icon name="Clock" size={30} color="var(--warning)" strokeWidth={2.4} />
+          </span>
+          <div className="flex flex-col gap-1">
+            <p className="m-0 text-[19px] font-bold tracking-[-0.01em]">Payment went through, we could not confirm it</p>
+            <p className="m-0 text-[13.5px] leading-relaxed text-text-secondary">
+              {formatNaira(content.price)} left your account and we could not finish opening the piece. You have not been
+              charged twice. Refresh in a moment, or tell support and they will open it for you.
+            </p>
+          </div>
+          <Button full size="lg" icon="RotateCcw" onClick={onRefresh}>
+            Refresh
+          </Button>
+          <Button full variant="ghost" href="mailto:hello@wawuafrica.com">
+            Contact support
           </Button>
         </div>
       ) : null}

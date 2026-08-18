@@ -55,8 +55,8 @@ export function ResetPasswordForm() {
           <StatusPill kind="success">All done</StatusPill>
         </div>
         <div className="px-5 pb-[26px] pt-4">
-          <Button full size="lg" onClick={() => router.push("/")}>
-            Back to home
+          <Button full size="lg" onClick={() => router.push("/sign-in")}>
+            Sign in
           </Button>
         </div>
       </div>
@@ -94,7 +94,7 @@ export function ResetPasswordForm() {
             }}
             placeholder="At least 8 characters"
             hint="At least 8 characters."
-            error={password ? (passwordValid ? undefined : "Too short — use at least 8 characters.") : undefined}
+            error={password ? (passwordValid ? undefined : "Too short, use at least 8 characters.") : undefined}
           />
           <Input
             label="Confirm new password"

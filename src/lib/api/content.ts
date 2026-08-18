@@ -121,7 +121,7 @@ function guardLocked(content: ContentPiece): ContentPiece {
  * it doesn't fake a name, and it doesn't fail the whole list for everyone
  * else's real data.
  */
-async function enrichCreatorIdentities(items: ContentPiece[]): Promise<ContentPiece[]> {
+export async function enrichCreatorIdentities(items: ContentPiece[]): Promise<ContentPiece[]> {
   const uniqueIds = Array.from(new Set(items.map((i) => i.creator.wawuId)));
   const summaries = new Map<string, { isPro: boolean; handle: string | null }>();
   await Promise.all(
@@ -293,4 +293,67 @@ export async function verifyUnlock(
       fullAssetUrl: content?.fullAssetUrl ?? `https://cdn.wawu.example/full/${id}`,
     };
   }
+}
+
+// ── Save / rate / comments ─────────────────────────────────────────────────
+// These three were local-only in the UI: the save toggle, the star rating and
+// new comments all mutated React state and vanished on reload, because no
+// client function existed to call the endpoints the backend already exposes.
+
+/** POST/DELETE /api/hub/content/:id/save. Returns the resulting saved state. */
+export async function setContentSaved(id: string, saved: boolean): Promise<boolean> {
+  try {
+    await apiFetch(`/api/hub/content/${id}/save`, {
+      method: saved ? "POST" : "DELETE",
+      authed: true,
+    });
+    return saved;
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with POST/DELETE /api/hub/content/:id/save
+    return saved;
+  }
+}
+
+/** POST /api/hub/content/:id/rate — 1-5 stars. */
+export async function rateContent(id: string, rating: number): Promise<void> {
+  try {
+    await apiFetch(`/api/hub/content/${id}/rate`, {
+      method: "POST",
+      authed: true,
+      body: { rating },
+    });
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with POST /api/hub/content/:id/rate
+  }
+}
+
+/** Wire shape of Comment (prisma model is the wire shape). */
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  authorWawuId: string;
+  text: string;
+  replyToId: string | null;
+  likes: number;
+  createdAt: string;
+}
+
+/** GET /api/hub/content/:id/comments */
+export async function getComments(id: string): Promise<ContentComment[]> {
+  return apiFetch<ContentComment[]>(`/api/hub/content/${id}/comments`, { authed: true });
+}
+
+/** POST /api/hub/content/:id/comments */
+export async function postComment(
+  id: string,
+  text: string,
+  replyToId?: string,
+): Promise<ContentComment> {
+  return apiFetch<ContentComment>(`/api/hub/content/${id}/comments`, {
+    method: "POST",
+    authed: true,
+    body: replyToId ? { text, replyToId } : { text },
+  });
 }

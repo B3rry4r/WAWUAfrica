@@ -37,16 +37,6 @@ const TYPE_VERB: Record<ContentType, string> = {
   template: "Use",
 };
 
-/**
- * D5's desktop header carries a category tab row (Content/Courses/Products/
- * Services/Questions) that doesn't map onto this screen's ContentType filter
- * (video/course/audio/pdf/template/image plus tracked applications and
- * questions bundled in "Also tracked"). Rendered visually per design, "Content"
- * fixed active — not wired to `filter` state. Rewiring the desktop screen to
- * this taxonomy is a larger change than this header fix.
- */
-const DESKTOP_TABS = ["Content", "Courses", "Products", "Services", "Questions"];
-
 export default function MyPurchasesPage() {
   const [items, setItems] = useState<Purchase[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,22 +63,26 @@ export default function MyPurchasesPage() {
       >
         <span className="text-[19px] font-semibold tracking-[-0.02em] text-text-primary">My purchases</span>
         <span className="flex-1" />
-        <div className="flex h-10 items-center gap-2.5 rounded-full border border-hairline bg-input px-3.5">
-          <Icon name="Search" size={16} color="var(--text-muted)" />
-          <span className="text-[14px] text-text-muted">Search purchases</span>
-        </div>
+        <span className="text-[13.5px] text-text-muted">
+          {items ? `${items.length} ${items.length === 1 ? "item" : "items"} · yours permanently` : ""}
+        </span>
       </div>
+      {/* D5's tab row, driven by the same `filter` state as the mobile chips —
+          the tabs carry this screen's real taxonomy rather than a decorative
+          one nothing on the page can filter by. */}
       <div className="sticky top-[68px] z-20 hidden h-[54px] shrink-0 items-center gap-[26px] border-b border-hairline bg-page px-[26px] xl:flex">
-        {DESKTOP_TABS.map((t) => (
-          <span
-            key={t}
-            className={`relative flex h-full items-center text-[14.5px] ${
-              t === "Content" ? "font-semibold text-text-primary" : "text-text-muted"
+        {FILTERS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setFilter(t.id)}
+            className={`relative flex h-full items-center text-[14.5px] transition-colors ${
+              filter === t.id ? "font-semibold text-text-primary" : "text-text-muted"
             }`}
           >
-            {t}
-            {t === "Content" ? <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent" /> : null}
-          </span>
+            {t.label}
+            {filter === t.id ? <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent" /> : null}
+          </button>
         ))}
       </div>
 
@@ -166,10 +160,15 @@ function purchaseToContentPiece(p: Purchase): ContentPiece {
     accessType: p.price === 0 ? "free" : "paid",
     price: p.price,
     creator: {
-      wawuId: p.creatorName,
+      // A purchase row carries a display name only — no creator wawuId and no
+      // verification level (see the wire shape in src/lib/api/purchases.ts).
+      // ContentCard never links to the creator, so the id stays empty rather
+      // than reusing the display name as one, and "basic" renders no badge at
+      // all (VerificationBadge) rather than claiming a level we don't know.
+      wawuId: "",
       fullName: p.creatorName,
       handle: p.creatorName,
-      verificationLevel: "verified_user",
+      verificationLevel: "basic",
     },
     views: 0,
     commentCount: 0,
@@ -236,7 +235,7 @@ function AlsoTracked() {
   if (applications === null || questions === null) {
     return (
       <div className="hidden flex-col gap-3 rounded-card border border-hairline bg-card p-5 xl:col-span-3 xl:flex">
-        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Also tracked — the verb matches the type</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Also tracked, the verb matches the type</span>
         <div className="flex flex-col gap-1">
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} variant="row" className="h-[52px]" />
@@ -250,7 +249,7 @@ function AlsoTracked() {
 
   return (
     <div className="hidden flex-col gap-3 rounded-card border border-hairline bg-card p-5 xl:col-span-3 xl:flex">
-      <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Also tracked — the verb matches the type</span>
+      <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Also tracked, the verb matches the type</span>
       <div className="flex flex-col">
         {applications.map((a) => (
           <ListRow

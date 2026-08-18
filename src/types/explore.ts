@@ -1,37 +1,15 @@
 import type { VerificationLevel } from "./account";
+import { CATEGORIES, type Category, type CategoryId } from "@/lib/categories";
 
-/** The eleven Explore categories (WAWU Explore design). */
-export type ExploreCategoryId =
-  | "business"
-  | "trade"
-  | "finance"
-  | "entertainment"
-  | "career"
-  | "education"
-  | "agriculture"
-  | "health"
-  | "technology"
-  | "creative_arts"
-  | "culture";
+/**
+ * Explore uses the app-wide taxonomy in src/lib/categories.ts. It is
+ * deliberately not its own list: a category you can browse but cannot publish
+ * into is a dead end, so discovery and the create flow read the same 25.
+ */
+export type ExploreCategoryId = CategoryId;
+export type ExploreCategory = Category;
 
-export interface ExploreCategory {
-  id: ExploreCategoryId;
-  name: string;
-}
-
-export const EXPLORE_CATEGORIES: ExploreCategory[] = [
-  { id: "business", name: "Business" },
-  { id: "trade", name: "Trade" },
-  { id: "finance", name: "Finance" },
-  { id: "entertainment", name: "Entertainment" },
-  { id: "career", name: "Career" },
-  { id: "education", name: "Education" },
-  { id: "agriculture", name: "Agriculture" },
-  { id: "health", name: "Health" },
-  { id: "technology", name: "Technology" },
-  { id: "creative_arts", name: "Creative Arts" },
-  { id: "culture", name: "Culture" },
-];
+export const EXPLORE_CATEGORIES: ExploreCategory[] = CATEGORIES;
 
 export interface CreatorDiscovery {
   wawuId: string;

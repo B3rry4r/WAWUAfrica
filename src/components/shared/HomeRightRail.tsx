@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { useSession } from "@/lib/auth/session-provider";
+import { getEvgScore } from "@/lib/api/profile";
 import { creatorGates } from "@/lib/auth/gates";
 import { getPopularSearches, getSuggestedCreators } from "@/lib/api/search";
 import { messagingApi } from "@/lib/api/messaging";
@@ -25,6 +26,7 @@ import type { Thread } from "@/types/messaging";
  */
 export function HomeRightRail() {
   const { accountType } = useSession();
+
   const isCreator = accountType === "creator";
 
   return (
@@ -106,6 +108,18 @@ function UserRail() {
 function CreatorRail() {
   const { user } = useSession();
   const gates = creatorGates(user);
+  const [evg, setEvg] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user?.wawuId) return;
+    let cancelled = false;
+    getEvgScore(user.wawuId).then((score) => {
+      if (!cancelled) setEvg(score);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.wawuId]);
   const [threads, setThreads] = useState<Thread[] | null>(null);
   const [summary, setSummary] = useState<EarningsSummary | null>(null);
 
@@ -170,9 +184,9 @@ function CreatorRail() {
              Showing "Soon" instead of a number is honest about the gap
              rather than inventing or silently reusing a fake count. */}
           <StatBlock value="Soon" label="Sales" align="start" size="sm" />
-          {/* EVG isn't backed by an API yet — CreatorDashboard shows this same
-              static placeholder for the same reason (src/components/dashboard/CreatorDashboard.tsx). */}
-          <StatBlock value="1,240" label="EVG" align="start" size="sm" />
+          {/* Real EVG from GET /creators/:wawuId/evg. This was a hardcoded
+              "1,240" sitting beside the genuinely live figures above. */}
+          <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG" align="start" size="sm" />
         </div>
       </RailCard>
     </>
@@ -224,7 +238,7 @@ function UpsellCard() {
     <div className="flex flex-col gap-[11px] rounded-card border border-accent bg-elevated p-[18px]">
       <span className="text-[14.5px] font-semibold">Sell what you know</span>
       <span className="text-[12.5px] leading-[1.45] text-text-secondary">
-        Creators keep 85% — 90% on Pro. Your first upload is free.
+        Creators keep 85%, 90% on Pro. Your first upload is free.
       </span>
       <Button full size="sm" iconRight="ArrowRight" href="/onboarding">
         Become a creator

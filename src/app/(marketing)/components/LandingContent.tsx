@@ -1,515 +1,1059 @@
 import Link from "next/link";
-import { ContentCard } from "@/components/content/ContentCard";
-import { AccessBadge } from "@/components/ui/AccessBadge";
 import { Button } from "@/components/ui/Button";
-import { ComingSoonPill } from "@/components/ui/ComingSoonPill";
-import { ErrorState } from "@/components/ui/ErrorState";
 import { Icon } from "@/components/ui/Icon";
+import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { StatBlock } from "@/components/ui/StatBlock";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { formatNaira } from "@/lib/format";
 import { getFeaturedContent } from "@/lib/api/content";
 import type { ContentPiece } from "@/types/content";
-import { CreatorCarousel } from "./CreatorCarousel";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
+import { HeroRotatingWord } from "./HeroRotatingWord";
+import { StickerWatermarks } from "./StickerWatermarks";
+import { SmartScheduler } from "./SmartScheduler";
 
-const FIELDS = ["Business", "Trade", "Finance", "Entertainment", "Career", "Education", "Agriculture", "Health", "Technology", "Creative Arts", "Culture"];
+const PIPELINE = ["Community", "Training", "Certification", "Employment", "Market Access", "Financial Inclusion", "Ownership"];
 
-interface Way {
-  icon: IconName;
-  title: string;
-  keep: string;
-  body: string;
-  highlight?: boolean;
-}
-
-const WAYS: Way[] = [
-  { icon: "Play", title: "Sell content", keep: "You keep 85%", body: "Video, courses, audio, books, art and templates. Set a price from ₦100 to ₦5,000 — buyers pay once and keep it forever." },
-  { icon: "MessageCircle", title: "Paid DMs", keep: "You keep 85%", body: "Charge ₦50 to ₦500 a message. Reply within 24 hours and it pays — miss it and the sender is refunded in full." },
-  { icon: "Users", title: "Community access", keep: "You keep 90%", highlight: true, body: "Host a community and earn on every message sent in it. One credit per message — the best split on the platform." },
-  { icon: "HandCoins", title: "Tips", keep: "You keep 85%", body: "Any amount, any time, nothing locked behind it. People support the work because they want to." },
-  { icon: "Store", title: "Storefront", keep: "You keep 85%", body: "Sell physical goods and services through WAWUBasket and WAWUBeauty, right from your profile." },
-] as const;
-
-const SERVICES = [
-  { icon: "Stamp", title: "CAC registration", subtitle: "Register your business properly, in app" },
-  { icon: "Ship", title: "NEPC registration", subtitle: "Get certified to export" },
-  { icon: "UserRoundSearch", title: "Mentors", subtitle: "Book time with people who have done it" },
-  { icon: "GraduationCap", title: "Courses", subtitle: "Partner-delivered training, free on a tier" },
-  { icon: "BookOpen", title: "Business playbook", subtitle: "The full guide, free to download" },
-] as const;
-
-const FAQ = [
-  { q: "What does WAWU take?", a: "You keep 85% of everything you earn — content unlocks, paid DMs, tips and storefront sales. Pro-tier creators keep 90%. There is no listing fee and no monthly platform fee." },
-  { q: "Do I need to be verified to publish?", a: "No. Creator is an account type — pick it at signup or upgrade later, then pay a subscription (Basic or Pro) to publish content, turn on paid DMs and host communities. KYC is separate and only gates when you can receive payouts." },
-  { q: "Does my first upload have to be free?", a: "Yes. Every creator's first piece of content is free — it is how people find out your work is worth paying for. Price everything after that yourself." },
-  { q: "What happens if a creator never replies to a paid DM?", a: "The sender is refunded in full after 24 hours and WAWU takes no fee on that refund. Creators who repeatedly miss the window have DMs switched off automatically." },
-  { q: "What are WAWU Credits?", a: "Prepaid message units for open communities — one credit sends one message. They are a count, not a cash balance, and they are never converted back to naira." },
+/**
+ * Exemplary showcase cards for the hero collage. The database has no creators
+ * or content yet, so these illustrated tiles are the visual fallback; when
+ * real featured content exists, its title/creator/price replace the sample
+ * copy while the illustration stays until content carries its own preview.
+ */
+const SHOWCASE: { icon: IconName; bg: string; type: string; title: string; creator: string; price: string; free: boolean }[] = [
+  {
+    icon: "GraduationCap",
+    bg: "bg-[linear-gradient(160deg,var(--accent-deep),var(--accent))]",
+    type: "Course",
+    title: "CAC in 7 days",
+    creator: "Adaeze Okonkwo",
+    price: "₦5,000",
+    free: false,
+  },
+  {
+    icon: "Clapperboard",
+    bg: "bg-[linear-gradient(160deg,rgba(11,10,13,0.55),var(--accent-deep))]",
+    type: "Video",
+    title: "Ankara pattern drafting",
+    creator: "Ifeanyi Nwosu",
+    price: "Free",
+    free: true,
+  },
 ];
 
+const FIELDS: { name: string; icon: IconName; bg: string }[] = [
+  { name: "Business", icon: "Briefcase", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
+  { name: "Trade", icon: "Ship", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
+  { name: "Finance", icon: "Landmark", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]" },
+  { name: "Entertainment", icon: "Music", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
+  { name: "Career", icon: "Rocket", bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]" },
+  { name: "Education", icon: "GraduationCap", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
+  { name: "Agriculture", icon: "Sprout", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]" },
+  { name: "Health", icon: "HeartPulse", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
+  { name: "Technology", icon: "Cpu", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
+  { name: "Creative Arts", icon: "Palette", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
+  { name: "Culture", icon: "Globe", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
+];
+
+/**
+ * Quick Services — the white-labelled utilities that sit alongside the
+ * creator product. Each is a real destination in the app; `soon` marks the
+ * ones whose partner API has not landed yet, and those deliberately do not
+ * link anywhere rather than opening a dead screen.
+ */
+const QUICK_SERVICES: {
+  brand: string;
+  label: string;
+  blurb: string;
+  icon: IconName;
+  href?: string;
+  soon?: boolean;
+}[] = [
+  {
+    brand: "WAWUPay",
+    label: "Bill payments",
+    blurb: "Airtime, data, electricity and cable, paid in seconds.",
+    icon: "Zap",
+    href: "/services/pay",
+  },
+  {
+    brand: "WAWUCare",
+    label: "Telemedicine",
+    blurb: "Talk to a licensed doctor and get covered from ₦600 a month.",
+    icon: "HeartPulse",
+    href: "/services/care",
+  },
+  {
+    brand: "WAWU Legal",
+    label: "Legal services",
+    blurb: "CAC and tax filings without a lawyer, or book one when you need one.",
+    icon: "Scale",
+    href: "/services/legal",
+  },
+  {
+    brand: "WAWUGo",
+    label: "Flight booking",
+    blurb: "Book and pay for flights across Nigeria and beyond.",
+    icon: "Plane",
+    soon: true,
+  },
+  {
+    brand: "WAWU Sounds",
+    label: "Music licensing",
+    blurb: "License your catalogue and distribute to every major platform.",
+    icon: "Music",
+    soon: true,
+  },
+];
+
+const STREAMS: { icon: IconName; title: string; blurb: string }[] = [
+  { icon: "Palette", title: "Creative Works", blurb: "Sell what you make" },
+  { icon: "ShoppingBag", title: "Basket, Beauty & Commerce", blurb: "Products, right from your profile" },
+  { icon: "MessageCircle", title: "Premium Messaging", blurb: "Cash in on your WOW" },
+  { icon: "UserRoundSearch", title: "Training & Consultations", blurb: "Turn expertise into income" },
+  { icon: "Landmark", title: "Lifestyle Services", blurb: "Legal, health, payments and more" },
+  { icon: "Users", title: "Group Chats", blurb: "Earn on every message" },
+];
+
+interface CompareRow {
+  feature: string;
+  wawu: string | boolean;
+  others: (string | boolean)[];
+}
+
+const COMPARE_ROWS: CompareRow[] = [
+  { feature: "Platform Fees", wawu: "10-15% (85-90% keep)", others: ["10-20% + /txn", "20%", "20%"] },
+  { feature: "Ecosystem Reach", wawu: "10M+ users", others: ["1.5M+ fans", "2M+", "N/A"] },
+  { feature: "Training & Upskilling", wawu: "Free training for members", others: [false, false, false] },
+  { feature: "Government Partnerships", wawu: "Federal Government-approved", others: [false, false, false] },
+  { feature: "Device & Equipment Financing", wawu: "Partnerships", others: [false, false, false] },
+  { feature: "Faith & Community Approach", wawu: true, others: [false, false, false] },
+  { feature: "Content Types", wawu: "Videos, Articles, Audio, Courses, Products", others: ["Videos (up to 10GB), Photos, Audio, PDFs", "Videos, Photos, Audio, PDFs", "Videos & Photos"] },
+  { feature: "Lifetime Memberships", wawu: true, others: [true, false, false] },
+  { feature: "Membership Trials & Promo Codes", wawu: true, others: [true, false, false] },
+  { feature: "Paid DMs", wawu: true, others: [true, false, true] },
+  { feature: "Marketplace", wawu: "WAWUBasket & Beauty", others: [true, false, false] },
+  { feature: "1-on-1 Calls", wawu: true, others: [true, false, false] },
+  { feature: "Group Chats", wawu: true, others: [true, false, false] },
+  { feature: "Analytics per post & message", wawu: true, others: [true, false, false] },
+  { feature: "Smart Vault", wawu: true, others: [true, false, false] },
+  { feature: "Instant Payouts", wawu: true, others: [true, false, false] },
+  { feature: "Scheduler", wawu: true, others: [true, false, false] },
+  { feature: "Membership Tiers", wawu: true, others: [true, true, true] },
+  { feature: "Subscriptions", wawu: true, others: [true, true, true] },
+];
+
+const FAQ = [
+  { q: "What % of earnings does the platform take?", a: "WAWUAfrica takes 15% as standard and 10% on Pro. You keep 85% of everything you earn, content unlocks, paid DMs, tips and storefront sales, and 90% on every stream once you go Pro. There is no listing fee and no monthly platform fee." },
+  { q: "Do I need to be verified to publish?", a: "No. Creator is an account type, pick it at signup or upgrade later, then pay a subscription (Basic or Pro) to publish content, turn on paid DMs and host communities. KYC is separate and only gates when you can receive payouts." },
+  { q: "How quickly can I get paid out?", a: "Earnings are paid to your own bank account once KYC clears, never held in a platform wallet. No stories." },
+  { q: "Is there a minimum follower count to join?", a: "No. Whether you are just starting or an established creator ready to scale, you can join today and start publishing. Your first piece is free, you price everything after that." },
+  { q: "What happens if a creator never replies to a paid DM?", a: "The sender is refunded in full after 24 hours and WAWU takes no fee on that refund. Creators who repeatedly miss the window have DMs switched off automatically." },
+  { q: "What are WAWU Credits?", a: "Prepaid message units for open communities, one credit sends one message. They are a count, not a cash balance, and they are never converted back to naira." },
+];
+
+function CaptionPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex h-[32px] items-center gap-2 rounded-full border border-accent bg-accent-tint px-4 text-[11.5px] font-bold uppercase tracking-[0.12em] text-accent">
+      <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+      {children}
+    </span>
+  );
+}
+
+function WhitePill({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex h-[54px] items-center gap-2 rounded-button bg-white px-8 text-[15px] font-semibold text-on-light shadow-float transition-transform duration-200 hover:scale-[1.03]"
+    >
+      {children}
+      <Icon name="ArrowRight" size={16} color="var(--text-on-light)" strokeWidth={2.2} />
+    </Link>
+  );
+}
+
+function CheckOrX({ value, accent }: { value: string | boolean; accent?: boolean }) {
+  if (typeof value === "boolean") {
+    return value ? (
+      <Icon name="Check" size={17} color="var(--success)" strokeWidth={2.6} />
+    ) : (
+      <Icon name="X" size={16} color={accent ? "var(--text-secondary)" : "var(--danger)"} strokeWidth={2.2} />
+    );
+  }
+  return <span className={`text-[13px] leading-snug ${accent ? "font-semibold text-text-primary" : "text-text-secondary"}`}>{value}</span>;
+}
+
 export async function LandingContent() {
-  // getFeaturedContent() now hits a genuinely public Hub API route (see its
-  // doc comment in src/lib/api/content.ts), so this only throws on a real
-  // failure (backend down, network). Scoping the try/catch to just this call
-  // means a failure here shows a real, visible error for the "Creators to
-  // watch" section instead of crashing the entire marketing page.
+  // No creators or content in the database yet is the normal state for launch:
+  // the SHOWCASE fallback below keeps the collage populated either way, so a
+  // fetch failure and an empty result render identically (sample cards).
   let toWatch: ContentPiece[] = [];
-  let featuredError = false;
   try {
     toWatch = await getFeaturedContent();
   } catch {
-    featuredError = true;
+    // fall through to the showcase fallback
   }
 
-  // Desktop hero collage reuses the same featured items the mobile carousel
-  // shows below — no separate mock, just a different arrangement of it.
-  const collage = toWatch.length > 0 ? [0, 1, 2, 0].map((i) => toWatch[i % toWatch.length]) : [];
-
   return (
-    <div className="min-h-screen bg-surface-page">
-      {/* Header */}
-      <header className="sticky top-0 z-20 flex items-center gap-1 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-3.5 py-3 backdrop-blur dt:gap-[34px] dt:px-14 dt:py-0 dt:h-[74px]">
-        <img src="/wawu-logo-white.png" alt="WAWU" className="mr-auto h-[22px] w-auto object-contain dt:mr-0 dt:h-[26px]" />
-        <nav className="hidden items-center gap-[26px] dt:flex" aria-label="Marketing">
-          {[
-            ["For creators", "/sign-up?type=creator"],
-            ["Explore", "/explore"],
-            ["Learn", "/learn"],
-            ["Services", "/services"],
-            ["Pricing", "#pricing"],
-          ].map(([label, href]) => (
-            <a key={label} href={href} className="text-[14.5px] font-medium text-text-secondary hover:text-text-primary">
-              {label}
-            </a>
-          ))}
+    <div className="relative min-h-screen overflow-x-clip bg-page">
+      <div className="wawu-gridlines" aria-hidden="true" />
+
+      {/* Floating pill nav */}
+      <header className="fixed left-1/2 top-3.5 z-50 flex w-[min(1240px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-full border border-hairline bg-[rgba(19,19,22,0.78)] py-2 pl-5 pr-2 backdrop-blur-xl dt:top-5 dt:gap-8 dt:py-2.5 dt:pl-7 dt:pr-2.5">
+        <img src="/wawu-logo-white.png" alt="WAWU" className="h-[22px] w-auto object-contain dt:h-[24px]" />
+        <nav className="hidden items-center gap-7 dt:flex" aria-label="Marketing">
+          <a href="/explore" className="text-[14px] font-medium text-text-secondary hover:text-text-primary">Creators</a>
+          <a href="/learn" className="text-[14px] font-medium text-text-secondary hover:text-text-primary">Resources</a>
         </nav>
-        <span className="hidden flex-1 dt:block" />
-        <Button variant="ghost" size="sm" href="/sign-in">Sign in</Button>
-        <Button variant="secondary" size="sm" href="/sign-up" className="dt:hidden">Sign up</Button>
-        <Button size="sm" href="/sign-up?type=creator">Become a creator</Button>
+        <span className="flex-1" />
+        <LandingAuthCta />
       </header>
 
-      {/* Hero */}
-      <section className="flex flex-col items-start gap-[18px] px-5 pb-9 pt-10 dt:mx-auto dt:grid dt:w-full dt:max-w-[1440px] dt:grid-cols-[1fr_560px] dt:items-center dt:gap-14 dt:px-14 dt:pb-14 dt:pt-16">
-        <div className="flex flex-col items-start gap-[18px] dt:contents">
-          <div className="hidden dt:flex dt:w-full dt:flex-col dt:items-start dt:gap-[22px]">
-            <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
-            <h1 className="m-0 text-[60px] font-bold leading-[1.02] tracking-[-0.035em] text-text-primary">
-              Turn your WOW
-              <br />
-              <span className="text-accent">into income.</span>
-            </h1>
-            <p className="m-0 max-w-[520px] text-[18px] leading-relaxed text-text-secondary [text-wrap:pretty]">
-              You&apos;ve already built something real. Publish it, price it, and let your audience unlock it — in naira, on your terms.
-            </p>
-            <div className="flex gap-3 pt-1.5">
-              <Button size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
-                Start monetizing today
-              </Button>
-              <Button size="lg" variant="secondary" href="/sign-up">
-                Browse creators first
-              </Button>
-            </div>
-            <div className="mt-1.5 flex gap-10 border-t border-hairline pt-[26px]">
-              {[
-                { value: "10,000+", label: "Creators on WAWU" },
-                { value: "₦900M+", label: "Paid to creators" },
-                { value: "1.5M+", label: "Fans on the platform" },
-              ].map((s) => (
-                <StatBlock key={s.label} value={s.value} label={s.label} align="start" size="md" />
-              ))}
-            </div>
-          </div>
-          <span className="dt:hidden">
-            <AccessBadge>Keep up to 90% of what you earn</AccessBadge>
-          </span>
-          <h1 className="m-0 text-[42px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary dt:hidden">
-            Turn your WOW
-            <br />
-            <span className="text-accent">into income.</span>
-          </h1>
-          <p className="m-0 text-[16.5px] leading-relaxed text-text-secondary dt:hidden">
-            You&apos;ve already built something real. Publish it, price it, and let your audience unlock it — in naira, on your terms.
-          </p>
-          <div className="mt-1 flex w-full flex-col gap-3 dt:hidden">
-            <Button full size="lg" iconRight="ArrowRight" href="/sign-up?type=creator">
-              Start monetizing today
-            </Button>
-            <Button full variant="ghost" size="md" href="/sign-up">
-              Browse creators first
-            </Button>
-          </div>
-        </div>
-
-        {collage.length === 4 ? (
-          <div className="hidden dt:grid dt:grid-cols-2 dt:gap-[18px]">
-            <div className="flex flex-col gap-[18px] pt-[34px]">
-              <ContentCard content={collage[0]} state="locked" ratio="4 / 5" href="/sign-up" />
-              <ContentCard content={collage[1]} state="free" ratio="1 / 1" href="/sign-up" />
-            </div>
-            <div className="flex flex-col gap-[18px]">
-              <ContentCard content={collage[2]} state="locked" ratio="1 / 1" href="/sign-up" />
-              <ContentCard content={collage[3]} state="locked" ratio="4 / 5" href="/sign-up" />
-            </div>
-          </div>
-        ) : null}
-      </section>
-
-      {/* Value proposition */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <div className="grid grid-cols-1 gap-3 dt:grid-cols-4 dt:gap-[18px]">
-          {[
-            { label: "FIND WOW", icon: "Compass" as IconName, body: "Discover Africa's best entrepreneurs, professionals and creators — your front row seat to opportunity." },
-            { label: "GET WOW", icon: "Sparkles" as IconName, body: "Unlock premium content, real products and personalised experiences from top creators." },
-            { label: "MAKE WOW", icon: "Rocket" as IconName, body: "Turn your expertise, skills and products into income, with tools built for exactly that." },
-            { label: "EVERYONE WOW", icon: "Users" as IconName, body: "To turn expertise into income — publish, price, and let people pay for what you know." },
-          ].map((v) => (
-            <div key={v.label} className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5">
-              <span className="grid h-[40px] w-[40px] place-items-center rounded-[13px] border border-accent bg-accent-tint">
-                <Icon name={v.icon} size={18} color="var(--accent)" strokeWidth={2} />
-              </span>
-              <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-accent">{v.label}</span>
-              <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Creators to watch — real failure shows a real error; genuinely no
-         content yet (empty backend) shows neither an error nor an empty
-         heading, just nothing, same as any other real empty state. */}
-      {featuredError ? (
-        <section className="px-5 pb-8 dt:mx-auto dt:max-w-[1440px] dt:px-14">
-          <ErrorState title="Could not load creators to watch" body="Sign up to see who is live on WAWU right now." />
-        </section>
-      ) : toWatch.length > 0 ? (
-        <CreatorCarousel items={toWatch} />
-      ) : null}
-
-      {/* Stats */}
-      <section className="px-5 pb-12 dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card dt:hidden">
-          {[
-            { value: "10,000+", label: "Creators on WAWU" },
-            { value: "₦900M+", label: "Paid to creators" },
-            { value: "1.5M+", label: "Fans on the platform" },
-          ].map((s, i) => (
-            <div key={s.label} className={`px-5 py-[22px] ${i < 2 ? "border-b border-hairline" : ""}`}>
-              <StatBlock value={s.value} label={s.label} align="start" size="lg" />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Every field */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <SectionHeader caption="Find your WOW" title="Every field, one platform" />
-        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
-          From agriculture to fintech, Nigerians are monetising what they already know.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {FIELDS.map((field) => (
-            <span
-              key={field}
-              className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary"
-            >
-              {field}
+      <main className="relative z-10">
+        {/* ============ HERO ============ */}
+        <section className="relative px-5 pb-16 pt-[120px] dt:pb-24 dt:pt-[190px]">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_55%_45%_at_50%_18%,var(--accent-tint-strong),transparent_70%)]"
+            aria-hidden="true"
+          />
+          <StickerWatermarks placement="hero" />
+          <div className="relative mx-auto flex max-w-[1080px] flex-col items-center text-center">
+            <span className="inline-flex min-h-[34px] items-center gap-2.5 rounded-full border border-accent bg-[rgba(11,10,13,0.6)] px-4 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-accent-hover shadow-[0_0_24px_var(--accent-tint-strong)] dt:px-5 dt:text-[12px] dt:tracking-[0.14em]">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <span className="dt:hidden">Keep up to 90% of what you earn</span>
+              <span className="hidden dt:inline">Keep up to 90% of everything you earn, best in Africa</span>
             </span>
-          ))}
-        </div>
-      </section>
+            <h1 className="m-0 mt-7 text-[46px] font-bold leading-[1.02] tracking-[-0.04em] text-text-primary dt:text-[88px]">
+              Turn Your WOW
+              <br />
+              <HeroRotatingWord className="text-accent-hover [text-shadow:0_0_60px_var(--accent-tint-strong)]" />
+            </h1>
+            <p className="m-0 mt-6 max-w-[540px] text-[17px] leading-relaxed text-text-secondary dt:text-[19px]">
+              Build. Earn. Grow. Thrive. All in one place.
+            </p>
+            <div className="mt-9">
+              <WhitePill href="/sign-up?type=creator">Join the Movement Free</WhitePill>
+            </div>
+          </div>
 
-      {/* WOW Vault */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <SectionHeader caption="Your content, organised" title="The WOW Vault" />
-        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
-          Organise and monetise your content. Set prices, lock exclusives, and keep your audience coming back.
-        </p>
-        <div className="flex flex-col gap-4 dt:grid dt:grid-cols-[1fr_360px] dt:items-start dt:gap-[22px]">
-          <div className="rounded-card border border-hairline bg-card p-5">
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: "PPV from ₦100", icon: "Lock" as IconName },
-                { label: "Free first upload", icon: "Gift" as IconName },
-                { label: "Audience favourite", icon: "Heart" as IconName },
-                { label: "Exclusive", icon: "Star" as IconName },
-              ].map((chip) => (
-                <span key={chip.label} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary">
-                  <Icon name={chip.icon} size={13} color="var(--text-muted)" />
-                  {chip.label}
+          {/* Social proof: collage + stat cards (showcase images stand in until real content exists) */}
+          <div className="mx-auto mt-14 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-16 dt:grid-cols-[1fr_360px] dt:gap-6">
+              <div className="grid grid-cols-2 gap-4 dt:gap-6">
+                {SHOWCASE.map((card, i) => {
+                  const real = toWatch[i];
+                  const title = real?.title ?? card.title;
+                  const creator = real?.creator?.fullName ?? card.creator;
+                  const free = real ? real.accessType === "free" : card.free;
+                  const price = real ? (real.accessType === "free" ? "Free" : `₦${real.price.toLocaleString("en-NG")}`) : card.price;
+                  return (
+                    <Link
+                      key={card.type}
+                      href="/sign-up"
+                      className={`group relative block overflow-hidden rounded-card border border-hairline ${card.bg} ${
+                        i === 0
+                          ? "rotate-[-1.6deg] animate-[wawuFloat_7s_ease-in-out_infinite]"
+                          : "translate-y-4 rotate-[1.6deg] animate-[wawuFloat_8s_ease-in-out_infinite] [animation-delay:1.2s]"
+                      }`}
+                    >
+                      <span className="grid aspect-[3/4] w-full place-items-center">
+                        <span className="grid place-items-center transition-transform duration-500 group-hover:scale-110" aria-hidden="true">
+                          {card.type === "Video" ? (
+                            <span className="grid h-24 w-24 place-items-center rounded-full border border-[rgba(255,255,255,0.35)] bg-[rgba(11,10,13,0.35)] backdrop-blur">
+                              <Icon name="Play" size={38} color="#FFFFFF" strokeWidth={1.8} className="translate-x-0.5 drop-shadow-[0_0_24px_rgba(255,255,255,0.45)]" />
+                            </span>
+                          ) : (
+                            <Icon name={card.icon} size={104} color="rgba(255,255,255,0.92)" strokeWidth={1.1} className="drop-shadow-[0_0_34px_rgba(255,255,255,0.35)]" />
+                          )}
+                        </span>
+                      </span>
+                      <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.85),transparent)]" style={{ height: "45%" }} aria-hidden="true" />
+                      <span className="absolute left-3 top-3 inline-flex h-[26px] items-center rounded-full border border-[rgba(255,255,255,0.25)] bg-[rgba(11,10,13,0.55)] px-3 text-[11.5px] font-semibold text-white backdrop-blur">
+                        {real ? real.contentType.charAt(0).toUpperCase() + real.contentType.slice(1) : card.type}
+                      </span>
+                      <span
+                        className={`absolute right-3 top-3 inline-flex h-[26px] items-center rounded-full px-3 text-[11.5px] font-bold backdrop-blur ${
+                          free ? "border border-[rgba(255,255,255,0.25)] bg-[rgba(11,10,13,0.55)] text-white" : "bg-accent text-on-accent"
+                        }`}
+                      >
+                        {price}
+                      </span>
+                      <span className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 px-4 pb-4">
+                        <span className="text-[16px] font-bold leading-snug text-white dt:text-[18px]">{title}</span>
+                        <span className="text-[12.5px] text-[rgba(255,255,255,0.75)]">{creator}</span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="flex flex-col gap-3.5">
+                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-6 backdrop-blur">
+                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
+                    <Icon name="Users" size={16} color="var(--accent)" strokeWidth={2.1} />
+                  </span>
+                  <span className="mt-3 block text-[34px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
+                  <span className="text-[13px] leading-snug text-text-secondary">Professionals, Entrepreneurs, Artisans on WAWUAfrica</span>
+                </div>
+                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-6 backdrop-blur">
+                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
+                    <Icon name="Route" size={16} color="var(--accent)" strokeWidth={2.1} />
+                  </span>
+                  <span className="mt-3 block text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Access to</span>
+                  <span className="mt-1 block text-[13px] leading-relaxed text-text-secondary">
+                    {PIPELINE.join(" → ")}
+                  </span>
+                </div>
+                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-6 backdrop-blur">
+                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
+                    <Icon name="Globe" size={16} color="var(--accent)" strokeWidth={2.1} />
+                  </span>
+                  <span className="mt-3 block text-[34px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
+                  <span className="text-[13px] leading-snug text-text-secondary">Fans, plus access to Pan-African ecosystems, communities, governments and institutions</span>
+                </div>
+              </div>
+            </div>
+        </section>
+
+        {/* ============ QUICK SERVICES ============ */}
+        <section className="relative px-5 pb-6 pt-2 dt:pb-10">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="flex flex-col items-center text-center">
+              <CaptionPill>Lifestyle Services</CaptionPill>
+              <h2 className="m-0 mt-5 text-[32px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[44px]">
+                Life admin, <span className="text-accent-hover">handled here</span>
+              </h2>
+              <p className="m-0 mt-4 max-w-[560px] text-[15px] leading-relaxed text-text-secondary dt:text-[16.5px]">
+                Pay a bill, see a doctor, register your business. The things you leave the app for, you no longer have to.
+              </p>
+            </div>
+            <div className="mt-10 grid grid-cols-1 gap-3.5 sm:grid-cols-2 dt:grid-cols-3 dt:gap-4">
+              {QUICK_SERVICES.map((service) => {
+                const body = (
+                  <>
+                    <span className="grid h-11 w-11 place-items-center rounded-[14px] border border-hairline bg-elevated">
+                      <Icon name={service.icon} size={20} color="var(--accent-hover)" strokeWidth={1.9} />
+                    </span>
+                    <span className="mt-4 flex items-center gap-2">
+                      <span className="text-[16.5px] font-bold tracking-[-0.01em] text-text-primary">{service.brand}</span>
+                      {service.soon ? (
+                        <span className="inline-flex h-[19px] items-center rounded-full border border-hairline bg-tag px-2 text-[10px] font-bold uppercase tracking-[0.07em] text-text-muted">
+                          Soon
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-accent">{service.label}</span>
+                    <span className="mt-2.5 text-[14px] leading-relaxed text-text-secondary">{service.blurb}</span>
+                  </>
+                );
+                const shell = "group flex flex-col rounded-card border border-hairline bg-card p-5 dt:p-6";
+                // A service whose partner API has not landed yet is shown but not
+                // clickable: linking it would open a screen that cannot do anything.
+                return service.href ? (
+                  <Link
+                    key={service.brand}
+                    href={service.href}
+                    className={`${shell} no-underline transition-colors duration-200 hover:border-accent`}
+                  >
+                    {body}
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-accent-hover">
+                      Open
+                      <Icon name="ArrowRight" size={15} color="var(--accent-hover)" strokeWidth={2.2} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                ) : (
+                  <div key={service.brand} className={`${shell} opacity-70`}>
+                    {body}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ============ VALUE PROPOSITION (4-column) ============ */}
+        <section className="px-5 py-14 dt:py-20">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
+            {[
+              { label: "FIND WOW", icon: "Compass" as IconName, body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
+              { label: "GET WOW", icon: "Sparkles" as IconName, body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
+              { label: "MAKE WOW", icon: "Rocket" as IconName, body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
+              { label: "FOR EVERYONE", icon: "Users" as IconName, body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
+            ].map((v) => (
+              <div key={v.label} className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-accent">
+                <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-accent bg-accent-tint transition-shadow duration-200 group-hover:shadow-[0_0_28px_var(--accent-tint-strong)]">
+                  <Icon name={v.icon} size={20} color="var(--accent)" strokeWidth={2} />
+                </span>
+                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-accent">{v.label}</span>
+                <p className="m-0 text-[14px] leading-normal text-text-secondary">{v.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ============ ONE PROFILE MARQUEE ============ */}
+        <section className="py-14 dt:py-20">
+          <div className="mx-auto max-w-[1240px] px-5 text-center">
+            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Find WOW. Get WOW. Make WOW.</span>
+            <h2 className="m-0 mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[64px]">
+              Every Industry.
+              <br />
+              <span className="text-accent-hover">One Profile.</span>
+            </h2>
+          </div>
+          <div className="mt-10 flex flex-col gap-4 overflow-hidden dt:mt-14">
+            {[0, 1].map((row) => (
+              <div key={row} className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
+                <div
+                  className={`flex w-max gap-4 pr-4 ${row === 0 ? "animate-[wawuMarquee_42s_linear_infinite]" : "animate-[wawuMarqueeRev_48s_linear_infinite]"}`}
+                >
+                  {[...FIELDS, ...FIELDS].map((f, i) => (
+                    <div
+                      key={`${f.name}-${i}`}
+                      className={`relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${f.bg} dt:h-[170px] dt:w-[270px]`}
+                    >
+                      <span className="absolute -bottom-4 -right-4 opacity-25">
+                        <Icon name={f.icon} size={110} color="#FFFFFF" strokeWidth={1.2} />
+                      </span>
+                      <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.75),transparent)] px-4 pb-3 pt-8 text-[15px] font-bold text-white">
+                        {f.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ============ WOW EXPERIENCE BENTO (dashboard) ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="flex flex-col items-center text-center">
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Giving the WOW Experience</span>
+              <h2 className="m-0 mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[58px]">
+                YES, You Too Can <span className="text-accent-hover">Make It Big.</span>
+              </h2>
+              <p className="m-0 mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-text-secondary dt:text-[17px]">
+                Treat your WOW like a business and get paid when you give value.
+              </p>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 gap-5 dt:mt-14 dt:grid-cols-[380px_1fr]">
+              {/* Mass Messaging panel */}
+              <div className="flex flex-col overflow-hidden rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(165deg,var(--accent),var(--accent-deep))] p-6 dt:p-7">
+                <div className="grid min-h-[170px] flex-1 place-items-center py-6" aria-hidden="true">
+                  <span className="animate-[wawuFloat_6.5s_ease-in-out_infinite]">
+                    <Icon name="Send" size={84} color="rgba(255,255,255,0.9)" strokeWidth={1.1} className="drop-shadow-[0_0_30px_rgba(255,255,255,0.35)]" />
+                  </span>
+                </div>
+                <span className="text-[19px] font-bold text-white">Mass Messaging</span>
+                <p className="m-0 mt-1.5 text-[13.5px] leading-normal text-[rgba(255,255,255,0.78)]">
+                  Reach thousands of followers instantly with targeted messages and promotions.
+                </p>
+              </div>
+
+              {/* Real-Time Earnings panel with animated notifications */}
+              <div className="flex flex-col gap-5 overflow-hidden rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,var(--accent-deep),rgba(71,20,113,0.35))] p-6 dt:flex-row dt:items-center dt:p-8">
+                <div className="dt:flex-1">
+                  <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[rgba(255,255,255,0.14)]">
+                    <Icon name="Zap" size={19} color="#FFFFFF" strokeWidth={2} />
+                  </span>
+                  <span className="mt-4 block text-[21px] font-bold text-white">Real-Time Earnings</span>
+                  <p className="m-0 mt-2 max-w-[340px] text-[14px] leading-normal text-[rgba(255,255,255,0.78)]">
+                    Watch your income grow with subscriptions, tips, PPV sales, commerce, and more.
+                  </p>
+                </div>
+                <div className="flex w-full flex-col gap-2.5 dt:w-[340px]">
+                  {[
+                    { icon: "Crown" as IconName, label: "New Subscription", meta: "Lemuel joined PRO", amount: "+₦4,999", delay: "0s" },
+                    { icon: "UserPlus" as IconName, label: "New Subscriber", meta: "Ella joined", amount: "+₦999", delay: "1.3s" },
+                    { icon: "Lock" as IconName, label: "PPV Unlocked", meta: "Exclusive content", amount: "+₦2,000", delay: "2.6s" },
+                    { icon: "HandCoins" as IconName, label: "Tip Received", meta: "Marcus sent a tip", amount: "+₦500", delay: "3.9s" },
+                  ].map((n) => (
+                    <div
+                      key={n.label}
+                      className="flex items-center gap-3 rounded-input border border-[rgba(255,255,255,0.14)] bg-[rgba(11,10,13,0.45)] px-3.5 py-2.5 backdrop-blur animate-[wawuNotifPulse_5.2s_ease-in-out_infinite]"
+                      style={{ animationDelay: n.delay }}
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[rgba(255,255,255,0.12)]">
+                        <Icon name={n.icon} size={14} color="#FFFFFF" strokeWidth={2.1} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[12.5px] font-semibold text-white">{n.label}</span>
+                        <span className="block truncate text-[11px] text-[rgba(255,255,255,0.6)]">{n.meta}</span>
+                      </span>
+                      <span className="shrink-0 text-[13px] font-bold text-success [font-feature-settings:var(--font-feature-tabular)]">{n.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* WOW Vault panel */}
+              <div className="flex flex-col rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,rgba(71,20,113,0.85),rgba(148,17,201,0.3))] p-6 dt:col-span-1 dt:p-7">
+                <span className="flex items-center gap-2.5 text-[19px] font-bold text-white">
+                  <Icon name="Vault" size={19} color="#FFFFFF" strokeWidth={2} />
+                  WOW Vault
+                </span>
+                <p className="m-0 mt-2 text-[13.5px] leading-normal text-[rgba(255,255,255,0.78)]">
+                  Organize, schedule, and monetize your content, products, and services. Set prices, lock exclusives, and release steadily to keep your audience engaged.
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-2.5">
+                  {[
+                    { label: "PPV ₦2,000", icon: "Lock" as IconName },
+                    { label: "Scheduled", icon: "Clock" as IconName },
+                    { label: "Audience Favorite", icon: "Heart" as IconName },
+                    { label: "Exclusive Behind-the-Scenes", icon: "Clapperboard" as IconName },
+                  ].map((chip) => (
+                    <span
+                      key={chip.label}
+                      className="flex flex-col items-center gap-2 rounded-media border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.09)] px-3 py-4 text-center text-[11.5px] font-semibold text-white backdrop-blur"
+                    >
+                      <Icon name={chip.icon} size={18} color="#FFFFFF" strokeWidth={2} />
+                      {chip.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Smart Scheduler panel: the real, interactive widget */}
+              <div className="rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,rgba(148,17,201,0.5),var(--accent-deep))] p-6 dt:p-7">
+                <SmartScheduler />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ WOW REVENUE STREAMS ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="flex flex-col items-center text-center">
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">WOW Revenue Streams</span>
+              <h2 className="m-0 mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[58px]">
+                Monetize The WOW <span className="text-accent-hover">About You</span>
+              </h2>
+              <p className="m-0 mt-4 max-w-[640px] text-[15.5px] leading-relaxed text-text-secondary dt:text-[17px]">
+                God has given you everything that pertains to Life. Stop leaving Greatness in Your Neighborhood. The world wants more ways to support you.
+              </p>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 gap-4 dt:mt-14 dt:grid-cols-[420px_1fr] dt:gap-5">
+              {/* Featured: Membership */}
+              <div className="relative flex flex-col overflow-hidden rounded-card border border-hairline bg-card p-7">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_38%,var(--accent-tint-strong),transparent_72%)]" aria-hidden="true" />
+                <div className="relative grid min-h-[220px] flex-1 place-items-center py-8 dt:min-h-0">
+                  <span className="animate-[wawuFloat_6.5s_ease-in-out_infinite]" aria-hidden="true">
+                    <Icon name="Ticket" size={130} color="var(--accent-hover)" strokeWidth={1.1} className="drop-shadow-[0_0_34px_var(--accent)]" />
+                  </span>
+                </div>
+                <div className="relative">
+                  <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-accent">● Memberships</span>
+                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.02em] text-text-primary">Recurring income from your biggest supporters</span>
+                  <p className="m-0 mt-2 text-[14px] leading-normal text-text-secondary">
+                    Yearly creator tiers, membership trials and promo codes. Steady, predictable, yours.
+                  </p>
+                </div>
+              </div>
+
+              {/* Icon tile grid */}
+              <div className="grid grid-cols-2 gap-4 dt:grid-cols-3 dt:gap-5">
+                {STREAMS.map((s) => (
+                  <div key={s.title} className="group flex flex-col rounded-card border border-hairline bg-card p-4 transition-colors duration-200 hover:border-accent dt:p-5">
+                    <span className="grid aspect-[4/3] place-items-center rounded-media bg-[radial-gradient(ellipse_at_center,var(--accent-tint),transparent_75%)]">
+                      <Icon
+                        name={s.icon}
+                        size={44}
+                        color="var(--accent-hover)"
+                        strokeWidth={1.4}
+                        className="drop-shadow-[0_0_20px_var(--accent)] transition-transform duration-300 group-hover:scale-110"
+                      />
+                    </span>
+                    <span className="mt-3 text-[15px] font-bold leading-snug text-text-primary">{s.title}</span>
+                    <span className="mt-1 text-[12.5px] text-text-muted">{s.blurb}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-1 gap-y-2" aria-label="The WAWU pipeline">
+              {PIPELINE.map((step, i) => (
+                <span key={step} className="flex items-center">
+                  <span className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-3 text-[12px] font-medium text-text-secondary">{step}</span>
+                  {i < PIPELINE.length - 1 ? <Icon name="ChevronRight" size={14} color="var(--text-muted)" /> : null}
                 </span>
               ))}
             </div>
-            <p className="m-0 mt-4 text-[13.5px] leading-normal text-text-secondary">
-              Video, courses, audio, ebooks, art and templates — priced by you, from ₦100 to ₦5,000, paid once and kept forever by the buyer.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5">
-            <div className="flex items-center gap-2">
-              <Icon name="Calendar" size={16} color="var(--text-muted)" />
-              <span className="text-[14px] font-semibold text-text-primary">Smart scheduler</span>
-              <ComingSoonPill>Coming soon</ComingSoonPill>
+            <div className="mt-8 flex flex-wrap justify-center gap-3.5">
+              <WhitePill href="/sign-up?type=creator">Cash in on your WOW</WhitePill>
+              <Button size="lg" variant="secondary" href="#pricing">Turn WOW into income</Button>
             </div>
-            <p className="m-0 text-[12.5px] leading-normal text-text-muted">
-              Plan your content calendar weeks ahead and release steadily to keep your audience engaged.
-            </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* How you earn */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <SectionHeader caption="WOW revenue streams" title="Monetize the WOW about you" />
-        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Free to discover. People pay to connect, and pay for value.</p>
-        <div className="flex flex-col gap-3 dt:grid dt:grid-cols-5 dt:gap-[18px]">
-          {WAYS.map((way) => (
-            <div key={way.title} className="flex gap-3.5 rounded-card border border-hairline bg-card p-4 dt:flex-col dt:gap-3 dt:p-[22px]">
-              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-accent bg-accent-tint">
-                <Icon name={way.icon} size={19} color="var(--accent)" strokeWidth={2} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[16px] font-semibold text-text-primary">{way.title}</span>
-                  <span
-                    className={`inline-flex h-[22px] items-center whitespace-nowrap rounded-full border px-2.5 text-[11px] font-bold ${
-                      way.highlight ? "border-accent bg-accent-tint text-text-primary" : "border-hairline bg-tag text-text-secondary"
-                    }`}
-                  >
-                    {way.keep}
+        {/* ============ EARNING POTENTIAL ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 rounded-[28px] border border-hairline bg-[linear-gradient(150deg,var(--surface-card),rgba(71,20,113,0.28))] p-6 dt:grid-cols-2 dt:gap-14 dt:p-12">
+            <div className="flex flex-col items-start">
+              <CaptionPill>Creator Earnings</CaptionPill>
+              <h2 className="m-0 mt-5 text-[36px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[54px]">
+                See Your
+                <br />
+                <span className="text-accent-hover">Earning Potential</span>
+              </h2>
+              <p className="m-0 mt-4 max-w-[420px] text-[15px] leading-relaxed text-text-secondary">
+                Calculate how much you could earn on WAWU with your audience.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-x-10 gap-y-5">
+                {[
+                  { big: "85-90%", small: "You Keep" },
+                  { big: "No Hassle", small: "Payouts" },
+                  { big: "No Hidden", small: "Fees" },
+                ].map((s) => (
+                  <span key={s.small} className="flex flex-col">
+                    <span className="text-[22px] font-bold tracking-[-0.02em] text-text-primary">{s.big}</span>
+                    <span className="text-[12.5px] text-text-muted">{s.small}</span>
                   </span>
-                </div>
-                <p className="m-0 mt-1.5 text-[13.5px] leading-normal text-text-secondary">{way.body}</p>
+                ))}
+              </div>
+              <div className="mt-9">
+                <WhitePill href="/sign-up?type=creator">Start monetizing today</WhitePill>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Earnings calculator + More than content: source order keeps the calculator
-         first, but dt:order- swaps the visual order so "more than content" leads,
-         matching the design's left/right arrangement without reordering the DOM. */}
-      <div className="contents dt:grid dt:mx-auto dt:max-w-[1440px] dt:grid-cols-2 dt:gap-[22px] dt:px-14 dt:pb-[52px]">
-        <section id="pricing" className="px-5 pb-[52px] dt:order-2 dt:px-0 dt:pb-0">
-          <SectionHeader caption="Earnings calculator" title="See your earning potential" />
-          <div className="mt-4">
             <EarningsCalculator />
           </div>
         </section>
 
-        {/* More than content */}
-        <section className="px-5 pb-[52px] dt:order-1 dt:px-0 dt:pb-0">
-          <SectionHeader caption="Only on WAWU" title="More than content" />
-          <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">
-            Other platforms sell your content. WAWU also gets your business registered, trained and covered.
-          </p>
-          <div className="rounded-card border border-hairline bg-card p-1.5">
-            {SERVICES.map((s) => (
-              <div key={s.title} className="flex items-center gap-3 px-3 py-3">
-                <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
-                  <Icon name={s.icon} size={18} strokeWidth={2} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14.5px] font-semibold text-text-primary">{s.title}</span>
-                  <span className="block truncate text-[12.5px] text-text-muted">{s.subtitle}</span>
-                </span>
-                <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
+        {/* ============ CREATOR TIERS ============ */}
+        <section id="pricing" className="relative px-5 py-14 dt:py-20">
+          <StickerWatermarks placement="pricing" />
+          <div className="relative mx-auto max-w-[1240px]">
+            <div className="flex flex-col items-center text-center">
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Creator Tiers</span>
+              <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[48px]">
+                Go further, <span className="text-accent-hover">keep more</span>
+              </h2>
+            </div>
+            <div className="mt-10 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
+              <div className="hidden flex-col gap-4 rounded-card border border-hairline bg-card p-6 dt:flex">
+                <span className="text-[16px] font-semibold text-text-primary">Free</span>
+                <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(0)}</span>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    "Browse and unlock content",
+                    "Message creators",
+                    "Join open communities",
+                    "Shop the marketplace",
+                    "Learn with free guides",
+                  ].map((perk) => (
+                    <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
+                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+                      {perk}
+                    </span>
+                  ))}
+                </div>
+                <Button full variant="secondary" size="sm" href="/sign-up" className="mt-auto">Join free</Button>
               </div>
-            ))}
+              <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-6">
+                <span className="self-start"><TierBadge tier="basic" /></span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(5999)}</span>
+                  <span className="text-[14px] text-text-muted">a year</span>
+                </div>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    "3 uploads, 1 free and 2 paid",
+                    "Unlimited messages",
+                    "Join and host open communities",
+                    "1 free course of your choice",
+                    "Free business playbook",
+                    "Personal pension registration",
+                  ].map((perk) => (
+                    <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
+                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+                      {perk}
+                    </span>
+                  ))}
+                </div>
+                <Button full variant="secondary" href="/sign-up?type=creator" className="mt-auto">Choose Basic</Button>
+              </div>
+              <div className="flex flex-col gap-4 rounded-card border border-accent bg-elevated p-6 shadow-[0_0_60px_var(--accent-tint)]">
+                <span className="self-start"><TierBadge tier="pro" /></span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(18999)}</span>
+                  <span className="text-[14px] text-text-muted">a year</span>
+                </div>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    "Keep 90% instead of 85%",
+                    "7 uploads, 2 free and 5 paid",
+                    "Unlimited messages",
+                    "Open and private communities",
+                    "Up to 3 free courses of your choice",
+                    "Free business playbook",
+                    "Priority support",
+                    "1 month of free health insurance",
+                    "Personal pension registration",
+                    "Recommended deals",
+                  ].map((perk, i) => (
+                    <span key={perk} className={`flex items-center gap-2.5 text-[14px] ${i === 0 ? "font-semibold text-text-primary" : "text-text-secondary"}`}>
+                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+                      {perk}
+                    </span>
+                  ))}
+                </div>
+                <Button full href="/sign-up?type=creator" className="mt-auto">Go Pro</Button>
+              </div>
+            </div>
           </div>
-          <div className="mt-[18px] flex flex-col gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">On the way</span>
-            <div className="flex flex-wrap gap-2">
-              {["Health insurance", "Pension", "Banking", "Grants and funding"].map((x) => (
-                <ComingSoonPill key={x}>{x}</ComingSoonPill>
+        </section>
+
+        {/* ============ WOW FRAMEWORK: insights + chart ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 dt:grid-cols-[1fr_1.1fr] dt:gap-16">
+            <div className="flex flex-col items-start">
+              <CaptionPill>Your WOW Framework</CaptionPill>
+              <h2 className="m-0 mt-5 text-[36px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[54px]">
+                M&amp;E Insights.
+                <br />
+                <span className="text-accent-hover">Instant Payouts.</span>
+              </h2>
+              <p className="m-0 mt-4 max-w-[440px] text-[15px] leading-relaxed text-text-secondary">
+                Know exactly which WOW about you drives revenue. Get paid when you want with instant payouts. No stories.
+              </p>
+              <div className="mt-9 flex gap-12">
+                <span className="flex flex-col">
+                  <span className="text-[30px] font-bold tracking-[-0.02em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">₦2.4M</span>
+                  <span className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted">Avg Monthly Revenue</span>
+                </span>
+                <span className="flex flex-col">
+                  <span className="text-[30px] font-bold tracking-[-0.02em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">₦860k</span>
+                  <span className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted">Last Instant Payout</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-card border border-hairline bg-card p-5 dt:p-7">
+              <div className="flex items-start justify-between">
+                <span className="flex flex-col">
+                  <span className="text-[15.5px] font-semibold text-text-primary">Monthly Revenue</span>
+                  <span className="text-[12.5px] text-text-muted">Real-time Growth</span>
+                </span>
+                <span className="inline-flex h-[26px] items-center gap-1.5 rounded-full border border-[rgba(184,232,62,0.4)] bg-success-tint px-2.5 text-[12px] font-bold text-success">
+                  <Icon name="TrendingUp" size={12} color="var(--success)" strokeWidth={2.4} />
+                  +124% YoY
+                </span>
+              </div>
+              <svg viewBox="0 0 480 230" className="mt-4 w-full" role="img" aria-label="Monthly revenue growth chart, up 124% year on year">
+                <defs>
+                  <linearGradient id="wawuArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {[0, 1, 2, 3].map((i) => (
+                  <line key={i} x1="36" x2="480" y1={30 + i * 50} y2={30 + i * 50} stroke="var(--border-hairline)" strokeWidth="1" />
+                ))}
+                {["₦16M", "₦12M", "₦8M", "₦4M"].map((label, i) => (
+                  <text key={label} x="0" y={34 + i * 50} fill="var(--text-muted)" fontSize="10" fontFamily="var(--font-sans)">
+                    {label}
+                  </text>
+                ))}
+                <path
+                  d="M36,196 C80,190 110,184 148,172 C186,160 214,152 252,134 C290,116 318,108 356,86 C394,64 428,46 480,24 L480,214 L36,214 Z"
+                  fill="url(#wawuArea)"
+                />
+                <path
+                  d="M36,196 C80,190 110,184 148,172 C186,160 214,152 252,134 C290,116 318,108 356,86 C394,64 428,46 480,24"
+                  fill="none"
+                  stroke="var(--accent-hover)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"].map((m, i) => (
+                  <text key={m} x={40 + i * 60} y="228" fill="var(--text-muted)" fontSize="10" fontFamily="var(--font-sans)">
+                    {m}
+                  </text>
+                ))}
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ COMPARE BANNER ============ */}
+        <section className="px-5 py-10 dt:py-14">
+          <div className="mx-auto flex max-w-[1240px] flex-col items-start gap-6 rounded-[28px] bg-[linear-gradient(120deg,var(--accent-deep),var(--accent))] p-8 dt:flex-row dt:items-center dt:justify-between dt:p-12">
+            <div>
+              <h2 className="m-0 text-[28px] font-bold tracking-[-0.02em] text-white dt:text-[34px]">See How We WOW You</h2>
+              <p className="m-0 mt-2 max-w-[560px] text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)]">
+                FIND WOW. GET WOW. MAKE WOW. See why as a creator switching to WAWU makes absolute sense.
+              </p>
+            </div>
+            <a
+              href="#comparison"
+              className="inline-flex h-[52px] shrink-0 items-center rounded-button bg-white px-8 text-[15px] font-semibold text-on-light transition-transform duration-200 hover:scale-[1.03]"
+            >
+              See the difference
+            </a>
+          </div>
+        </section>
+
+        {/* ============ WOW COMPARISON ============ */}
+        <section id="comparison" className="px-5 py-14 dt:py-24">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="flex flex-col items-center text-center">
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">WOW Comparison</span>
+              <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-text-primary dt:text-[52px]">
+                Choosing between <span className="text-accent-hover">WAWU</span>,
+                <br className="hidden dt:block" /> Selar, Mainstack &amp; GROWL
+              </h2>
+              <p className="m-0 mt-4 max-w-[560px] text-[15px] leading-relaxed text-text-secondary">
+                See how WAWU stacks up against the neighborhood and find out why creators are switching.
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3.5">
+                <WhitePill href="/sign-up?type=creator">Get access</WhitePill>
+                <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
+              </div>
+            </div>
+
+            <div className="wawu-no-scrollbar mt-12 overflow-x-auto rounded-card border border-hairline bg-card">
+              <div className="grid min-w-[960px] grid-cols-[220px_1.25fr_1fr_1fr_1fr]">
+                {/* Header */}
+                <div className="border-b border-hairline p-4 text-[11.5px] font-bold uppercase tracking-[0.06em] text-text-muted">Feature</div>
+                <div className="relative border-b border-l border-hairline bg-accent-tint-strong p-4">
+                  <span className="block text-[14px] font-bold text-text-primary">WAWUAfrica</span>
+                  <span className="mt-0.5 inline-flex h-[18px] items-center rounded-full bg-accent px-2 text-[9.5px] font-bold uppercase tracking-[0.04em] text-on-accent">
+                    Best in Africa
+                  </span>
+                </div>
+                {["The Neighborhood", "The Neighborhood", "The Neighborhood"].map((n, i) => (
+                  <div key={i} className="border-b border-l border-hairline p-4 text-[13px] font-semibold text-text-muted">
+                    {n}
+                  </div>
+                ))}
+                {/* Rows */}
+                {COMPARE_ROWS.map((row, ri) => (
+                  <div key={row.feature} className="contents">
+                    <div className={`flex items-center p-4 text-[13.5px] font-medium text-text-primary ${ri > 0 ? "border-t border-hairline" : ""}`}>
+                      {row.feature}
+                    </div>
+                    <div className={`flex items-center border-l border-hairline bg-accent-tint p-4 ${ri > 0 ? "border-t" : ""}`}>
+                      <CheckOrX value={row.wawu} accent />
+                    </div>
+                    {row.others.map((val, ci) => (
+                      <div key={ci} className={`flex items-center border-l border-hairline p-4 ${ri > 0 ? "border-t" : ""}`}>
+                        <CheckOrX value={val} />
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Ecosystem, partnerships, unique advantages */}
+            <div className="mt-8 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
+              <div className="rounded-card border border-hairline bg-card p-6">
+                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Ecosystem &amp; Reach</span>
+                <div className="mt-4 flex flex-col gap-3.5">
+                  <span className="flex flex-col">
+                    <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
+                    <span className="text-[12.5px] text-text-muted">Active users and members across the ecosystem</span>
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M</span>
+                    <span className="text-[12.5px] text-text-muted">Nigerians targeted by our training programs</span>
+                  </span>
+                </div>
+              </div>
+              <div className="rounded-card border border-hairline bg-card p-6">
+                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Partnerships &amp; Endorsements</span>
+                <div className="mt-4 flex flex-col gap-2.5">
+                  {["Governments across Africa", "International Bodies", "Nigerian Federal Ministries", "Professional Bodies", "Device Financing"].map((p) => (
+                    <span key={p} className="flex items-center gap-2.5 text-[13.5px] text-text-secondary">
+                      <Icon name="Check" size={15} color="var(--success)" strokeWidth={2.4} />
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-card border border-hairline bg-card p-6">
+                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Unique Advantages</span>
+                <div className="mt-4 flex flex-col gap-2.5">
+                  {[
+                    "Integrated ecosystem: learn, earn, grow, collaborate",
+                    "Skills development: free training included",
+                    "Financial inclusion: device financing",
+                    "Faith-based approach",
+                    "Pan-African focus: designed for Africa & global",
+                    "85-90% revenue share, best in Africa",
+                  ].map((p) => (
+                    <span key={p} className="flex items-center gap-2.5 text-[13.5px] text-text-secondary">
+                      <Icon name="Check" size={15} color="var(--success)" strokeWidth={2.4} />
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ MAKE THE SWITCH ============ */}
+        <section className="px-5 py-14 dt:py-20">
+          <div className="relative mx-auto max-w-[1240px] overflow-hidden rounded-[28px] border border-hairline bg-card px-6 py-14 text-center dt:py-20">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_0%,var(--accent-tint-strong),transparent_70%)]" aria-hidden="true" />
+            <div className="relative mx-auto flex max-w-[720px] flex-col items-center">
+              <CaptionPill>Own Your WOW. Join WAWUAfrica.</CaptionPill>
+              <h2 className="m-0 mt-5 text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-text-primary dt:text-[52px]">
+                Ready to Build Something Real?
+              </h2>
+              <p className="m-0 mt-4 text-[15px] leading-relaxed text-text-secondary">
+                Join a growing community of Professionals, Entrepreneurs, Artisans, Creators and start earning more with lower fees, better tools, instant payouts, and free training all on WAWUAfrica.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-x-7 gap-y-2.5">
+                {["85-90% revenue share, best in Africa", "More features + Training + Financial Inclusion + Government partnerships", "Instant payouts"].map((b) => (
+                  <span key={b} className="flex items-center gap-2 text-[13px] text-text-secondary">
+                    <Icon name="Check" size={14} color="var(--success)" strokeWidth={2.6} />
+                    {b}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-9 flex flex-wrap justify-center gap-3.5">
+                <WhitePill href="/sign-up?type=creator">Join the Movement Free</WhitePill>
+                <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ THE COMMUNITY ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="flex flex-col items-center text-center">
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">The Community</span>
+              <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-text-primary dt:text-[52px]">
+                Professionals, Entrepreneurs,
+                <br className="hidden dt:block" /> Artisans and <span className="text-accent-hover">Creatives</span>
+              </h2>
+              <p className="m-0 mt-4 max-w-[520px] text-[15px] leading-relaxed text-text-secondary">
+                Join Millions who are building for socioeconomic impact and real communities on WAWUAfrica.
+              </p>
+            </div>
+            <div className="mt-12 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
+              {[
+                { handle: "@adaeze.biz", quote: "I was answering the same business questions free on WhatsApp for years. Now the answers are a course and they pay for my rent.", name: "Adaeze Okonkwo", meta: "Business Strategist, Enugu" },
+                { handle: "@ifeanyi.stitches", quote: "The paid DM changed everything. People are serious when they pay ₦300 to ask, and I reply the same day.", name: "Ifeanyi Nwosu", meta: "Fashion Designer, Aba" },
+                { handle: "@zainab.agro", quote: "I got my CAC certificate and sold my first training pack in the same week, on the same app. That is the difference.", name: "Zainab Bello", meta: "Agribusiness Trainer, Kano" },
+              ].map((t) => (
+                <div key={t.name} className="flex flex-col gap-5 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-strong">
+                  <p className="m-0 text-[15.5px] leading-relaxed text-text-primary">&ldquo;{t.quote}&rdquo;</p>
+                  <div className="mt-auto flex items-center gap-3">
+                    <span className="grid h-[42px] w-[42px] place-items-center rounded-full bg-accent-tint text-[16px] font-bold text-accent-hover">
+                      {t.name.charAt(0)}
+                    </span>
+                    <span className="flex flex-col gap-0.5">
+                      <span className="text-[14px] font-semibold text-text-primary">{t.name} <span className="font-normal text-text-muted">{t.handle}</span></span>
+                      <span className="text-[12.5px] text-text-muted">{t.meta}</span>
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </section>
-      </div>
 
-      {/* Creator tiers */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <SectionHeader caption="Creator tiers" title="Go further, keep more" />
-        <div className="mt-4 flex flex-col gap-3 dt:grid dt:grid-cols-3 dt:gap-[18px]">
-          <div className="hidden flex-col gap-3.5 rounded-card border border-hairline bg-card p-5 dt:flex">
-            <span className="text-[16px] font-semibold text-text-primary">Free</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
-                {formatNaira(0)}
-              </span>
-            </div>
-            <p className="m-0 text-[13.5px] leading-normal text-text-secondary">
-              Browse and unlock content, message creators, join communities, shop and learn.
-            </p>
-            <Button full variant="secondary" size="sm" href="/sign-up">
-              Join free
-            </Button>
-          </div>
-          <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-card p-5">
-            <span className="self-start"><TierBadge tier="basic" /></span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
-                {formatNaira(5999)}
-              </span>
-              <span className="text-[14px] text-text-muted">a year</span>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              {["3 uploads — 1 free, 2 paid", "Host open communities", "1 free course and the business playbook", "Purple badge"].map((perk) => (
-                <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
-                  <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
-                  {perk}
-                </span>
-              ))}
-            </div>
-            <Button full variant="secondary" href="/sign-up?type=creator">
-              Choose Basic
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-3.5 rounded-card border border-accent bg-elevated p-5">
-            <span className="self-start"><TierBadge tier="pro" /></span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[32px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
-                {formatNaira(18999)}
-              </span>
-              <span className="text-[14px] text-text-muted">a year</span>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              {[
-                "Keep 90% instead of 85%",
-                "7 uploads — 2 free, 5 paid",
-                "Private communities and up to 3 free courses",
-                "Priority support, gold badge, recommended deals",
-              ].map((perk, i) => (
-                <span key={perk} className={`flex items-center gap-2.5 text-[14px] ${i === 0 ? "font-semibold text-text-primary" : "text-text-secondary"}`}>
-                  <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
-                  {perk}
-                </span>
-              ))}
-            </div>
-            <Button full href="/sign-up?type=creator">Go Pro</Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Make the switch */}
-      <section className="mx-5 mb-[52px] flex flex-col gap-4 rounded-card border border-hairline bg-card p-6 dt:mx-auto dt:max-w-[1440px] dt:flex-row dt:items-center dt:justify-between dt:p-10">
-        <div className="flex flex-col gap-3">
-          <SectionHeader caption="Own your WOW" title="Ready to build something real?" />
-          <p className="m-0 max-w-[520px] text-[14.5px] leading-normal text-text-secondary">
-            Join a growing community of professionals, entrepreneurs, artisans and creators earning more with lower fees and better tools, all on WAWU.
-          </p>
-          <div className="mt-1 flex flex-col gap-2">
-            {["85% standard, 90% Pro — best split on the platform", "CAC and NEPC registration, mentors and courses built in", "No entry fee — your first piece is free, you price the rest"].map((b) => (
-              <span key={b} className="flex items-center gap-2.5 text-[13.5px] text-text-secondary">
-                <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
-                {b}
-              </span>
-            ))}
-          </div>
-        </div>
-        <Button size="lg" iconRight="ArrowRight" href="/sign-up?type=creator" className="shrink-0">
-          Join the Movement Free
-        </Button>
-      </section>
-
-      {/* Testimonials */}
-      <section className="pb-[52px] dt:mx-auto dt:max-w-[1440px]">
-        <div className="px-5 dt:px-14">
-          <SectionHeader caption="In their words" title="Creators on WAWU" />
-        </div>
-        <div className="wawu-no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-1 pb-2 dt:grid dt:grid-cols-3 dt:overflow-visible dt:px-14 dt:pb-0">
-          {[
-            { initial: "A", quote: "I was answering the same business questions free on WhatsApp for years. Now the answers are a course and they pay for my rent.", name: "Adaeze Okonkwo", meta: "Business Strategist, Enugu" },
-            { initial: "I", quote: "The paid DM changed everything. People are serious when they pay ₦300 to ask, and I reply the same day.", name: "Ifeanyi Nwosu", meta: "Fashion Designer, Aba" },
-            { initial: "Z", quote: "I got my CAC certificate and sold my first training pack in the same week, on the same app. That is the difference.", name: "Zainab Bello", meta: "Agribusiness Trainer, Kano" },
-          ].map((t) => (
-            <div key={t.name} className="flex w-[292px] shrink-0 snap-center flex-col gap-4 rounded-card border border-hairline bg-card p-5 dt:w-auto">
-              <p className="m-0 text-[15px] leading-normal text-text-primary">“{t.quote}”</p>
-              <div className="mt-auto flex items-center gap-2.5">
-                <span className="grid h-[38px] w-[38px] place-items-center rounded-full bg-accent-tint text-[15px] font-semibold text-accent-hover">{t.initial}</span>
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-[14px] font-semibold text-text-primary">{t.name}</span>
-                  <span className="text-[12.5px] text-text-muted">{t.meta}</span>
-                </span>
+        {/* ============ STRATEGIC ALLY ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 dt:grid-cols-[420px_1fr] dt:gap-16">
+            <div className="rounded-card border border-hairline bg-card p-6 shadow-[0_0_90px_var(--accent-tint)] dt:p-7">
+              <div className="grid grid-cols-[1fr_72px_72px] items-center gap-y-4">
+                <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted">Feature</span>
+                <span className="text-center text-[11px] font-bold uppercase tracking-[0.08em] text-accent">WAWU</span>
+                <span className="text-center text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted">Others</span>
+                {["FIND WOW", "GET WOW", "MAKE WOW", "EVERYONE WOW"].map((f) => (
+                  <div key={f} className="contents">
+                    <span className="border-t border-hairline pt-4 text-[14px] font-semibold text-text-primary">{f}</span>
+                    <span className="grid place-items-center border-t border-hairline pt-4">
+                      <Icon name="Check" size={17} color="var(--success)" strokeWidth={2.6} />
+                    </span>
+                    <span className="grid place-items-center border-t border-hairline pt-4">
+                      <Icon name="X" size={15} color="var(--text-muted)" strokeWidth={2.2} />
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Strategic ally */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <SectionHeader caption="Your strategic ally" title="We WOW you every step of the way" />
-        <p className="-mt-1.5 mb-[18px] max-w-[620px] text-[14.5px] leading-normal text-text-secondary">
-          We don&apos;t just give you tools — from your first upload to your first payout, someone real is on the other end.
-        </p>
-        <div className="grid grid-cols-1 gap-3 dt:grid-cols-4 dt:gap-[18px]">
-          {[
-            { icon: "UserCheck" as IconName, title: "Manual, human review", body: "Every KYC submission is reviewed by a real person. Never automated, never charged for." },
-            { icon: "PieChart" as IconName, title: "Transparent split", body: "85% standard, 90% Pro — shown before you publish, never a hidden fee." },
-            { icon: "Landmark" as IconName, title: "Your own payout", body: "Earnings are paid out to your own bank account once KYC clears — never held in a platform wallet." },
-            { icon: "TrendingUp" as IconName, title: "EVG score", body: "See which of your content is actually driving revenue, so you know what to make more of." },
-          ].map((f) => (
-            <div key={f.title} className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5">
-              <span className="grid h-[40px] w-[40px] place-items-center rounded-[13px] border border-accent bg-accent-tint">
-                <Icon name={f.icon} size={18} color="var(--accent)" strokeWidth={2} />
-              </span>
-              <span className="text-[14.5px] font-semibold text-text-primary">{f.title}</span>
-              <p className="m-0 text-[13px] leading-normal text-text-secondary">{f.body}</p>
+            <div className="flex flex-col items-start">
+              <CaptionPill>Your Strategic Ally</CaptionPill>
+              <h2 className="m-0 mt-5 text-[34px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[50px]">
+                We WOW You Every
+                <br />
+                <span className="text-accent-hover">Step of the Way.</span>
+              </h2>
+              <div className="mt-5 flex flex-wrap items-center gap-y-2">
+                {PIPELINE.map((step, i) => (
+                  <span key={step} className="flex items-center">
+                    <span className="inline-flex h-[30px] items-center rounded-full border border-hairline bg-tag px-3 text-[12px] font-medium text-text-secondary">{step}</span>
+                    {i < PIPELINE.length - 1 ? <Icon name="ChevronRight" size={13} color="var(--text-muted)" /> : null}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-8 flex flex-wrap gap-3.5">
+                <WhitePill href="/sign-up?type=creator">Join the Movement</WhitePill>
+                <Button size="lg" variant="secondary" href="#comparison">See the difference</Button>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* FAQ */}
-      <section className="px-5 pb-[52px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
-        <SectionHeader caption="Questions and concerns?" title="Frequently asked questions" />
-        <p className="-mt-1.5 mb-[18px] text-[14.5px] leading-normal text-text-secondary">Everything you need to know about joining WAWU.</p>
-        <div className="mt-4 dt:mx-auto dt:max-w-[760px]">
-          <FaqAccordion items={FAQ} />
-        </div>
-      </section>
+        {/* ============ FAQ ============ */}
+        <section className="px-5 py-14 dt:py-24">
+          <div className="mx-auto max-w-[820px]">
+            <div className="flex flex-col items-center text-center">
+              <CaptionPill>Got questions?</CaptionPill>
+              <h2 className="m-0 mt-5 text-[34px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[56px]">
+                Frequently Asked Questions
+              </h2>
+              <p className="m-0 mt-4 text-[15px] leading-relaxed text-text-secondary">
+                Everything you need to know about joining WAWUAfrica.
+              </p>
+            </div>
+            <div className="mt-10">
+              <FaqAccordion items={FAQ} />
+            </div>
+          </div>
+        </section>
 
-      {/* Community */}
-      <section className="px-5 pb-[52px] text-center dt:mx-auto dt:max-w-[760px] dt:px-14">
-        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">The community</span>
-        <h2 className="m-0 mt-1.5 text-[24px] font-semibold leading-snug tracking-[-0.02em] text-text-primary dt:text-[30px]">
-          Professionals, entrepreneurs, artisans and creatives
-        </h2>
-        <p className="m-0 mt-2.5 text-[14.5px] leading-normal text-text-secondary">
-          10,000+ creators and 1.5M+ fans are already building for real, in naira, on WAWU.
-        </p>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-5 mb-10 flex flex-col gap-3.5 rounded-card py-7 px-[22px] bg-[linear-gradient(150deg,_var(--accent-deep)_0%,_var(--accent)_100%)] dt:mx-auto dt:mb-14 dt:max-w-[1440px] dt:flex-row dt:items-center dt:justify-between dt:px-14 dt:py-12">
-        <div className="flex flex-col gap-3.5 dt:gap-2">
-          <h2 className="m-0 text-[26px] font-semibold leading-[1.2] tracking-[-0.025em] text-on-accent dt:text-[32px]">Own your WOW. Get paid for it.</h2>
-          <p className="m-0 text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)] dt:text-[15px]">No entry fee. Publish your first piece free, price the next one yourself.</p>
-        </div>
-        <Link
-          href="/sign-up?type=creator"
-          className="mt-0.5 inline-flex h-[46px] shrink-0 items-center gap-2 self-start rounded-button bg-white px-[22px] text-[15px] font-semibold text-on-light dt:mt-0 dt:h-[52px] dt:self-auto"
-        >
-          Become a creator
-          <Icon name="ArrowRight" size={17} color="var(--text-on-light)" strokeWidth={2.2} />
-        </Link>
-      </section>
+        {/* ============ FINAL CTA ============ */}
+        <section className="px-5 pb-20 pt-10 dt:pb-28">
+          <div className="relative mx-auto max-w-[1240px] overflow-hidden rounded-[28px] border border-hairline bg-[linear-gradient(170deg,var(--surface-card),var(--accent-deep))] px-6 py-16 text-center dt:py-24">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_50%_100%,var(--accent-tint-strong),transparent_70%)]" aria-hidden="true" />
+            <StickerWatermarks placement="cta" />
+            <div className="relative mx-auto flex max-w-[760px] flex-col items-center">
+              <CaptionPill>Make the Move</CaptionPill>
+              <span className="mt-6 text-[13px] font-bold uppercase tracking-[0.2em] text-accent-hover dt:text-[15px]">
+                Find WOW. Get WOW. Make WOW.
+              </span>
+              <h2 className="m-0 mt-3 text-[44px] font-bold leading-[1.02] tracking-[-0.035em] text-text-primary dt:text-[76px]">
+                Own Your WOW
+              </h2>
+              <div className="mt-9 flex flex-wrap justify-center gap-3.5">
+                <WhitePill href="/sign-up?type=creator">Join WAWU</WhitePill>
+                <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* Footer */}
-      <footer className="flex flex-col gap-[26px] border-t border-hairline px-5 pb-[46px] pt-[30px] dt:mx-auto dt:max-w-[1440px] dt:px-14">
+      <footer className="relative z-10 flex flex-col gap-7 border-t border-hairline px-5 pb-12 pt-9 dt:mx-auto dt:max-w-[1240px] dt:px-0">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[20px] w-auto self-start object-contain opacity-80" />
-        <div className="grid grid-cols-2 gap-x-5 gap-y-[26px] dt:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-7 dt:grid-cols-4">
           {[
-            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Become a creator", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
-            { label: "Services", links: [["CAC registration", "/services/cac"], ["NEPC registration", "/services/nepc"], ["Mentors", "/services/mentors"], ["Learn", "/learn"]] },
+            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Join the Movement", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
+            { label: "Resources", links: [["Explore", "/explore"], ["Learn", "/learn"], ["Services", "/services"], ["Mentors", "/services/mentors"]] },
             { label: "Company", links: [["Terms", "/terms"], ["Privacy", "/privacy/policy"]] },
           ].map((col) => (
-            <div key={col.label} className="flex flex-col gap-[11px]">
+            <div key={col.label} className="flex flex-col gap-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">{col.label}</span>
               {col.links.map(([label, href]) => (
                 <Link key={label} href={href} className="text-[13.5px] text-text-secondary">

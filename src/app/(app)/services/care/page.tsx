@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  getHealthPlans,
+  initHealthSubscription,
+  verifyHealthSubscription,
+  getMyHealthSubscriptions,
+  type HealthPlan,
+  type HealthSubscription,
+} from "@/lib/api/lifestyle";
+import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { useSession } from "@/lib/auth/session-provider";
+import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
+import { formatNaira } from "@/lib/format";
+
+/**
+ * WAWUCare — health cover and telemedicine, fulfilled by WellaHealth.
+ *
+ * The enrolment details are the partner's requirements, not ours: they key
+ * the enrollee on phone number and need a date of birth and gender to issue
+ * a policy. Collecting them up front is what stops a paid subscription
+ * failing at the enrolment step with the money already taken.
+ */
+export default function CarePage() {
+  const { user } = useSession();
+  const [plans, setPlans] = useState<HealthPlan[] | null>(null);
+  const [mine, setMine] = useState<HealthSubscription[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<HealthPlan | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<HealthSubscription | null>(null);
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    gender: "Female",
+    dateOfBirth: "",
+  });
+
+  useEffect(() => {
+    getHealthPlans()
+      .then(setPlans)
+      .catch((e) => setError(e instanceof Error ? e.message : "Could not load health plans."));
+    getMyHealthSubscriptions().then(setMine).catch(() => setMine([]));
+  }, []);
+
+  async function onSubscribe() {
+    if (!selected) return;
+    const customer = checkoutCustomerFromSession(user);
+    if (!customer) {
+      setError("We need an email on your account before you can pay.");
+      return;
+    }
+    if (!form.firstName || !form.lastName || !form.phoneNumber || !form.dateOfBirth) {
+      setError("Fill in every field so we can register you with the provider.");
+      return;
+    }
+
+    setBusy(true); setError(null);
+    try {
+      const { subscriptionId, flutterwaveConfig } = await initHealthSubscription({
+        planCode: selected.planCode,
+        ...form,
+        email: user?.email,
+      });
+      const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
+        title: "WAWUCare",
+        description: selected.planName,
+      });
+      const record = await verifyHealthSubscription(subscriptionId, result.transaction_id);
+      setDone(record);
+      setMine((m) => [record, ...m]);
+    } catch (e) {
+      if (!isFlutterwaveCancelled(e)) {
+        setError(e instanceof Error ? e.message : "That did not complete.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+        <ProfileBackButton />
+        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[26px] text-center">
+          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--accent-tint)]">
+            <Icon name="HeartPulse" size={26} color="var(--accent)" strokeWidth={2.2} />
+          </span>
+          <span className="text-[19px] font-bold text-[var(--text-primary)]">You are covered</span>
+          <span className="text-[14px] text-[var(--text-secondary)]">{done.planName}</span>
+          {done.policyNumber ? (
+            <span className="text-[12.5px] text-[var(--text-muted)]">Policy {done.policyNumber}</span>
+          ) : null}
+          <span className="text-[13px] text-[var(--text-secondary)]">
+            Your cover is tied to {done.phoneNumber}. Use that number when you contact a doctor.
+          </span>
+          <Button className="mt-2" onClick={() => setDone(null)}>Done</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+      <ProfileBackButton />
+      <div className="flex flex-col gap-[6px]">
+        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">WAWUCare</span>
+        <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">See a doctor</h1>
+        <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
+          Virtual consultations, medication cover and screening. Pay monthly, use it as often as you need.
+        </p>
+      </div>
+
+      {error ? <ErrorState title="Something went wrong" body={error} /> : null}
+
+      {mine.filter((m) => m.status === "delivered").map((m) => (
+        <div key={m.id} className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--accent-tint)] p-[14px]">
+          <Icon name="ShieldCheck" size={20} color="var(--accent)" />
+          <span className="flex flex-col">
+            <span className="text-[14px] font-semibold text-[var(--text-primary)]">{m.planName} is active</span>
+            <span className="text-[12.5px] text-[var(--text-secondary)]">
+              On {m.phoneNumber}{m.expiresAt ? ` · renews ${new Date(m.expiresAt).toLocaleDateString("en-NG")}` : ""}
+            </span>
+          </span>
+        </div>
+      ))}
+
+      {!plans ? (
+        <Skeleton variant="card" />
+      ) : (
+        <div className="flex flex-col gap-[10px]">
+          {plans.map((p) => {
+            const on = selected?.planCode === p.planCode;
+            return (
+              <button
+                key={p.planCode}
+                type="button"
+                onClick={() => setSelected(p)}
+                className={`flex flex-col gap-[8px] rounded-[var(--radius-card)] border p-[16px] text-left ${
+                  on ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]"
+                }`}
+              >
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="text-[15.5px] font-bold text-[var(--text-primary)]">{p.planName}</span>
+                  <span className="text-[16px] font-bold text-[var(--text-primary)]">
+                    {formatNaira(Math.round(p.price))}
+                    <span className="text-[12px] font-normal text-[var(--text-muted)]">
+                      {p.numberOfMonths === 1 ? " /month" : p.numberOfMonths ? ` /${p.numberOfMonths} months` : ""}
+                    </span>
+                  </span>
+                </span>
+                {(p.planBenefits ?? []).slice(0, 4).map((b) => (
+                  <span key={b} className="flex items-start gap-2 text-[13px] leading-[1.45] text-[var(--text-secondary)]">
+                    <Icon name="Check" size={14} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
+                    {b}
+                  </span>
+                ))}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {selected ? (
+        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+          <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Who is this cover for?</span>
+          <Input label="First name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+          <Input label="Last name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+          <Input
+            label="Phone number"
+            value={form.phoneNumber}
+            onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+            placeholder="08031234567"
+            inputMode="tel"
+          />
+          <Input
+            label="Date of birth"
+            type="date"
+            value={form.dateOfBirth}
+            onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+          />
+          <div className="flex gap-2">
+            {["Female", "Male"].map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setForm({ ...form, gender: g })}
+                className={`flex-1 rounded-[var(--radius-chip)] border px-[14px] py-2 text-[13px] ${
+                  form.gender === g
+                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+          <Button full onClick={onSubscribe} disabled={busy}>
+            {busy ? "Opening checkout…" : `Pay ${formatNaira(Math.round(selected.price))}`}
+          </Button>
+          <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">
+            Cover is registered against the phone number above with our care partner.
+          </span>
+        </div>
+      ) : null}
+    </div>
+  );
+}

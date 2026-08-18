@@ -58,7 +58,7 @@ export default function CreatePage() {
         <EmptyState
           icon="CreditCard"
           title="Subscribe to unlock uploading"
-          caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts — you can start that anytime after."
+          caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts. You can start that anytime after."
           action="Choose a plan"
           actionHref="/subscription"
         />

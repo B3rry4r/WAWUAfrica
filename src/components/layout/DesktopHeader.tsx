@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { getNotifications } from "@/lib/api/notifications";
 import { Avatar } from "@/components/ui/Avatar";
 import { hasOwnHeader } from "./AppHeader";
 
@@ -20,6 +22,24 @@ import { hasOwnHeader } from "./AppHeader";
  * those routes' own headers aren't re-laid-out for desktop in this task.
  */
 export function DesktopHeader() {
+  // The unread dot used to be unconditional, so every user always
+  // appeared to have unread notifications.
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    getNotifications()
+      .then((res) => {
+        if (!cancelled) setUnreadCount(res.unreadCount);
+      })
+      .catch(() => {
+        /* no badge rather than a wrong one */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const pathname = usePathname();
   const { user } = useSession();
   if (hasOwnHeader(pathname)) return null;
@@ -45,7 +65,7 @@ export function DesktopHeader() {
         className="relative grid h-10 w-10 place-items-center rounded-full border border-hairline bg-input text-text-secondary"
       >
         <Icon name="Bell" size={18} />
-        <span className="absolute right-[9px] top-2 h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" />
+        {unreadCount > 0 ? <span className="absolute right-[9px] top-2 h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" /> : null}
       </Link>
       <Link
         href="/profile"

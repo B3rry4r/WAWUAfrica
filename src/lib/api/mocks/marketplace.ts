@@ -27,7 +27,7 @@ export const MARKETPLACE_ITEMS: MarketplaceProduct[] = [
     category: "Fashion",
     price: 18500,
     description:
-      "Wax-print top and wrap skirt, fully lined. Send your measurements after ordering — five to seven days to sew, then delivery.",
+      "Wax-print top and wrap skirt, fully lined. Send your measurements after ordering, five to seven days to sew, then delivery.",
     facts: ["Delivery nationwide, from ₦2,500", "Made to order · 5 to 7 days"],
     deliveryNote: "Aba · sews to your measurements",
     // SEAM: replace with GET /api/hub/marketplace/:shop/items/:id — seller card fields
@@ -47,7 +47,7 @@ export const MARKETPLACE_ITEMS: MarketplaceProduct[] = [
     category: "Art",
     price: 25000,
     description:
-      "Original oil on canvas, unframed. Rolled and shipped in a tube — framing is on you.",
+      "Original oil on canvas, unframed. Rolled and shipped in a tube, framing is on you.",
     facts: ["Delivery nationwide, from ₦3,000", "One of one · ships in 3 days"],
     // SEAM: replace with GET /api/hub/marketplace/:shop/items/:id — seller card fields
     sellerDetail: {
@@ -101,7 +101,7 @@ export const MARKETPLACE_ITEMS: MarketplaceProduct[] = [
     category: "Hair",
     price: 12000,
     description:
-      "She comes to you with everything needed. Knotless, box or cornrows — say which when you book.",
+      "She comes to you with everything needed. Knotless, box or cornrows, say which when you book.",
     facts: ["Home visit within Enugu", "3 to 5 hours depending on style"],
     // SEAM: replace with GET /api/hub/marketplace/:shop/items/:id — seller card fields
     sellerDetail: {

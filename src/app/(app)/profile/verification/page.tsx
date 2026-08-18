@@ -101,7 +101,7 @@ export default function VerificationPage() {
         </span>
         <VerificationLadderList ladder={ladder} nextTier={nextTier} />
         <p className="m-0 px-1 text-[11.5px] leading-[1.5] text-text-muted">
-          Verification is separate from your paid plan and your KYC status — the three are independent.
+          Verification is separate from your paid plan and your KYC status; the three are independent.
         </p>
         <div className="flex gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-4">
           <Icon name="Info" size={17} color="var(--text-muted)" strokeWidth={2} className="mt-px shrink-0" />

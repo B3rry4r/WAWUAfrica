@@ -22,7 +22,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   const items: NavItem[] = [
-    { href: "/", label: "Home", icon: "Home" },
+    { href: "/home", label: "Home", icon: "Home" },
     { href: "/communities", label: "Communities", icon: "Users" },
     accountType === "creator"
       ? { href: "/create", label: "Create", icon: "PlusCircle" }

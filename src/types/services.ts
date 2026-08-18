@@ -18,6 +18,15 @@ export interface PartnerService {
   cta?: { label: string; href: string };
   /** Coming-soon blurb details. */
   comingNote?: string;
+  /**
+   * Carried over from the previous platform, which showed each partner
+   * service with who provides it and what you need before applying. Dropping
+   * these turned real partner offerings into three lines of marketing.
+   */
+  eligibility?: string[];
+  benefits?: string[];
+  /** [label, description] pairs, e.g. ["Apply", "Submit a short request"]. */
+  steps?: [string, string][];
 }
 
 export interface ServiceApplicationTimeline {

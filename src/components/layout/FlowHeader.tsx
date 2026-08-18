@@ -23,7 +23,7 @@ export function FlowHeader({ title, right, onBack, backLabel = "Back" }: FlowHea
         type="button"
         onClick={back}
         aria-label={backLabel}
-        className="grid place-items-center w-[34px] h-[34px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] cursor-pointer shrink-0"
+        className="grid place-items-center w-[34px] h-[34px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] cursor-pointer shrink-0"
       >
         <Icon name="ChevronLeft" size={18} strokeWidth={2.2} />
       </button>

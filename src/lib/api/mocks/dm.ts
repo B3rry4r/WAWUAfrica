@@ -7,7 +7,7 @@ const MOCK_THREADS: DmThreadSummary[] = [
     creatorWawuId: "wawu-adaeze",
     creatorName: "Adaeze Okonkwo",
     creatorHandle: "adaeze",
-    snippet: "Yes — 12 seats left. I reply fastest on WAWU.",
+    snippet: "Yes, 12 seats left. I reply fastest on WAWU.",
     lastAt: "12:04",
     unread: true,
     status: "responded",
@@ -29,7 +29,7 @@ const MOCK_THREADS: DmThreadSummary[] = [
     creatorWawuId: "wawu-zainab",
     creatorName: "Zainab Bello",
     creatorHandle: "zainab",
-    snippet: "You got a refund — ₦200",
+    snippet: "You got a refund of ₦200",
     lastAt: "Mon",
     unread: false,
     status: "refunded",
@@ -41,7 +41,7 @@ const MOCK_THREAD_DETAILS: Record<string, { messages: DmThreadMessage[]; deadlin
   "t-adaeze": {
     messages: [
       { id: "m1", from: "me", text: "Hi Adaeze! Are the December registration slots still open?", at: "11:38" },
-      { id: "m2", from: "creator", text: "Yes — 12 seats left. I reply fastest on WAWU.", at: "12:04" },
+      { id: "m2", from: "creator", text: "Yes, 12 seats left. I reply fastest on WAWU.", at: "12:04" },
     ],
   },
   "t-funmi": {
@@ -55,7 +55,7 @@ const MOCK_THREAD_DETAILS: Record<string, { messages: DmThreadMessage[]; deadlin
 };
 
 /** Paid DM entry states for the fan sheet. */
-export type DmSendResult = "success" | "payment_failed" | "error";
+export type DmSendResult = "success" | "payment_failed" | "cancelled" | "verify_failed" | "error";
 
 // SEAM: replace with GET /api/hub/dm/inbox
 export async function getMockDmThreads(): Promise<DmThreadSummary[]> {

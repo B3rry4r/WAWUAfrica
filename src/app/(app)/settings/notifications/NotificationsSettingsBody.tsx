@@ -119,7 +119,7 @@ export function NotificationsSettingsBody() {
       </div>
       <p className="m-0 flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--text-muted)]">
         <Icon name="Info" size={14} color="var(--text-muted)" />
-        Paid-message alerts never get switched off — refunds depend on them.
+        Paid-message alerts never get switched off, refunds depend on them.
       </p>
       {saveError ? (
         <p className="m-0 flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--danger)]">

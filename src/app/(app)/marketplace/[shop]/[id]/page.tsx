@@ -139,6 +139,8 @@ export default async function ProductPage({
           </p>
 
           <ProductActionsRow
+            shop={shopParam as ShopId}
+            productId={product.id}
             productTitle={product.title}
             seller={
               product.sellerDetail?.wawuId

@@ -1,4 +1,6 @@
 import { apiFetch, isMockModeError } from "./client";
+import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import type { TipResult } from "./mocks/tips";
 import { sendMockTip, TIP_PRESETS } from "./mocks/tips";
 
@@ -14,18 +16,14 @@ interface FlutterwaveConfigResponse {
 }
 
 /**
- * POST /api/hub/tips + POST /api/hub/tips/verify (Purchase resource — verified
- * against WAWU-Hub-API/src/purchase/purchase.controller.ts, no `/api/hub`
- * proxy prefix issue since apiFetch already prepends API_BASE). Both routes
- * sit under `WawuAuthGuard`, `roles: ["any"]` — any signed-in user, no
+ * POST /api/hub/tips -> Flutterwave inline checkout -> POST /api/hub/tips/verify
+ * (Purchase resource, WAWU-Hub-API/src/purchase/purchase.controller.ts). Both
+ * routes sit under `WawuAuthGuard`, `roles: ["any"]` — any signed-in user, no
  * creator gate (a plain user tips a creator).
  *
- * Same as the content-unlock flow (src/app/(app)/content/[id]/page.tsx),
- * there is no real Flutterwave inline-checkout SDK wired into this frontend
- * yet — this fakes the actual card-payment step with a short delay and a
- * synthetic `transaction_id`, exactly mirroring that existing pattern, then
- * calls the real verify endpoint so a genuine `Purchase` row (type: 'tip')
- * gets created and completed server-side.
+ * The payer completes the charge in Flutterwave's own modal, which yields a
+ * real `transaction_id`; the server then re-verifies that id with Flutterwave
+ * before recording the tip. See src/lib/flutterwave.ts.
  */
 export async function sendTip(
   creator: { wawuId: string; name: string },
@@ -39,22 +37,34 @@ export async function sendTip(
       body: { creatorWawuId: creator.wawuId, amount, note },
     });
 
-    // SEAM: replace this fake delay with a real Flutterwave inline checkout
-    // once the SDK is wired — see content/[id]/page.tsx's identical stand-in.
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+    if (!customer) return { result: "payment_failed", amount };
 
-    await apiFetch<{ tipped: true }>("/api/hub/tips/verify", {
-      method: "POST",
-      authed: true,
-      body: { transaction_id: `txn-${Date.now()}`, tx_ref: init.flutterwaveConfig.txRef },
+    const charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
+      title: `Tip ${creator.name}`,
+      description: "Tip on WAWU",
     });
+
+    // Past this line the money HAS moved. A failure now is not a decline —
+    // telling the tipper "nothing was charged, try again" would take a second
+    // payment, so it gets its own result the UI renders differently.
+    try {
+      await apiFetch<{ tipped: true }>("/api/hub/tips/verify", {
+        method: "POST",
+        authed: true,
+        body: { transaction_id: charge.transaction_id, tx_ref: charge.tx_ref },
+      });
+    } catch {
+      return { result: "verify_failed", amount };
+    }
 
     return { result: "success", amount };
   } catch (e) {
+    // Dismissing the checkout modal is not a failed payment — nothing was
+    // charged and nothing went wrong, so report it distinctly.
+    if (isFlutterwaveCancelled(e)) return { result: "cancelled", amount };
     if (!isMockModeError(e)) {
-      // Real backend reached and rejected the tip (decline, validation, 5xx)
-      // — same failure class as content-unlock's real /verify rejection.
-      // Report it as a real failure, not a fabricated "success".
+      // Real backend reached and rejected the tip (decline, validation, 5xx).
       return { result: "payment_failed", amount };
     }
     // SEAM: replace with POST /api/hub/tips + POST /api/hub/tips/verify

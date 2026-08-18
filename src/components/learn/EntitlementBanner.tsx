@@ -50,7 +50,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
         <span className="text-[12.5px] text-[var(--text-muted)]">
           {tier === "pro"
             ? "Pick any course in the catalogue. They do not expire while Pro is active."
-            : "Basic carries one — spend it on something you will finish."}
+            : "Basic carries one, spend it on something you will finish."}
         </span>
       </div>
     );

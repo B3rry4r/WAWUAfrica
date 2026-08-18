@@ -24,7 +24,7 @@ export const MOCK_COURSES: LearnCourse[] = [
     category: "Marketing",
     hours: 6,
     certificate: true,
-    overview: "Getting found on WhatsApp, Instagram and search — without paying for ads you can't measure.",
+    overview: "Getting found on WhatsApp, Instagram and search, without paying for ads you can't measure.",
     whatItCovers: [
       "Writing a bio and catalogue that convert",
       "Posting on a schedule you can actually keep",
@@ -38,7 +38,7 @@ export const MOCK_COURSES: LearnCourse[] = [
     category: "Trade",
     hours: 10,
     certificate: true,
-    overview: "The paperwork side of selling abroad — certificates, invoices and customs forms, done right the first time.",
+    overview: "The paperwork side of selling abroad, certificates, invoices and customs forms, done right the first time.",
     whatItCovers: [
       "Certificates of origin and phytosanitary paperwork",
       "Commercial invoices that clear customs",
@@ -80,7 +80,7 @@ export const MOCK_COURSES: LearnCourse[] = [
     category: "Creator business",
     hours: 4,
     certificate: true,
-    overview: "Charge what your work is worth — for content, DMs and custom orders.",
+    overview: "Charge what your work is worth, for content, DMs and custom orders.",
     whatItCovers: [
       "Set your own rates",
       "Bundle without discounting your worth",
@@ -113,12 +113,12 @@ export const MOCK_PLAYBOOK: Playbook = {
     {
       heading: "Pricing so you actually make money",
       body:
-        "Cost your materials, your time and your platform fees before you set a number — then round up. Undercharging is the single most common reason small businesses on WAWU stall out in the first year.",
+        "Cost your materials, your time and your platform fees before you set a number, then round up. Undercharging is the single most common reason small businesses on WAWU stall out in the first year.",
     },
     {
       heading: "Books, records, and tax without fear",
       body:
-        "A daily cash book — even a paper one — is the difference between knowing your month made money and hoping it did. Keep receipts. Keep them separate from your personal spending. That is most of what tax time needs from you.",
+        "A daily cash book, even a paper one, is the difference between knowing your month made money and hoping it did. Keep receipts. Keep them separate from your personal spending. That is most of what tax time needs from you.",
     },
     {
       heading: "Getting paid, and chasing what you are owed",
@@ -128,14 +128,14 @@ export const MOCK_PLAYBOOK: Playbook = {
     {
       heading: "Selling beyond your own street",
       body:
-        "Ghana and other ECOWAS markets are the cheapest first export a Nigerian seller can make — little or no duty, and a fair rehearsal for the paperwork harder markets will ask for later. Start with the country guides.",
+        "Ghana and other ECOWAS markets are the cheapest first export a Nigerian seller can make, little or no duty, and a fair rehearsal for the paperwork harder markets will ask for later. Start with the country guides.",
     },
   ],
 };
 
 const NEPC_CROSS_SELL = {
   heading: "Need the certificate?",
-  body: "NEPC export support runs inside WAWU — free to start, 3 to 5 days to first reply.",
+  body: "NEPC export support runs inside WAWU, free to start, 3 to 5 days to first reply.",
   href: "/services/nepc/apply",
   label: "Apply for NEPC",
 } as const;
@@ -177,7 +177,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why the UK is worth the paperwork",
     whyFirstBody:
-      "A large, English-speaking diaspora market with strong demand for Nigerian food and craft goods — the market is real, but every plant or food shipment needs a phytosanitary certificate issued before departure.",
+      "A large, English-speaking diaspora market with strong demand for Nigerian food and craft goods, the market is real, but every plant or food shipment needs a phytosanitary certificate issued before departure.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "Phytosanitary certificate for plant or food goods",
@@ -199,7 +199,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why the US takes longer",
     whyFirstBody:
-      "Food products need FDA facility registration before they can enter the country — plan for it early, since it is the single step most first-time exporters miss and get held up on at the border.",
+      "Food products need FDA facility registration before they can enter the country, plan for it early, since it is the single step most first-time exporters miss and get held up on at the border.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "FDA facility registration for food items",
@@ -221,7 +221,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why South Africa needs a permit first",
     whyFirstBody:
-      "South Africa is outside ECOWAS, so an import permit on the receiving end has to be arranged before goods ship — line this up with your buyer before you commit to a date.",
+      "South Africa is outside ECOWAS, so an import permit on the receiving end has to be arranged before goods ship, line this up with your buyer before you commit to a date.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "South African import permit (buyer-side)",
@@ -265,7 +265,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why the UAE is a low-duty, high-standard market",
     whyFirstBody:
-      "Duty is low across most categories, but food products need halal certification and clear labelling — get this sorted before your first shipment, not after it's held at port.",
+      "Duty is low across most categories, but food products need halal certification and clear labelling, get this sorted before your first shipment, not after it's held at port.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "Halal certification for food items",
@@ -331,7 +331,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why Algeria takes patience",
     whyFirstBody:
-      "Import licensing and higher duty make Algeria a slower, later-stage market — worth it for the right product, but plan for longer clearance times than West or East African routes.",
+      "Import licensing and higher duty make Algeria a slower, later-stage market, worth it for the right product, but plan for longer clearance times than West or East African routes.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "Algerian import licence (buyer-side)",
@@ -353,7 +353,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why Morocco varies by product",
     whyFirstBody:
-      "Duty depends heavily on category and existing trade routes — check your specific product against Morocco's tariff schedule before committing to a price.",
+      "Duty depends heavily on category and existing trade routes, check your specific product against Morocco's tariff schedule before committing to a price.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "Certificate of origin",
@@ -375,7 +375,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why Egypt needs registration first",
     whyFirstBody:
-      "Egypt keeps a registered-exporter list for several product categories — check your product against it before you ship, since being on it is faster than being added to it after the fact.",
+      "Egypt keeps a registered-exporter list for several product categories, check your product against it before you ship, since being on it is faster than being added to it after the fact.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "Egyptian registered-exporter check",
@@ -397,7 +397,7 @@ const COUNTRY_GUIDES: CountryGuide[] = [
     borderDaysCaption: "Border clearance",
     whyFirstHeading: "Why Ethiopia needs an FX plan",
     whyFirstBody:
-      "Larger orders can need foreign-exchange approval on the buyer's side before payment clears — agree the payment plan up front so it doesn't stall the shipment.",
+      "Larger orders can need foreign-exchange approval on the buyer's side before payment clears, agree the payment plan up front so it doesn't stall the shipment.",
     whatYouNeed: [
       "CAC registration and NEPC certificate",
       "Certificate of origin",
@@ -414,11 +414,11 @@ const REFERENCE_ARTICLES: ReferenceArticle[] = [
     title: "Pricing without guessing",
     updated: "Updated July",
     readMinutes: 8,
-    summary: "A short, practical method for setting a price you can defend — for goods, services or content.",
+    summary: "A short, practical method for setting a price you can defend, for goods, services or content.",
     sections: [
       {
         heading: "Cost it before you price it",
-        body: "Add up materials, your time at a real hourly rate, platform fees and delivery. Whatever is left after that is your actual margin — most underpricing happens because this step gets skipped.",
+        body: "Add up materials, your time at a real hourly rate, platform fees and delivery. Whatever is left after that is your actual margin, most underpricing happens because this step gets skipped.",
       },
       {
         heading: "Round up, not down",
@@ -439,7 +439,7 @@ const TEMPLATE_PACKS: TemplatePack[] = [
     title: "Invoice and receipt templates",
     updated: "Updated June",
     fileCount: 6,
-    description: "Six ready-to-edit invoice and receipt templates — for one-off sales, deposits and recurring orders.",
+    description: "Six ready-to-edit invoice and receipt templates, for one-off sales, deposits and recurring orders.",
   },
 ];
 

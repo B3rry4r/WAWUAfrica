@@ -33,7 +33,7 @@ export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardPro
       className={`flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full border [font-family:var(--font-sans)] ${borderClass[item.status]} ${onClick ? "cursor-pointer" : "cursor-default"}`}
     >
       <span
-        className="w-[56px] h-[70px] rounded-[10] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]"
+        className="w-[56px] h-[70px] rounded-[10px] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]"
       />
       <span className="flex-1 min-w-0 flex flex-col gap-[6px]">
         <span className="flex items-start gap-[8px]">

@@ -32,7 +32,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
     freeSlots: 1,
     split: 85,
     features: [
-      "3 uploads — 1 free and 2 paid",
+      "3 uploads, 1 free and 2 paid",
       "Host open communities · 90% on credits",
       "1 free course, business playbook, purple badge",
     ],

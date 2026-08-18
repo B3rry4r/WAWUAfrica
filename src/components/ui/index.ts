@@ -11,6 +11,7 @@ export { CreditCount } from "./CreditCount";
 export { EmptyState } from "./EmptyState";
 export { EngagementBar } from "./EngagementBar";
 export { ErrorState } from "./ErrorState";
+export { FilePicker } from "./FilePicker";
 export { HandoffPill } from "./HandoffPill";
 export { Icon } from "./Icon";
 export { Input } from "./Input";

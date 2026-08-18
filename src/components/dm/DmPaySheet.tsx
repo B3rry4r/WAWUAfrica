@@ -6,7 +6,14 @@ import { sendPaidDm } from "@/lib/api/dm";
 import { formatNaira } from "@/lib/format";
 import { Avatar, Button, Icon, Sheet, VerificationBadge } from "@/components/ui";
 
-type Phase = "compose" | "processing" | "success" | "failure";
+/**
+ * "failure" means nothing was charged. "unconfirmed" is the opposite case:
+ * checkout completed and the money moved, but the server-side verify that
+ * creates the thread failed afterwards. Retrying an unconfirmed charge would
+ * charge the fan a second time, so the two states must not share a screen.
+ */
+type Phase = "compose" | "processing" | "success" | "failure" | "unconfirmed";
+
 
 export interface DmCreator {
   wawuId: string;
@@ -50,6 +57,12 @@ export function DmPaySheet({
       if (res.result === "success") {
         setThreadId(res.threadId);
         setPhase("success");
+      } else if (res.result === "cancelled") {
+        // Checkout dismissed — nothing charged, nothing sent. Return to the
+        // composed message instead of showing a payment failure.
+        setPhase("compose");
+      } else if (res.result === "verify_failed") {
+        setPhase("unconfirmed");
       } else {
         setPhase("failure");
       }
@@ -59,7 +72,7 @@ export function DmPaySheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="Message" caption="Paid message — read by the creator directly.">
+    <Sheet open={open} onClose={onClose} title="Message" caption="Paid message, read by the creator directly.">
       {!creator ? null : phase === "compose" ? (
         <div className="flex flex-col gap-[16px]">
           <div className="flex items-center gap-[10px]">
@@ -83,7 +96,7 @@ export function DmPaySheet({
             </span>
           </div>
           <p className="m-0 text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-            {creator.name.split(" ")[0]} has 24 hours to reply. If not, you’re refunded automatically — no questions.
+            {creator.name.split(" ")[0]} has 24 hours to reply. If not, you’re refunded automatically. No questions.
           </p>
           <Button full disabled={!text.trim()} onClick={pay}>
             Send message · {formatNaira(creator.dmPrice)}
@@ -122,6 +135,35 @@ export function DmPaySheet({
             </Button>
           </div>
         </div>
+      ) : phase === "unconfirmed" ? (
+        <div className="flex flex-col gap-[14px] p-[8px_0_4px] text-center">
+          <span className="mx-auto grid h-[56px] w-[56px] place-items-center rounded-full border border-[rgba(255,183,3,0.32)] bg-[var(--warning-tint)]">
+            <Icon name="Clock" size={26} color="var(--warning)" />
+          </span>
+          <div className="flex flex-col gap-[5px]">
+            <span className="text-[17px] font-bold text-[var(--text-primary)]">
+              Payment went through, we could not confirm it
+            </span>
+            <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+              {formatNaira(creator.dmPrice)} left your account and we could not finish opening the conversation. You have
+              not been charged twice. Check your messages in a moment, or tell support and they will sort it.
+            </span>
+          </div>
+          <div className="mt-[6px] flex gap-[10px]">
+            <Button full variant="secondary" href="mailto:hello@wawuafrica.com">
+              Contact support
+            </Button>
+            <Button
+              full
+              onClick={() => {
+                onClose();
+                router.push("/messages");
+              }}
+            >
+              Open messages
+            </Button>
+          </div>
+        </div>
       ) : (
         <div className="flex flex-col gap-[14px] p-[8px_0_4px] text-center">
           <span className="mx-auto grid h-[56px] w-[56px] place-items-center rounded-full border border-[rgba(255,92,92,0.32)] bg-[var(--danger-tint)]">
@@ -130,7 +172,7 @@ export function DmPaySheet({
           <div className="flex flex-col gap-[5px]">
             <span className="text-[17px] font-bold text-[var(--text-primary)]">Payment failed</span>
             <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-              Your bank didn’t confirm the payment. Nothing was charged — try again.
+              Your bank didn’t confirm the payment. Nothing was charged. Try again.
             </span>
           </div>
           <div className="mt-[6px] flex gap-[10px]">

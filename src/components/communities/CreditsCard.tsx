@@ -4,12 +4,13 @@ import { useState } from "react";
 import type { CreditPackId } from "@/types/credits";
 import { CREDIT_PACKS } from "@/types/credits";
 import { topUpCredits } from "@/lib/api/communities";
+import { isFlutterwaveCancelled } from "@/lib/flutterwave";
 import { formatNaira } from "@/lib/format";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 
-type Phase = "choose" | "processing" | "done";
+type Phase = "choose" | "opening" | "processing" | "done";
 
 interface CreditsCardProps {
   initialBalance: number;
@@ -29,16 +30,24 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
   const [phase, setPhase] = useState<Phase>("choose");
   const [chosen, setChosen] = useState<CreditPackId | null>(null);
   const [added, setAdded] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const purchase = async () => {
     if (!chosen) return;
-    setPhase("processing");
+    setError(null);
+    // "opening" is the gap while Flutterwave's modal is being brought up. It is
+    // deliberately not "processing": nothing is being processed until the buyer
+    // has actually paid, and claiming otherwise is what made this feel stuck.
+    setPhase("opening");
     try {
-      const next = await topUpCredits(chosen);
+      const next = await topUpCredits(chosen, () => setPhase("processing"));
       setAdded(CREDIT_PACKS[chosen].credits);
       setBalance(next);
       setPhase("done");
-    } catch {
+    } catch (e) {
+      // Dismissing checkout charges nothing — back to the pack picker with no
+      // error. A genuine failure surfaces so the buyer knows it did not work.
+      setError(isFlutterwaveCancelled(e) ? null : "That payment did not go through. No credits were added.");
       setPhase("choose");
     }
   };
@@ -71,8 +80,8 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
         </div>
       ) : null}
 
-      <Sheet open={open} onClose={close} title="Top up credits" caption="Credits are for sending community messages — they can't be cashed out.">
-        {phase === "choose" ? (
+      <Sheet open={open} onClose={close} title="Top up credits" caption="Credits are for sending community messages, they can't be cashed out.">
+        {phase === "choose" || phase === "opening" ? (
           <div className="flex flex-col gap-[10px]">
             {(Object.keys(CREDIT_PACKS) as CreditPackId[]).map((id) => {
               const p = CREDIT_PACKS[id];
@@ -111,8 +120,16 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
                 </button>
               );
             })}
-            <Button full disabled={!chosen} onClick={purchase}>
-              Buy {chosen ? `${CREDIT_PACKS[chosen].credits} credits` : "credits"}
+            {error ? (
+              <span className="flex items-start gap-2 rounded-[var(--radius-input)] border border-[rgba(255,92,92,0.3)] bg-[var(--danger-tint)] p-[11px_13px] text-[12.5px] leading-[1.45] text-text-secondary">
+                <Icon name="TriangleAlert" size={15} color="var(--danger)" className="mt-[1px] shrink-0" />
+                {error}
+              </span>
+            ) : null}
+            <Button full disabled={!chosen || phase === "opening"} onClick={purchase}>
+              {phase === "opening"
+                ? "Opening checkout…"
+                : `Buy ${chosen ? `${CREDIT_PACKS[chosen].credits} credits` : "credits"}`}
             </Button>
             <p className="m-0 text-center text-[11.5px] text-text-muted">
               Credits never expire and are never a cash balance.

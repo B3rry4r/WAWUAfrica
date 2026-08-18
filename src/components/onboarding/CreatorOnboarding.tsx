@@ -6,13 +6,14 @@ import type { CreatorTier } from "@/types/account";
 import { PLANS } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
 import { subscriptionApi } from "@/lib/api/subscription";
-import { setSubscriptionPaid, setCreatorTier } from "@/lib/api/mocks/session";
+import { isFlutterwaveCancelled } from "@/lib/flutterwave";
+import { useSession } from "@/lib/auth/session-provider";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TierBadge } from "@/components/ui/TierBadge";
 
-type Step = "value" | "tier" | "confirm" | "processing" | "success" | "failed";
+type Step = "value" | "tier" | "processing" | "success" | "failed";
 
 function CheckRow({ children }: { children: React.ReactNode }) {
   return (
@@ -25,31 +26,73 @@ function CheckRow({ children }: { children: React.ReactNode }) {
 
 export function CreatorOnboarding() {
   const router = useRouter();
+  const { user, setCreatorState } = useSession();
   const [step, setStep] = useState<Step>("value");
+  /** True only while the checkout modal is being opened. */
+  const [paying, setPaying] = useState(false);
   const [tier, setTier] = useState<CreatorTier>("pro");
   const [proSelected, setProSelected] = useState(true);
+  // Set from the subscription the server confirms, so the receipt shows the
+  // real renewal date rather than a hardcoded one.
+  const [renewsAt, setRenewsAt] = useState<string | null>(null);
 
   const price = PLANS[tier].price;
-  const title = step === "value" ? "Become a creator" : step === "tier" ? "Choose your tier" : step === "confirm" ? "Confirm and pay" : step === "failed" ? "Confirm and pay" : step === "processing" ? "Confirm and pay" : "";
+  // Yearly billing, so the term ends a year from today. Used before payment
+  // (the confirm screen has no server date yet); the success screen prefers
+  // the real `renewsAt` the subscription came back with.
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+  const formatDay = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const projectedRenewal = formatDay(oneYearFromNow);
+  const title =
+    step === "value"
+      ? "Become a creator"
+      : step === "tier"
+        ? "Choose your tier"
+        : step === "failed" || step === "processing"
+          ? "Payment"
+          : "";
 
   const pay = () => {
-    setStep("processing");
+    // No "processing" screen yet: the Flutterwave modal has not even opened,
+    // and claiming to confirm a payment nobody has made is what made this
+    // flow feel broken. `onCharged` flips to it once the charge is real.
+    setPaying(true);
     subscriptionApi
-      .subscribe(tier)
-      .then(() => {
-        // Subscription payment succeeded: the session must reflect the paid
-        // tier so canUpload flips on for the rest of the app.
-        setSubscriptionPaid(true);
-        setCreatorTier(tier);
+      .subscribe(tier, () => {
+        setPaying(false);
+        setStep("processing");
+      })
+      .then((subscription) => {
+        // Apply the tier the SERVER confirmed, not the one the user picked:
+        // this is what flips canUpload on for the rest of the app, so it must
+        // come from the verified subscription row. (This previously mutated
+        // the dev-only mock session store, granting creator access locally
+        // regardless of what the backend actually said.)
+        setCreatorState({
+          tier: subscription.plan.tier,
+          subscriptionPaid: subscription.state === "active",
+          kyc: user?.creator?.kyc ?? "pending",
+          slotsUsed: user?.creator?.slotsUsed ?? 0,
+          slotsTotal: subscription.plan.slots,
+          dmPrice: user?.creator?.dmPrice ?? 0,
+          dmEnabled: user?.creator?.dmEnabled ?? false,
+        });
+        setRenewsAt(subscription.renewsAt ?? null);
         setStep("success");
       })
-      .catch(() => {
-        // A real backend rejection (e.g. a duplicate/declined charge —
-        // already subscribed, card declined) must land on the real failure
-        // screen, not be silently swallowed into a fake success. Pattern A:
-        // subscriptionApi.subscribe() now only falls back to mock data when
-        // there's genuinely no backend configured; every other error reaches
-        // here as a real rejection.
+      .catch((e) => {
+        // Dismissing Flutterwave's checkout charges nothing — send the user
+        // back to the confirm screen rather than a payment-declined error.
+        setPaying(false);
+        // Dismissing checkout charges nothing, so stay on the tier screen
+        // rather than showing a payment-declined error.
+        if (isFlutterwaveCancelled(e)) {
+          setStep("tier");
+          return;
+        }
+        // A real backend rejection (declined card, already subscribed) lands
+        // on the real failure screen.
         setStep("failed");
       });
   };
@@ -57,13 +100,13 @@ export function CreatorOnboarding() {
   if (step === "processing") {
     return (
       <Centered>
-        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--surface-card)] border border-[var(--border-strong)]">
+        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--surface-card)] border border-[var(--border-strong)]">
           <Icon name="Loader" size={36} strokeWidth={2.2} color="var(--accent)" />
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Confirming your payment</h2>
         <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[280px]">This takes a few seconds. Do not close the app.</p>
-        <div className="w-[180px] h-[5px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden mt-[6px]">
-          <div className="w-[62%] h-full rounded-[999] bg-[var(--accent)]" />
+        <div className="w-[180px] h-[5px] rounded-[999px] bg-[var(--surface-tag)] overflow-hidden mt-[6px]">
+          <div className="w-[62%] h-full rounded-[999px] bg-[var(--accent)]" />
         </div>
       </Centered>
     );
@@ -73,7 +116,7 @@ export function CreatorOnboarding() {
     return (
       <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
         <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center">
-          <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
+          <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
             <Icon name="Check" size={40} strokeWidth={2.6} color="var(--accent)" />
           </span>
           <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em]">You are on {tier === "pro" ? "Pro" : "Basic"}</h2>
@@ -85,7 +128,9 @@ export function CreatorOnboarding() {
             </div>
             <div className="flex items-center gap-[10px]">
               <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Renews</span>
-              <span className="text-[14px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">14 Aug 2027</span>
+              <span className="text-[14px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">
+                {renewsAt ? formatDay(new Date(renewsAt)) : projectedRenewal}
+              </span>
             </div>
           </div>
         </div>
@@ -116,12 +161,12 @@ export function CreatorOnboarding() {
 
             <div className="flex flex-col gap-[15px]">
               {[
-                { icon: "Upload" as const, strong: "Publish and price your work.", text: ` Video, courses, audio, books, art, templates — ${formatNaira(100)} to ${formatNaira(5000)} a piece.` },
+                { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates. You set the price." },
                 { icon: "MessageCircle" as const, strong: "Charge for your time.", text: ` Set ${formatNaira(50)}–${formatNaira(500)} a message and reply within 24 hours.` },
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">
-                  <span className="grid place-items-center w-[38px] h-[38px] rounded-[12] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
+                  <span className="grid place-items-center w-[38px] h-[38px] rounded-[12px] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
                     <Icon name={r.icon} size={17} strokeWidth={2} color="var(--accent)" />
                   </span>
                   <span className="flex-1 text-[14px] leading-[1.45] text-[var(--text-secondary)]">
@@ -135,11 +180,11 @@ export function CreatorOnboarding() {
             <div className="flex flex-col gap-[12px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
               <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">Two steps</span>
               {[
-                ["Pick a yearly tier", " — unlocks uploading."],
-                ["Complete KYC", " — unlocks payouts. Takes 1–3 days."],
+                ["Pick a yearly tier", ", unlocks uploading."],
+                ["Complete KYC", ", unlocks payouts. Takes 1–3 days."],
               ].map(([s, r], i) => (
                 <div key={s} className="flex gap-[11px]">
-                  <span className="grid place-items-center w-[24px] h-[24px] rounded-[999] bg-[var(--accent)] text-[#fff] text-[12px] font-bold shrink-0">{i + 1}</span>
+                  <span className="grid place-items-center w-[24px] h-[24px] rounded-[999px] bg-[var(--accent)] text-[#fff] text-[12px] font-bold shrink-0">{i + 1}</span>
                   <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
                     <span className="text-[var(--text-primary)] font-semibold">{s}</span>
                     {r}
@@ -153,7 +198,7 @@ export function CreatorOnboarding() {
 
         {step === "tier" ? (
           <>
-            <div className="flex gap-[4px] p-[4px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
+            <div className="flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
               {(["Basic", "Pro"] as const).map((label) => {
                 const active = (label === "Pro") === proSelected;
                 return (
@@ -164,7 +209,7 @@ export function CreatorOnboarding() {
                       setProSelected(label === "Pro");
                       setTier(label === "Pro" ? "pro" : "basic");
                     }}
-                    className={`flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
+                    className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] text-[13.5px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
                       active ? "bg-[var(--accent)] text-[var(--text-on-accent)]" : "bg-transparent text-[var(--text-secondary)]"
                     }`}
                   >
@@ -198,14 +243,14 @@ export function CreatorOnboarding() {
               >
                 <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{proSelected ? "90/10" : "85/15"}</span>
                 <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-                  {proSelected ? "Keep 90% on content, DMs, tips and storefront — not 85%." : "Community credits still pay 90% on every tier."}
+                  {proSelected ? "Keep 90% on content, DMs, tips and storefront, not 85%." : "Community credits still pay 90% on every tier."}
                 </span>
               </div>
 
               <div className="flex flex-col gap-[9px]">
                 {proSelected ? (
                   <>
-                    <CheckRow>7 uploads — 2 free, 5 paid</CheckRow>
+                    <CheckRow>7 uploads, 2 free, 5 paid</CheckRow>
                     <CheckRow>Open private communities</CheckRow>
                     <CheckRow>Up to 3 free courses of your choice</CheckRow>
                     <CheckRow>Priority support and recommended deals</CheckRow>
@@ -214,7 +259,7 @@ export function CreatorOnboarding() {
                   </>
                 ) : (
                   <>
-                    <CheckRow>3 uploads — 1 free, 2 paid</CheckRow>
+                    <CheckRow>3 uploads, 1 free, 2 paid</CheckRow>
                     <CheckRow>Unlimited messages in open communities</CheckRow>
                     <CheckRow>1 free selected course</CheckRow>
                     <CheckRow>Playbook and pension registration</CheckRow>
@@ -226,46 +271,9 @@ export function CreatorOnboarding() {
           </>
         ) : null}
 
-        {step === "confirm" ? (
-          <>
-            <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] overflow-hidden">
-              <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
-                <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Tier</span>
-                <TierBadge tier={tier} />
-              </div>
-              <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
-                <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Billing</span>
-                <span className="text-[14px] font-semibold">Yearly</span>
-              </div>
-              <div className="flex items-center gap-[12px] py-[16px] px-[18px] border-b border-b-[var(--border-hairline)]">
-                <span className="flex-1 text-[14px] text-[var(--text-secondary)]">Renews on</span>
-                <span className="text-[14px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">14 Aug 2027</span>
-              </div>
-              <div className="flex items-baseline gap-[12px] p-[18px]">
-                <span className="flex-1 text-[15px] font-semibold">Total today</span>
-                <span className="text-[26px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-              <span className="grid place-items-center w-[38px] h-[38px] rounded-[12] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
-                <Icon name="CreditCard" size={17} strokeWidth={2} color="var(--text-secondary)" />
-              </span>
-              <div className="flex-1 flex flex-col gap-[2px]">
-                <span className="text-[14.5px] font-semibold">Card, transfer or USSD</span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">Handled by Flutterwave</span>
-              </div>
-            </div>
-
-            <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-              Your card is stored by Flutterwave for next year&apos;s renewal. WAWU never sees it.
-            </span>
-          </>
-        ) : null}
-
         {step === "failed" ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[30px] px-0 text-center">
-            <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.3)]">
+            <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.3)]">
               <Icon name="TriangleAlert" size={36} strokeWidth={2.2} color="var(--danger)" />
             </span>
             <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Payment did not go through</h2>
@@ -286,26 +294,15 @@ export function CreatorOnboarding() {
         ) : null}
         {step === "tier" ? (
           <>
-            <Button full size="lg" onClick={() => setStep("confirm")}>
-              Continue with {tier === "pro" ? "Pro" : "Basic"} — {formatNaira(price)}
+            <Button full size="lg" onClick={pay} disabled={paying}>
+              {paying ? "Opening checkout…" : `Pay ${formatNaira(price)} with ${tier === "pro" ? "Pro" : "Basic"}`}
             </Button>
             <span className="text-[12px] text-[var(--text-muted)] self-center">Renews yearly. Cancel before renewal.</span>
           </>
         ) : null}
-        {step === "confirm" ? (
-          <>
-            <Button full size="lg" onClick={pay}>
-              Pay {formatNaira(price)}
-            </Button>
-            {/** DEV ONLY — remove when the session endpoint is live. */}
-            <span className="text-[12px] text-[var(--text-muted)] cursor-pointer self-center" onClick={() => setStep("failed")}>
-              Simulate a failed payment
-            </span>
-          </>
-        ) : null}
         {step === "failed" ? (
           <>
-            <Button full size="lg" icon="RotateCw" onClick={() => setStep("confirm")}>
+            <Button full size="lg" icon="RotateCw" onClick={() => setStep("tier")}>
               Try again
             </Button>
             <Button full variant="ghost" onClick={() => setStep("tier")}>

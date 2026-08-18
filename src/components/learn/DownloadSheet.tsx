@@ -7,24 +7,50 @@ import { Icon } from "@/components/ui/Icon";
 
 type Phase = "idle" | "processing" | "done";
 
-export function DownloadSheet({ open, onClose, title }: { open: boolean; onClose: () => void; title: string }) {
+/**
+ * `fileUrl` is the real downloadable asset. Neither the Playbook nor the
+ * LearnGuide model carries one yet, so it is usually absent — in that case
+ * this says so plainly. It used to run a 700ms timer and then claim
+ * "Download started" while delivering no file at all.
+ */
+export function DownloadSheet({
+  open,
+  onClose,
+  title,
+  fileUrl,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  fileUrl?: string;
+}) {
   const [phase, setPhase] = useState<Phase>("idle");
 
   const download = async () => {
+    if (!fileUrl) return;
     setPhase("processing");
-    await new Promise((r) => setTimeout(r, 700));
+    const a = document.createElement("a");
+    a.href = fileUrl;
+    a.download = title;
+    a.rel = "noopener";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     setPhase("done");
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title={title} caption="Free download — it stays on your device.">
+    <Sheet open={open} onClose={onClose} title={title} caption="Free download, it stays on your device.">
       {phase === "idle" ? (
         <div className="flex flex-col gap-4 p-[6px_0_2px]">
           <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
-            Downloading is free and keeps your copy on your phone even offline.
+            {fileUrl
+              ? "Downloading is free and keeps your copy on your phone even offline."
+              : "This one has no file attached yet. You can still read it in the app, and we'll add the download as soon as it's published."}
           </p>
-          <Button full onClick={download}>
-            Download now
+          <Button full onClick={download} disabled={!fileUrl}>
+            {fileUrl ? "Download now" : "Not available yet"}
           </Button>
         </div>
       ) : phase === "processing" ? (

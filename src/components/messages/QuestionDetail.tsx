@@ -91,7 +91,7 @@ export function QuestionDetail({ thread, earn, onReply }: QuestionDetailProps) {
 
       {thread.status === "awaiting" ? (
         <div className="mt-auto flex shrink-0 flex-col gap-3 border-t border-hairline p-[18px]">
-          <span className="text-[14.5px] text-text-muted">Write your answer — one reply releases the payment</span>
+          <span className="text-[14.5px] text-text-muted">Write your answer, one reply releases the payment</span>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -114,8 +114,8 @@ export function QuestionDetail({ thread, earn, onReply }: QuestionDetailProps) {
         <div className="mt-auto shrink-0 border-t border-hairline p-[18px]">
           <span className="text-[13px] text-text-muted">
             {thread.status === "answered"
-              ? "You already answered this question — the payment has been released."
-              : "This question was refunded — the buyer's payment was returned automatically."}
+              ? "You already answered this question, the payment has been released."
+              : "This question was refunded, the buyer's payment was returned automatically."}
           </span>
         </div>
       )}

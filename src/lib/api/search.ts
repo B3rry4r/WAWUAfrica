@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import { mockSearchCommunities, mockSearchResults } from "./mocks/mockSearch";
+import { enrichCreatorIdentities } from "./content";
 import type { SearchResponse, SearchResults, SearchCreatorResult, SearchCommunityResult } from "@/types/search";
 import type { ContentPiece, CreatorProfile as ContentCreatorProfile } from "@/types/content";
 
@@ -180,12 +180,19 @@ export async function getRecentSearches(): Promise<string[]> {
 }
 
 export async function searchAll(query: string): Promise<SearchResponse> {
+  // The backend requires a non-empty `q` (@IsNotEmpty) — calling with an
+  // empty string is a guaranteed 400, so treat it as "no results" instead.
+  if (!query.trim()) return { query, results: { content: [], creators: [], communities: [] } };
   const results = await apiFetch<WireSearchResults>(`/api/hub/search?q=${encodeURIComponent(query)}`, { authed: true });
+  // Search results used to render the raw creatorWawuId as the creator's
+  // name — the same bug already fixed for the feed and the landing page, but
+  // never applied here.
   // GET /search returns SearchResults directly (no {query, results} envelope
   // beyond the Hub's standard {statusCode,message,data} wrapper, which
   // apiFetch already strips) — `query` is echoed back client-side since we
   // already know it, matching this file's existing SearchResponse contract.
-  return { query, results: toSearchResults(results) };
+  const mapped = toSearchResults(results);
+  return { query, results: { ...mapped, content: await enrichCreatorIdentities(mapped.content) } };
 }
 
 /** Fuzzy "closest matches" shown on a no-results screen. */
@@ -193,7 +200,7 @@ export async function getClosestResults(query: string): Promise<ContentPiece[]> 
   const res = await apiFetch<WireClosestResult>(`/api/hub/search/closest?q=${encodeURIComponent(query)}`, {
     authed: true,
   });
-  return res.items.map(toContentPiece);
+  return enrichCreatorIdentities(res.items.map(toContentPiece));
 }
 
 export async function getPopularSearches(): Promise<string[]> {
@@ -210,14 +217,11 @@ export async function getSuggestedCreators() {
  * GAP (genuine, not a wiring miss): SearchSuggestions has no
  * `suggestedCommunities` field at all — search-response.service.ts's
  * `suggestions()` returns exactly {recentSearches, popularSearches,
- * suggestedCreators}. There is no backend endpoint for suggested
- * communities to call yet (consistent with Community search generally not
- * being wired — see toSearchResults's note above). No call site in this
- * codebase currently uses this export (grepped) — left mock-only rather
- * than pointed at a path that would always 404.
+ * suggestedCreators}, and Community search is not wired server-side either
+ * (see toSearchResults's note above). The `getSuggestedCommunities()` export
+ * that used to live here returned mock data unconditionally — not behind an
+ * isMockModeError guard like every other fallback in this layer — so it
+ * would have served fixtures as real data against a live backend. It had no
+ * call site, so it is gone rather than guarded; add it back against a real
+ * endpoint when one exists.
  */
-export async function getSuggestedCommunities() {
-  return mockSearchCommunities;
-}
-
-export { mockSearchResults };

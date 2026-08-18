@@ -1,6 +1,6 @@
 import type { CourseEntitlementState, LearnCourse, LearnEntitlement, LearnGuide, Playbook } from "@/types/learn";
-import { apiFetch } from "./client";
-import { currentSession } from "@/lib/api/mocks/session";
+import { apiFetch, ApiError, isMockModeError } from "./client";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import { creatorGates } from "@/lib/auth/gates";
 import { getMockGuides, getMockPlaybook } from "./mocks/learn";
 
@@ -27,7 +27,9 @@ interface LearnEntitlementWire {
  * never show an in-progress percentage until that field ships backend-side.
  */
 function toLearnEntitlement(wire: LearnEntitlementWire): LearnEntitlement {
-  const gates = creatorGates(currentSession);
+  // Real signed-in user, not the frozen dev mock session (which reported
+  // "creator" for everyone regardless of the entitlement the server returned).
+  const gates = creatorGates(sessionStorage.getUser());
   return {
     tier: wire.tier,
     isCreator: gates.isCreator,
@@ -110,9 +112,46 @@ export async function getCourse(id: string): Promise<LearnCourse | null> {
  * fabricate numbers the backend never sent. Left on mocks until the backend
  * adds `downloadCount` and a real per-chapter page range.
  */
-// SEAM: replace with GET /api/hub/learn/playbook
-export async function getPlaybook(): Promise<Playbook> {
-  return getMockPlaybook();
+/**
+ * GET /api/hub/learn/playbook. The backend model carries everything the
+ * screen renders (title, pages, format, description, chapters,
+ * readingSections) — the single field it has no column for is the
+ * `downloadCount` vanity counter, which is simply omitted rather than
+ * fabricated. That one missing number is not a reason to serve an entirely
+ * invented playbook, which is what this used to do unconditionally.
+ */
+interface PlaybookWire {
+  id: string;
+  title: string;
+  pages: number;
+  format: string;
+  description: string;
+  chapters: { title: string; pages: string }[];
+  readingSections: { heading: string; body: string }[];
+}
+
+export async function getPlaybook(): Promise<Playbook | null> {
+  try {
+    const wire = await apiFetch<PlaybookWire>("/api/hub/learn/playbook", { authed: true });
+    return {
+      id: wire.id,
+      title: wire.title,
+      pages: wire.pages,
+      format: wire.format,
+      description: wire.description,
+      chapters: wire.chapters ?? [],
+      readingSections: wire.readingSections ?? [],
+      // No backend column for this yet; 0 renders as "no downloads recorded"
+      // rather than a made-up figure.
+      downloadCount: 0,
+    };
+  } catch (e) {
+    if (isMockModeError(e)) return getMockPlaybook();
+    // 404 = no playbook published yet. That is an empty state, not a failure,
+    // and must not take the whole Learn screen down with it.
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  }
 }
 
 /**

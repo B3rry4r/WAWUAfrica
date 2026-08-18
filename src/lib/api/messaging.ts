@@ -16,7 +16,7 @@ export const currentMessaging: MessagingState = {
       id: "t2",
       buyerName: "Musa",
       buyerInitials: "M",
-      preview: "I bought the playbook yesterday — quick question.",
+      preview: "I bought the playbook yesterday, quick question.",
       price: 300,
       opened: false,
     },
@@ -53,7 +53,7 @@ export const paidQuestions: ThreadDetail[] = [
       {
         id: "t1-m1",
         from: "buyer",
-        text: "I'm registering with my sister — is a business name enough or do we need a limited company? We plan to supply two schools.",
+        text: "I'm registering with my sister, is a business name enough or do we need a limited company? We plan to supply two schools.",
         attachmentName: "quote-two-schools.pdf",
       },
     ],
@@ -72,7 +72,7 @@ export const paidQuestions: ThreadDetail[] = [
       {
         id: "t2-m1",
         from: "buyer",
-        text: "I bought the playbook yesterday — quick question: can I use my personal account for payouts, or does it need to be the business's?",
+        text: "I bought the playbook yesterday, quick question: can I use my personal account for payouts, or does it need to be the business's?",
       },
     ],
   },
@@ -101,7 +101,7 @@ export const paidQuestions: ThreadDetail[] = [
       {
         id: "t4-m2",
         from: "creator",
-        text: "January to March, right after the calendar year closes — file early so you're not competing with the deadline crowd.",
+        text: "January to March, right after the calendar year closes, file early so you're not competing with the deadline crowd.",
       },
     ],
   },
@@ -255,8 +255,20 @@ function toThreadDetail(dm: RawDirectMessage): ThreadDetail {
   };
 }
 
+/**
+ * `MessagingState` plus the penalty window the backend actually sends.
+ * `dmDisabledUntil` was being dropped on the floor here, so the settings
+ * screen had no real date to show and printed an invented one instead.
+ * Declared as an extension rather than a change to `MessagingState` so the
+ * shared type keeps serving consumers that only need threads/penalty.
+ */
+export interface CreatorMessagingState extends MessagingState {
+  /** ISO timestamp paid messages come back on. Null unless currently disabled. */
+  dmDisabledUntil: string | null;
+}
+
 export interface MessagingApi {
-  getState: () => Promise<MessagingState>;
+  getState: () => Promise<CreatorMessagingState>;
   getStats: () => Promise<ResponseStats>;
   getPenalty: () => Promise<PenaltyKind>;
   /** Desktop three-pane inbox (D8): full thread list with conversations. */
@@ -280,14 +292,23 @@ export const messagingApi: MessagingApi = {
       return {
         threads: inbox.map(toThread),
         // GAP: response-stats has no responded/total counts, only a rolling
-        // no-response percentage — see RawResponseStats doc comment. There
-        // is nothing on the real backend to populate these two counts from.
+        // no-response percentage — see RawResponseStats doc comment. There is
+        // nothing on the real backend to populate these two counts from, so
+        // they are zeroed here and NO screen may render them: `rate` is the
+        // only real figure. (They stay on the shared ResponseStats shape,
+        // which the mock still fills.)
         responseStats: { responded: 0, total: 0, rate: Math.round(stats.noResponseRatePct) },
         penalty: toPenaltyKind(stats.penaltyState),
+        dmDisabledUntil: stats.dmDisabledUntil,
       };
     } catch (e) {
       if (!isMockModeError(e)) throw e;
-      return mockRequest({ ...currentMessaging, threads: [...currentMessaging.threads] });
+      return mockRequest({
+        ...currentMessaging,
+        threads: [...currentMessaging.threads],
+        // No real suspension behind the mock, so no end date to show.
+        dmDisabledUntil: null,
+      });
     }
   },
   // SEAM: replace with GET /api/hub/dm/response-stats

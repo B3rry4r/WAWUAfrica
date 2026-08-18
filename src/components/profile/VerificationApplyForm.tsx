@@ -6,6 +6,8 @@ import type { VerificationLevel } from "@/types/account";
 import { submitVerification, resubmitVerification } from "@/lib/api/verification";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { FilePicker } from "@/components/ui/FilePicker";
+import type { UploadedFile } from "@/lib/api/uploads";
 
 const REQUIREMENTS: Record<VerificationLevel, string[]> = {
   basic: ["A phone number and email on the account"],
@@ -40,7 +42,7 @@ const REQUIREMENTS: Record<VerificationLevel, string[]> = {
  */
 export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLevel; onDone?: () => void }) {
   const router = useRouter();
-  const [uploaded, setUploaded] = useState<string[]>([]);
+  const [uploaded, setUploaded] = useState<UploadedFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string>();
@@ -48,8 +50,12 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
   const requirements = REQUIREMENTS[tier];
   const isResubmit = tier === "certified_professional";
 
-  const addFile = () => {
-    setUploaded((u) => [...u, `Document ${u.length + 1}.pdf`]);
+  // Real uploads. This used to append the literal string "Document N.pdf"
+  // with no file dialog and no upload, then submit `documents: []`, which the
+  // backend rejects (ArrayNotEmpty) — applicants believed they had attached
+  // their ID and the submission either 400'd or landed empty.
+  const addFile = (file: UploadedFile) => {
+    setUploaded((u) => [...u, file]);
   };
 
   const finish = () => {
@@ -62,7 +68,8 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
     setSubmitting(true);
     setError(undefined);
     try {
-      await (isResubmit ? resubmitVerification(tier) : submitVerification(tier));
+      const documents = uploaded.map((f) => f.fileUrl);
+      await (isResubmit ? resubmitVerification(tier, documents) : submitVerification(tier, documents));
       setDone(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Try again.");
@@ -80,7 +87,7 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
         <div className="flex flex-col gap-[6px]">
           <span className="text-[20px] font-bold tracking-[-0.02em] text-text-primary">Application submitted</span>
           <span className="text-[13.5px] leading-[1.5] text-text-secondary">
-            We review every application by hand. This usually takes 2–5 working days — we’ll notify you here when
+            We review every application by hand. This usually takes 2–5 working days. We’ll notify you here when
             it’s done.
           </span>
         </div>
@@ -100,7 +107,7 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
         </div>
         <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">
           Our team reviews this by hand. Never send your BVN digits, passwords, or bank pins to anyone who asks for
-          them — WAWU only ever asks here.
+          them. WAWU only ever asks here.
         </p>
       </div>
 
@@ -124,14 +131,14 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
         <div className="flex flex-col gap-2">
           {uploaded.map((f) => (
             <div
-              key={f}
+              key={f.key}
               className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-hairline bg-card px-[14px] py-[11px]"
             >
               <Icon name="FileCheck" size={16} color="var(--success)" strokeWidth={2} />
-              <span className="flex-1 text-[13.5px] text-text-primary">{f}</span>
+              <span className="flex-1 truncate text-[13.5px] text-text-primary">{f.name}</span>
               <button
                 type="button"
-                aria-label="Remove"
+                aria-label={`Remove ${f.name}`}
                 onClick={() => setUploaded((u) => u.filter((x) => x !== f))}
                 className="cursor-pointer border-none bg-transparent p-[2px]"
               >
@@ -139,14 +146,13 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addFile}
-            className="flex h-[52px] cursor-pointer items-center justify-center gap-[9px] rounded-[var(--radius-input)] border-[1.5px] border-dashed border-strong bg-transparent text-[14px] font-semibold text-text-secondary"
-          >
-            <Icon name="ImagePlus" size={18} color="var(--accent)" strokeWidth={2} />
-            Add files
-          </button>
+          <FilePicker
+            folder="service-application/document"
+            accept="image/png,image/jpeg,application/pdf"
+            label="Add a supporting document"
+            hint="PDF, JPG or PNG. Add one at a time."
+            onUploaded={addFile}
+          />
         </div>
         {error && (
           <span className="inline-flex items-center gap-[6px] text-[12.5px] text-[var(--danger)]">

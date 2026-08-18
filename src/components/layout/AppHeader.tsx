@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { getNotifications } from "@/lib/api/notifications";
 import { useSession } from "@/lib/auth/session-provider";
 
 /**
@@ -41,6 +43,24 @@ export function hasOwnHeader(pathname: string) {
  * variant in the designs, so it is not a per-route opt-in.
  */
 export function AppHeader() {
+  // The unread dot used to be unconditional, so every user always
+  // appeared to have unread notifications.
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    getNotifications()
+      .then((res) => {
+        if (!cancelled) setUnreadCount(res.unreadCount);
+      })
+      .catch(() => {
+        /* no badge rather than a wrong one */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const pathname = usePathname();
   const { accountType } = useSession();
   if (hasOwnHeader(pathname)) return null;
@@ -64,7 +84,7 @@ export function AppHeader() {
         className="relative grid h-9 w-9 place-items-center rounded-full border border-hairline bg-input text-text-secondary"
       >
         <Icon name="Bell" size={17} />
-        <span className="absolute right-2 top-[7px] h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" />
+        {unreadCount > 0 ? <span className="absolute right-2 top-[7px] h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" /> : null}
       </Link>
       {accountType === "creator" ? (
         <Link

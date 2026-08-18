@@ -117,7 +117,7 @@ export default function ServicesPage() {
         </div>
 
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
-          Get registered, get trained, get covered — without leaving the app.
+          Get registered, get trained, get covered, without leaving the app.
         </p>
 
         <section className="flex flex-col gap-[11px]">
@@ -190,7 +190,7 @@ export default function ServicesPage() {
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
               <span className={eyebrow}>Free with any account</span>
               <ListRow title="Mentors" subtitle="Book time with people who have done it · free" icon="UserRoundSearch" href="/services/mentors" />
-              <ListRow title="Business playbook" subtitle="The full guide, free to download" icon="BookOpen" trailing="none" />
+              <ListRow title="Business playbook" subtitle="The full guide, free to download" icon="BookOpen" href="/learn/playbook" />
             </div>
 
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">

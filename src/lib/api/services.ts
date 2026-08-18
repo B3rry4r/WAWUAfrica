@@ -21,6 +21,8 @@ import type {
   NepcApplicationPayload,
   NepcSubmitResponse,
 } from "./mocks/services";
+import { openFlutterwaveCheckout, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
 
 export type { CacApplicationPayload, CacPaymentResponse, NepcApplicationPayload, NepcSubmitResponse };
 
@@ -155,27 +157,42 @@ export async function getServices(): Promise<PartnerService[]> {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * The real endpoint is keyed by UUID (ParseUUIDPipe) and the seeded rows use
+ * fixed UUID ids (prisma/seed.ts), but this app routes services by slug in
+ * several places — the hand-routed `/services/cac` and `/services/nepc`
+ * pages, and `/services/[id]` whenever it is reached from mock-shaped data
+ * ("mentors", "pension", …). A slug request always 400s against the real
+ * backend, so resolve slugs against the real list by name (the same name
+ * match `deriveCta` already relies on) instead of erroring or masking it
+ * with mock data.
+ */
+async function resolveServiceBySlug(slug: string): Promise<PartnerService | null> {
+  const needle = slug.toLowerCase().replace(/[-_]/g, " ");
+  const services = await getServices();
+  return (
+    services.find((s) => s.id === slug) ??
+    services.find((s) => s.name.toLowerCase().includes(needle)) ??
+    // Slugs are frequently a leading word of the name ("grants-funding" →
+    // "Grants and funding"), so fall back to a first-token match.
+    services.find((s) => s.name.toLowerCase().includes(needle.split(" ")[0])) ??
+    null
+  );
+}
+
 // SEAM: replace with GET /api/hub/services/:id
 export async function getService(id: string): Promise<PartnerService | null> {
+  // Never send a slug to a UUID-only route — it is a guaranteed 400.
+  // getServices() already falls back to the mocks when no backend is
+  // configured, so this path covers mock mode too.
+  if (!UUID_RE.test(id)) return resolveServiceBySlug(id);
   try {
     const service = await apiFetch<RealPartnerService>(`/api/hub/services/${id}`, { authed: true });
     return mapPartnerService(service);
   } catch (e) {
     if (isMockModeError(e)) return getMockService(id);
-    // The two hand-routed pages (`/services/cac`, `/services/nepc`) call this
-    // with the literal slug "cac"/"nepc": the real endpoint is keyed by UUID
-    // (ParseUUIDPipe) and the seeded rows use fixed UUID ids (prisma/seed.ts
-    // PARTNER_SERVICE_CAC/_NEPC), not those slugs — a slug request always
-    // 400s against the real backend. That's a known client-side routing
-    // mismatch, not a backend failure, so resolve it against the real list
-    // (same name-match deriveCta already uses) instead of masking it with
-    // mock data. Any other id, or a genuine failure to resolve, is a real
-    // error and must reach the caller as one.
-    if (id === "cac" || id === "nepc") {
-      const services = await getServices();
-      const match = services.find((s) => s.name.toLowerCase().includes(id));
-      if (match) return match;
-    }
     throw e;
   }
 }
@@ -271,11 +288,19 @@ export async function payCacApplication(payload: CacApplicationPayload): Promise
     "/api/hub/services/cac/apply",
     { method: "POST", authed: true, body: payload },
   );
-  const txRef = applied.flutterwaveConfig.txRef;
+
+  const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+  if (!customer) throw new Error("You need to be signed in with a valid email to pay.");
+
+  const charge = await openFlutterwaveCheckout(applied.flutterwaveConfig, customer, {
+    title: "CAC registration",
+    description: "Business name registration fee",
+  });
+
   const verified = await apiFetch<RealServiceApplication>("/api/hub/services/cac/apply/verify", {
     method: "POST",
     authed: true,
-    body: { transaction_id: `txn-${Date.now()}`, tx_ref: txRef },
+    body: { transaction_id: charge.transaction_id, tx_ref: charge.tx_ref },
   });
   return {
     result: "success",

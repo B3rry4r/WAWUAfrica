@@ -66,7 +66,7 @@ export function SignUpFlow() {
 
   const identityError = useMemo(() => {
     if (!identity.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identity.email)) {
-      return identity.password && identity.password.length < 8 ? "Too short — use at least 8 characters." : null;
+      return identity.password && identity.password.length < 8 ? "Too short, use at least 8 characters." : null;
     }
     return "That email address is not complete.";
   }, [identity.email, identity.password]);
@@ -143,7 +143,7 @@ export function SignUpFlow() {
     persistInterests(interests);
     // Creators go straight into onboarding (tier -> payment -> KYC).
     // Users land on the feed.
-    router.push(otpState?.accountType === "creator" ? "/onboarding" : "/");
+    router.push(otpState?.accountType === "creator" ? "/onboarding" : "/home");
   };
 
   const stepLabel = step === "otp" ? "Step 2 of 3" : step === "interests" ? "Step 3 of 3" : "Step 1 of 3";
@@ -165,7 +165,7 @@ export function SignUpFlow() {
           <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto self-start object-contain xl:hidden" />
           <div className="flex flex-col gap-2">
             <h2 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">What brings you to WAWU?</h2>
-            <p className="m-0 text-[14.5px] leading-normal text-text-secondary">You can switch to a creator account later — nothing here is permanent.</p>
+            <p className="m-0 text-[14.5px] leading-normal text-text-secondary">You can switch to a creator account later, nothing here is permanent.</p>
           </div>
           <button
             type="button"
@@ -201,7 +201,7 @@ export function SignUpFlow() {
               <span className="min-w-0 flex-1">
                 <span className="block text-[17px] font-semibold text-text-primary">I want to create and earn</span>
                 <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
-                  Everything above, plus upload and price your work, paid DMs, host communities, and keep 85% — 90% on Pro.
+                  Everything above, plus upload and price your work, paid DMs, host communities, and keep 85%, 90% on Pro.
                 </span>
               </span>
             </span>
@@ -258,7 +258,7 @@ export function SignUpFlow() {
             value={identity.password}
             onChange={(e) => setIdentity({ ...identity, password: e.target.value })}
             hint="At least 8 characters."
-            error={identity.password ? (identity.password.length < 8 ? "Too short — use at least 8 characters." : undefined) : undefined}
+            error={identity.password ? (identity.password.length < 8 ? "Too short, use at least 8 characters." : undefined) : undefined}
           />
           <div className="flex flex-col gap-2">
             <span className="text-[13px] font-semibold text-text-secondary">Phone</span>
@@ -356,7 +356,7 @@ export function SignUpFlow() {
                 />
               </div>
             )}
-            {regionEmpty ? <span className="text-[12px] text-text-muted">Ghana has no regions on file yet — skip this and continue.</span> : null}
+            {regionEmpty ? <span className="text-[12px] text-text-muted">Ghana has no regions on file yet, skip this and continue.</span> : null}
           </div>
           <Input
             label="Occupation"
@@ -366,7 +366,7 @@ export function SignUpFlow() {
           />
           <div className="flex flex-col gap-2">
             <span className="text-[13px] font-semibold text-text-secondary">
-              Gender <span className="font-medium text-text-muted">— optional</span>
+              Gender <span className="font-medium text-text-muted">(optional)</span>
             </span>
             <div className="flex gap-2">
               {(

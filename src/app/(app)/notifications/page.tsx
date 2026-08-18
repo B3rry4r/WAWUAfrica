@@ -108,10 +108,10 @@ export default function NotificationsPage() {
           <EmptyState
             icon="BellOff"
             title="While you wait"
-            caption="Nothing to see yet. Follow creators, unlock content or join a community — we will ping you here when it matters."
+            caption="Nothing to see yet. Follow creators, unlock content or join a community, we will ping you here when it matters."
           />
           <div className="mt-4 flex flex-col gap-2.5">
-            <button type="button" onClick={() => router.push("/")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold">
+            <button type="button" onClick={() => router.push("/home")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold">
               Browse the feed
             </button>
             <button type="button" onClick={() => router.push("/explore")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold">

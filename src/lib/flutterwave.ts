@@ -1,0 +1,249 @@
+/**
+ * Flutterwave inline checkout (v3).
+ *
+ * This is the piece that was missing across every paid flow in the app.
+ * Previously each flow (content unlock, tips, paid DMs, credits, creator
+ * subscription, CAC/NEPC) called its backend `init` endpoint to create a
+ * charge, then immediately called the matching `verify` endpoint with a
+ * FABRICATED transaction id (`txn-${Date.now()}`). No card was ever
+ * collected, so no money ever moved: against a real Flutterwave adapter the
+ * verify call correctly fails, and against the mock adapter it "succeeded"
+ * without a payment — which is worse, because it hid the gap.
+ *
+ * The correct sequence, which this module makes possible, is:
+ *   1. POST the backend's init endpoint -> `flutterwaveConfig` {txRef, amount,
+ *      currency, publicKey}.
+ *   2. `openFlutterwaveCheckout(config)` — Flutterwave's own modal collects
+ *      card / bank transfer / USSD on their PCI-compliant surface. We never
+ *      see or store card details.
+ *   3. Flutterwave's callback hands back a REAL `transaction_id`.
+ *   4. POST the backend's verify endpoint with that real id. The server
+ *      re-verifies with Flutterwave before granting anything. A client-side
+ *      callback alone is never trusted.
+ */
+
+const SCRIPT_SRC = "https://checkout.flutterwave.com/v3.js";
+const SCRIPT_ID = "flutterwave-checkout-v3";
+
+/** Shape Flutterwave's `callback` receives on a completed charge. */
+interface FlutterwaveCallbackResponse {
+  transaction_id?: number | string;
+  tx_ref?: string;
+  status?: string;
+  flw_ref?: string;
+}
+
+interface FlutterwaveCheckoutOptions {
+  public_key: string;
+  tx_ref: string;
+  amount: number;
+  currency: string;
+  payment_options: string;
+  customer: { email: string; name?: string; phone_number?: string };
+  customizations: { title: string; description: string; logo?: string };
+  callback: (response: FlutterwaveCallbackResponse) => void;
+  onclose: (incomplete?: boolean) => void;
+}
+
+interface FlutterwaveModal {
+  close: () => void;
+}
+
+declare global {
+  interface Window {
+    FlutterwaveCheckout?: (options: FlutterwaveCheckoutOptions) => FlutterwaveModal;
+  }
+}
+
+/**
+ * Thrown when the payer dismisses the checkout modal without completing
+ * payment. Callers should treat this as "nothing happened" (return the user
+ * to the pre-payment state) rather than as a failed payment — showing a
+ * scary "your bank declined this" screen to someone who simply changed their
+ * mind is wrong.
+ */
+export class FlutterwaveCancelledError extends Error {
+  constructor() {
+    super("Payment was cancelled before it completed.");
+    this.name = "FlutterwaveCancelledError";
+  }
+}
+
+/** Thrown when the checkout script itself cannot be loaded (offline, blocked). */
+export class FlutterwaveUnavailableError extends Error {
+  constructor() {
+    super("Could not reach Flutterwave. Check your connection and try again.");
+    this.name = "FlutterwaveUnavailableError";
+  }
+}
+
+export function isFlutterwaveCancelled(e: unknown): boolean {
+  return e instanceof FlutterwaveCancelledError;
+}
+
+let scriptPromise: Promise<void> | null = null;
+
+/**
+ * Injects Flutterwave's checkout script once per page and resolves when
+ * `window.FlutterwaveCheckout` is callable. Concurrent callers share the
+ * same in-flight promise; a failed load is not cached, so a later attempt
+ * can retry after a transient network problem.
+ */
+function loadCheckoutScript(): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new FlutterwaveUnavailableError());
+  }
+  if (window.FlutterwaveCheckout) return Promise.resolve();
+  if (scriptPromise) return scriptPromise;
+
+  scriptPromise = new Promise<void>((resolve, reject) => {
+    // A dead <script id> left in the DOM is worse than none: the next attempt
+    // finds it, attaches a listener to a tag whose load/error event already
+    // fired, and waits forever. Always start from a clean element.
+    document.getElementById(SCRIPT_ID)?.remove();
+
+    const script = document.createElement("script");
+    const fail = () => {
+      // Not cached, and the element goes with it, so a later attempt is a real
+      // retry rather than a permanent hang.
+      scriptPromise = null;
+      script.remove();
+      reject(new FlutterwaveUnavailableError());
+    };
+
+    script.addEventListener(
+      "load",
+      () => {
+        if (window.FlutterwaveCheckout) resolve();
+        else fail();
+      },
+      { once: true },
+    );
+    script.addEventListener("error", fail, { once: true });
+
+    script.id = SCRIPT_ID;
+    script.src = SCRIPT_SRC;
+    script.async = true;
+    document.body.appendChild(script);
+  });
+
+  return scriptPromise;
+}
+
+/**
+ * Warms the checkout script ahead of time.
+ *
+ * Loading it lazily on the first Pay tap meant a visible dead gap: the button
+ * did nothing while a cross-origin script downloaded, which reads as a broken
+ * button rather than as loading. Call this once when authenticated chrome
+ * mounts; failures are ignored because this is only an optimisation, and the
+ * real load path still retries on demand.
+ */
+export function preloadFlutterwaveCheckout(): void {
+  if (typeof window === "undefined") return;
+  void loadCheckoutScript().catch(() => undefined);
+}
+
+/** The `flutterwaveConfig` every backend init endpoint returns. */
+export interface FlutterwaveChargeConfig {
+  publicKey: string;
+  txRef: string;
+  amount: number;
+  currency?: string;
+  customerEmail?: string;
+  customerName?: string;
+}
+
+export interface CheckoutCustomer {
+  email: string;
+  name?: string;
+}
+
+export interface CheckoutResult {
+  transaction_id: string;
+  tx_ref: string;
+}
+
+/**
+ * Opens Flutterwave's inline checkout and resolves with the REAL
+ * transaction id once the payer completes the charge.
+ *
+ * Rejects with `FlutterwaveCancelledError` if the modal is dismissed first,
+ * `FlutterwaveUnavailableError` if the script cannot load, and a plain Error
+ * if Flutterwave reports a non-successful terminal status.
+ *
+ * The resolved `transaction_id` is only a claim by the client — it means
+ * nothing until the caller passes it to the matching server-side `verify`
+ * endpoint, which re-checks it directly with Flutterwave.
+ */
+export async function openFlutterwaveCheckout(
+  config: FlutterwaveChargeConfig,
+  customer: CheckoutCustomer,
+  labels: { title: string; description: string },
+): Promise<CheckoutResult> {
+  // A blank/placeholder key means the environment is not actually set up to
+  // take money. Fail loudly here rather than opening a checkout modal that
+  // cannot possibly complete.
+  if (!config.publicKey || /mock|placeholder|not-real/i.test(config.publicKey)) {
+    throw new Error("Payments are not configured on this environment yet.");
+  }
+
+  await loadCheckoutScript();
+
+  const checkout = window.FlutterwaveCheckout;
+  if (!checkout) throw new FlutterwaveUnavailableError();
+
+  return new Promise<CheckoutResult>((resolve, reject) => {
+    // Flutterwave fires `onclose` after `callback` as the modal tears down.
+    // Without this guard a completed payment would immediately be rejected
+    // as a cancellation.
+    let settled = false;
+    let modal: FlutterwaveModal | undefined;
+
+    modal = checkout({
+      public_key: config.publicKey,
+      tx_ref: config.txRef,
+      amount: config.amount,
+      currency: config.currency ?? "NGN",
+      payment_options: "card,banktransfer,ussd",
+      customer: {
+        email: config.customerEmail ?? customer.email,
+        name: config.customerName ?? customer.name,
+      },
+      customizations: {
+        title: labels.title,
+        description: labels.description,
+        logo: typeof window !== "undefined" ? `${window.location.origin}/wawu-logo-white.png` : undefined,
+      },
+      callback: (response) => {
+        if (settled) return;
+        const status = (response.status ?? "").toLowerCase();
+        const transactionId = response.transaction_id;
+
+        if ((status === "successful" || status === "completed") && transactionId) {
+          settled = true;
+          resolve({ transaction_id: String(transactionId), tx_ref: response.tx_ref ?? config.txRef });
+        } else {
+          settled = true;
+          reject(new Error("Flutterwave did not confirm the payment."));
+        }
+        modal?.close();
+      },
+      onclose: () => {
+        if (settled) return;
+        settled = true;
+        reject(new FlutterwaveCancelledError());
+      },
+    });
+  });
+}
+
+/**
+ * Reads the signed-in user's email/name for Flutterwave's `customer` block.
+ * Flutterwave requires an email; if the session somehow has none, the caller
+ * should surface a real error rather than invent one.
+ */
+export function checkoutCustomerFromSession(user: { email?: string; fullName?: string } | null): CheckoutCustomer | null {
+  if (!user?.email) return null;
+  return { email: user.email, name: user.fullName };
+}

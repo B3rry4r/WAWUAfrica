@@ -16,7 +16,7 @@ const creators = [
     pieceCount: 4,
     verification: "certified_professional" as const,
     following: false,
-    category: "business" as ExploreCategoryId,
+    category: "business_entrepreneurship" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-funmi",
@@ -34,7 +34,7 @@ const creators = [
     pieceCount: 3,
     verification: "verified_business" as const,
     following: true,
-    category: "agriculture" as ExploreCategoryId,
+    category: "agriculture_food" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-musa",
@@ -42,7 +42,7 @@ const creators = [
     field: "Welder and trainer",
     pieceCount: 3,
     following: false,
-    category: "trade" as ExploreCategoryId,
+    category: "trade_commerce" as ExploreCategoryId,
   },
   {
     wawuId: "wawu-ifeanyi",
@@ -51,7 +51,7 @@ const creators = [
     pieceCount: 5,
     verification: "verified_business" as const,
     following: false,
-    category: "creative_arts" as ExploreCategoryId,
+    category: "entertainment_creative" as ExploreCategoryId,
   },
 ];
 

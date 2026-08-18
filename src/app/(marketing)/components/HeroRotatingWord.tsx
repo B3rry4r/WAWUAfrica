@@ -1,0 +1,21 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+/** The moodboard's five hero versions: Default, Earn, Grow, Build, Thrive. */
+const PHRASES = ["Into a Thing.", "Into Income.", "Into a Movement.", "Into an Empire.", "Into Legacy."];
+
+export function HeroRotatingWord({ className }: { className?: string }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % PHRASES.length), 2600);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <span key={index} className={`inline-block animate-[wawuFadeUp_0.45s_var(--ease-soft)] ${className ?? ""}`}>
+      {PHRASES[index]}
+    </span>
+  );
+}

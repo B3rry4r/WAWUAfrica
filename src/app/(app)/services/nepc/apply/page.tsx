@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { CacBusinessRecord } from "@/types/services";
 import { getCacBusinessRecord, submitNepcApplication } from "@/lib/api/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ErrorState, Icon, Input } from "@/components/ui";
+import { Button, ErrorState, FilePicker, Icon, Input } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 
 type Step = 1 | 2 | 3;
@@ -39,12 +39,15 @@ interface DocSlot {
   meta?: string;
   state: DocState;
   progress?: number;
+  hint?: string;
+  /** Object-storage URL once the file genuinely finished uploading. */
+  url?: string;
 }
 
 const INITIAL_DOCS: DocSlot[] = [
-  { key: "cac_certificate", label: "CAC certificate", icon: "FileCheck", meta: "Pulled from your CAC record", state: "uploaded" },
-  { key: "sample", label: "Product sample photos", icon: "Image", meta: "sample-set.jpg", state: "uploading", progress: 40 },
-  { key: "reference_letter", label: "Bank reference letter", icon: "Landmark", state: "empty" },
+  { key: "cac_certificate", label: "CAC certificate", icon: "FileCheck", hint: "Your CAC registration certificate.", state: "empty" },
+  { key: "sample", label: "Product sample photos", icon: "Image", hint: "Clear photos of what you export.", state: "empty" },
+  { key: "reference_letter", label: "Bank reference letter", icon: "Landmark", hint: "A recent letter on the bank's letterhead.", state: "empty" },
 ];
 
 export default function NepcApplyPage() {
@@ -91,37 +94,30 @@ export default function NepcApplyPage() {
     };
   }, []);
 
-  // Simulate the sample-photos upload finishing so step 2's Continue unlocks.
-  useEffect(() => {
-    const sample = docs.find((d) => d.key === "sample");
-    if (!sample || sample.state !== "uploading") return;
-    const id = setInterval(() => {
-      setDocs((prev) =>
-        prev.map((d) => {
-          if (d.key !== "sample" || d.state !== "uploading") return d;
-          const next = Math.min(100, (d.progress ?? 0) + 11);
-          if (next >= 100) return { ...d, state: "uploaded", progress: 100, meta: "sample-set.jpg · 3 photos" };
-          return { ...d, progress: next };
-        }),
-      );
-    }, 320);
-    return () => clearInterval(id);
-  }, [docs]);
+  // Real uploads (POST /uploads/presign + direct PUT). These slots used to
+  // fill themselves in with setInterval/setTimeout and no file attached, so
+  // applicants reached payment having uploaded nothing.
+  const markUploaded = (key: DocKey, file: { fileUrl: string; name: string; size: number }) => {
+    setDocs((prev) =>
+      prev.map((d) =>
+        d.key === key
+          ? {
+              ...d,
+              state: "uploaded",
+              meta: file.name,
+              url: file.fileUrl,
+            }
+          : d,
+      ),
+    );
+  };
 
-  const addReferenceLetter = (source: "camera" | "file") => {
-    setDocs((prev) => prev.map((d) => (d.key === "reference_letter" ? { ...d, state: "uploading", progress: 0 } : d)));
-    setTimeout(() => {
-      setDocs((prev) =>
-        prev.map((d) =>
-          d.key === "reference_letter"
-            ? { ...d, state: "uploaded", meta: source === "camera" ? "reference-letter.jpg" : "reference-letter.pdf", progress: 100 }
-            : d,
-        ),
-      );
-    }, 600);
+  const clearDoc = (key: DocKey) => {
+    setDocs((prev) => prev.map((d) => (d.key === key ? { ...d, state: "empty", meta: undefined, url: undefined } : d)));
   };
 
   const detailsValid = !!mainProduct.trim() && markets.length > 0 && !!yearlyVolume.trim() && !!record;
+
   const allDocsUploaded = docs.every((d) => d.state === "uploaded");
   const docsReadyCount = docs.filter((d) => d.state === "uploaded").length;
 
@@ -154,7 +150,7 @@ export default function NepcApplyPage() {
       });
       setResult(res);
     } catch {
-      setSubmitError("Could not submit your application. Nothing was lost — try again.");
+      setSubmitError("Could not submit your application. Nothing was lost, try again.");
     } finally {
       setSubmitting(false);
     }
@@ -320,54 +316,22 @@ export default function NepcApplyPage() {
         <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">Photos are fine as long as the text is readable.</p>
       </div>
 
-      {docs.map((doc) =>
-        doc.state === "empty" ? (
-          <div
-            key={doc.key}
-            className="flex flex-col items-center justify-center gap-[11px] rounded-[var(--radius-media)] border border-dashed border-[var(--border-strong)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] p-[26px_20px]"
-          >
-            <span className="grid h-[44px] w-[44px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
-              <Icon name="Plus" size={19} color="var(--text-secondary)" strokeWidth={2.2} />
-            </span>
-            <span className="text-[14px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
-            <span className="text-[12.5px] text-[var(--text-muted)]">A recent letter, on the bank&apos;s letterhead</span>
+      {docs.map((doc) => (
+        <div key={doc.key} className="flex flex-col gap-[9px]">
+          <div className="flex items-center gap-[9px]">
+            <Icon name={doc.icon} size={16} color="var(--text-secondary)" strokeWidth={2} />
+            <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
           </div>
-        ) : (
-          <div
-            key={doc.key}
-            className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]"
-          >
-            <div className="flex items-center gap-[13px]">
-              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-                <Icon name={doc.icon} size={18} color="var(--accent)" strokeWidth={2} />
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{doc.label}</span>
-                <span className="text-[12px] text-[var(--text-muted)]">{doc.meta}{doc.state === "uploading" ? " · uploading" : ""}</span>
-              </div>
-              {doc.state === "uploaded" ? (
-                <Icon name="Check" size={18} color="var(--success)" strokeWidth={2.6} />
-              ) : (
-                <span className="text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{doc.progress ?? 0}%</span>
-              )}
-            </div>
-            {doc.state === "uploading" && (
-              <div className="h-[5px] overflow-hidden rounded-full bg-[var(--surface-tag)]">
-                <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-300" style={{ width: `${doc.progress ?? 0}%` }} />
-              </div>
-            )}
-          </div>
-        ),
-      )}
-
-      <div className="flex gap-[10px]">
-        <Button variant="secondary" icon="Camera" className="flex-1" onClick={() => addReferenceLetter("camera")}>
-          Take a photo
-        </Button>
-        <Button variant="secondary" icon="Paperclip" className="flex-1" onClick={() => addReferenceLetter("file")}>
-          Choose file
-        </Button>
-      </div>
+          <FilePicker
+            folder="service-application/document"
+            accept="image/png,image/jpeg,application/pdf"
+            label={doc.state === "uploaded" ? "Replace file" : `Add your ${doc.label.toLowerCase()}`}
+            hint={doc.hint}
+            onUploaded={(f) => markUploaded(doc.key, f)}
+            onCleared={() => clearDoc(doc.key)}
+          />
+        </div>
+      ))}
     </div>
   );
 
@@ -386,7 +350,7 @@ export default function NepcApplyPage() {
       )}
       {!submitError && (
         <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-          Free to start — an export agent reads this by hand and connects you to the right NEPC desk.
+          Free to start, an export agent reads this by hand and connects you to the right NEPC desk.
         </span>
       )}
     </div>
@@ -521,7 +485,7 @@ export default function NepcApplyPage() {
             })}
             <div className="mt-auto flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
               <span className="text-[12.5px] font-semibold text-[var(--text-primary)]">Need help?</span>
-              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your export plan before you submit — free.</span>
+              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your export plan before you submit, free.</span>
             </div>
           </div>
 

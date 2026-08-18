@@ -152,20 +152,29 @@ export const contentApi: ContentApi = {
       throw new ApiError("Only creator accounts can publish.", 403);
     }
 
-    // Both checks below are optimistic, client-side pre-checks only — the
-    // mock `libraryItems` list they read isn't kept in sync with the real
-    // backend's content rows now that GET /api/hub/content/mine is live, so
-    // this is best-effort UX (fail fast on the obvious case), never the
-    // actual enforcement. The real POST below is the source of truth and
-    // returns its own 400/409 if either rule is violated.
-    const firstUpload = !libraryItems.some((i) => i.status === "live");
-    if (firstUpload && item.price > 0) {
-      throw new ApiError("Your first upload has to be free. Publish it free, then price everything after.", 400);
+    // These are optimistic client-side pre-checks; the real POST is the
+    // source of truth and returns its own 400/409. They previously read the
+    // STATIC mock `libraryItems` (3 fixtures), so a Basic creator with
+    // slotsTotal=3 was always rejected with 409 before the request was ever
+    // made — publishing was impossible. Read the creator's real library, and
+    // if that read fails, skip the pre-check rather than block on stale data.
+    let existing: ContentItem[] | null = null;
+    try {
+      existing = await contentApi.getLibrary();
+    } catch {
+      existing = null;
     }
 
-    const inUse = libraryItems.filter((i) => i.status !== "rejected").length;
-    if (inUse >= creator.slotsTotal) {
-      throw new ApiError("All upload slots are in use. Remove a piece or upgrade to Pro to free a slot.", 409);
+    if (existing) {
+      const firstUpload = !existing.some((i) => i.status === "live");
+      if (firstUpload && item.price > 0) {
+        throw new ApiError("Your first upload has to be free. Publish it free, then price everything after.", 400);
+      }
+
+      const inUse = existing.filter((i) => i.status !== "rejected").length;
+      if (inUse >= creator.slotsTotal) {
+        throw new ApiError("All upload slots are in use. Remove a piece or upgrade to Pro to free a slot.", 409);
+      }
     }
 
     let created: ContentItem;
@@ -180,15 +189,10 @@ export const contentApi: ContentApi = {
           category: item.category ?? "",
           accessType: item.price > 0 ? "paid" : "free",
           price: item.price,
-          // GAP: previewAsset/fullAsset still fall back to "" — there is no
-          // real file-upload endpoint anywhere in this API layer yet
-          // (PublishingWizard's upload step is decorative; no file is ever
-          // actually selected or stored). Sending them empty means
-          // CreateContentDto's IsUrl validation genuinely rejects the
-          // request. That is a real, honest 400 surfacing a real gap
-          // (building real upload is out of scope here), not something to
-          // paper over in this catch — description/category ARE now
-          // collected by the wizard and sent for real.
+          // Real uploaded object URLs, produced by POST /uploads/presign +
+          // a direct PUT to storage (see src/lib/api/uploads.ts). The wizard
+          // blocks publishing until a file has genuinely finished uploading,
+          // so these are never empty on the real path.
           previewAsset: item.previewAssetUrl ?? "",
           fullAsset: item.fullAssetUrl ?? "",
         },

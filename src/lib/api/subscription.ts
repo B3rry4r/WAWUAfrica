@@ -1,7 +1,10 @@
 import { PLANS } from "@/types/subscription";
 import type { Subscription, SubscriptionState } from "@/types/subscription";
 import type { KycStatus, CreatorTier } from "@/types/account";
-import { apiFetch, apiFetchPaginated, isMockModeError, mockRequest } from "./client";
+import { apiFetch, apiFetchPaginated, ApiError, isMockModeError, mockRequest } from "./client";
+import { openFlutterwaveCheckout, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
+import { kycApi } from "./kyc";
 
 /** Basic ₦5,999/yr, Pro ₦18,999/yr. Yearly, paid up front. */
 export const currentSubscription: Subscription = {
@@ -58,27 +61,41 @@ function toSubscription(row: CreatorSubscriptionRow): Subscription {
 }
 
 /**
- * Bridges POST /creator-subscription (or /upgrade) -> POST /verify.
+ * Bridges POST /creator-subscription (or /upgrade) -> Flutterwave inline
+ * checkout -> POST /verify.
  *
- * JUDGMENT / real gap: a genuine production flow needs Flutterwave's inline
- * checkout SDK between init and verify (the creator enters/confirms a card
- * in a popup, which yields a real `transaction_id`) — that SDK integration
- * has not been built into SubscriptionManagement.tsx yet, so there is no
- * real transaction_id available client-side today. This generates a
- * synthetic one and calls verify immediately, exactly mirroring the
- * already-established initiateUnlock -> verifyUnlock precedent in
- * content.ts. This only resolves as a genuine "successful" charge because
- * MockFlutterwaveAdapter (server-side, dev/test) treats any transaction_id
- * other than its reserved failure sentinel as successful — against
- * RealFlutterwaveAdapter in production this would not represent an actual
- * charge. Flagged in the wiring report; the inline-SDK integration is a
- * follow-up dependency, not something this file alone can complete.
+ * The creator completes the charge in Flutterwave's own modal, which returns
+ * a real `transaction_id`; the server then re-verifies that id with
+ * Flutterwave before activating the tier. A dismissed modal propagates as
+ * FlutterwaveCancelledError so the caller can show "nothing was charged"
+ * rather than a payment-declined screen.
  */
-async function verifySubscriptionCharge(txRef: string): Promise<CreatorSubscriptionRow> {
+/**
+ * `onCharged` fires the moment Flutterwave's modal reports a completed charge
+ * and before the server verifies it. That is the only honest point at which a
+ * "confirming your payment" screen is true: showing it any earlier (as the
+ * onboarding flow used to, before the modal had even opened) tells the user we
+ * are checking a payment they have not made yet.
+ */
+async function chargeAndVerify(
+  config: { publicKey: string; txRef: string; amount: number; currency?: string },
+  tierLabel: string,
+  onCharged?: () => void,
+): Promise<CreatorSubscriptionRow> {
+  const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+  if (!customer) throw new Error("You need to be signed in with a valid email to pay.");
+
+  const charge = await openFlutterwaveCheckout(config, customer, {
+    title: `WAWU ${tierLabel}`,
+    description: `Creator subscription, ${tierLabel}, billed yearly`,
+  });
+
+  onCharged?.();
+
   return apiFetch<CreatorSubscriptionRow>("/api/hub/creator-subscription/verify", {
     method: "POST",
     authed: true,
-    body: { transaction_id: `txn-${Date.now()}`, tx_ref: txRef },
+    body: { transaction_id: charge.transaction_id, tx_ref: charge.tx_ref },
   });
 }
 
@@ -91,8 +108,9 @@ export interface BillingHistoryPage {
 export interface SubscriptionApi {
   getSubscription: () => Promise<Subscription>;
   /** First-time creator onboarding: pay for the chosen tier, Basic or Pro. */
-  subscribe: (tier: CreatorTier) => Promise<Subscription>;
-  upgradeToPro: () => Promise<Subscription>;
+  subscribe: (tier: CreatorTier, onCharged?: () => void) => Promise<Subscription>;
+  /** Returns the updated subscription plus the amount Flutterwave actually charged (the server prorates the remaining Basic term). */
+  upgradeToPro: () => Promise<{ subscription: Subscription; amountCharged: number }>;
   /** Starts (or restarts, after expiry) the Basic tier at full price — no proration. */
   downgradeToBasic: () => Promise<Subscription>;
   /** Retries payment on the CURRENT tier — a past-due recovery, not an upgrade. */
@@ -111,6 +129,12 @@ export const subscriptionApi: SubscriptionApi = {
       const row = await apiFetch<CreatorSubscriptionRow>("/api/hub/creator-subscription", { authed: true });
       return toSubscription(row);
     } catch (e) {
+      // A creator who has never subscribed genuinely has no row — the backend
+      // 404s, which is a normal state, not a failure. It used to surface as
+      // an error screen on the billing page.
+      if (e instanceof ApiError && e.status === 404) {
+        return { plan: { ...PLANS.basic }, state: "expired", renewsAt: "" };
+      }
       if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/creator-subscription — also 404s
       // (falls here) for a creator account that has never subscribed.
@@ -118,14 +142,14 @@ export const subscriptionApi: SubscriptionApi = {
     }
   },
 
-  subscribe: async (tier) => {
+  subscribe: async (tier, onCharged) => {
     try {
       const init = await apiFetch<FlutterwaveConfigResponse>("/api/hub/creator-subscription", {
         method: "POST",
         authed: true,
         body: { tier },
       });
-      const row = await verifySubscriptionCharge(init.flutterwaveConfig.txRef);
+      const row = await chargeAndVerify(init.flutterwaveConfig, PLANS[tier].tier === "pro" ? "Pro" : "Basic", onCharged);
       return toSubscription(row);
     } catch (e) {
       if (!isMockModeError(e)) throw e;
@@ -142,15 +166,16 @@ export const subscriptionApi: SubscriptionApi = {
         method: "POST",
         authed: true,
       });
-      const row = await verifySubscriptionCharge(init.flutterwaveConfig.txRef);
-      return toSubscription(row);
+      const amountCharged = init.flutterwaveConfig.amount;
+      const row = await chargeAndVerify(init.flutterwaveConfig, "Pro");
+      return { subscription: toSubscription(row), amountCharged };
     } catch (e) {
       if (!isMockModeError(e)) throw e;
       currentSubscription.plan = { ...PLANS.pro };
       currentSubscription.state = "active";
       currentSubscription.cancelsAt = undefined;
       // SEAM: replace with POST /api/hub/creator-subscription/upgrade + POST .../verify
-      return mockRequest({ ...currentSubscription }, 700);
+      return mockRequest({ subscription: { ...currentSubscription }, amountCharged: PLANS.pro.price }, 700);
     }
   },
 
@@ -192,6 +217,12 @@ export const subscriptionApi: SubscriptionApi = {
       const row = await apiFetch<CreatorSubscriptionRow>("/api/hub/creator-subscription", { authed: true });
       return toSubscription(row);
     } catch (e) {
+      // A creator who has never subscribed genuinely has no row — the backend
+      // 404s, which is a normal state, not a failure. It used to surface as
+      // an error screen on the billing page.
+      if (e instanceof ApiError && e.status === 404) {
+        return { plan: { ...PLANS.basic }, state: "expired", renewsAt: "" };
+      }
       if (!isMockModeError(e)) throw e;
       currentSubscription.state = "active";
       // SEAM: replace with POST /api/hub/creator-subscription/retry-payment
@@ -240,7 +271,22 @@ export const subscriptionApi: SubscriptionApi = {
   // (src/lib/api/kyc.ts's domain), not on CreatorSubscription. Left as the
   // existing mock read — do not wire a real call here.
   // SEAM: replace with GET /api/hub/creator/kyc/status
-  getKycGate: () => mockRequest("pending"),
+  /**
+   * The earnings gate. This previously returned a hardcoded `mockRequest("pending")`
+   * unconditionally — every creator saw "KYC pending" no matter their real
+   * status, so an approved creator was still told they could not be paid.
+   * Reads the real submission instead, falling back to the mock only in true
+   * mock mode.
+   */
+  getKycGate: async () => {
+    try {
+      const submission = await kycApi.getStatus();
+      return submission?.status ?? "not_started";
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
+      return mockRequest<KycStatus>("pending");
+    }
+  },
 
   getBillingHistory: async (page = 1, perPage = 20) => {
     try {

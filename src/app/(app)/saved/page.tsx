@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getSavedItems } from "@/lib/api/settings";
 import { ContentCard } from "@/components/content/ContentCard";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { EmptyState, ErrorState, Icon, Skeleton } from "@/components/ui";
+import { EmptyState, ErrorState, Skeleton } from "@/components/ui";
 import type { SavedItem, SavedItemKind } from "@/types/settings";
 
 const FILTERS: Array<{ id: SavedItemKind | "all"; label: string }> = [
@@ -43,7 +43,6 @@ export default function SavedPage() {
         <span className="flex-1 text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Saved
         </span>
-        <Icon name="SlidersHorizontal" size={19} color="var(--text-secondary)" />
       </div>
 
       <div className="wawu-no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5">
@@ -77,7 +76,7 @@ export default function SavedPage() {
               : "Try another filter, or browse everything you've saved."
           }
           action={items.length === 0 ? "Explore content" : "Show all"}
-          onAction={items.length === 0 ? () => router.push("/") : () => setFilter("all")}
+          onAction={items.length === 0 ? () => router.push("/home") : () => setFilter("all")}
         />
       ) : (
         <div className="grid grid-cols-2 gap-x-3 gap-y-[18px]">

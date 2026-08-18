@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CATEGORIES, type CategoryId } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
 import { PLANS } from "@/types/subscription";
@@ -9,6 +10,8 @@ import { creatorGates } from "@/lib/auth/gates";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
+import { FilePicker } from "@/components/ui/FilePicker";
+import type { UploadedFile } from "@/lib/api/uploads";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { NairaInput } from "@/components/ui/NairaInput";
@@ -59,13 +62,23 @@ const uploadMeta: Record<ContentType, { file: string; meta: string; note: string
   image: {
     file: "market-pricing-sheet.png",
     meta: "12 MB · 4000×3000",
-    note: "PNG or JPG, up to 50 MB. Keep it sharp — it is what people buy.",
+    note: "PNG or JPG, up to 50 MB. Keep it sharp, it is what people buy.",
   },
   template: {
     file: "invoice-starter.xlsx",
     meta: "640 KB · 3 sheets",
     note: "Spreadsheets, forms and editable files. Buyers download and keep them.",
   },
+};
+
+/** `accept` per content type, so the picker offers the right files. */
+const UPLOAD_ACCEPT: Record<ContentType, string> = {
+  video: "video/mp4,video/quicktime,video/*",
+  course: "video/*,application/pdf,application/zip",
+  audio: "audio/mpeg,audio/wav,audio/*",
+  pdf: "application/pdf",
+  image: "image/png,image/jpeg,image/webp",
+  template: ".xlsx,.docx,.pptx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
 export interface PublishingWizardProps {
@@ -84,14 +97,19 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const [price, setPrice] = useState(1500);
   const [title, setTitle] = useState(resubmit ? resubmit.title : firstUpload ? "" : "The trader's playbook");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Business");
+  const [category, setCategory] = useState<CategoryId>("business_entrepreneurship");
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
-  // D7 desktop only — the mobile flow doesn't step through a dedicated free
-  // preview screen for non-PDF types, but the desktop right rail shows the
-  // choice inline, so it needs its own bit of state.
-  const [previewChoice, setPreviewChoice] = useState<"90s" | "3min" | "none">("90s");
+  // The real uploaded asset. Publishing is blocked until this exists: the
+  // backend requires a URL (CreateContentDto previewAsset is @IsUrl), so an
+  // unattached upload previously guaranteed a 400.
+  const [asset, setAsset] = useState<UploadedFile | null>(null);
+  // A genuinely separate free preview (cover image or sample clip).
+  // `previewAsset` is public — the backend returns it to everyone, including
+  // anonymous callers — so reusing the paid file here would hand the full
+  // asset to anyone who reads the URL. Required for paid pieces.
+  const [preview, setPreview] = useState<UploadedFile | null>(null);
 
   const steps = ["Upload", "Free preview", "Details", "Price"];
   const stepLabel = `Step ${step + 1} of 4`;
@@ -109,10 +127,29 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
 
   const submit = async () => {
     if (publishing) return;
+    if (!asset) {
+      setPublishError("Attach your file first — nothing can be published without it.");
+      return;
+    }
+    const isPaid = paid && !firstUpload;
+    if (isPaid && !preview) {
+      setPublishError("Paid pieces need a free preview — add a cover or short sample so buyers can see what they're paying for.");
+      return;
+    }
     setPublishing(true);
     setPublishError(null);
     try {
-      await contentPublish({ type, title, description, category, price: paid && !firstUpload ? price : 0 });
+      await contentPublish({
+        type,
+        title,
+        description,
+        category,
+        price: isPaid ? price : 0,
+        // Free pieces are wholly public, so the file may serve as its own
+        // preview. Paid pieces must carry a distinct, genuinely free preview.
+        previewAssetUrl: preview?.fileUrl ?? asset.fileUrl,
+        fullAssetUrl: asset.fileUrl,
+      });
       setSubmitted(true);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : "Something went wrong submitting your upload.");
@@ -136,7 +173,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   // `step` directly — a step is "done" once its data is filled in, and the
   // first not-yet-filled step is the one shown as current.
   const desktopStepsFilled = [
-    true, // Upload — the file is already attached the moment this screen renders
+    asset !== null, // Upload — genuinely attached, not assumed
     title.trim().length > 0, // Details
     firstUpload || !paid || price > 0, // Price — first upload is auto-free; otherwise needs a price once "Paid" is chosen
   ];
@@ -158,8 +195,8 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
           />
         ) : (
           <>
-            {step === 0 ? <UploadStep type={type} /> : null}
-            {step === 1 ? <PreviewStep type={type} /> : null}
+            {step === 0 ? <UploadStep type={type} asset={asset} onAsset={setAsset} /> : null}
+            {step === 1 ? <PreviewStep type={type} isPaid={paid && !firstUpload} preview={preview} onPreview={setPreview} /> : null}
             {step === 2 ? (
               <DetailsStep
                 title={title}
@@ -277,33 +314,15 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
       <div className="grid min-h-0 flex-1 grid-cols-[1fr_420px] gap-[26px] overflow-y-auto p-[26px]">
         <div className="flex min-w-0 flex-col gap-[20px]">
           <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
-            <div className="flex items-center gap-[14px]">
-              <div className="grid h-[96px] w-[150px] shrink-0 place-items-center rounded-[var(--radius-media)] border border-hairline bg-elevated">
-                <Icon name={stepIcons[type]} size={22} color="var(--text-muted)" />
-              </div>
-              <div className="flex flex-1 flex-col gap-[9px]">
-                <div className="flex justify-between text-[13.5px]">
-                  <span className="font-semibold text-text-primary">{file.file}</span>
-                  <span className="text-text-muted [font-feature-settings:var(--font-feature-tabular)]">{file.meta}</span>
-                </div>
-                <div className="h-[6px] rounded-full bg-tag">
-                  <div className="h-full w-[68%] rounded-full bg-[linear-gradient(90deg,#5A0B7D,var(--accent))]" />
-                </div>
-                <span className="text-[12.5px] text-text-muted">
-                  Keep this tab open until it finishes. You can fill in the details now.
-                </span>
-              </div>
-            </div>
-            {type === "video" ? (
-              <div className="flex gap-[10px] border-t border-hairline pt-[14px]">
-                <div className="h-[64px] w-[104px] rounded-xl border-[1.5px] border-accent bg-elevated" />
-                <div className="h-[64px] w-[104px] rounded-xl border border-hairline bg-elevated" />
-                <div className="h-[64px] w-[104px] rounded-xl border border-hairline bg-elevated" />
-                <div className="flex flex-1 items-center pl-[6px]">
-                  <span className="text-[12.5px] text-text-muted">Pick the cover frame — or upload your own</span>
-                </div>
-              </div>
-            ) : null}
+            <span className="text-[14px] font-semibold text-text-primary">Your file</span>
+            <FilePicker
+              folder="content/full"
+              accept={UPLOAD_ACCEPT[type]}
+              label={asset ? "Replace file" : `Choose your ${meta.label.toLowerCase()} file`}
+              hint={file.note}
+              onUploaded={setAsset}
+              onCleared={() => setAsset(null)}
+            />
           </div>
 
           <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
@@ -321,31 +340,27 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
             <div className="flex flex-col gap-[9px]">
               <span className="text-[12.5px] font-semibold text-text-secondary">Category</span>
               <span className="text-[12px] leading-[1.5] text-text-muted">
-                Learn and Question are temporarily disabled due to misuse. They will return soon. Opportunity, Event
-                and Research publish after an admin check.
+                This is how readers find you in Explore. Pick the one someone browsing for your work would open.
               </span>
+              {/*
+                Was a stale list of the old post categories (Construction, Sell,
+                Event, Opportunity, Research, plus disabled Learn/Question).
+                Events and Opportunities do not exist in this product at all,
+                and the rest predate the taxonomy, so this now renders the same
+                25 categories the mobile step and Explore use.
+              */}
               <div className="flex flex-wrap gap-2">
-                {["Construction", "Sell", "Event", "Opportunity", "Research"].map((c) => (
+                {CATEGORIES.map((c) => (
                   <button
-                    key={c}
+                    key={c.id}
                     type="button"
-                    onClick={() => setCategory(c)}
-                    className={`rounded-full px-[14px] py-2 text-[13px] font-semibold ${
-                      category === c ? "bg-accent text-on-accent" : "bg-tag text-text-secondary font-normal"
+                    onClick={() => setCategory(c.id)}
+                    className={`rounded-full px-[14px] py-2 text-[13px] ${
+                      category === c.id ? "bg-accent font-semibold text-on-accent" : "bg-tag text-text-secondary"
                     }`}
                   >
-                    {c}
-                    {c !== "Construction" && c !== "Sell" ? " · admin review" : ""}
+                    {c.name}
                   </button>
-                ))}
-                {["Learn", "Question"].map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center gap-[7px] rounded-full border border-dashed border-hairline bg-tag px-[14px] py-2 text-[13px] text-text-muted"
-                  >
-                    <Icon name="Ban" size={14} color="var(--text-muted)" />
-                    {c}
-                  </span>
                 ))}
               </div>
             </div>
@@ -422,22 +437,28 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
           <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
             <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Free preview</span>
             <span className="text-[13.5px] leading-[1.5] text-text-secondary">
-              You choose the giveaway. First 90 seconds is the default.
+              You choose the giveaway — upload the clip, cover or extract buyers get for free.
             </span>
-            <div className="flex gap-2">
-              {(["90s", "3min", "none"] as const).map((choice) => (
-                <button
-                  key={choice}
-                  type="button"
-                  onClick={() => setPreviewChoice(choice)}
-                  className={`rounded-full px-[14px] py-2 text-[13px] font-semibold ${
-                    previewChoice === choice ? "bg-accent text-on-accent" : "bg-tag text-text-secondary"
-                  }`}
-                >
-                  {choice === "90s" ? "90s" : choice === "3min" ? "3 min" : "None"}
-                </button>
-              ))}
-            </div>
+            {/* The picker the desktop pane was missing: submit() requires a
+                separate preview for paid pieces, so without this control
+                desktop creators hit an error naming a field they could not
+                see. */}
+            <FilePicker
+              folder="content/preview"
+              accept="image/png,image/jpeg,image/webp,video/mp4,application/pdf"
+              label={preview ? "Replace free preview" : "Add your free preview"}
+              hint={
+                desktopPrice > 0
+                  ? "Required for paid pieces: a cover or short sample buyers see before paying."
+                  : "Optional for free pieces."
+              }
+              onUploaded={setPreview}
+              onCleared={() => setPreview(null)}
+            />
+            {/* The 90s / 3 min / None chips that used to sit here set state
+                nothing ever submitted — the publish payload carries a preview
+                asset URL, not a duration. The FilePicker above is the real
+                control. */}
           </div>
 
           <div className="mt-auto flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-hairline bg-card p-[18px]">
@@ -458,72 +479,42 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   );
 }
 
-function UploadStep({ type }: { type: ContentType }) {
+function UploadStep({
+  type,
+  asset,
+  onAsset,
+}: {
+  type: ContentType;
+  asset: UploadedFile | null;
+  onAsset: (file: UploadedFile | null) => void;
+}) {
   const file = uploadMeta[type];
-  const isStream = CONTENT_TYPE_META[type].group === "stream";
   return (
     <>
-      <div className="flex flex-col gap-[12px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-        <div className="flex items-center gap-[12px]">
-          <span className="grid place-items-center w-[42px] h-[42px] rounded-[13] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
-            <Icon name={stepIcons[type]} size={18} strokeWidth={2} color="var(--accent)" />
-          </span>
-          <div className="flex-1 min-w-0 flex flex-col gap-[3px]">
-            <span className="text-[14.5px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-[var(--text-primary)]">
-              {file.file}
-            </span>
-            <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{file.meta}</span>
-          </div>
-          <span className="text-[13px] font-bold [font-feature-settings:var(--font-feature-tabular)]">68%</span>
-        </div>
-        <div className="h-[5px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden">
-          <div className="w-[68%] h-full rounded-[999] bg-[var(--accent)]" />
-        </div>
-        <div className="flex items-center gap-[8px]">
-          <span className="flex-1 text-[12px] text-[var(--text-muted)]">Uploading — you can keep filling in the rest</span>
-          <span className="text-[12px] font-semibold text-[var(--accent)]">Cancel</span>
-        </div>
-      </div>
-
-      {type === "video" ? (
-        <div className="flex flex-col gap-[11px]">
-          <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Thumbnail</span>
-          <div className="flex gap-[10px]">
-            <div className="flex-1 relative aspect-[16_/_10] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--accent)]">
-              <span className="absolute top-[8px] left-[8px] inline-flex items-center h-[22px] py-0 px-[8px] rounded-[999] bg-[var(--accent)] text-[#fff] text-[10.5px] font-bold">
-                Chosen
-              </span>
-            </div>
-            <div className="flex-1 aspect-[16_/_10] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
-            <div className="flex-1 aspect-[16_/_10] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
-          </div>
-          <div className="flex items-center gap-[10px]">
-            <span className="flex-1 text-[12px] text-[var(--text-muted)]">Pulled from your video</span>
-            <Button size="sm" variant="secondary" icon="Upload">
-              Upload one
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
-      {type === "pdf" ? (
-        <div className="flex flex-col items-center justify-center gap-[12px] py-[30px] px-[20px] rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border-[1px_dashed_var(--border-strong)]">
-          <span className="grid place-items-center w-[48px] h-[48px] rounded-[15] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-            <Icon name="Plus" size={20} strokeWidth={2.2} color="var(--text-secondary)" />
-          </span>
-          <span className="text-[14px] font-semibold text-[var(--text-primary)]">Add a cover</span>
-          <span className="text-[12.5px] text-[var(--text-muted)] text-center">
-            Books with a cover sell better than books without one.
-          </span>
-        </div>
-      ) : null}
-
-      <InfoNote text={file.note} />
+      <FilePicker
+        folder="content/full"
+        accept={UPLOAD_ACCEPT[type]}
+        label={asset ? "Replace file" : `Choose your ${CONTENT_TYPE_META[type].label.toLowerCase()} file`}
+        hint={file.note}
+        onUploaded={onAsset}
+        onCleared={() => onAsset(null)}
+      />
+      {!asset ? <InfoNote text="Nothing is published until your file finishes uploading." /> : null}
     </>
   );
 }
 
-function PreviewStep({ type }: { type: ContentType }) {
+function PreviewStep({
+  type,
+  isPaid,
+  preview,
+  onPreview,
+}: {
+  type: ContentType;
+  isPaid: boolean;
+  preview: UploadedFile | null;
+  onPreview: (f: UploadedFile | null) => void;
+}) {
   const isPdf = type === "pdf";
   return (
     <>
@@ -531,19 +522,31 @@ function PreviewStep({ type }: { type: ContentType }) {
         Anyone can see this much for free. Give away enough that they can tell it is good.
       </p>
 
+      {/* A real, separate preview file. This is served publicly, so it must
+          never be the paid asset itself — that would make the paywall
+          meaningless for anyone who reads the URL. */}
+      <FilePicker
+        folder="content/preview"
+        accept="image/png,image/jpeg,image/webp,video/mp4,application/pdf"
+        label={preview ? "Replace free preview" : "Add your free preview"}
+        hint={
+          isPaid
+            ? "Required for paid pieces: a cover image or a short sample. Buyers see this before paying."
+            : "Optional for free pieces — your file is already public."
+        }
+        onUploaded={onPreview}
+        onCleared={() => onPreview(null)}
+      />
+
       {isPdf ? (
         <div className="flex flex-col gap-[13px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-          <div className="flex items-baseline gap-[12px]">
-            <span className="flex-1 text-[14px] font-semibold text-[var(--text-primary)]">Pages shown free</span>
-            <span className="text-[22px] font-bold tracking-[-0.02em] [font-feature-settings:var(--font-feature-tabular)]">4</span>
-          </div>
-          <input type="range" min={1} max={10} defaultValue={4} className="w-full h-[24px] cursor-pointer accent-[var(--accent)]" />
-          <div className="flex justify-between text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-            <span>1 page</span>
-            <span>10 pages</span>
-          </div>
-          <span className="text-[12.5px] text-[var(--text-muted)] pt-[11px] border-t border-t-[var(--border-hairline)]">
-            Pages 5 to 34 stay locked until someone buys.
+          <span className="text-[14px] font-semibold text-[var(--text-primary)]">Which pages people see free</span>
+          {/* Was a "pages shown free" slider stuck on 4: page-range previews
+              aren't part of the publish payload (CreateContentDto carries a
+              previewAsset URL, nothing page-based), so the honest control is
+              the preview file above — upload the extract you want to give away. */}
+          <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
+            Upload the free extract as your preview above. The full file stays locked until someone buys.
           </span>
         </div>
       ) : null}
@@ -551,9 +554,9 @@ function PreviewStep({ type }: { type: ContentType }) {
       <div className="flex flex-col gap-[11px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">How it will look</span>
         <div className="flex gap-[9px]">
-          <div className="flex-1 aspect-[3_/_4] rounded-[10] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
-          <div className="flex-1 aspect-[3_/_4] rounded-[10] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
-          <div className="relative flex-1 aspect-[3_/_4] rounded-[10] overflow-hidden border border-[var(--border-hairline)]">
+          <div className="flex-1 aspect-[3_/_4] rounded-[10px] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
+          <div className="flex-1 aspect-[3_/_4] rounded-[10px] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
+          <div className="relative flex-1 aspect-[3_/_4] rounded-[10px] overflow-hidden border border-[var(--border-hairline)]">
             <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] blur-[8px] scale-[1.12]" />
             <div className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center">
               <Icon name="Lock" size={16} strokeWidth={2.2} color="#fff" />
@@ -567,7 +570,12 @@ function PreviewStep({ type }: { type: ContentType }) {
   );
 }
 
-const CATEGORY_OPTIONS = ["Business", "Sell", "Construction", "Fashion", "Tech", "Food", "Beauty"];
+/**
+ * The create entry point for the category taxonomy. Every one of the 25
+ * categories a reader can browse has to be selectable here, or it is a filter
+ * nothing can ever land in. The value sent to the API is the id, not the
+ * display name, so renaming a category later never orphans published content.
+ */
 
 function DetailsStep({
   title,
@@ -581,8 +589,8 @@ function DetailsStep({
   onTitle: (v: string) => void;
   description: string;
   onDescription: (v: string) => void;
-  category: string;
-  onCategory: (v: string) => void;
+  category: CategoryId;
+  onCategory: (v: CategoryId) => void;
 }) {
   return (
     <div className="flex flex-col gap-[16px]">
@@ -592,7 +600,7 @@ function DetailsStep({
         <textarea
           value={description}
           onChange={(e) => onDescription(e.target.value)}
-          placeholder="Everything I learned running a stall for nine years — stock, margin, spoilage, and what to do on a slow day."
+          placeholder="Everything I learned running a stall for nine years: stock, margin, spoilage, and what to do on a slow day."
           className="flex min-h-[104px] py-[14px] px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[14.5px] leading-[1.5] text-[var(--text-primary)] resize-none font-[var(--font-sans)] placeholder:text-[var(--text-muted)]"
         />
         <span className="text-[12px] text-[var(--text-muted)]">Say who it is for and what they will be able to do after.</span>
@@ -602,12 +610,12 @@ function DetailsStep({
         <div className="relative">
           <select
             value={category}
-            onChange={(e) => onCategory(e.target.value)}
+            onChange={(e) => onCategory(e.target.value as CategoryId)}
             className="flex w-full items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer appearance-none font-[var(--font-sans)]"
           >
-            {CATEGORY_OPTIONS.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
           </select>
@@ -620,22 +628,10 @@ function DetailsStep({
           />
         </div>
       </div>
-      <div className="flex flex-col gap-[9px]">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Tags</span>
-        <div className="flex flex-wrap gap-[8px]">
-          {["trading", "pricing"].map((t) => (
-            <span key={t} className="inline-flex items-center gap-[7px] h-[34px] py-0 px-[12px] rounded-[999] bg-[var(--accent-tint)] border border-[var(--border-accent)] text-[var(--text-primary)] text-[13px] font-semibold">
-              {t}
-              <Icon name="X" size={12} strokeWidth={2.6} color="var(--accent)" />
-            </span>
-          ))}
-          <span className="inline-flex items-center gap-[6px] h-[34px] py-0 px-[12px] rounded-[999] bg-[var(--surface-tag)] border-[1px_dashed_var(--border-hairline)] text-[var(--text-muted)] text-[13px] font-medium">
-            <Icon name="Plus" size={13} strokeWidth={2.2} color="var(--text-muted)" />
-            Add
-          </span>
-        </div>
-        <span className="text-[12px] text-[var(--text-muted)]">Up to 5. Tags are how people find you in search.</span>
-      </div>
+      {/* The tag chips that used to sit here were hardcoded ("trading",
+          "pricing") and had no editor and no field in the publish payload —
+          removed rather than left looking editable. Restore when the publish
+          call carries tags. */}
     </div>
   );
 }
@@ -667,7 +663,7 @@ function PriceStep({
     <>
       {firstUpload ? (
         <div className="flex flex-col gap-[14px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]">
-          <span className="grid place-items-center w-[46px] h-[46px] rounded-[14] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
+          <span className="grid place-items-center w-[46px] h-[46px] rounded-[14px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
             <Icon name="Gift" size={20} strokeWidth={2} color="var(--accent)" />
           </span>
           <div className="flex flex-col gap-[7px]">
@@ -682,7 +678,7 @@ function PriceStep({
         </div>
       ) : null}
 
-      <div className={`flex gap-[4px] p-[4px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] ${firstUpload ? "opacity-[0.55]" : "opacity-100"}`}>
+      <div className={`flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] ${firstUpload ? "opacity-[0.55]" : "opacity-100"}`}>
         {["Free", "Paid"].map((label) => {
           const active = (label === "Paid") === paid;
           return (
@@ -691,7 +687,7 @@ function PriceStep({
               type="button"
               disabled={firstUpload && label === "Paid"}
               onClick={() => onPaid(label === "Paid")}
-              className={`flex-1 grid place-items-center h-[40px] rounded-[999] border-[none] text-[13.5px] font-semibold font-[var(--font-sans)] ${
+              className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] text-[13.5px] font-semibold font-[var(--font-sans)] ${
                 active
                   ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
                   : firstUpload && label === "Paid"
@@ -716,11 +712,11 @@ function PriceStep({
         <div className="flex flex-col gap-[11px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
           <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">What happens next</span>
           <div className="flex gap-[11px]">
-            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">1</span>
+            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">1</span>
             <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">This goes live free and starts pulling people to your profile.</span>
           </div>
           <div className="flex gap-[11px]">
-            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">2</span>
+            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">2</span>
             <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">Your next upload can carry any price from {formatNaira(100)} to {formatNaira(5000)}.</span>
           </div>
         </div>
@@ -750,7 +746,7 @@ function PriceStep({
               <div className="flex items-center gap-[9px] pt-[12px] border-t border-t-[var(--border-hairline)]">
                 <Icon name="TrendingUp" size={15} strokeWidth={2.2} color="var(--accent)" />
                 <span className="flex-1 text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
-                  On Pro you would keep {formatNaira(proEarn)} — 90% instead of 85%.
+                  On Pro you would keep {formatNaira(proEarn)}, 90% instead of 85%.
                 </span>
               </div>
             ) : null}
@@ -766,7 +762,7 @@ function Submitted({ type, title, price }: { type: ContentType; title: string; p
   return (
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
       <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[28px] text-center">
-        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
+        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
           <Icon name="Clock" size={36} strokeWidth={2.2} color="var(--warning)" />
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em] text-[var(--text-primary)]">Under review</h2>
@@ -774,7 +770,7 @@ function Submitted({ type, title, price }: { type: ContentType; title: string; p
           Usually within a day. We will notify you when it goes live.
         </p>
         <div className="flex gap-[13px] w-full p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
-          <div className="w-[52px] h-[66px] rounded-[10] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
+          <div className="w-[52px] h-[66px] rounded-[10px] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
           <div className="flex-1 min-w-0 flex flex-col gap-[5px]">
             <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{title || "Untitled"}</span>
             <span className="text-[12.5px] text-[var(--text-secondary)]">
@@ -810,7 +806,15 @@ function InfoNote({ text }: { text: string }) {
   );
 }
 
-function contentPublish(payload: { type: ContentType; title: string; description: string; category: string; price: number }): Promise<void> {
+function contentPublish(payload: {
+  type: ContentType;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  previewAssetUrl: string;
+  fullAssetUrl: string;
+}): Promise<void> {
   return import("@/lib/api/creator-content").then(({ contentApi }) =>
     contentApi.publish({
       type: payload.type,
@@ -819,6 +823,8 @@ function contentPublish(payload: { type: ContentType; title: string; description
       price: payload.price,
       description: payload.description,
       category: payload.category,
+      previewAssetUrl: payload.previewAssetUrl,
+      fullAssetUrl: payload.fullAssetUrl,
     }).then(() => undefined),
   );
 }

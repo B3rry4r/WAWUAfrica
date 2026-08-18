@@ -53,7 +53,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
         className="flex items-center gap-[12px] py-[14px] px-[16px] border-b border-b-[var(--border-hairline)]"
       >
         <span
-          className="grid place-items-center w-[34px] h-[34px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)]"
+          className="grid place-items-center w-[34px] h-[34px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)]"
         >
           <Link href="/profile" aria-label="Close">
             <Icon name="X" size={18} color="var(--text-primary)" strokeWidth={2.2} />
@@ -92,7 +92,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
                     }`}
                   >
                     <span
-                      className={`grid place-items-center w-[40px] h-[40px] rounded-[13] border ${
+                      className={`grid place-items-center w-[40px] h-[40px] rounded-[13px] border ${
                         first
                           ? "bg-[var(--accent-tint)] border-[var(--border-accent)]"
                           : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
@@ -124,7 +124,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
         open={slotsFull}
         onClose={() => setSlotsFull(false)}
         title={`All ${slotsTotal} slots are in use`}
-        caption="Free up a slot by removing a piece — or move up a tier for more."
+        caption="Free up a slot by removing a piece, or move up a tier for more."
       >
         <div className="flex flex-col gap-[16px]">
           <div
@@ -138,8 +138,8 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
                 {slotsTotal} of {slotsTotal}
               </span>
             </div>
-            <div className="h-[5px] rounded-[999] bg-[var(--surface-tag)] overflow-hidden">
-              <div className="w-full h-full rounded-[999] bg-[var(--warning)]" />
+            <div className="h-[5px] rounded-[999px] bg-[var(--surface-tag)] overflow-hidden">
+              <div className="w-full h-full rounded-[999px] bg-[var(--warning)]" />
             </div>
           </div>
 

@@ -10,9 +10,12 @@ import { formatNaira } from "@/lib/format";
 export default async function MarketplaceSearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; shop?: string }>;
 }) {
-  const { q = "" } = await searchParams;
+  const { q = "", shop } = await searchParams;
+  // Narrows the already-fetched results — no second request, no shop-scoped
+  // endpoint. Anything unrecognised falls back to "all".
+  const activeShop = shop === "basket" || shop === "beauty" ? shop : "all";
 
   let results: MarketplaceSearchResults;
   try {
@@ -59,19 +62,28 @@ export default async function MarketplaceSearchPage({
       ) : (
         <>
           <div className="flex gap-1.5">
-            <Pill label={`All ${total}`} active />
-            <Pill label={`Basket ${results.basket.length}`} />
-            <Pill label={`Beauty ${results.beauty.length}`} />
+            <Pill label={`All ${total}`} q={q} active={activeShop === "all"} />
+            <Pill label={`Basket ${results.basket.length}`} q={q} shop="basket" active={activeShop === "basket"} />
+            <Pill label={`Beauty ${results.beauty.length}`} q={q} shop="beauty" active={activeShop === "beauty"} />
           </div>
 
-          {results.basket.length > 0 ? (
+          {(activeShop === "basket" && results.basket.length === 0) ||
+          (activeShop === "beauty" && results.beauty.length === 0) ? (
+            <EmptyState
+              icon="Search"
+              title={`Nothing in ${activeShop === "basket" ? "WAWUBasket" : "WAWUBeauty"}`}
+              caption={`No match for "${q}" in this shop. The other shop still has results.`}
+            />
+          ) : null}
+
+          {activeShop !== "beauty" && results.basket.length > 0 ? (
             <ResultGroup title="WAWUBasket" shop="basket" items={results.basket} />
           ) : null}
-          {results.beauty.length > 0 ? (
+          {activeShop !== "basket" && results.beauty.length > 0 ? (
             <ResultGroup title="WAWUBeauty" shop="beauty" items={results.beauty} />
           ) : null}
 
-          {results.alsoOnWawu.length > 0 ? (
+          {activeShop === "all" && results.alsoOnWawu.length > 0 ? (
             <div className="flex flex-col gap-2.5">
               <span className="px-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
                 Also on WAWU
@@ -101,17 +113,20 @@ export default async function MarketplaceSearchPage({
   );
 }
 
-function Pill({ label, active }: { label: string; active?: boolean }) {
+function Pill({ label, q, shop, active }: { label: string; q: string; shop?: "basket" | "beauty"; active?: boolean }) {
+  const href = `/marketplace/search?q=${encodeURIComponent(q)}${shop ? `&shop=${shop}` : ""}`;
   return (
-    <span
-      className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium ${
+    <Link
+      href={href}
+      scroll={false}
+      className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium no-underline ${
         active
           ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
           : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
       }`}
     >
       {label}
-    </span>
+    </Link>
   );
 }
 

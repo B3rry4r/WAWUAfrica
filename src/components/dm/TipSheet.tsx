@@ -5,7 +5,14 @@ import { sendTip, TIP_PRESETS } from "@/lib/api/tips";
 import { formatNaira } from "@/lib/format";
 import { Avatar, Button, Icon, Sheet } from "@/components/ui";
 
-type Phase = "choose" | "processing" | "success" | "failure";
+/**
+ * "failure" means nothing was charged. "unconfirmed" is the opposite case:
+ * checkout completed and the money moved, but the server-side verify that
+ * records the tip failed afterwards. Retrying an unconfirmed charge would tip
+ * twice, so the two states must not share a screen.
+ */
+type Phase = "choose" | "processing" | "success" | "failure" | "unconfirmed";
+
 
 /** Tip a creator in-app. One sheet, presets locked to the design's amounts. */
 export function TipSheet({
@@ -35,6 +42,10 @@ export function TipSheet({
     try {
       const res = await sendTip({ wawuId: creator.wawuId, name: creator.name }, amount, note.trim() || undefined);
       if (res.result === "success") setPhase("success");
+      // Closing the checkout modal charges nothing — go back to the amount
+      // picker rather than telling the tipper their payment failed.
+      else if (res.result === "cancelled") setPhase("choose");
+      else if (res.result === "verify_failed") setPhase("unconfirmed");
       else setPhase("failure");
     } catch {
       setPhase("failure");
@@ -42,7 +53,7 @@ export function TipSheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="Send a tip" caption="Tips go straight to the creator. In-app only — they decide what it's for.">
+    <Sheet open={open} onClose={onClose} title="Send a tip" caption="Tips go straight to the creator. In-app only, they decide what it's for.">
       {!creator ? null : phase === "choose" ? (
         <div className="flex flex-col gap-[16px]">
           <div className="flex items-center gap-[10px]">
@@ -101,6 +112,29 @@ export function TipSheet({
           <Button full onClick={onClose}>
             Done
           </Button>
+        </div>
+      ) : phase === "unconfirmed" ? (
+        <div className="flex flex-col gap-[14px] p-[8px_0_4px] text-center">
+          <span className="mx-auto grid h-[56px] w-[56px] place-items-center rounded-full border border-[rgba(255,183,3,0.32)] bg-[var(--warning-tint)]">
+            <Icon name="Clock" size={26} color="var(--warning)" />
+          </span>
+          <div className="flex flex-col gap-[5px]">
+            <span className="text-[17px] font-bold text-[var(--text-primary)]">
+              Tip went through, we could not confirm it
+            </span>
+            <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+              {amount != null ? formatNaira(amount) : "The tip"} left your account and we could not finish recording it.
+              You have not been charged twice, so do not send it again. Tell support and they will sort it.
+            </span>
+          </div>
+          <div className="mt-[6px] flex gap-[10px]">
+            <Button full variant="secondary" onClick={onClose}>
+              Close
+            </Button>
+            <Button full href="mailto:hello@wawuafrica.com">
+              Contact support
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-[14px] p-[8px_0_4px] text-center">

@@ -1,5 +1,5 @@
 import type { CreatorProfile } from "@/types/profile";
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 import {
   getMockProfileFollowing,
   isMockCommunityJoined,
@@ -90,25 +90,29 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
 }
 
 /**
- * GAP: the real FollowRelationship contract (follow-relationship.controller.ts)
- * only exposes POST/DELETE /creators/:wawuId/follow — there is no GET to
- * check whether the current user already follows a given creator. Until one
- * exists, this stays local/mock-only. It's kept in sync by
- * toggleFollowProfile's real writes (see setMockProfileFollowing).
+ * GET /api/hub/creators/:wawuId/follow — the caller's real follow state.
+ * This used to read local mock state only, so the follow button was wrong on
+ * any new device or after clearing storage.
  */
 export async function isFollowing(wawuId: string): Promise<boolean> {
-  return getMockProfileFollowing(wawuId);
+  try {
+    const res = await apiFetch<{ following: boolean }>(`/api/hub/creators/${wawuId}/follow`, { authed: true });
+    setMockProfileFollowing(wawuId, res.following);
+    return res.following;
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/creators/:wawuId/follow
+    return getMockProfileFollowing(wawuId);
+  }
 }
 
 /**
  * POST/DELETE /api/hub/creators/:wawuId/follow are real
  * (follow-relationship.controller.ts, WawuAuthGuard-protected, `roles: any`).
- * Direction is decided from local mock state since there's no real "am I
- * following" read to consult (see isFollowing's gap note) — the write
- * itself hits the real backend whenever one is configured.
+ * Direction comes from the real follow-status read above.
  */
 export async function toggleFollowProfile(wawuId: string): Promise<boolean> {
-  const currentlyFollowing = await getMockProfileFollowing(wawuId);
+  const currentlyFollowing = await isFollowing(wawuId);
   await apiFetch(`/api/hub/creators/${wawuId}/follow`, {
     method: currentlyFollowing ? "DELETE" : "POST",
     authed: true,
@@ -119,13 +123,22 @@ export async function toggleFollowProfile(wawuId: string): Promise<boolean> {
 }
 
 /**
- * GAP: the real Community contract (community.controller.ts) has no "am I a
- * member" read either — GET /communities and GET /communities/:id return
- * community data, never the caller's own membership status. Mock-only,
- * kept in sync by toggleCommunityJoin's real join writes.
+ * GET /api/hub/communities/:id/membership — the caller's real membership.
+ * A `pending` request on a private community is deliberately NOT "joined":
+ * it has not been approved yet.
  */
 export async function isCommunityJoined(wawuId: string, communityId: string): Promise<boolean> {
-  return isMockCommunityJoined(wawuId, communityId);
+  try {
+    const membership = await apiFetch<{ status: "joined" | "pending" } | null>(
+      `/api/hub/communities/${communityId}/membership`,
+      { authed: true },
+    );
+    return membership?.status === "joined";
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/communities/:id/membership
+    return isMockCommunityJoined(wawuId, communityId);
+  }
 }
 
 /** Real POST /communities/:id/join response (community.service.ts `join`). */
@@ -134,25 +147,51 @@ interface RealCommunityMembership {
 }
 
 /**
- * POST /api/hub/communities/:id/join is real (community.controller.ts,
- * WawuAuthGuard-protected) and idempotent — safe to call even if already
- * joined/pending. GAP: there is no leave/unjoin endpoint anywhere in the
- * real Community contract (no DELETE on this controller, confirmed by
- * reading it) — leaving a community has no backend support yet, so that
- * direction stays mock-only until one exists. A private community's
+ * POST /api/hub/communities/:id/join is real and idempotent — safe to call
+ * even if already joined/pending. DELETE /communities/:id/join leaves, and is
+ * likewise idempotent. A private community's
  * `status: "pending"` response is treated as "not joined" (accurate — the
  * membership request hasn't been approved).
  */
 export async function toggleCommunityJoin(wawuId: string, communityId: string): Promise<boolean> {
-  if (isMockCommunityJoined(wawuId, communityId)) {
-    // SEAM: replace with DELETE /api/hub/communities/:id/join once it exists
+  const currentlyJoined = await isCommunityJoined(wawuId, communityId);
+  try {
+    if (currentlyJoined) {
+      // Leaving is real now (DELETE /communities/:id/join) — it used to be
+      // mock-only, so leaving a community never actually left it.
+      await apiFetch(`/api/hub/communities/${communityId}/join`, { method: "DELETE", authed: true });
+      setMockCommunityJoined(wawuId, communityId, false);
+      return false;
+    }
+    const membership = await apiFetch<RealCommunityMembership>(`/api/hub/communities/${communityId}/join`, {
+      method: "POST",
+      authed: true,
+    });
+    const joined = membership.status === "joined";
+    setMockCommunityJoined(wawuId, communityId, joined);
+    return joined;
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with POST/DELETE /api/hub/communities/:id/join
     return toggleMockCommunityJoin(wawuId, communityId);
   }
-  const membership = await apiFetch<RealCommunityMembership>(`/api/hub/communities/${communityId}/join`, {
-    method: "POST",
-    authed: true,
-  });
-  const joined = membership.status === "joined";
-  setMockCommunityJoined(wawuId, communityId, joined);
-  return joined;
+}
+
+/**
+ * GET /api/hub/creators/:wawuId/evg — the creator's real EVG score.
+ * The dashboards and the home rail all rendered a hardcoded "1,240" while
+ * this endpoint sat unused.
+ */
+export async function getEvgScore(wawuId: string): Promise<number | null> {
+  try {
+    const res = await apiFetch<{ creatorWawuId: string; score: number }>(
+      `/api/hub/creators/${wawuId}/evg`,
+      { authed: true },
+    );
+    return res.score;
+  } catch (e) {
+    if (!isMockModeError(e)) return null;
+    // SEAM: replace with GET /api/hub/creators/:wawuId/evg
+    return null;
+  }
 }

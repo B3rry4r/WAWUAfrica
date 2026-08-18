@@ -23,7 +23,7 @@ export function RoomsDesktopList({ rooms, activeId }: { rooms: Community[]; acti
       <EmptyState
         icon="Users"
         title="You haven't joined any"
-        caption="Join a community from the app to see its room here — reading is free, sending costs one credit."
+        caption="Join a community from the app to see its room here, reading is free, sending costs one credit."
       />
     );
   }

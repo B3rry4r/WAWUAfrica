@@ -15,7 +15,7 @@ export default function TermsPage() {
       </p>
       <Section
         title="Your account"
-        body="You need accurate name, contact and account-type details to use WAWU. User accounts browse and pay for content. Creator accounts can additionally publish content once a subscription and manual KYC review are both complete — these are separate gates and either can be pending on its own."
+        body="You need accurate name, contact and account-type details to use WAWU. User accounts browse and pay for content. Creator accounts can additionally publish content once a subscription and manual KYC review are both complete. These are separate gates and either can be pending on its own."
       />
       <Section
         title="Buying content"
@@ -27,7 +27,7 @@ export default function TermsPage() {
       />
       <Section
         title="Selling content"
-        body="Creators keep 85% of what a member pays, or 90% on the Pro tier — WAWU keeps the remainder as a platform fee. Rates are fixed by tier and never negotiated per creator. Earning requires manual KYC review to be approved; uploading only requires an active paid subscription. You're responsible for the accuracy and rights to whatever you publish."
+        body="Creators keep 85% of what a member pays, or 90% on the Pro tier, and WAWU keeps the remainder as a platform fee. Rates are fixed by tier and never negotiated per creator. Earning requires manual KYC review to be approved; uploading only requires an active paid subscription. You're responsible for the accuracy and rights to whatever you publish."
       />
       <Section
         title="WAWU Credits"
@@ -39,7 +39,7 @@ export default function TermsPage() {
       />
       <Section
         title="Verification (KYC)"
-        body="Creators who want to earn go through manual identity review. In Nigeria this uses BVN and NIN; elsewhere, an equivalent national ID. A human reviews every submission — there's no automated liveness or face-matching step in this process."
+        body="Creators who want to earn go through manual identity review. In Nigeria this uses BVN and NIN; elsewhere, an equivalent national ID. A human reviews every submission, and there's no automated liveness or face-matching step in this process."
       />
       <Section
         title="WAWUBasket and WAWUBeauty"

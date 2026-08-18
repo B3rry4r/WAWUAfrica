@@ -7,11 +7,16 @@ import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { earningsApi } from "@/lib/api/earnings";
+import { getEvgScore } from "@/lib/api/profile";
+import { earningsStreamRows } from "@/lib/earnings-display";
 import type { EarningsSummary } from "@/types/earnings";
-import { currentMessaging } from "@/lib/api/messaging";
-import { libraryItems } from "@/lib/api/creator-content";
+import { messagingApi } from "@/lib/api/messaging";
+import { contentApi } from "@/lib/api/creator-content";
+import type { MessagingState } from "@/types/messaging";
+import type { ContentItem } from "@/types/content";
 import { PLANS } from "@/types/subscription";
 import type { ContentType } from "@/types/content";
+import type { KycStatus } from "@/types/account";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { TierBadge } from "@/components/ui/TierBadge";
@@ -23,6 +28,44 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ListRow } from "@/components/ui/ListRow";
 import { Avatar } from "@/components/ui";
 
+/**
+ * Real KYC state, not "in review" for everything that isn't approved. A
+ * rejected creator was being told their documents were still being looked at,
+ * and a creator who never started was told the same.
+ */
+function KycNotice({ status }: { status: KycStatus }) {
+  if (status === "approved") return null;
+  const rejected = status === "rejected";
+  const copy =
+    status === "not_started"
+      ? { title: "Start verification to get paid", body: "Keep selling. Everything you earn is held until you verify.", link: "Start KYC" }
+      : rejected
+        ? { title: "Verification was not approved", body: "Nothing you have earned is lost. Send your ID again and we will look at it.", link: "Resubmit KYC" }
+        : { title: "KYC in review, 1 to 3 days", body: "Keep selling. Everything you earn is held until you are verified.", link: "Check status" };
+  return (
+    <div
+      className={`flex items-start gap-[11px] py-[14px] px-[15px] rounded-[var(--radius-input)] ${
+        rejected ? "bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.32)]" : "bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.28)]"
+      }`}
+    >
+      <Icon
+        name={rejected ? "TriangleAlert" : "Clock"}
+        size={16}
+        color={rejected ? "var(--danger)" : "var(--warning)"}
+        strokeWidth={2.2}
+        className="mt-[1px]"
+      />
+      <div className="flex-1 flex flex-col gap-[6px]">
+        <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{copy.title}</span>
+        <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">{copy.body}</span>
+        <Link href="/kyc" className="text-[12.5px] font-semibold text-[var(--accent)]">
+          {copy.link}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 const typeIcons: Record<ContentType, IconName> = {
   video: "Play",
   course: "GraduationCap",
@@ -32,15 +75,6 @@ const typeIcons: Record<ContentType, IconName> = {
   template: "LayoutTemplate",
 };
 
-// D6 · four earnings streams, this month — same total as EarningsDashboard's
-// "Where it came from" breakdown (kept in sync so the two screens never
-// disagree on how the month split out).
-const STREAMS: { label: string; amount: number; pct: number }[] = [
-  { label: "Content sales", amount: 123300, pct: 67 },
-  { label: "Paid messages", amount: 31050, pct: 17 },
-  { label: "Community credits", amount: 21600, pct: 12 },
-  { label: "Tips", amount: 8550, pct: 5 },
-];
 
 export function CreatorDashboard() {
   const router = useRouter();
@@ -54,11 +88,24 @@ export function CreatorDashboard() {
   // useCreatorState's snapshot-then-refresh pattern above.
   const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
   const [earningsFailed, setEarningsFailed] = useState(false);
+  // Real inbox + library. These used to import the frozen mock constants
+  // directly, bypassing the API layer entirely, so the reply counts, the
+  // needs-a-reply rail, the response-rate bar and both content lists were
+  // fixtures identical for every creator.
+  const [messaging, setMessaging] = useState<MessagingState | null>(null);
+  const [library, setLibrary] = useState<ContentItem[] | null>(null);
+  // Real EVG, not the hardcoded "1,240" this used to print.
+  const [evg, setEvg] = useState<number | null>(null);
 
   useEffect(() => {
     if (!gates.isCreator) return;
     let cancelled = false;
     setEarningsFailed(false);
+    if (user?.wawuId) {
+      getEvgScore(user.wawuId).then((score) => {
+        if (!cancelled) setEvg(score);
+      });
+    }
     earningsApi
       .getSummary()
       .then((s) => {
@@ -67,10 +114,27 @@ export function CreatorDashboard() {
       .catch(() => {
         if (!cancelled) setEarningsFailed(true);
       });
+    messagingApi
+      .getState()
+      .then((m) => {
+        if (!cancelled) setMessaging(m);
+      })
+      .catch(() => {
+        // The inbox rail simply stays empty rather than showing fixtures.
+        if (!cancelled) setMessaging({ threads: [], responseStats: { responded: 0, total: 0, rate: 0 }, penalty: "none" });
+      });
+    contentApi
+      .getLibrary()
+      .then((items) => {
+        if (!cancelled) setLibrary(items);
+      })
+      .catch(() => {
+        if (!cancelled) setLibrary([]);
+      });
     return () => {
       cancelled = true;
     };
-  }, [gates.isCreator]);
+  }, [gates.isCreator, user?.wawuId]);
 
   // Real session hasn't hydrated yet, or the creator snapshot hasn't loaded
   // (e.g. a creator account with no CreatorState row yet) — hold off rather
@@ -83,32 +147,60 @@ export function CreatorDashboard() {
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
   const slotsLeft = gates.slotsRemaining;
   const earned = earnings ? (approved ? earnings.payable + earnings.held : earnings.held) : null;
-  const earnedDisplay = earned !== null ? formatNaira(earned) : earningsFailed ? "—" : "···";
-  const urgentCount = currentMessaging.threads.filter((t) => !t.opened).length;
-  const live = libraryItems.filter((i) => i.status === "live");
+  // Real per-stream figures from the same response as the total above, so
+  // the chart and the total finally agree.
+  const streamRows = earningsStreamRows(earnings);
+  const earnedDisplay = earned !== null ? formatNaira(earned) : earningsFailed ? "N/A" : "···";
+  const threads = messaging?.threads ?? [];
+  const urgentCount = threads.filter((t) => !t.opened).length;
+  const live = (library ?? []).filter((i) => i.status === "live");
 
   // D6 rail: the one thread whose 24h reply window is actually counting down
   // (expiresAt is only set once a buyer has opened the thread).
-  const urgentThread = currentMessaging.threads.find((t) => t.expiresAt);
-  const { responded, total } = currentMessaging.responseStats;
-  const answeredPct = total > 0 ? Math.round((responded / total) * 100) : 0;
+  const urgentThread = threads.find((t) => t.expiresAt);
+  // Earliest real reply deadline still outstanding, in plain hours/days.
+  const earliestDueLabel = (() => {
+    const soonest = threads
+      .map((t) => (t.expiresAt ? new Date(t.expiresAt).getTime() : NaN))
+      .filter((n) => !Number.isNaN(n))
+      .sort((a, b) => a - b)[0];
+    if (soonest === undefined) return null;
+    const msLeft = soonest - Date.now();
+    if (msLeft <= 0) return "Earliest is overdue";
+    const hours = Math.round(msLeft / 3_600_000);
+    if (hours < 1) return "Earliest is due within the hour";
+    if (hours < 24) return `Earliest is due in ${hours} hour${hours === 1 ? "" : "s"}`;
+    const days = Math.round(hours / 24);
+    return `Earliest is due in ${days} day${days === 1 ? "" : "s"}`;
+  })();
+  // The backend sends ONE real figure: a rolling no-response (missed)
+  // percentage. There are no responded/total counts behind it, so nothing here
+  // may render a count or an "answered" rate derived from one — this used to
+  // print a flat "0% answered" above a ban warning for every creator.
+  const missedPct = messaging?.responseStats.rate ?? 0;
+  // Resolved threads in the inbox (answered, not refunded) — a real count off
+  // the thread list, unlike the zeroed responseStats.responded it replaces.
+  const answeredCount = threads.filter((t) => t.opened && t.status !== "refunded").length;
   const monthLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   // D6 "Statement" export — a downloadable record of this month's earnings,
   // not a wallet/withdrawal action (CLAUDE.md's no-wallet rule is about cash
   // balances and cash-out UI, not a plain-text statement of what already
-  // rendered on screen). Built client-side from the same figures already
-  // shown in this dashboard; no backend statement endpoint exists yet.
+  // rendered on screen). Every figure comes from the real earnings response;
+  // this used to emit hardcoded amounts and a payout line naming a bank
+  // account that was not the creator's, which is a false financial record.
   const handleDownloadStatement = () => {
+    // Nothing to state until the real figures have loaded.
+    if (!earnings) return;
     const rows = [
       ["WAWUAfrica creator statement", monthLabel],
       [],
       ["Stream", "Amount (NGN)"],
-      ...STREAMS.map((s) => [s.label, String(s.amount)]),
+      ...streamRows.map((s) => [s.label, s.stream === "community_credits" ? `${s.amount} credits` : String(s.amount)]),
       [],
       ["Earned this month", earned !== null ? String(earned) : ""],
       ["Revenue split", `${keep}/${100 - keep} (${tierLabel})`],
-      ["Payout status", approved ? "Paid out to GTB ••••6789" : "Held — not payable yet"],
+      ["Payout status", approved ? "Payable to your verified bank account" : "Held, not payable yet"],
     ];
     const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -143,24 +235,7 @@ export function CreatorDashboard() {
       </div>
 
       <div className="xl:hidden pt-[18px] px-[20px] pb-[32px] flex flex-col gap-[16px]">
-        {!approved ? (
-          <div
-            className="flex items-start gap-[11px] py-[14px] px-[15px] rounded-[var(--radius-input)] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.28)]"
-          >
-            <Icon name="Clock" size={16} color="var(--warning)" strokeWidth={2.2} className="mt-[1px]" />
-            <div className="flex-1 flex flex-col gap-[6px]">
-              <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
-                KYC in review — 1 to 3 days
-              </span>
-              <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
-                Keep selling. Everything you earn is held until you are verified.
-              </span>
-              <Link href="/kyc" className="text-[12.5px] font-semibold text-[var(--accent)]">
-                Check status
-              </Link>
-            </div>
-          </div>
-        ) : null}
+        <KycNotice status={gates.kycStatus} />
 
         <div
           className="flex flex-col gap-[12px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
@@ -177,12 +252,12 @@ export function CreatorDashboard() {
           </span>
           <div className="flex gap-[8px] flex-wrap">
             {approved ? (
-              <StatusPill kind="success">Paid out to GTB ••••6789</StatusPill>
+              <StatusPill kind="success">Payable to your bank account</StatusPill>
             ) : (
-              <StatusPill kind="warning">Held — not payable yet</StatusPill>
+              <StatusPill kind="warning">Held, not payable yet</StatusPill>
             )}
             <span
-              className="inline-flex items-center h-[26px] py-0 px-[10px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] text-[11.5px] font-bold"
+              className="inline-flex items-center h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] text-[11.5px] font-bold"
             >
               {keep}/{100 - keep} on {tierLabel}
             </span>
@@ -199,12 +274,12 @@ export function CreatorDashboard() {
             <StatBlock value={`${creator.slotsUsed} / ${creator.slotsTotal}`} label="Upload slots" align="start" size="md" />
           </div>
           <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-            <StatBlock value="1,240" label="EVG score" align="start" size="md" />
+            <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG score" align="start" size="md" />
           </div>
         </div>
 
         <Button full size="lg" icon="Plus" onClick={() => router.push("/create")}>
-          New upload — {slotsLeft} {slotsLeft === 1 ? "slot" : "slots"} left
+          New upload, {slotsLeft} {slotsLeft === 1 ? "slot" : "slots"} left
         </Button>
 
         {approved && urgentCount > 0 ? (
@@ -212,14 +287,18 @@ export function CreatorDashboard() {
             <div
               className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]"
             >
-              <span className="grid place-items-center w-[38px] h-[38px] rounded-[12] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
+              <span className="grid place-items-center w-[38px] h-[38px] rounded-[12px] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
                 <Icon name="MessageCircle" size={17} color="var(--accent)" strokeWidth={2} />
               </span>
               <div className="flex-1 flex flex-col gap-[2px]">
                 <span className="text-[15px] font-semibold text-[var(--text-primary)]">
                   {urgentCount} messages to reply
                 </span>
-                <span className="text-[12.5px] text-[var(--warning)]">Earliest is due in 4 hours</span>
+                {/* The real earliest deadline across unanswered threads —
+                    this was a fixed "4 hours" no matter what was waiting. */}
+                {earliestDueLabel ? (
+                  <span className="text-[12.5px] text-[var(--warning)]">{earliestDueLabel}</span>
+                ) : null}
               </div>
               <Icon name="ChevronRight" size={18} color="var(--accent)" strokeWidth={2.2} />
             </div>
@@ -254,35 +333,23 @@ export function CreatorDashboard() {
       <div className="hidden xl:block xl:p-[26px]">
         <div className="grid grid-cols-[1fr_360px] items-start gap-[22px]">
           <div className="flex min-w-0 flex-col gap-[20px]">
-            {!approved ? (
-              <div className="flex items-start gap-[11px] rounded-[var(--radius-input)] border border-[rgba(255,183,3,0.28)] bg-[var(--warning-tint)] px-[15px] py-[14px]">
-                <Icon name="Clock" size={16} color="var(--warning)" strokeWidth={2.2} className="mt-[1px]" />
-                <div className="flex flex-1 flex-col gap-[6px]">
-                  <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
-                    KYC in review — 1 to 3 days
-                  </span>
-                  <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
-                    Keep selling. Everything you earn is held until you are verified.
-                  </span>
-                  <Link href="/kyc" className="text-[12.5px] font-semibold text-[var(--accent)]">
-                    Check status
-                  </Link>
-                </div>
-              </div>
-            ) : null}
+            <KycNotice status={gates.kycStatus} />
 
             <div className="grid grid-cols-4 gap-[16px]">
               <div className="rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[linear-gradient(140deg,#5A0B7D,#9411C9)] p-[20px]">
                 <StatBlock value={earnedDisplay} label="Earned this month" align="start" size="md" />
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
-                <StatBlock value="86" label="Unlocks" align="start" size="md" />
+                {/* No unlock/units-sold count exists on any response yet — the
+                    same gap HomeRightRail documents. "Soon" is honest; the
+                    hardcoded "86" that sat here was not. */}
+                <StatBlock value="Soon" label="Unlocks" align="start" size="md" />
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
-                <StatBlock value={String(responded)} label="Questions answered" align="start" size="md" />
+                <StatBlock value={String(answeredCount)} label="Questions answered" align="start" size="md" />
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
-                <StatBlock value="1,240" label="EVG" align="start" size="md" />
+                <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG" align="start" size="md" />
               </div>
             </div>
 
@@ -294,7 +361,7 @@ export function CreatorDashboard() {
                 <span className="text-[13px] text-[var(--text-muted)]">Payouts land weekly, Fridays</span>
               </div>
               <div className="flex h-[170px] items-end gap-[14px]">
-                {STREAMS.map((s, i) => (
+                {streamRows.map((s, i) => (
                   <div key={s.label} className="flex h-full flex-1 flex-col justify-end gap-[9px]">
                     <div
                       className={`rounded-t-[12px] rounded-b-[4px] ${
@@ -305,7 +372,7 @@ export function CreatorDashboard() {
                       style={{ height: `${Math.max(s.pct, 6)}%` }}
                     />
                     <span className="text-[12px] text-[var(--text-secondary)]">
-                      {s.label} {formatNaira(s.amount)}
+                      {s.label} {s.display}
                     </span>
                   </div>
                 ))}
@@ -360,29 +427,29 @@ export function CreatorDashboard() {
                 </>
               ) : (
                 <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-                  Nothing counting down right now — every open thread is still inside its window.
+                  Nothing counting down right now. Every open thread is still inside its window.
                 </span>
               )}
             </div>
 
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
-                Response rate
+                Reply record
               </span>
               <div className="flex items-baseline gap-[8px]">
                 <span className="text-[30px] font-bold tracking-[-0.02em] leading-none text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
-                  {answeredPct}%
+                  {missedPct}%
                 </span>
-                <span className="text-[13px] text-[var(--text-secondary)]">answered in 24h</span>
+                <span className="text-[13px] text-[var(--text-secondary)]">missed in the last 30 days</span>
               </div>
               <div className="h-[6px] rounded-[999px] bg-[var(--surface-tag)]">
                 <div
                   className="h-[6px] rounded-[999px] bg-[linear-gradient(90deg,#5A0B7D,var(--accent))]"
-                  style={{ width: `${answeredPct}%` }}
+                  style={{ width: `${Math.min(missedPct, 100)}%` }}
                 />
               </div>
               <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-                Below 70% and paid questions switch off for seven days.
+                Above 30% and paid questions switch off for seven days.
               </span>
             </div>
 
@@ -409,13 +476,13 @@ export function CreatorDashboard() {
             <div className="mt-auto flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[18px]">
               <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{earnedDisplay}</span>
               {approved ? (
-                <StatusPill kind="success">Paid out to GTB ••••6789</StatusPill>
+                <StatusPill kind="success">Payable to your bank account</StatusPill>
               ) : (
-                <StatusPill kind="warning">Held — not payable yet</StatusPill>
+                <StatusPill kind="warning">Held, not payable yet</StatusPill>
               )}
               <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
                 {approved
-                  ? "Sent to your bank account automatically — no action needed."
+                  ? "Sent to your bank account automatically. No action needed."
                   : "Released to your bank account as soon as verification clears."}
               </span>
             </div>

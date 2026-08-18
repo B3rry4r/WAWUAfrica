@@ -107,7 +107,7 @@ export default function SearchPage() {
             </button>
           ) : null}
         </div>
-        <button type="button" onClick={() => router.push("/")} className="shrink-0 text-[14.5px] font-semibold text-accent">
+        <button type="button" onClick={() => router.push("/home")} className="shrink-0 text-[14.5px] font-semibold text-accent">
           Cancel
         </button>
       </div>

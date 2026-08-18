@@ -16,12 +16,14 @@ import { TierBadge } from "@/components/ui/TierBadge";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { ListRow } from "@/components/ui/ListRow";
 import { Icon } from "@/components/ui/Icon";
+import { useSession } from "@/lib/auth/session-provider";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 const eyebrowClass = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted";
 
 export default function OwnProfilePage() {
+  const { signOut } = useSession();
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [ladder, setLadder] = useState<VerificationLevelEntry[]>([]);
   const [purchasesCount, setPurchasesCount] = useState<number | null>(null);
@@ -78,7 +80,7 @@ export default function OwnProfilePage() {
   const isCreator = profile.accountType === "creator";
   const currentLevel = ladder.find((l) => l.status === "yours");
   const nextLevel = ladder.find((l) => l.status === "next");
-  const purchasesMeta = purchasesError ? "—" : purchasesCount === null ? undefined : String(purchasesCount);
+  const purchasesMeta = purchasesError ? "N/A" : purchasesCount === null ? undefined : String(purchasesCount);
   const savedMeta = savedCount === null ? undefined : String(savedCount);
 
   return (
@@ -131,6 +133,18 @@ export default function OwnProfilePage() {
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
         )}
+        {/*
+          Signing out was only reachable at the bottom of Settings. Profile is
+          where people look for it, so it lives here too.
+        */}
+        <button
+          type="button"
+          onClick={signOut}
+          className="mt-[10px] flex h-[52px] w-full items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[15px] text-[15px] font-semibold text-[var(--text-secondary)]"
+        >
+          <Icon name="LogOut" size={19} color="var(--text-secondary)" strokeWidth={2} />
+          Sign out
+        </button>
       </div>
     </div>
   );

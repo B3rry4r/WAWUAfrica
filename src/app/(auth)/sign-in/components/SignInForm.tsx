@@ -42,7 +42,7 @@ export function SignInForm() {
       const res = await signIn({ email, password });
       signInUser(res.user, res.token);
       // Creator onboarding (/create) is Dev B's; land everyone on the feed for now.
-      router.push("/");
+      router.push("/home");
     } catch (e) {
       if (e instanceof ApiError && e.code === "EMAIL_NOT_VERIFIED") {
         setNeedsVerification(true);
@@ -73,7 +73,7 @@ export function SignInForm() {
       await verifyOtp({ email, code: otp });
       const res = await signIn({ email, password });
       signInUser(res.user, res.token);
-      router.push("/");
+      router.push("/home");
     } catch (e) {
       setOtpError(e instanceof Error ? e.message : "That code did not work.");
     } finally {

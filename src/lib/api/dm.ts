@@ -1,5 +1,7 @@
 import type { DmStatus, DmThreadDetail, DmThreadMessage, DmThreadSummary } from "@/types/dm";
 import { apiFetch, apiFetchPaginated, ApiError, delay, isMockModeError } from "./client";
+import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import { getMockDmThread, getMockDmThreads, sendMockPaidDm, type DmSendResult } from "./mocks/dm";
 
 /**
@@ -140,11 +142,9 @@ export async function getDmThread(threadId: string): Promise<DmThreadDetail | nu
 /**
  * Client-charge + server-verify, mirroring content.ts's unlock flow:
  * `POST /dm/:creatorWawuId/send` inits the Flutterwave charge (no DM row is
- * created yet), then `POST /dm/:messageId/send/verify` server-verifies it
- * and creates the real row. There is no Flutterwave inline-checkout SDK
- * wired into this client yet (same gap content/[id]/page.tsx's unlock flow
- * has) — the pause below stands in for the user completing payment in that
- * widget, exactly like that page does inline.
+ * created yet), the payer completes it in Flutterwave's inline checkout, then
+ * `POST /dm/:messageId/send/verify` server-verifies the real transaction id
+ * and creates the row. See src/lib/flutterwave.ts.
  */
 export async function sendPaidDm(
   creator: { wawuId: string; name: string; handle: string },
@@ -157,16 +157,31 @@ export async function sendPaidDm(
       threadId: string;
     }>(`/api/hub/dm/${creator.wawuId}/send`, { method: "POST", authed: true, body: { text } });
 
-    await delay(1200);
+    const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+    if (!customer) return { threadId: init.threadId, result: "payment_failed" };
 
     try {
-      await apiFetch(`/api/hub/dm/${init.threadId}/send/verify`, {
-        method: "POST",
-        authed: true,
-        body: { transaction_id: `txn-${Date.now()}`, tx_ref: init.flutterwaveConfig.txRef },
+      const charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
+        title: `Message ${creator.name}`,
+        description: "Paid direct message on WAWU",
       });
+      // The charge has completed by now; a verify failure must not invite a
+      // retry that charges the sender a second time.
+      try {
+        await apiFetch(`/api/hub/dm/${init.threadId}/send/verify`, {
+          method: "POST",
+          authed: true,
+          body: { transaction_id: charge.transaction_id, tx_ref: charge.tx_ref },
+        });
+      } catch {
+        return { threadId: init.threadId, result: "verify_failed" };
+      }
       return { threadId: init.threadId, result: "success" };
-    } catch {
+    } catch (chargeError) {
+      // Dismissing checkout charges nothing — distinct from a decline.
+      if (isFlutterwaveCancelled(chargeError)) {
+        return { threadId: init.threadId, result: "cancelled" };
+      }
       // Charge was initiated but never confirmed — a real payment failure,
       // not a reason to fall back to mock data.
       return { threadId: init.threadId, result: "payment_failed" };
@@ -179,5 +194,23 @@ export async function sendPaidDm(
     if (!isMockModeError(e)) throw e;
     // SEAM: replace with POST /api/hub/dm/:creatorId/send
     return sendMockPaidDm(creator, text, amount);
+  }
+}
+
+/**
+ * POST /api/hub/dm/:messageId/report — files a real abuse report.
+ * This was previously a `console.info` behind a 500ms delay that told the
+ * reporter "Reported" while nothing was ever filed.
+ */
+export async function reportDmThread(threadId: string): Promise<void> {
+  try {
+    await apiFetch(`/api/hub/dm/${threadId}/report`, {
+      method: "POST",
+      authed: true,
+      body: {},
+    });
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with POST /api/hub/dm/:messageId/report
   }
 }

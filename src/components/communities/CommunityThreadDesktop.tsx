@@ -94,8 +94,8 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
           </span>
           <p className="m-0 max-w-[340px] text-[14px] leading-[1.5] text-text-secondary">
             {community.kind === "private"
-              ? `${community.name} is a closed circle. Join to read and post — reading is free, sending costs one credit.`
-              : `${community.name} is open to everyone. Join to read and post — reading is free, sending costs one credit.`}
+              ? `${community.name} is a closed circle. Join to read and post. Reading is free, sending costs one credit.`
+              : `${community.name} is open to everyone. Join to read and post. Reading is free, sending costs one credit.`}
           </p>
           <Button onClick={handleJoin} className="mt-3.5">
             Join community

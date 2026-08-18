@@ -114,7 +114,7 @@ export default function ApplicationTrackingPage() {
       <Icon name="CircleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-[1px]" />
       <span className="flex-1 text-[13.5px] leading-[1.5] text-[var(--danger)]">
         This attempt was rejected. {application.rejection.note}{" "}
-        {application.rejection.refunded ? "You were not charged — refunded in full." : "You were not charged."}
+        {application.rejection.refunded ? "You were not charged, refunded in full." : "You were not charged."}
       </span>
     </div>
   );

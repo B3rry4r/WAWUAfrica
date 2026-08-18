@@ -47,44 +47,149 @@ export const MOCK_SERVICES: PartnerService[] = [
     cta: { label: "Browse mentors", href: "/services/mentors" },
   },
   {
-    id: "health-insurance",
-    name: "Health insurance",
-    tagline: "Plans designed for creators",
+    id: "pay",
+    name: "WAWUPay",
+    tagline: "Airtime, data, electricity and cable",
     blurb:
-      "Affordable health cover arranged through licensed insurers — built for people whose income comes in irregularly.",
+      "Pay any bill without leaving WAWU. Confirm the meter or number first, pay with your card, and the top-up lands straight away.",
+    icon: "Zap",
+    status: "live",
+    turnaround: "Instant",
+    priceFrom: "No added fee",
+    partner: "Flutterwave",
+    cta: { label: "Pay a bill", href: "/services/pay" },
+  },
+  {
+    id: "care",
+    name: "WAWUCare",
+    tagline: "See a doctor, get covered",
+    blurb:
+      "Virtual consultations with licensed doctors, medication cover and screening. Built for people whose income comes in irregularly, so it is paid monthly rather than yearly.",
     icon: "HeartPulse",
-    status: "coming",
-    comingNote: "Pro members get first access when this launches.",
+    status: "live",
+    turnaround: "Active same day",
+    priceFrom: `From ${formatNaira(600)} a month`,
+    partner: "WellaHealth",
+    cta: { label: "See plans", href: "/services/care" },
+  },
+  {
+    id: "legal",
+    name: "WAWU Legal",
+    tagline: "Filings without a lawyer, lawyers when you need one",
+    blurb:
+      "Register a business, file your tax or NDPR return with no lawyer call at all. For contracts, trademarks, royalties and entertainment law, book a consultation and get a quote.",
+    icon: "Scale",
+    status: "live",
+    turnaround: "Consultation within days",
+    priceFrom: `Consultations from ${formatNaira(25000)}`,
+    cta: { label: "Browse legal services", href: "/services/legal" },
+  },
+  {
+    id: "easybuy",
+    name: "EasyBuy",
+    tagline: "Device and equipment financing",
+    blurb:
+      "Spread the cost of phones, laptops, and farm equipment over manageable monthly instalments.",
+    icon: "Smartphone",
+    status: "live",
+    turnaround: "Reviewed in 3 to 5 days",
+    priceFrom: "Pay in 3 to 12 instalments",
+    partner: "CredPal",
+    eligibility: [
+      "Verified WAWUAfrica account",
+      "Valid government ID",
+      "Proof of income or 3 month bank statement",
+    ],
+    benefits: [
+      "Pay in 3 to 12 monthly instalments",
+      "No paperwork beyond your WAWU ID",
+      "Approved devices delivered to you",
+      "Build a repayment track record",
+    ],
+    steps: [
+      ["Apply", "Submit a short request through WAWUAfrica"],
+      ["Review", "The partner checks your eligibility"],
+      ["Access", "Collect your device and start paying"],
+    ],
+    cta: { label: "Apply now", href: "/services/easybuy/apply" },
   },
   {
     id: "pension",
     name: "Pension",
-    tagline: "Retirement you can actually keep",
+    tagline: "Micro-pension access",
     blurb:
-      "A pension plan that moves with you, even when your income doesn't show a fixed salary.",
+      "Start a micro-pension and save towards retirement, even with irregular income.",
     icon: "PiggyBank",
-    status: "coming",
-    comingNote: "Pro members get first access when this launches.",
+    status: "live",
+    turnaround: "Reviewed in 3 to 5 days",
+    priceFrom: "Free to start",
+    partner: "ARM Pension",
+    eligibility: ["Verified WAWUAfrica account", "Valid government ID"],
+    benefits: [
+      "Flexible contributions",
+      "Withdraw a portion when needed",
+      "Long term retirement savings",
+      "Professionally managed funds",
+    ],
+    steps: [
+      ["Apply", "Submit a short request through WAWUAfrica"],
+      ["Review", "The partner checks your eligibility"],
+      ["Access", "Get onboarded and start saving"],
+    ],
+    cta: { label: "Apply now", href: "/services/pension/apply" },
   },
   {
     id: "banking",
     name: "Banking",
-    tagline: "A business account that works with WAWU",
+    tagline: "Accounts, savings, loans and SME products",
     blurb:
-      "A simple business bank account that wires your WAWU earnings straight where you need them.",
+      "Open accounts, save, and access loans and SME products built for small businesses.",
     icon: "Landmark",
-    status: "coming",
-    comingNote: "Pro members get first access when this launches.",
+    status: "live",
+    turnaround: "Reviewed in 3 to 5 days",
+    priceFrom: "Free account opening",
+    partner: "WEMA Bank",
+    eligibility: ["Verified WAWUAfrica account", "Valid government ID", "BVN"],
+    benefits: [
+      "Free account opening",
+      "SME focused loan products",
+      "Savings with competitive interest",
+      "Digital banking tools",
+    ],
+    steps: [
+      ["Apply", "Submit a short request through WAWUAfrica"],
+      ["Review", "The partner checks your eligibility"],
+      ["Access", "Get onboarded and start banking"],
+    ],
+    cta: { label: "Apply now", href: "/services/banking/apply" },
   },
   {
-    id: "grants-funding",
+    id: "grants",
     name: "Grants and funding",
-    tagline: "Matches for money that doesn't ask to be repaid",
+    tagline: "Application support and eligibility guidance",
     blurb:
-      "We surface grants, competitions and funding calls that fit your work — and help you apply.",
+      "Get help finding, applying for, and qualifying for grants and funding opportunities.",
     icon: "HandCoins",
-    status: "coming",
-    comingNote: "Pro members get first access when this launches.",
+    status: "live",
+    turnaround: "Matched in 5 to 7 days",
+    priceFrom: "Free",
+    partner: "WAWUAfrica",
+    eligibility: [
+      "Verified WAWUAfrica account",
+      "A registered or registering business",
+    ],
+    benefits: [
+      "Curated grant opportunities",
+      "Application support",
+      "Eligibility guidance",
+      "Deadline reminders",
+    ],
+    steps: [
+      ["Apply", "Tell us what you are working on"],
+      ["Review", "We check what you qualify for"],
+      ["Access", "Receive matched opportunities and support"],
+    ],
+    cta: { label: "Apply now", href: "/services/grants/apply" },
   },
 ];
 
@@ -182,12 +287,12 @@ export const MOCK_APPLICATIONS: ServiceApplication[] = [
     reference: "WA-CAC-30021",
     appliedDate: "22 July 2026",
     status: "rejected",
-    statusLabel: "Rejected — refunded",
+    statusLabel: "Rejected, refunded",
     amountPaid: 25000,
     timeline: [
       { stage: "Submitted", status: "done", date: "22 Jul", note: "Your details and payment were with the agent." },
       { stage: "Under review", status: "done", date: "24 Jul", note: "All three names were already registered." },
-      { stage: "Rejected", status: "done", date: "26 Jul", note: "You were not charged for the outcome — refunded in full." },
+      { stage: "Rejected", status: "done", date: "26 Jul", note: "You were not charged for the outcome, refunded in full." },
     ],
     rejection: {
       note: "All three names you gave were already registered with CAC.",
@@ -220,6 +325,8 @@ export interface CacApplicationPayload {
   registrationType: "business_name" | "limited_company";
   names: [string, string, string];
   nature: string;
+  /** Object-storage URLs for the uploaded supporting documents. */
+  documents?: string[];
 }
 
 export interface CacPaymentResponse {

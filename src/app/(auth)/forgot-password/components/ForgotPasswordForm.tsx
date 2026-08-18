@@ -52,7 +52,7 @@ export function ForgotPasswordForm() {
             </span>
             <h1 className="m-0 text-[26px] font-bold leading-[1.15] tracking-[-0.025em]">Check your email</h1>
             <p className="m-0 text-[14.5px] leading-relaxed text-text-secondary">
-              We sent a reset link to <span className="font-semibold text-text-primary">{email}</span>. It expires in 30 minutes — follow it to pick a new password.
+              We sent a reset link to <span className="font-semibold text-text-primary">{email}</span>. It expires in 30 minutes, follow it to pick a new password.
             </p>
             <StatusPill kind="info">Reset email sent</StatusPill>
             <div className="mt-2 flex flex-col gap-3">

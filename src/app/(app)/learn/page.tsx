@@ -18,7 +18,7 @@ const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]";
 interface LearnData {
   entitlement: LearnEntitlement;
   courses: LearnCourse[];
-  playbook: Playbook;
+  playbook: Playbook | null;
   guides: LearnGuide[];
 }
 
@@ -54,7 +54,7 @@ export default function LearnPage() {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-5 xl:gap-6">
-        <section className="flex flex-col gap-2.5 xl:hidden">
+        <section className={`flex-col gap-2.5 xl:hidden ${playbook ? "flex" : "hidden"}`}>
           <span className={`px-[2px] ${eyebrow}`}>Start here</span>
           <Link href="/learn/playbook" className="no-underline block">
             <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)]">
@@ -66,12 +66,12 @@ export default function LearnPage() {
               </div>
               <div className="flex flex-col gap-[9px] p-4">
                 <span className="text-[18px] font-semibold leading-[1.25] tracking-[-0.015em] text-[var(--text-primary)]">
-                  {playbook.title}
+                  {playbook?.title}
                 </span>
-                <span className="text-[13px] leading-[1.45] text-[var(--text-secondary)]">{playbook.description}</span>
+                <span className="text-[13px] leading-[1.45] text-[var(--text-secondary)]">{playbook?.description}</span>
                 <div className="flex items-center gap-2.5 pt-2.5">
                   <span className="flex-1 text-[12.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-                    {playbook.pages} pages · {playbook.format}
+                    {playbook?.pages} pages · {playbook?.format}
                   </span>
                   <span className="inline-flex h-[38px] items-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent)] px-4 text-[13.5px] font-semibold text-[var(--text-on-accent)]">
                     <Icon name="Download" size={16} color="var(--text-on-accent)" strokeWidth={2.2} />
@@ -101,14 +101,16 @@ export default function LearnPage() {
             <Link href="/learn/guides" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
-            <div className="hidden xl:block">
-              <ListRow
-                title={playbook.title}
-                subtitle={`${playbook.pages} pages · download or read in app`}
-                icon="BookOpen"
-                href="/learn/playbook"
-              />
-            </div>
+            {playbook ? (
+              <div className="hidden xl:block">
+                <ListRow
+                  title={playbook.title}
+                  subtitle={`${playbook.pages} pages · download or read in app`}
+                  icon="BookOpen"
+                  href="/learn/playbook"
+                />
+              </div>
+            ) : null}
             <ListRow
               title="Country guides"
               subtitle={`Trade rules by market · ${countryGuideCount} countries`}

@@ -98,8 +98,10 @@ export default async function ExplorePage() {
             <Link href="/services" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="CAC registration" subtitle={`From ${formatNaira(25000)} · 7 to 14 days`} icon="Stamp" href="/services" />
-            <ListRow title="NEPC, mentors and more" subtitle="3 open · 4 coming with Pro" icon="Briefcase" href="/services" />
+            <ListRow title="WAWUPay" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
+            <ListRow title="WAWUCare" subtitle={`See a doctor, from ${formatNaira(600)} a month`} icon="HeartPulse" href="/services/care" />
+            <ListRow title="WAWU Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
+            <ListRow title="CAC, NEPC, mentors and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
           </div>
         </section>
       </div>
@@ -128,7 +130,10 @@ const SHOPS = {
 function ShopCard({ id }: { id: keyof typeof SHOPS }) {
   const shop = SHOPS[id];
   return (
-    <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] xl:gap-[14px] xl:p-[22px]">
+    <Link
+      href={`/marketplace/${id}`}
+      className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:gap-[14px] xl:p-[22px]"
+    >
       <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
         <Icon name={shop.icon} size={18} color="var(--accent)" />
       </span>
@@ -138,6 +143,6 @@ function ShopCard({ id }: { id: keyof typeof SHOPS }) {
         <HandoffPill app={shop.name} />
       </div>
       <span className="text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{shop.stat}</span>
-    </div>
+    </Link>
   );
 }

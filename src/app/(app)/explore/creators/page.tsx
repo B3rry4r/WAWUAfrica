@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ExploreCategoryId } from "@/types/explore";
+import { CATEGORY_IDS, categoryName, isCategoryId } from "@/lib/categories";
 import type { VerificationLevel } from "@/types/account";
 import { getCreators } from "@/lib/api/explore";
 import { Icon } from "@/components/ui/Icon";
@@ -10,24 +11,14 @@ import { FollowButton } from "@/components/shared/FollowButton";
 import { CategoryFilterAside } from "../_components/CategoryFilterAside";
 import { CreatorGridCard } from "../_components/CreatorGridCard";
 
-const VALID_CATEGORIES: ExploreCategoryId[] = [
-  "business",
-  "agriculture",
-  "finance",
-  "trade",
-  "entertainment",
-  "career",
-  "education",
-  "health",
-  "technology",
-  "creative_arts",
-  "culture",
-];
 
 export default async function CreatorsPage({ searchParams }: { searchParams: { category?: string } }) {
-  const category = VALID_CATEGORIES.includes(searchParams.category as ExploreCategoryId)
-    ? (searchParams.category as ExploreCategoryId)
-    : "business";
+  // No (or unrecognised) category means genuinely unfiltered browsing —
+  // getCreators() takes an optional category, so `undefined` returns every
+  // creator. CategoryFilterAside already reads a missing category as
+  // "All creators" active.
+  const raw = searchParams.category;
+  const category: ExploreCategoryId | undefined = raw && isCategoryId(raw) ? raw : undefined;
   const creators = await getCreators(category);
 
   return (
@@ -42,19 +33,19 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
           }
         />
         <div className="flex gap-2 overflow-x-auto border-b border-[var(--border-hairline)] px-4 py-3 [scrollbar-width:none]">
-          {VALID_CATEGORIES.map((id) => {
+          {[undefined, ...CATEGORY_IDS].map((id) => {
             const on = category === id;
             return (
               <Link
-                key={id}
-                href={id === "business" ? "/explore/creators" : `/explore/creators?category=${id}`}
-                className={`inline-flex h-8 flex-shrink-0 items-center rounded-[var(--radius-chip)] border px-[14px] text-[13px] no-underline capitalize ${
+                key={id ?? "all"}
+                href={id ? `/explore/creators?category=${id}` : "/explore/creators"}
+                className={`inline-flex h-8 flex-shrink-0 items-center whitespace-nowrap rounded-[var(--radius-chip)] border px-[14px] text-[13px] no-underline ${
                   on
                     ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
                     : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
                 }`}
               >
-                {id.replace("_", " ")}
+                {id ? categoryName(id) : "All"}
               </Link>
             );
           })}
@@ -100,12 +91,17 @@ interface CreatorRowProps {
 
 function CreatorRow({ wawuId, name, field, pieceCount, verification, following }: CreatorRowProps) {
   return (
-    <Link
-      href={`/profile/${wawuId}`}
-      className="flex min-h-[86px] items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[0_14px] no-underline"
-    >
+    // The row navigates via a stretched overlay link rather than wrapping its
+    // contents: FollowButton must stay outside the link, or tapping Follow
+    // also navigates to the profile.
+    <div className="relative flex min-h-[86px] items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[0_14px]">
+      <Link
+        href={`/profile/${wawuId}`}
+        aria-label={`${name}, ${field}`}
+        className="absolute inset-0 rounded-[var(--radius-card)] no-underline"
+      />
       <Avatar initial={name.charAt(0)} size={52} />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-[6px]">
           <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-semibold text-[var(--text-primary)]">
             {name}
@@ -116,9 +112,9 @@ function CreatorRow({ wawuId, name, field, pieceCount, verification, following }
           {field} · {pieceCount} {pieceCount === 1 ? "piece" : "pieces"}
         </span>
       </div>
-      <div className="flex flex-shrink-0">
+      <div className="relative flex flex-shrink-0">
         <FollowButton wawuId={wawuId} initial={following} />
       </div>
-    </Link>
+    </div>
   );
 }

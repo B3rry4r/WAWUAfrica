@@ -1,7 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { SessionProvider } from "@/lib/auth/session-provider";
+import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
@@ -57,6 +59,9 @@ interface AppShellProps {
  * for that screen's task, not a shell-level exception.
  */
 export function AppShell({ children, header = true }: AppShellProps) {
+  // Warm Flutterwave's script so tapping Pay opens the modal immediately
+  // instead of sitting on a dead button while a cross-origin script loads.
+  useEffect(() => preloadFlutterwaveCheckout(), []);
   return (
     <SessionProvider>
       <div className="w-full xl:flex xl:h-screen xl:overflow-hidden">

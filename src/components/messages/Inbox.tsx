@@ -14,6 +14,19 @@ import { Icon } from "@/components/ui/Icon";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { formatNaira } from "@/lib/format";
 
+/** "4:12 pm today" / "9:40 am tomorrow" / "14 Aug, 4:12 pm" from a real ISO deadline. */
+function formatDeadline(iso: string): string {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "soon";
+  const time = at.toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+  const days = Math.round(
+    (new Date(at.toDateString()).getTime() - new Date(new Date().toDateString()).getTime()) / 86_400_000,
+  );
+  if (days === 0) return `${time} today`;
+  if (days === 1) return `${time} tomorrow`;
+  return `${at.toLocaleDateString("en-NG", { day: "numeric", month: "short" })}, ${time}`;
+}
+
 export function Inbox() {
   const { user } = useSession();
   const { creator } = useCreatorState();
@@ -64,7 +77,7 @@ export function Inbox() {
         </span>
         <Link
           href="/messages/settings"
-          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline [font-feature-settings:var(--font-feature-tabular)]"
+          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline [font-feature-settings:var(--font-feature-tabular)]"
         >
           {formatNaira(price)} each
         </Link>
@@ -88,7 +101,7 @@ export function Inbox() {
               />
               <span className="flex-1 text-[12.5px] font-semibold text-[var(--text-primary)]">
                 {state.penalty === "warned"
-                  ? `${state.responseStats.rate}% unanswered — you are missing messages`
+                  ? `${state.responseStats.rate}% unanswered, you are missing messages`
                   : state.penalty === "disabled7"
                     ? "Paid messages are off for 7 days"
                     : "Paid messages are off for 30 days"}
@@ -131,7 +144,9 @@ export function Inbox() {
                     critical ? "text-[var(--danger)]" : "text-[var(--text-secondary)]"
                   }`}
                 >
-                  Respond by {critical ? "4:12 pm today" : "1:40 am"}
+                  {/* The real 24h deadline off the thread. This used to print
+                      one of two hardcoded times regardless of the message. */}
+                  {t.expiresAt ? `Respond by ${formatDeadline(t.expiresAt)}` : "Awaiting your reply"}
                 </span>
                 <span className="text-[12.5px] font-bold [font-feature-settings:var(--font-feature-tabular)]">
                   {formatNaira(dmEarn)} to earn

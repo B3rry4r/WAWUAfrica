@@ -5,7 +5,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { CreatorProfile, ProfileTab } from "@/types/profile";
-import { getCreatorProfile, isFollowing } from "@/lib/api/profile";
+import { getCreatorProfile, isFollowing, toggleFollowProfile } from "@/lib/api/profile";
 import { ProfileHeader } from "@/components/ui/ProfileHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { PriceChip } from "@/components/ui/PriceChip";
@@ -56,7 +56,24 @@ function FanProfilePageContent() {
 
   const [profile, setProfile] = useState<CreatorProfile | null>(null);
   const [following, setFollowing] = useState(false);
+  // The mobile profile's Follow button had no handler at all — the default
+  // mobile view could not follow anyone.
+  const [followBusy, setFollowBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const toggleFollow = useCallback(async () => {
+    if (followBusy) return;
+    setFollowBusy(true);
+    const previous = following;
+    setFollowing(!previous);
+    try {
+      setFollowing(await toggleFollowProfile(wawuId));
+    } catch {
+      setFollowing(previous);
+    } finally {
+      setFollowBusy(false);
+    }
+  }, [wawuId, following, followBusy]);
 
   const load = useCallback(() => {
     let active = true;
@@ -98,13 +115,13 @@ function FanProfilePageContent() {
       {/* Mobile chrome — unchanged, hidden at xl where the wide identity row below takes over. */}
       <div className="xl:hidden">
         {isDeepTab ? (
-          <CompactHeader profile={profile} following={following} />
+          <CompactHeader profile={profile} following={following} onToggleFollow={toggleFollow} />
         ) : (
-          <FullHeader profile={profile} following={following} />
+          <FullHeader profile={profile} following={following} onToggleFollow={toggleFollow} />
         )}
       </div>
       {/* Desktop chrome (design D16) — cover + one wide identity row on every tab, not just Content. */}
-      <DesktopIdentity profile={profile} following={following} />
+      <DesktopIdentity profile={profile} following={following} onToggleFollow={toggleFollow} />
 
       <ProfileTabs wawuId={wawuId} active={tab} compact={isDeepTab} />
 
@@ -130,7 +147,7 @@ function FanProfilePageContent() {
  * every tab (D16 doesn't collapse to a compact bar on desktop — that's a
  * mobile-scroll-driven affordance the wide rail doesn't need).
  */
-function DesktopIdentity({ profile, following }: { profile: CreatorProfile; following: boolean }) {
+function DesktopIdentity({ profile, following, onToggleFollow }: { profile: CreatorProfile; following: boolean; onToggleFollow: () => void }) {
   const metaParts = [profile.categories[0], profile.location, profile.replyTime].filter(Boolean) as string[];
   return (
     <div className="hidden xl:block">
@@ -193,7 +210,7 @@ function DesktopRail({ profile }: { profile: CreatorProfile }) {
   );
 }
 
-function FullHeader({ profile, following }: { profile: CreatorProfile; following: boolean }) {
+function FullHeader({ profile, following, onToggleFollow }: { profile: CreatorProfile; following: boolean; onToggleFollow: () => void }) {
   return (
     <div className="relative">
       <ProfileBackButton />
@@ -210,6 +227,7 @@ function FullHeader({ profile, following }: { profile: CreatorProfile; following
         ]}
         primaryLabel={following ? "Following" : "Follow"}
         following={following}
+        onPrimary={onToggleFollow}
       />
       <ProfileActions
         creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, dmPrice: profile.dmPrice }}
@@ -220,7 +238,7 @@ function FullHeader({ profile, following }: { profile: CreatorProfile; following
 }
 
 /** Collapsed sticky bar — Shop and About tabs keep Follow, Message, Tip reachable. */
-function CompactHeader({ profile, following }: { profile: CreatorProfile; following: boolean }) {
+function CompactHeader({ profile, following, onToggleFollow }: { profile: CreatorProfile; following: boolean; onToggleFollow: () => void }) {
   return (
     <div
       className={[
@@ -295,7 +313,11 @@ function ContentRow({ item }: { item: CreatorProfile["content"][number] }) {
       <PriceChip amount={item.price} label="PPV" free={item.price === 0} tone="plain" size="sm" />
     );
   return (
-    <div className="flex h-[82px] shrink-0 items-center gap-[13px] rounded-[var(--radius-card)] border border-hairline bg-card px-[14px] xl:h-auto xl:flex-col xl:items-stretch xl:gap-0 xl:overflow-hidden xl:px-0">
+    // Was a plain div: a creator's content could be seen but never opened or
+    // bought from their profile.
+    <Link
+      href={`/content/${item.id}`}
+      className="flex h-[82px] shrink-0 items-center gap-[13px] rounded-[var(--radius-card)] border border-hairline bg-card px-[14px] no-underline transition-colors hover:border-strong xl:h-auto xl:flex-col xl:items-stretch xl:gap-0 xl:overflow-hidden xl:px-0">
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:aspect-video xl:h-auto xl:w-full xl:rounded-none xl:border-0 xl:border-b xl:border-hairline">
         {item.locked && (
           <div className="absolute inset-0 grid place-items-center bg-[var(--locked-veil)]">
@@ -313,7 +335,7 @@ function ContentRow({ item }: { item: CreatorProfile["content"][number] }) {
         </span>
       </div>
       <div className="flex shrink-0 xl:hidden">{priceNode}</div>
-    </div>
+    </Link>
   );
 }
 

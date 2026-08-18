@@ -36,7 +36,7 @@ export default function CountryGuidesPage() {
       ) : (
         <>
           <p className="m-0 px-[2px] text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-            What it takes to sell into each market — duties, paperwork, who to register with.
+            What it takes to sell into each market: duties, paperwork, who to register with.
           </p>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
             {guides.map((g) => (

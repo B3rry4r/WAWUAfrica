@@ -30,7 +30,7 @@ interface NavItem {
  * for this screen.
  */
 const BASE_ITEMS: NavItem[] = [
-  { href: "/", label: "Home", icon: "House" },
+  { href: "/home", label: "Home", icon: "House" },
   { href: "/communities", label: "Communities", icon: "Users" },
   { href: "/explore", label: "Explore", icon: "Compass" },
   { href: "/messages", label: "Messages", icon: "MessageCircle" },
@@ -53,7 +53,7 @@ function navRowClass(active: boolean) {
  * there unchanged.
  */
 export function Sidebar() {
-  const { user, accountType } = useSession();
+  const { user, accountType, signOut } = useSession();
   const pathname = usePathname();
   const gates = creatorGates(user);
   const isCreator = accountType === "creator";
@@ -61,8 +61,7 @@ export function Sidebar() {
   // The foot card needs numbers (credits count / earnings this month) that
   // aren't on the client session object, so this reads the same profile SEAM
   // the mobile Profile screen already reads (getOwnProfile). AppShell has to
-  // stay a client component (it's also rendered from the client-only
-  // SessionGate on "/", and the whole session is an in-memory mock — there's
+  // stay a client component (the whole session is an in-memory mock — there's
   // no server auth to fetch against yet), so this mirrors CreditsCard's
   // existing client-side fetch pattern rather than the usual server-component
   // fetch described in docs/05_CONVENTIONS.md.
@@ -106,6 +105,8 @@ export function Sidebar() {
 
   const dashboardActive = pathname === "/creator";
 
+  const servicesActive = pathname.startsWith('/services');
+
   return (
     <aside className="hidden w-[244px] shrink-0 flex-col gap-[6px] overflow-y-auto border-r border-hairline bg-page px-[14px] py-[22px] xl:flex xl:h-screen">
       <img src="/wawu-logo-white.png" alt="WAWU" className="mx-[10px] mb-5 mt-[2px] h-6 w-auto object-contain" />
@@ -129,6 +130,22 @@ export function Sidebar() {
           </Link>
         );
       })}
+
+      {/*
+        Services is not one of the five locked bottom-bar slots, so on mobile
+        it is reached through Explore. Desktop has the room, and leaving
+        WAWUPay/WAWUCare/WAWU Legal buried one level inside Explore was the
+        reason nobody could find them.
+      */}
+      <Link href="/services" className={navRowClass(servicesActive)}>
+        <Icon
+          name="Briefcase"
+          size={20}
+          color={servicesActive ? "var(--accent)" : "var(--text-secondary)"}
+          strokeWidth={servicesActive ? 2.4 : 2}
+        />
+        Services
+      </Link>
 
       {isCreator ? (
         <>
@@ -188,6 +205,20 @@ export function Sidebar() {
           </>
         )}
       </div>
+
+      {/*
+        Signing out used to exist only at the bottom of Settings, which is two
+        navigations deep. It is a thing people look for by eye, so it belongs
+        somewhere permanently visible.
+      */}
+      <button
+        type="button"
+        onClick={signOut}
+        className="mt-[10px] flex h-11 w-full items-center gap-3 rounded-[12px] px-[13px] text-[14px] font-medium text-text-secondary transition-colors hover:bg-tag hover:text-text-primary"
+      >
+        <Icon name="LogOut" size={19} color="var(--text-secondary)" strokeWidth={2} />
+        Sign out
+      </button>
     </aside>
   );
 }

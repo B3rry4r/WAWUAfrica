@@ -90,7 +90,7 @@ export function HomeFeed() {
             <EmptyState
               icon="Clock"
               title="Following feed isn't ready yet"
-              caption="We can't filter your feed by who you follow just yet — check 'For you' in the meantime."
+              caption="We can't filter your feed by who you follow just yet, check 'For you' in the meantime."
             />
           ) : feed.length === 0 ? (
             <EmptyState

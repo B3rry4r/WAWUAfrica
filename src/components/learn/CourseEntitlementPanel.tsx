@@ -5,9 +5,9 @@ import { Icon } from "@/components/ui/Icon";
 export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEntitlementState; entitlement: LearnEntitlement }) {
   if (state.status === "enrolled") {
     return (
-      <Panel icon="Check" iconTone="success" title="Enrolled — free" subtitle="This used one of your free courses.">
+      <Panel icon="Check" iconTone="success" title="Enrolled, free" subtitle="This used one of your free courses.">
         <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
-          Pick it back up any time — Alison keeps your place.
+          Pick it back up any time. Alison keeps your place.
         </span>
       </Panel>
     );
@@ -17,7 +17,7 @@ export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEn
     return (
       <Panel icon="GraduationCap" iconTone="accent" title="Covered by your tier" subtitle={`This uses your ${entitlement.freeCoursesTotal === 1 ? "1 free course" : "next free course"}`}>
         <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
-          Pro carries three. Basic carries one — spend it on something you will finish.
+          Pro carries three. Basic carries one. Spend it on something you will finish.
         </span>
       </Panel>
     );
@@ -26,7 +26,7 @@ export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEn
   return (
     <Panel icon="Info" iconTone="muted" title="No free courses left" subtitle="You&rsquo;ve used your free courses for this cycle.">
       <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
-        Upgrade to Pro for more free courses, or enrol directly — WAWU just won&rsquo;t track this one as covered.
+        Upgrade to Pro for more free courses, or enrol directly. WAWU just won&rsquo;t track this one as covered.
       </span>
     </Panel>
   );
