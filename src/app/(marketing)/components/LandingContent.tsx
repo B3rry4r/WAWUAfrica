@@ -260,8 +260,9 @@ export async function LandingContent() {
           </div>
 
           {/* Social proof: collage + stat cards (showcase images stand in until real content exists) */}
-          <div className="mx-auto mt-14 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-16 dt:grid-cols-[1fr_360px] dt:gap-6">
-              <div className="grid grid-cols-2 gap-4 dt:gap-6">
+          <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[1fr_360px] dt:gap-6">
+            <div className="flex flex-col gap-4 dt:gap-5">
+              <div className="grid grid-cols-2 gap-4 dt:gap-5">
                 {SHOWCASE.map((card, i) => {
                   const real = toWatch[i];
                   const title = real?.title ?? card.title;
@@ -278,19 +279,19 @@ export async function LandingContent() {
                           : "translate-y-4 rotate-[1.6deg] animate-[wawuFloat_8s_ease-in-out_infinite] [animation-delay:1.2s]"
                       }`}
                     >
-                      <span className="grid aspect-[3/4] w-full place-items-center">
+                      <span className="grid h-[128px] w-full place-items-center dt:h-[150px]">
                         <span className="grid place-items-center transition-transform duration-500 group-hover:scale-110" aria-hidden="true">
                           {card.type === "Video" ? (
-                            <span className="grid h-24 w-24 place-items-center rounded-full border border-[rgba(255,255,255,0.35)] bg-[rgba(11,10,13,0.35)] backdrop-blur">
-                              <Icon name="Play" size={38} color="#FFFFFF" strokeWidth={1.8} className="translate-x-0.5 drop-shadow-[0_0_24px_rgba(255,255,255,0.45)]" />
+                            <span className="grid h-11 w-11 place-items-center rounded-full border border-[rgba(255,255,255,0.35)] bg-[rgba(11,10,13,0.35)] backdrop-blur">
+                              <Icon name="Play" size={18} color="#FFFFFF" strokeWidth={1.8} className="translate-x-0.5 drop-shadow-[0_0_16px_rgba(255,255,255,0.45)]" />
                             </span>
                           ) : (
-                            <Icon name={card.icon} size={104} color="rgba(255,255,255,0.92)" strokeWidth={1.1} className="drop-shadow-[0_0_34px_rgba(255,255,255,0.35)]" />
+                            <Icon name={card.icon} size={40} color="rgba(255,255,255,0.92)" strokeWidth={1.3} className="drop-shadow-[0_0_20px_rgba(255,255,255,0.35)]" />
                           )}
                         </span>
                       </span>
-                      <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.85),transparent)]" style={{ height: "45%" }} aria-hidden="true" />
-                      <span className="absolute left-3 top-3 inline-flex h-[26px] items-center rounded-full border border-[rgba(255,255,255,0.25)] bg-[rgba(11,10,13,0.55)] px-3 text-[11.5px] font-semibold text-white backdrop-blur">
+                      <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.85),transparent)]" style={{ height: "62%" }} aria-hidden="true" />
+                      <span className="absolute left-2.5 top-2.5 inline-flex h-[21px] items-center rounded-full border border-[rgba(255,255,255,0.25)] bg-[rgba(11,10,13,0.55)] px-2.5 text-[10px] font-semibold text-white backdrop-blur">
                         {real ? real.contentType.charAt(0).toUpperCase() + real.contentType.slice(1) : card.type}
                       </span>
                       <span
@@ -300,23 +301,66 @@ export async function LandingContent() {
                       >
                         {price}
                       </span>
-                      <span className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 px-4 pb-4">
-                        <span className="text-[16px] font-bold leading-snug text-white dt:text-[18px]">{title}</span>
-                        <span className="text-[12.5px] text-[rgba(255,255,255,0.75)]">{creator}</span>
+                      <span className="absolute inset-x-0 bottom-0 flex flex-col gap-0 px-3 pb-2.5">
+                        <span className="truncate text-[12.5px] font-bold leading-snug text-white dt:text-[13.5px]">{title}</span>
+                        <span className="truncate text-[10.5px] text-[rgba(255,255,255,0.7)]">{creator}</span>
                       </span>
                     </Link>
                   );
                 })}
               </div>
+
+              {/*
+                The services used to be their own full section further down the
+                page, which meant nobody saw them without scrolling past the
+                whole hero. They sit in the hero now, deliberately small: this
+                is a directory of what the app can do, not a feature pitch.
+              */}
+              <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-3 dt:grid-cols-3">
+                {QUICK_SERVICES.map((service) => {
+                  const inner = (
+                    <>
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[9px] bg-accent-tint">
+                        <Icon name={service.icon} size={14} color="var(--accent-hover)" strokeWidth={2} />
+                      </span>
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-[12.5px] font-semibold leading-tight text-text-primary">
+                          {service.brand}
+                        </span>
+                        <span className="truncate text-[10.5px] leading-tight text-text-muted">
+                          {service.soon ? "Coming soon" : service.label}
+                        </span>
+                      </span>
+                    </>
+                  );
+                  const shell =
+                    "flex items-center gap-2.5 rounded-[12px] border border-hairline bg-[rgba(19,19,22,0.8)] px-2.5 py-2 backdrop-blur";
+                  return service.href ? (
+                    <Link
+                      key={service.brand}
+                      href={service.href}
+                      className={`${shell} no-underline transition-colors duration-200 hover:border-accent`}
+                    >
+                      {inner}
+                    </Link>
+                  ) : (
+                    <div key={service.brand} className={`${shell} opacity-60`}>
+                      {inner}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
               <div className="flex flex-col gap-3.5">
-                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-6 backdrop-blur">
+                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Users" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
-                  <span className="mt-3 block text-[34px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
-                  <span className="text-[13px] leading-snug text-text-secondary">Professionals, Entrepreneurs, Artisans on WAWUAfrica</span>
+                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
+                  <span className="text-[12px] leading-snug text-text-secondary">Professionals, Entrepreneurs, Artisans on WAWUAfrica</span>
                 </div>
-                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-6 backdrop-blur">
+                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Route" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
@@ -325,71 +369,15 @@ export async function LandingContent() {
                     {PIPELINE.join(" → ")}
                   </span>
                 </div>
-                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-6 backdrop-blur">
+                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Globe" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
-                  <span className="mt-3 block text-[34px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
-                  <span className="text-[13px] leading-snug text-text-secondary">Fans, plus access to Pan-African ecosystems, communities, governments and institutions</span>
+                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
+                  <span className="text-[12px] leading-snug text-text-secondary">Fans, plus access to Pan-African ecosystems, communities, governments and institutions</span>
                 </div>
               </div>
             </div>
-        </section>
-
-        {/* ============ QUICK SERVICES ============ */}
-        <section className="relative px-5 pb-6 pt-2 dt:pb-10">
-          <div className="mx-auto max-w-[1240px]">
-            <div className="flex flex-col items-center text-center">
-              <CaptionPill>Lifestyle Services</CaptionPill>
-              <h2 className="m-0 mt-5 text-[32px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[44px]">
-                Life admin, <span className="text-accent-hover">handled here</span>
-              </h2>
-              <p className="m-0 mt-4 max-w-[560px] text-[15px] leading-relaxed text-text-secondary dt:text-[16.5px]">
-                Pay a bill, see a doctor, register your business. The things you leave the app for, you no longer have to.
-              </p>
-            </div>
-            <div className="mt-10 grid grid-cols-1 gap-3.5 sm:grid-cols-2 dt:grid-cols-3 dt:gap-4">
-              {QUICK_SERVICES.map((service) => {
-                const body = (
-                  <>
-                    <span className="grid h-11 w-11 place-items-center rounded-[14px] border border-hairline bg-elevated">
-                      <Icon name={service.icon} size={20} color="var(--accent-hover)" strokeWidth={1.9} />
-                    </span>
-                    <span className="mt-4 flex items-center gap-2">
-                      <span className="text-[16.5px] font-bold tracking-[-0.01em] text-text-primary">{service.brand}</span>
-                      {service.soon ? (
-                        <span className="inline-flex h-[19px] items-center rounded-full border border-hairline bg-tag px-2 text-[10px] font-bold uppercase tracking-[0.07em] text-text-muted">
-                          Soon
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-accent">{service.label}</span>
-                    <span className="mt-2.5 text-[14px] leading-relaxed text-text-secondary">{service.blurb}</span>
-                  </>
-                );
-                const shell = "group flex flex-col rounded-card border border-hairline bg-card p-5 dt:p-6";
-                // A service whose partner API has not landed yet is shown but not
-                // clickable: linking it would open a screen that cannot do anything.
-                return service.href ? (
-                  <Link
-                    key={service.brand}
-                    href={service.href}
-                    className={`${shell} no-underline transition-colors duration-200 hover:border-accent`}
-                  >
-                    {body}
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-accent-hover">
-                      Open
-                      <Icon name="ArrowRight" size={15} color="var(--accent-hover)" strokeWidth={2.2} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </span>
-                  </Link>
-                ) : (
-                  <div key={service.brand} className={`${shell} opacity-70`}>
-                    {body}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </section>
 
         {/* ============ VALUE PROPOSITION (4-column) ============ */}
