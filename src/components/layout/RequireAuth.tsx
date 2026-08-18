@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
 
 /**
@@ -20,20 +20,23 @@ import { useSession } from "@/lib/auth/session-provider";
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, hydrated } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
-  const search = useSearchParams();
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
       // Carry where they were trying to go. Without this, following a link to
       // a service and signing in dropped you on the home feed with no sign of
       // what you had asked for.
-      const query = search.toString();
-      const target = `${pathname}${query ? `?${query}` : ""}`;
+      //
+      // Read from `window` rather than useSearchParams(): that hook opts the
+      // whole tree out of static prerendering unless every page wrapping it
+      // has a Suspense boundary, and this component sits inside AppShell, so
+      // it would have broken the build for every statically rendered screen.
+      // This effect only ever runs on the client, where `window` is real.
+      const target = `${window.location.pathname}${window.location.search}`;
       const next = target && target !== "/" ? `?next=${encodeURIComponent(target)}` : "";
       router.replace(`/sign-in${next}`);
     }
-  }, [hydrated, isAuthenticated, router, pathname, search]);
+  }, [hydrated, isAuthenticated, router]);
 
   if (!hydrated || !isAuthenticated) return null;
   return <>{children}</>;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -13,7 +13,6 @@ import { OtpInput } from "../../components/OtpInput";
 
 export function SignInForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { signInUser } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,7 +44,7 @@ export function SignInForm() {
       // Return them to whatever they were trying to reach, falling back to the
       // feed. Only same-origin paths are honoured, so `next` cannot be used to
       // bounce someone to another site after they sign in.
-      router.push(safeNext(searchParams.get("next")) ?? "/home");
+      router.push(safeNext() ?? "/home");
     } catch (e) {
       if (e instanceof ApiError && e.code === "EMAIL_NOT_VERIFIED") {
         setNeedsVerification(true);
@@ -208,11 +207,19 @@ export function SignInForm() {
 }
 
 /**
+ * Where to land after signing in, from the `next` query param.
+ *
+ * Read off `window` rather than useSearchParams(), which opts the page out of
+ * static prerendering unless wrapped in a Suspense boundary. Only called from
+ * a submit handler, so `window` always exists.
+ *
  * Only same-origin, absolute-path destinations are followed. A `next` of
  * "https://evil.example" or "//evil.example" would otherwise turn the sign-in
  * screen into an open redirect.
  */
-function safeNext(value: string | null): string | null {
+function safeNext(): string | null {
+  if (typeof window === "undefined") return null;
+  const value = new URLSearchParams(window.location.search).get("next");
   if (!value) return null;
   if (!value.startsWith("/") || value.startsWith("//")) return null;
   return value;
