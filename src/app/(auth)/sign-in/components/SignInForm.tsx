@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -13,6 +13,7 @@ import { OtpInput } from "../../components/OtpInput";
 
 export function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signInUser } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,8 +42,10 @@ export function SignInForm() {
     try {
       const res = await signIn({ email, password });
       signInUser(res.user, res.token);
-      // Creator onboarding (/create) is Dev B's; land everyone on the feed for now.
-      router.push("/home");
+      // Return them to whatever they were trying to reach, falling back to the
+      // feed. Only same-origin paths are honoured, so `next` cannot be used to
+      // bounce someone to another site after they sign in.
+      router.push(safeNext(searchParams.get("next")) ?? "/home");
     } catch (e) {
       if (e instanceof ApiError && e.code === "EMAIL_NOT_VERIFIED") {
         setNeedsVerification(true);
@@ -202,4 +205,15 @@ export function SignInForm() {
       </div>
     </div>
   );
+}
+
+/**
+ * Only same-origin, absolute-path destinations are followed. A `next` of
+ * "https://evil.example" or "//evil.example" would otherwise turn the sign-in
+ * screen into an open redirect.
+ */
+function safeNext(value: string | null): string | null {
+  if (!value) return null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
 }

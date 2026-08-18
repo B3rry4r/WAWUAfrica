@@ -3,6 +3,8 @@ export type ServiceStatus = "live" | "coming";
 
 export interface PartnerService {
   id: string;
+  /** Stable routing key ("pay", "pension"). Prefer this over id for links. */
+  slug: string;
   name: string;
   tagline: string;
   blurb: string;
@@ -14,8 +16,10 @@ export interface PartnerService {
   priceFrom?: string;
   /** e.g. "CAC" for the partner. */
   partner?: string;
-  /** CTAs for live services. */
+  /** CTAs for live services. Comes from the backend row. */
   cta?: { label: string; href: string };
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
   /** Coming-soon blurb details. */
   comingNote?: string;
   /**

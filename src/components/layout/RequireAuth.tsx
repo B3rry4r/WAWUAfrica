@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
 
 /**
@@ -20,12 +20,20 @@ import { useSession } from "@/lib/auth/session-provider";
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, hydrated } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const search = useSearchParams();
 
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
-      router.replace("/sign-in");
+      // Carry where they were trying to go. Without this, following a link to
+      // a service and signing in dropped you on the home feed with no sign of
+      // what you had asked for.
+      const query = search.toString();
+      const target = `${pathname}${query ? `?${query}` : ""}`;
+      const next = target && target !== "/" ? `?next=${encodeURIComponent(target)}` : "";
+      router.replace(`/sign-in${next}`);
     }
-  }, [hydrated, isAuthenticated, router]);
+  }, [hydrated, isAuthenticated, router, pathname, search]);
 
   if (!hydrated || !isAuthenticated) return null;
   return <>{children}</>;

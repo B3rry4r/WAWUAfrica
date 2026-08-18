@@ -43,11 +43,11 @@ function DesktopServiceCard({ s }: { s: PartnerService }) {
       </div>
       <span className="text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">{s.blurb}</span>
       {live ? (
-        <Button full size="md" iconRight="ArrowRight" href={s.cta?.href ?? `/services/${s.id}`}>
+        <Button full size="md" iconRight="ArrowRight" href={s.cta?.href ?? `/services/${s.slug ?? s.id}`}>
           {s.cta?.label ?? "Apply"}
         </Button>
       ) : (
-        <Button full size="md" variant="secondary" icon="Bell" href={`/services/${s.id}`}>
+        <Button full size="md" variant="secondary" icon="Bell" href={`/services/${s.slug ?? s.id}`}>
           Notify me when it opens
         </Button>
       )}
@@ -124,7 +124,7 @@ export default function ServicesPage() {
           <span className={eyebrow}>Open now</span>
           <div className="flex flex-col gap-[10px]">
             {live.map((s) => (
-              <Link key={s.id} href={`/services/${s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline">
+              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline">
                 <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
                   <Icon name={s.icon as IconName} size={20} color="var(--accent)" />
                 </span>
@@ -150,7 +150,7 @@ export default function ServicesPage() {
           </div>
           <div className="flex flex-col gap-[10px]">
             {coming.map((s) => (
-              <Link key={s.id} href={`/services/${s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] opacity-[0.82] no-underline">
+              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] opacity-[0.82] no-underline">
                 <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
                   <Icon name={s.icon as IconName} size={20} color="var(--text-muted)" />
                 </span>
@@ -176,15 +176,46 @@ export default function ServicesPage() {
         >
           <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Services</span>
           <span className="flex-1" />
-          <span className="text-[13.5px] text-[var(--text-muted)]">Coming-soon services are named, not hidden</span>
+          <span className="text-[13.5px] text-[var(--text-muted)]">
+            {live.length} open{coming.length ? ` · ${coming.length} coming` : ""}
+          </span>
         </div>
 
-        <div className="flex flex-col gap-[22px] p-[26px]">
-          <div className="grid grid-cols-2 gap-[20px]">
-            {services.map((s) => (
-              <DesktopServiceCard key={s.id} s={s} />
-            ))}
+        {/*
+          A flat two-column dump of every service read as one long wall. The
+          grid is three-up on a wide screen and split by whether a service can
+          actually be used today, so the ones that are open are not buried
+          among the ones that are not.
+        */}
+        <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-[26px] p-[26px]">
+          <div className="flex flex-col gap-[8px]">
+            <h1 className="m-0 text-[28px] font-bold tracking-[-0.025em] text-[var(--text-primary)]">
+              Everything else WAWU can do for you
+            </h1>
+            <p className="m-0 max-w-[620px] text-[14.5px] leading-[1.55] text-[var(--text-secondary)]">
+              Get registered, get covered, get funded, and pay your bills, without leaving the app.
+            </p>
           </div>
+
+          <div className="flex flex-col gap-[14px]">
+            <span className={eyebrow}>Open now</span>
+            <div className="grid grid-cols-2 gap-[20px] 2xl:grid-cols-3">
+              {live.map((s) => (
+                <DesktopServiceCard key={s.id} s={s} />
+              ))}
+            </div>
+          </div>
+
+          {coming.length ? (
+            <div className="flex flex-col gap-[14px]">
+              <span className={eyebrow}>Coming soon</span>
+              <div className="grid grid-cols-2 gap-[20px] 2xl:grid-cols-3">
+                {coming.map((s) => (
+                  <DesktopServiceCard key={s.id} s={s} />
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-[20px]">
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">

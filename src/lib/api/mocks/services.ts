@@ -10,6 +10,7 @@ import { delay } from "../client";
 export const MOCK_SERVICES: PartnerService[] = [
   {
     id: "cac",
+    slug: "cac",
     name: "CAC registration",
     tagline: "Register your business in Nigeria",
     blurb:
@@ -23,6 +24,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "nepc",
+    slug: "nepc",
     name: "NEPC export support",
     tagline: "Start exporting from Nigeria",
     blurb:
@@ -36,6 +38,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "mentors",
+    slug: "mentors",
     name: "Mentors",
     tagline: "One-to-one sessions with seasoned creators",
     blurb:
@@ -48,6 +51,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "pay",
+    slug: "pay",
     name: "WAWUPay",
     tagline: "Airtime, data, electricity and cable",
     blurb:
@@ -61,6 +65,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "care",
+    slug: "care",
     name: "WAWUCare",
     tagline: "See a doctor, get covered",
     blurb:
@@ -74,6 +79,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "legal",
+    slug: "legal",
     name: "WAWU Legal",
     tagline: "Filings without a lawyer, lawyers when you need one",
     blurb:
@@ -86,6 +92,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "easybuy",
+    slug: "easybuy",
     name: "EasyBuy",
     tagline: "Device and equipment financing",
     blurb:
@@ -115,6 +122,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "pension",
+    slug: "pension",
     name: "Pension",
     tagline: "Micro-pension access",
     blurb:
@@ -140,6 +148,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "banking",
+    slug: "banking",
     name: "Banking",
     tagline: "Accounts, savings, loans and SME products",
     blurb:
@@ -165,6 +174,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   },
   {
     id: "grants",
+    slug: "grants",
     name: "Grants and funding",
     tagline: "Application support and eligibility guidance",
     blurb:

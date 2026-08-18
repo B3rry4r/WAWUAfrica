@@ -78,7 +78,16 @@ interface RealServiceApplication {
  * gap for a future live service beyond these two, not something guessable
  * from this layer.
  */
+/**
+ * The CTA now comes from the row itself. It used to be inferred by matching on
+ * the service name, which only ever handled CAC and NEPC: every other service
+ * silently rendered with no way to act on it.
+ */
 function deriveCta(real: RealPartnerService): PartnerService["cta"] {
+  if (real.ctaHref) {
+    return { label: real.ctaLabel ?? "Open", href: real.ctaHref };
+  }
+  // Older rows written before ctaHref existed.
   const name = real.name.toLowerCase();
   if (name.includes("cac")) return { label: "Apply now", href: "/services/cac/apply" };
   if (name.includes("nepc")) return { label: "Start now", href: "/services/nepc/apply" };
@@ -170,8 +179,13 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * with mock data.
  */
 async function resolveServiceBySlug(slug: string): Promise<PartnerService | null> {
-  const needle = slug.toLowerCase().replace(/[-_]/g, " ");
   const services = await getServices();
+  // Rows now carry a real slug, so this is an exact lookup rather than a
+  // fuzzy name match.
+  const exact = services.find((s) => s.slug === slug);
+  if (exact) return exact;
+
+  const needle = slug.toLowerCase().replace(/[-_]/g, " ");
   return (
     services.find((s) => s.id === slug) ??
     services.find((s) => s.name.toLowerCase().includes(needle)) ??
