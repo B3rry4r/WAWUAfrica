@@ -91,36 +91,6 @@ export const MOCK_SERVICES: PartnerService[] = [
     cta: { label: "Browse legal services", href: "/services/legal" },
   },
   {
-    id: "easybuy",
-    slug: "easybuy",
-    name: "EasyBuy",
-    tagline: "Device and equipment financing",
-    blurb:
-      "Spread the cost of phones, laptops, and farm equipment over manageable monthly instalments.",
-    icon: "Smartphone",
-    status: "live",
-    turnaround: "Reviewed in 3 to 5 days",
-    priceFrom: "Pay in 3 to 12 instalments",
-    partner: "CredPal",
-    eligibility: [
-      "Verified WAWUAfrica account",
-      "Valid government ID",
-      "Proof of income or 3 month bank statement",
-    ],
-    benefits: [
-      "Pay in 3 to 12 monthly instalments",
-      "No paperwork beyond your WAWU ID",
-      "Approved devices delivered to you",
-      "Build a repayment track record",
-    ],
-    steps: [
-      ["Apply", "Submit a short request through WAWUAfrica"],
-      ["Review", "The partner checks your eligibility"],
-      ["Access", "Collect your device and start paying"],
-    ],
-    cta: { label: "Apply now", href: "/services/easybuy/apply" },
-  },
-  {
     id: "pension",
     slug: "pension",
     name: "Pension",

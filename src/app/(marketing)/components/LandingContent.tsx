@@ -99,13 +99,6 @@ const QUICK_SERVICES: {
     href: "/services/pension/apply",
   },
   {
-    brand: "EasyBuy",
-    label: "Device financing",
-    blurb: "Spread the cost of a phone, laptop or equipment over instalments.",
-    icon: "Smartphone",
-    href: "/services/easybuy/apply",
-  },
-  {
     brand: "Banking",
     label: "Accounts and loans",
     blurb: "Open a business account and reach SME loan products.",
