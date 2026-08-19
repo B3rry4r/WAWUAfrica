@@ -85,6 +85,20 @@ button, input, textarea, select { font-family: inherit; }
   --text-on-light: #0B0A0D;
 
   /* ---------- WAWU Purple — the single primary accent ---------- */
+  /* ---- WAWU brand palette (brand sheet) -------------------------------
+     Beyond the primary purple. Used to tell services apart at a glance and
+     to give the hero something to move through, rather than painting every
+     surface in one colour. Each has a meaning on the sheet; the assignments
+     follow it where they can. */
+  --wawu-purple-deep: #290D43;  /* Primary brand colour */
+  --wawu-ink: #111018;          /* Strength, sophistication, typography */
+  --wawu-warm-white: #FAF8F5;   /* Main canvas */
+  --wawu-lilac: #9B7BFF;        /* Creativity / digital */
+  --wawu-pink: #FF0084;         /* Signature accent / moments of energy */
+  --wawu-lemon: #F4E94E;        /* Fun / discovery / optimism */
+  --wawu-green: #69D36A;        /* Growth / opportunity */
+  --wawu-sky: #5BC8FF;          /* Technology / connection */
+
   --accent: #9411C9;         /* Core Brand Energy */
   --accent-hover: #A813E3;
   --accent-press: #810FAF;

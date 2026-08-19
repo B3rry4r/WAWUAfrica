@@ -61,16 +61,27 @@ const FIELDS: { name: string; icon: IconName; bg: string }[] = [
  * ones whose partner API has not landed yet, and those deliberately do not
  * link anywhere rather than opening a dead screen.
  */
+/**
+ * Colour per service, from the WAWU brand sheet.
+ *
+ * Not literally random: a service that changed colour between visits would be
+ * harder to find, not easier. Each is fixed, picked against the meaning the
+ * sheet gives the colour (green for growth, sky for technology, pink for
+ * energy), with no two neighbours sharing one.
+ */
 const QUICK_SERVICES: {
   brand: string;
   label: string;
   blurb: string;
   icon: IconName;
+  /** A --wawu-* token name. */
+  tint: string;
   href?: string;
   soon?: boolean;
 }[] = [
   {
     brand: "Bills Payment",
+    tint: "var(--wawu-lemon)",
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
     icon: "Zap",
@@ -78,6 +89,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Telemedicine",
+    tint: "var(--wawu-green)",
     label: "Health cover",
     blurb: "See a doctor from ₦600 a month.",
     icon: "HeartPulse",
@@ -85,6 +97,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Legal",
+    tint: "var(--wawu-lilac)",
     label: "Filings and lawyers",
     blurb: "CAC and tax filings, or book a lawyer.",
     icon: "Scale",
@@ -92,6 +105,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Loans/EasyBuy",
+    tint: "var(--wawu-pink)",
     label: "Instalments",
     blurb: "Spread the cost over monthly payments.",
     icon: "Smartphone",
@@ -99,6 +113,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Pensions",
+    tint: "var(--wawu-sky)",
     label: "Retirement",
     blurb: "Save for later on irregular income.",
     icon: "PiggyBank",
@@ -106,6 +121,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Grants",
+    tint: "var(--wawu-green)",
     label: "Funding",
     blurb: "Find grants you qualify for.",
     icon: "HandCoins",
@@ -113,6 +129,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Banking",
+    tint: "var(--wawu-lilac)",
     label: "Accounts and loans",
     blurb: "Open a business account and reach SME loans.",
     icon: "Landmark",
@@ -120,6 +137,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Travel and Hotel",
+    tint: "var(--wawu-pink)",
     label: "Flights and hotels",
     blurb: "Book flights and places to stay.",
     icon: "Plane",
@@ -247,7 +265,7 @@ export async function LandingContent() {
             <h1 className="m-0 mt-7 text-[46px] font-bold leading-[1.02] tracking-[-0.04em] text-text-primary dt:text-[88px]">
               Turn Your WOW
               <br />
-              <HeroRotatingWord className="text-accent-hover [text-shadow:0_0_60px_var(--accent-tint-strong)]" />
+              <HeroRotatingWord />
             </h1>
             <p className="m-0 mt-6 max-w-[540px] text-[17px] leading-relaxed text-text-secondary dt:text-[19px]">
               Build. Earn. Grow. Thrive. All in one place.
@@ -318,8 +336,17 @@ export async function LandingContent() {
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-accent bg-accent-tint">
-                        <Icon name={service.icon} size={22} color="var(--accent-hover)" strokeWidth={2.2} />
+                      <span
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border"
+                        style={{
+                          // The tint is per-service data, so it cannot be a
+                          // Tailwind class: those are compiled ahead of time
+                          // and a dynamic class name would never be generated.
+                          borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
+                          backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
+                        }}
+                      >
+                        <Icon name={service.icon} size={22} color={service.tint} strokeWidth={2.2} />
                       </span>
                       {/*
                         Name only. The second line repeated what the name
