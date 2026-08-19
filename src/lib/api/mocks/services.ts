@@ -23,20 +23,6 @@ export const MOCK_SERVICES: PartnerService[] = [
     cta: { label: "Pay a bill", href: "/services/pay" },
   },
   {
-    id: "care",
-    slug: "care",
-    name: "Telemedicine",
-    tagline: "See a doctor, get covered",
-    blurb:
-      "Virtual consultations with licensed doctors, medication cover and screening. Paid monthly rather than yearly.",
-    icon: "HeartPulse",
-    status: "live",
-    turnaround: "Active same day",
-    priceFrom: `From ${formatNaira(600)} a month`,
-    partner: "WellaHealth",
-    cta: { label: "See plans", href: "/services/care" },
-  },
-  {
     id: "legal",
     slug: "legal",
     name: "Legal",
@@ -94,40 +80,7 @@ export const MOCK_SERVICES: PartnerService[] = [
     ],
     cta: { label: "Apply now", href: "/services/pension/apply" },
   },
-  {
-    id: "grants",
-    slug: "grants",
-    name: "Grants",
-    tagline: "Application support and eligibility guidance",
-    blurb:
-      "Get help finding, applying for, and qualifying for grants and funding opportunities.",
-    icon: "HandCoins",
-    status: "live",
-    turnaround: "Matched in 5 to 7 days",
-    priceFrom: "Free",
-    partner: "WAWUAfrica",
-    eligibility: [
-      "Verified WAWUAfrica account",
-      "A registered or registering business",
-    ],
-    benefits: [
-      "Curated grant opportunities",
-      "Application support",
-      "Eligibility guidance",
-      "Deadline reminders",
-    ],
-    cta: { label: "Apply now", href: "/services/grants/apply" },
-  },
-  {
-    id: "travel",
-    slug: "travel",
-    name: "Travel and Hotel",
-    tagline: "Flights and places to stay",
-    blurb: "Book and pay for flights and hotels without leaving the app.",
-    icon: "Plane",
-    status: "coming",
-    comingNote: "We are finishing the partner integration. It will open here first.",
-  },
+
 ];
 
 export const MOCK_CAC_TIMELINE: ServiceApplicationTimeline[] = [

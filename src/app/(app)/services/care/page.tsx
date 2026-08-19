@@ -88,7 +88,7 @@ export default function CarePage() {
 
   if (done) {
     return (
-      <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
         <ProfileBackButton />
         <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[26px] text-center">
           <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--accent-tint)]">
@@ -109,7 +109,7 @@ export default function CarePage() {
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+    <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
       <ProfileBackButton />
       <div className="flex flex-col gap-[6px]">
         <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Telemedicine</span>
@@ -136,7 +136,7 @@ export default function CarePage() {
       {!plans ? (
         <Skeleton variant="card" />
       ) : (
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-2 xl:items-start xl:gap-[14px]">
           {plans.map((p) => {
             const on = selected?.planCode === p.planCode;
             const open = expanded === p.planCode;

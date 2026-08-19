@@ -115,7 +115,7 @@ export default function LegalPage() {
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+    <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
       <ProfileBackButton />
       <div className="flex flex-col gap-[6px]">
         <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Legal</span>
@@ -168,9 +168,9 @@ export default function LegalPage() {
             ))}
           </div>
 
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-2 xl:gap-[14px]">
             {services.map((s) => (
-              <div key={s.code} className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+              <div key={s.code} className="flex h-full flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
                 <span className="flex items-start justify-between gap-3">
                   <span className="text-[15px] font-semibold text-[var(--text-primary)]">{s.name}</span>
                   <StatusPill kind={s.path === "simple" ? "success" : "info"}>
@@ -181,9 +181,11 @@ export default function LegalPage() {
                 <span className="text-[13px] font-semibold text-[var(--text-primary)]">
                   {s.priceNaira ? formatNaira(s.priceNaira) : "Price agreed after we review it"}
                 </span>
-                <Button variant="secondary" size="sm" onClick={() => startRequest(s)} disabled={busy}>
-                  Start this
-                </Button>
+                <div className="mt-auto pt-[2px]">
+                  <Button full variant="secondary" size="sm" onClick={() => startRequest(s)} disabled={busy}>
+                    Start this
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -313,7 +315,7 @@ function RequestFlow({
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+    <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
       {toast ? (
         <Toast kind="success" title={toast.title} body={toast.body} onDismiss={() => setToast(null)} />
       ) : null}
@@ -496,7 +498,7 @@ function IntakeStep({
   const [documents, setDocuments] = useState<{ url: string; name: string }[]>([]);
 
   return (
-    <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+    <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
       <button type="button" onClick={onCancel} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)]">
         <Icon name="ChevronLeft" size={16} color="var(--text-secondary)" /> Back
       </button>

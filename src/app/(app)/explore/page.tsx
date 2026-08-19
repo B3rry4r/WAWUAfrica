@@ -99,7 +99,6 @@ export default async function ExplorePage() {
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
             <ListRow title="Bills Payment" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
-            <ListRow title="Telemedicine" subtitle={`See a doctor, from ${formatNaira(600)} a month`} icon="HeartPulse" href="/services/care" />
             <ListRow title="Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
             <ListRow title="CAC, NEPC, mentors and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
           </div>
@@ -122,27 +121,62 @@ function IconTile({ icon }: { icon: IconName }) {
   );
 }
 
+/**
+ * The two external storefronts.
+ *
+ * Categories are taken from each app's own catalogue — Basket's from its
+ * category assets, Beauty's from Oja-Ewa's CategorySeeder — rather than the
+ * invented taglines that were here before ("Fashion, food, art" for a grocery
+ * app). Hardcoded for now because neither backend is running yet.
+ *
+ * SEAM: replace with GET /api/hub/marketplace/{shop}/categories once
+ * WAWUBasket and WAWUBeauty are deployed.
+ */
 const SHOPS = {
-  basket: { name: "WAWUBasket", tagline: "Fashion, food, art", stat: "4,120 items", icon: "ShoppingBag" },
-  beauty: { name: "WAWUBeauty", tagline: "Hair, nails, skin", stat: "890 services", icon: "Scissors" },
-} as const satisfies Record<string, { name: string; tagline: string; stat: string; icon: IconName }>;
+  basket: {
+    name: "WAWUBasket",
+    logo: "/wawubasket-logo.png",
+    tint: "#A9D636",
+    tagline: "Food, groceries and fresh market",
+    categories: ["Fresh Market", "Groceries", "Farm Produce", "Restaurants", "Drinks", "Snacks"],
+  },
+  beauty: {
+    name: "WAWUBeauty",
+    logo: "/wawubeauty-logo.png",
+    tint: "#FF0084",
+    tagline: "Beauty, textiles, shoes and art",
+    categories: ["Afro Beauty Products", "Afro Beauty Services", "Textiles", "Shoes & Bags", "Art", "Sustainability"],
+  },
+} as const;
 
 function ShopCard({ id }: { id: keyof typeof SHOPS }) {
   const shop = SHOPS[id];
   return (
     <Link
       href={`/marketplace/${id}`}
-      className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:gap-[14px] xl:p-[22px]"
+      className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:gap-[14px] xl:p-[22px]"
     >
-      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
-        <Icon name={shop.icon} size={18} color="var(--accent)" />
-      </span>
-      <span className="text-[15.5px] font-semibold text-[var(--text-primary)]">{shop.name}</span>
-      <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">{shop.tagline}</span>
-      <div className="flex">
+      {/* The real mark, not a generic icon: these are separate products. */}
+      <img src={shop.logo} alt={shop.name} className="h-[26px] w-auto self-start object-contain xl:h-[30px]" />
+      <span className="text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">{shop.tagline}</span>
+      <div className="flex flex-wrap gap-[6px]">
+        {shop.categories.slice(0, 4).map((c) => (
+          <span
+            key={c}
+            className="inline-flex h-[24px] items-center rounded-[var(--radius-chip)] border px-[9px] text-[11.5px] text-[var(--text-secondary)]"
+            style={{
+              borderColor: `color-mix(in srgb, ${shop.tint} 35%, transparent)`,
+              backgroundColor: `color-mix(in srgb, ${shop.tint} 12%, transparent)`,
+            }}
+          >
+            {c}
+          </span>
+        ))}
+      </div>
+      <div className="mt-auto flex pt-[2px]">
         <HandoffPill app={shop.name} />
       </div>
-      <span className="text-[11.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{shop.stat}</span>
     </Link>
   );
 }
+

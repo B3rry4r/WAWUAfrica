@@ -7,11 +7,11 @@ import { applyForPartnerService, type PartnerServiceKind } from "@/lib/api/lifes
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ErrorState, FilePicker, Icon, StatusPill } from "@/components/ui";
 
-const PARTNER_KINDS: PartnerServiceKind[] = ["loans", "pension", "grants"];
+const PARTNER_KINDS: PartnerServiceKind[] = ["loans", "pension"];
 
 /**
  * The shared apply form for the partner services carried over from the
- * previous platform (Loans/EasyBuy, Pensions, Grants).
+ * previous platform (Loans/EasyBuy, Pensions).
  *
  * CAC and NEPC keep their own bespoke forms because they collect specific
  * filing details. These four never did: the old flow was "submit a short
@@ -33,7 +33,7 @@ export default function PartnerApplyPage({ params }: { params: Promise<{ id: str
 
   if (!service || !isPartnerKind) {
     return (
-      <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
         <ProfileBackButton />
         <ErrorState
           title="Not available"
@@ -67,7 +67,7 @@ export default function PartnerApplyPage({ params }: { params: Promise<{ id: str
 
   if (reference) {
     return (
-      <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
         <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[26px] text-center">
           <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--accent-tint)]">
             <Icon name="Check" size={26} color="var(--accent)" strokeWidth={2.4} />
@@ -85,7 +85,7 @@ export default function PartnerApplyPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+    <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
       <ProfileBackButton />
 
       <div className="flex flex-col gap-[6px]">
@@ -151,8 +151,6 @@ function placeholderFor(kind: string): string {
       return "Tell us about your income and how much you would like to contribute.";
     case "loans":
       return "What do you need to finance, and roughly what does it cost?";
-    case "grants":
-      return "What are you building, and what would the funding go towards?";
     default:
       return "Tell the partner what you need.";
   }

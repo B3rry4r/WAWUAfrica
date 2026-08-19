@@ -57,11 +57,23 @@ const FIELDS: { name: string; icon: IconName; bg: string }[] = [
  * brand sheet, rather than one colour per service: a row of seven different
  * colours competed with itself, and this is a directory, not a chart.
  */
+/**
+ * The services strip.
+ *
+ * Telemedicine, Grants and Travel are held back until they are ready to
+ * announce; they ship as updates rather than sitting here as promises.
+ *
+ * Basket and Beauty are separate products with their own marks and brand
+ * colours, so they carry a logo rather than an icon.
+ */
 const QUICK_SERVICES: {
   brand: string;
   label: string;
   blurb: string;
-  icon: IconName;
+  icon?: IconName;
+  /** Separate products render their own mark instead of an icon. */
+  logo?: string;
+  tint?: string;
   href?: string;
   soon?: boolean;
 }[] = [
@@ -71,13 +83,6 @@ const QUICK_SERVICES: {
     blurb: "Pay any bill in seconds.",
     icon: "CreditCard",
     href: "/services/pay",
-  },
-  {
-    brand: "Telemedicine",
-    label: "Health cover",
-    blurb: "See a doctor from ₦600 a month.",
-    icon: "Stethoscope",
-    href: "/services/care",
   },
   {
     brand: "Legal",
@@ -101,18 +106,20 @@ const QUICK_SERVICES: {
     href: "/services/pension/apply",
   },
   {
-    brand: "Grants",
-    label: "Funding",
-    blurb: "Find grants you qualify for.",
-    icon: "HandCoins",
-    href: "/services/grants/apply",
+    brand: "WAWUBasket",
+    label: "Food and groceries",
+    blurb: "Fresh market, groceries and restaurants.",
+    logo: "/wawubasket-logo.png",
+    tint: "#A9D636",
+    href: "/marketplace/basket",
   },
   {
-    brand: "Travel and Hotel",
-    label: "Flights and hotels",
-    blurb: "Book flights and places to stay.",
-    icon: "Plane",
-    soon: true,
+    brand: "WAWUBeauty",
+    label: "Beauty and textiles",
+    blurb: "Beauty products and services, textiles, art.",
+    logo: "/wawubeauty-logo.png",
+    tint: "#FF0084",
+    href: "/marketplace/beauty",
   },
 ];
 
@@ -269,9 +276,21 @@ export async function LandingContent() {
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
-                        <Icon name={service.icon} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
-                      </span>
+                      {service.logo ? (
+                        <span
+                          className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border"
+                          style={{
+                            borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
+                            backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
+                          }}
+                        >
+                          <img src={service.logo} alt="" className="h-[15px] w-auto object-contain" />
+                        </span>
+                      ) : (
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
+                          <Icon name={service.icon!} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                        </span>
+                      )}
                       {/*
                         Name only. The second line repeated what the name
                         already said ("Pensions / Retirement") and turned a
