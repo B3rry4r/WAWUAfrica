@@ -62,42 +62,49 @@ const FIELDS: { name: string; icon: IconName; bg: string }[] = [
  * link anywhere rather than opening a dead screen.
  */
 /**
- * Colour per service, from the WAWU brand sheet.
+ * Colour per service, as assigned on the brand sheet.
  *
- * Not literally random: a service that changed colour between visits would be
- * harder to find, not easier. Each is fixed, picked against the meaning the
- * sheet gives the colour (green for growth, sky for technology, pink for
- * energy), with no two neighbours sharing one.
+ * One exception, made deliberately: Legal is Midnight/Ink (#111018), which on
+ * this dark UI sits at 1.02:1 against the card behind it — invisible. Its
+ * chip is filled with ink and the icon drawn in warm white instead, so it
+ * still reads as the sober, authoritative one rather than another bright
+ * colour, but can actually be seen. `iconColor` carries that override.
  */
 const QUICK_SERVICES: {
   brand: string;
   label: string;
   blurb: string;
   icon: IconName;
-  /** A --wawu-* token name. */
+  /** A --wawu-* token name: the chip fill and border. */
   tint: string;
+  /** Overrides the icon colour where the tint itself is unreadable on dark. */
+  iconColor?: string;
+  /** Fills the chip solid rather than tinting it. Used by ink. */
+  solidChip?: boolean;
   href?: string;
   soon?: boolean;
 }[] = [
   {
     brand: "Bills Payment",
-    tint: "var(--wawu-lemon)",
+    tint: "var(--wawu-sky)",
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
-    icon: "Zap",
+    icon: "CreditCard",
     href: "/services/pay",
   },
   {
     brand: "Telemedicine",
-    tint: "var(--wawu-green)",
+    tint: "var(--wawu-sky)",
     label: "Health cover",
     blurb: "See a doctor from ₦600 a month.",
-    icon: "HeartPulse",
+    icon: "Stethoscope",
     href: "/services/care",
   },
   {
     brand: "Legal",
-    tint: "var(--wawu-lilac)",
+    tint: "var(--wawu-ink)",
+    iconColor: "var(--wawu-warm-white)",
+    solidChip: true,
     label: "Filings and lawyers",
     blurb: "CAC and tax filings, or book a lawyer.",
     icon: "Scale",
@@ -105,7 +112,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Loans/EasyBuy",
-    tint: "var(--wawu-pink)",
+    tint: "var(--wawu-lilac)",
     label: "Instalments",
     blurb: "Spread the cost over monthly payments.",
     icon: "Smartphone",
@@ -113,7 +120,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Pensions",
-    tint: "var(--wawu-sky)",
+    tint: "var(--wawu-green)",
     label: "Retirement",
     blurb: "Save for later on irregular income.",
     icon: "PiggyBank",
@@ -121,7 +128,7 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Grants",
-    tint: "var(--wawu-green)",
+    tint: "var(--wawu-lemon)",
     label: "Funding",
     blurb: "Find grants you qualify for.",
     icon: "HandCoins",
@@ -334,11 +341,20 @@ export async function LandingContent() {
                           // The tint is per-service data, so it cannot be a
                           // Tailwind class: those are compiled ahead of time
                           // and a dynamic class name would never be generated.
-                          borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
-                          backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
+                          borderColor: service.solidChip
+                            ? `color-mix(in srgb, ${service.iconColor ?? service.tint} 32%, transparent)`
+                            : `color-mix(in srgb, ${service.tint} 45%, transparent)`,
+                          backgroundColor: service.solidChip
+                            ? service.tint
+                            : `color-mix(in srgb, ${service.tint} 16%, transparent)`,
                         }}
                       >
-                        <Icon name={service.icon} size={22} color={service.tint} strokeWidth={2.2} />
+                        <Icon
+                          name={service.icon}
+                          size={22}
+                          color={service.iconColor ?? service.tint}
+                          strokeWidth={2.2}
+                        />
                       </span>
                       {/*
                         Name only. The second line repeated what the name
