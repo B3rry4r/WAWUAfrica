@@ -302,31 +302,30 @@ export async function LandingContent() {
               </div>
             </div>
 
-              <div className="flex flex-col gap-3.5">
-                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
+              <div className="flex flex-col gap-3">
+                <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Users" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
-                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
+                  <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
                   <span className="text-[12px] leading-snug text-text-secondary">Professionals, Entrepreneurs, Artisans on WAWUAfrica</span>
                 </div>
-                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
+                <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Route" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
-                  {/* Sits alongside the 10M+ and 1.5M+ figures, so it carries the
-                      same weight, size and colour as they do rather than reading
-                      as a small purple caption. */}
-                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.03em] text-text-primary">Access to</span>
+                  {/* White and bold like the figures beside it, not a small
+                      purple caption, but not headline-sized either. */}
+                  <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary">Access to</span>
                   <span className="mt-1 block text-[13px] leading-relaxed text-text-secondary">
                     {PIPELINE.join(" → ")}
                   </span>
                 </div>
-                <div className="flex-1 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
+                <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Globe" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
-                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
+                  <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
                   <span className="text-[12px] leading-snug text-text-secondary">Fans, plus access to Pan-African ecosystems, communities, governments and institutions</span>
                 </div>
               </div>
@@ -349,7 +348,7 @@ export async function LandingContent() {
                 <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-accent bg-accent-tint transition-shadow duration-200 group-hover:shadow-[0_0_28px_var(--accent-tint-strong)]">
                   <Icon name={v.icon} size={20} color="var(--accent)" strokeWidth={2} />
                 </span>
-                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-accent">{v.label}</span>
+                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
                 <p className="m-0 text-[14px] leading-normal text-text-secondary">{v.body}</p>
               </div>
             ))}
