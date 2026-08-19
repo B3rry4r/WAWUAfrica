@@ -9,50 +9,9 @@ import { delay } from "../client";
 
 export const MOCK_SERVICES: PartnerService[] = [
   {
-    id: "cac",
-    slug: "cac",
-    name: "CAC registration",
-    tagline: "Register your business in Nigeria",
-    blurb:
-      "WAWU works with a registered agent to file your CAC business registration for you. You upload your details, an agent reviews them by hand, and your certificate lands on WAWU.",
-    icon: "Stamp",
-    status: "live",
-    turnaround: "7–14 days",
-    priceFrom: `From ${formatNaira(25000)}`,
-    partner: "CAC",
-    cta: { label: "Apply now", href: "/services/cac/apply" },
-  },
-  {
-    id: "nepc",
-    slug: "nepc",
-    name: "NEPC export support",
-    tagline: "Start exporting from Nigeria",
-    blurb:
-      "Guidance for creators who want to sell their work abroad. An agent walks you through documentation and connects you with the right NEPC desk.",
-    icon: "Ship",
-    status: "live",
-    turnaround: "3–5 days to first reply",
-    priceFrom: "Free to start",
-    partner: "NEPC",
-    cta: { label: "Start now", href: "/services/nepc/apply" },
-  },
-  {
-    id: "mentors",
-    slug: "mentors",
-    name: "Mentors",
-    tagline: "One-to-one sessions with seasoned creators",
-    blurb:
-      "Book a 45-minute call with a creator who has already done what you're trying to do. Each mentor sets their own rate.",
-    icon: "Users",
-    status: "live",
-    turnaround: "Same-week booking",
-    partner: "WAWU",
-    cta: { label: "Browse mentors", href: "/services/mentors" },
-  },
-  {
     id: "pay",
     slug: "pay",
-    name: "WAWUPay",
+    name: "Bills Payment",
     tagline: "Airtime, data, electricity and cable",
     blurb:
       "Pay any bill without leaving WAWU. Confirm the meter or number first, pay with your card, and the top-up lands straight away.",
@@ -66,10 +25,10 @@ export const MOCK_SERVICES: PartnerService[] = [
   {
     id: "care",
     slug: "care",
-    name: "WAWUCare",
+    name: "Telemedicine",
     tagline: "See a doctor, get covered",
     blurb:
-      "Virtual consultations with licensed doctors, medication cover and screening. Built for people whose income comes in irregularly, so it is paid monthly rather than yearly.",
+      "Virtual consultations with licensed doctors, medication cover and screening. Paid monthly rather than yearly.",
     icon: "HeartPulse",
     status: "live",
     turnaround: "Active same day",
@@ -80,10 +39,10 @@ export const MOCK_SERVICES: PartnerService[] = [
   {
     id: "legal",
     slug: "legal",
-    name: "WAWU Legal",
+    name: "Legal",
     tagline: "Filings without a lawyer, lawyers when you need one",
     blurb:
-      "Register a business, file your tax or NDPR return with no lawyer call at all. For contracts, trademarks, royalties and entertainment law, book a consultation and get a quote.",
+      "Register a business, file your tax or NDPR return with no lawyer call at all. For contracts, trademarks and entertainment law, book a consultation.",
     icon: "Scale",
     status: "live",
     turnaround: "Consultation within days",
@@ -91,9 +50,33 @@ export const MOCK_SERVICES: PartnerService[] = [
     cta: { label: "Browse legal services", href: "/services/legal" },
   },
   {
+    id: "loans",
+    slug: "loans",
+    name: "Loans/EasyBuy",
+    tagline: "Spread the cost over instalments",
+    blurb:
+      "Finance a phone, laptop or equipment and pay it back monthly instead of all at once.",
+    icon: "Smartphone",
+    status: "live",
+    turnaround: "Reviewed in 3 to 5 days",
+    priceFrom: "Pay in 3 to 12 instalments",
+    eligibility: [
+      "Verified WAWUAfrica account",
+      "Valid government ID",
+      "Proof of income or 3 month bank statement",
+    ],
+    benefits: [
+      "Pay in 3 to 12 monthly instalments",
+      "No paperwork beyond your WAWU ID",
+      "Approved items delivered to you",
+      "Build a repayment track record",
+    ],
+    cta: { label: "Apply now", href: "/services/loans/apply" },
+  },
+  {
     id: "pension",
     slug: "pension",
-    name: "Pension",
+    name: "Pensions",
     tagline: "Micro-pension access",
     blurb:
       "Start a micro-pension and save towards retirement, even with irregular income.",
@@ -109,43 +92,12 @@ export const MOCK_SERVICES: PartnerService[] = [
       "Long term retirement savings",
       "Professionally managed funds",
     ],
-    steps: [
-      ["Apply", "Submit a short request through WAWUAfrica"],
-      ["Review", "The partner checks your eligibility"],
-      ["Access", "Get onboarded and start saving"],
-    ],
     cta: { label: "Apply now", href: "/services/pension/apply" },
-  },
-  {
-    id: "banking",
-    slug: "banking",
-    name: "Banking",
-    tagline: "Accounts, savings, loans and SME products",
-    blurb:
-      "Open accounts, save, and access loans and SME products built for small businesses.",
-    icon: "Landmark",
-    status: "live",
-    turnaround: "Reviewed in 3 to 5 days",
-    priceFrom: "Free account opening",
-    partner: "WEMA Bank",
-    eligibility: ["Verified WAWUAfrica account", "Valid government ID", "BVN"],
-    benefits: [
-      "Free account opening",
-      "SME focused loan products",
-      "Savings with competitive interest",
-      "Digital banking tools",
-    ],
-    steps: [
-      ["Apply", "Submit a short request through WAWUAfrica"],
-      ["Review", "The partner checks your eligibility"],
-      ["Access", "Get onboarded and start banking"],
-    ],
-    cta: { label: "Apply now", href: "/services/banking/apply" },
   },
   {
     id: "grants",
     slug: "grants",
-    name: "Grants and funding",
+    name: "Grants",
     tagline: "Application support and eligibility guidance",
     blurb:
       "Get help finding, applying for, and qualifying for grants and funding opportunities.",
@@ -164,12 +116,17 @@ export const MOCK_SERVICES: PartnerService[] = [
       "Eligibility guidance",
       "Deadline reminders",
     ],
-    steps: [
-      ["Apply", "Tell us what you are working on"],
-      ["Review", "We check what you qualify for"],
-      ["Access", "Receive matched opportunities and support"],
-    ],
     cta: { label: "Apply now", href: "/services/grants/apply" },
+  },
+  {
+    id: "travel",
+    slug: "travel",
+    name: "Travel and logistics",
+    tagline: "Flights, shipping and moving things",
+    blurb: "Book and pay for travel, and move goods, without leaving the app.",
+    icon: "Plane",
+    status: "coming",
+    comingNote: "We are finishing the partner integration. It will open here first.",
   },
 ];
 

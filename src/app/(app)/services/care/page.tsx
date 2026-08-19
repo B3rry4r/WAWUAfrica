@@ -16,7 +16,7 @@ import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
- * WAWUCare — health cover and telemedicine, fulfilled by WellaHealth.
+ * Telemedicine — health cover and virtual consultations, fulfilled by WellaHealth.
  *
  * The enrolment details are the partner's requirements, not ours: they key
  * the enrollee on phone number and need a date of birth and gender to issue
@@ -29,6 +29,8 @@ export default function CarePage() {
   const [mine, setMine] = useState<HealthSubscription[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<HealthPlan | null>(null);
+  /** Which plan has its cover details open. Only one at a time. */
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<HealthSubscription | null>(null);
 
@@ -67,7 +69,7 @@ export default function CarePage() {
         email: user?.email,
       });
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
-        title: "WAWUCare",
+        title: "Telemedicine",
         description: selected.planName,
       });
       const record = await verifyHealthSubscription(subscriptionId, result.transaction_id);
@@ -108,7 +110,7 @@ export default function CarePage() {
     <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
       <ProfileBackButton />
       <div className="flex flex-col gap-[6px]">
-        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">WAWUCare</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Telemedicine</span>
         <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">See a doctor</h1>
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
           Virtual consultations, medication cover and screening. Pay monthly, use it as often as you need.
@@ -135,31 +137,64 @@ export default function CarePage() {
         <div className="flex flex-col gap-[10px]">
           {plans.map((p) => {
             const on = selected?.planCode === p.planCode;
+            const open = expanded === p.planCode;
+            const benefits = p.planBenefits ?? [];
             return (
-              <button
+              <div
                 key={p.planCode}
-                type="button"
-                onClick={() => setSelected(p)}
-                className={`flex flex-col gap-[8px] rounded-[var(--radius-card)] border p-[16px] text-left ${
+                className={`flex flex-col rounded-[var(--radius-card)] border ${
                   on ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]"
                 }`}
               >
-                <span className="flex items-baseline justify-between gap-3">
+                {/*
+                  Every plan listing its whole benefit list made the page a wall
+                  of near-identical text you had to scroll past to compare
+                  prices. The title row is the plan; the detail is one tap away.
+                */}
+                <button
+                  type="button"
+                  onClick={() => setSelected(p)}
+                  className="flex items-baseline justify-between gap-3 p-[16px] text-left"
+                >
                   <span className="text-[15.5px] font-bold text-[var(--text-primary)]">{p.planName}</span>
-                  <span className="text-[16px] font-bold text-[var(--text-primary)]">
+                  <span className="whitespace-nowrap text-[16px] font-bold text-[var(--text-primary)]">
                     {formatNaira(Math.round(p.price))}
                     <span className="text-[12px] font-normal text-[var(--text-muted)]">
                       {p.numberOfMonths === 1 ? " /month" : p.numberOfMonths ? ` /${p.numberOfMonths} months` : ""}
                     </span>
                   </span>
-                </span>
-                {(p.planBenefits ?? []).slice(0, 4).map((b) => (
-                  <span key={b} className="flex items-start gap-2 text-[13px] leading-[1.45] text-[var(--text-secondary)]">
-                    <Icon name="Check" size={14} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
-                    {b}
-                  </span>
-                ))}
-              </button>
+                </button>
+
+                {benefits.length ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(open ? null : p.planCode)}
+                      aria-expanded={open}
+                      className="flex items-center gap-1.5 px-[16px] pb-[14px] text-[12.5px] font-semibold text-[var(--accent)]"
+                    >
+                      {open ? "Hide what is covered" : "What is covered"}
+                      <Icon
+                        name="ChevronDown"
+                        size={14}
+                        color="var(--accent)"
+                        strokeWidth={2.4}
+                        className={open ? "rotate-180 transition-transform" : "transition-transform"}
+                      />
+                    </button>
+                    {open ? (
+                      <div className="flex flex-col gap-[7px] border-t border-[var(--border-hairline)] p-[14px_16px]">
+                        {benefits.map((b) => (
+                          <span key={b} className="flex items-start gap-2 text-[13px] leading-[1.45] text-[var(--text-secondary)]">
+                            <Icon name="Check" size={14} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
+                            {b}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
             );
           })}
         </div>

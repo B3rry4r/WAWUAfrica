@@ -134,7 +134,7 @@ export function Sidebar() {
       {/*
         Services is not one of the five locked bottom-bar slots, so on mobile
         it is reached through Explore. Desktop has the room, and leaving
-        WAWUPay/WAWUCare/WAWU Legal buried one level inside Explore was the
+        the services buried one level inside Explore was the
         reason nobody could find them.
       */}
       <Link href="/services" className={navRowClass(servicesActive)}>

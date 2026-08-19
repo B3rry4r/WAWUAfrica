@@ -1,7 +1,8 @@
 import { apiFetch } from "./client";
 
 /**
- * Lifestyle Services — WAWUPay (bills), WAWUCare (health), WAWU Legal.
+ * Lifestyle Services: Bills Payment, Telemedicine, Legal, and the partner
+ * services (Loans/EasyBuy, Pensions, Grants).
  *
  * All three share the same payment shape, and it is deliberately a two-call
  * flow: `init` records the intent and returns a Flutterwave config, the user
@@ -20,7 +21,7 @@ export interface FlutterwaveConfig {
   publicKey: string;
 }
 
-/* ------------------------------- WAWUPay -------------------------------- */
+/* ---------------------------- Bills Payment ----------------------------- */
 
 export interface BillCategory {
   id: number;
@@ -102,7 +103,7 @@ export const verifyBillPayment = (id: string, transactionId: string) =>
 export const getMyBills = () =>
   apiFetch<{ items: BillRecord[] }>("/api/hub/bills/mine", { authed: true });
 
-/* ------------------------------- WAWUCare ------------------------------- */
+/* ----------------------------- Telemedicine ----------------------------- */
 
 export interface HealthPlan {
   planName: string;
@@ -155,7 +156,7 @@ export const verifyHealthSubscription = (id: string, transactionId: string) =>
 export const getMyHealthSubscriptions = () =>
   apiFetch<HealthSubscription[]>("/api/hub/care/subscriptions", { authed: true });
 
-/* ------------------------------ WAWU Legal ------------------------------ */
+/* --------------------------------- Legal -------------------------------- */
 
 export interface LegalServiceItem {
   code: string;
@@ -264,11 +265,10 @@ export const verifyLegalPayment = (id: string, transactionId: string) =>
 
 /* --------------------- Carried-over partner services --------------------- */
 
-export type PartnerServiceKind = "pension" | "banking" | "grants";
+export type PartnerServiceKind = "loans" | "pension" | "grants";
 
 /**
- * The short request the previous platform used for Pension, Banking
- * and Grants: say what you need, attach anything relevant, partner reviews it.
+ * The short request used for Loans/EasyBuy, Pensions and Grants: say what you need, attach anything relevant, partner reviews it.
  * No payment is taken; onboarding happens with the partner.
  */
 export const applyForPartnerService = (body: {

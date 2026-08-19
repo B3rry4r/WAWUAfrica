@@ -21,7 +21,7 @@ import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
- * WAWUPay.
+ * Bills Payment.
  *
  * Four steps, each one gated on the last: category, biller, package, then the
  * customer's own number. The number is validated with the biller before any
@@ -170,7 +170,7 @@ export default function PayPage() {
     <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
       <ProfileBackButton />
       <div className="flex flex-col gap-[6px]">
-        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">WAWUPay</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Bills Payment</span>
         <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Pay a bill</h1>
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
           Airtime, data, electricity and cable. Paid straight from the app.

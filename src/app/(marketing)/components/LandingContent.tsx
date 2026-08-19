@@ -10,7 +10,6 @@ import type { ContentPiece } from "@/types/content";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 import { HeroRotatingWord } from "./HeroRotatingWord";
-import { StickerWatermarks } from "./StickerWatermarks";
 import { SmartScheduler } from "./SmartScheduler";
 
 const PIPELINE = ["Community", "Training", "Certification", "Employment", "Market Access", "Financial Inclusion", "Ownership"];
@@ -71,59 +70,52 @@ const QUICK_SERVICES: {
   soon?: boolean;
 }[] = [
   {
-    brand: "WAWUPay",
-    label: "Bill payments",
-    blurb: "Airtime, data, electricity and cable, paid in seconds.",
+    brand: "Bills Payment",
+    label: "Airtime, power, cable",
+    blurb: "Pay any bill in seconds.",
     icon: "Zap",
     href: "/services/pay",
   },
   {
-    brand: "WAWUCare",
-    label: "Telemedicine",
-    blurb: "Talk to a licensed doctor and get covered from ₦600 a month.",
+    brand: "Telemedicine",
+    label: "Health cover",
+    blurb: "See a doctor from ₦600 a month.",
     icon: "HeartPulse",
     href: "/services/care",
   },
   {
-    brand: "WAWU Legal",
-    label: "Legal services",
-    blurb: "CAC and tax filings without a lawyer, or book one when you need one.",
+    brand: "Legal",
+    label: "Filings and lawyers",
+    blurb: "CAC and tax filings, or book a lawyer.",
     icon: "Scale",
     href: "/services/legal",
   },
   {
-    brand: "Pension",
+    brand: "Loans/EasyBuy",
+    label: "Instalments",
+    blurb: "Spread the cost over monthly payments.",
+    icon: "Smartphone",
+    href: "/services/loans/apply",
+  },
+  {
+    brand: "Pensions",
     label: "Retirement",
-    blurb: "Start a micro-pension and save for later, even on irregular income.",
+    blurb: "Save for later on irregular income.",
     icon: "PiggyBank",
     href: "/services/pension/apply",
   },
   {
-    brand: "Banking",
-    label: "Accounts and loans",
-    blurb: "Open a business account and reach SME loan products.",
-    icon: "Landmark",
-    href: "/services/banking/apply",
-  },
-  {
     brand: "Grants",
     label: "Funding",
-    blurb: "Find grants you qualify for, and get help applying.",
+    blurb: "Find grants you qualify for.",
     icon: "HandCoins",
     href: "/services/grants/apply",
   },
   {
-    brand: "WAWUGo",
-    label: "Flight booking",
-    blurb: "Book and pay for flights across Nigeria and beyond.",
+    brand: "Travel and logistics",
+    label: "Flights and shipping",
+    blurb: "Book travel and move goods.",
     icon: "Plane",
-    soon: true,
-  },
-  {
-    brand: "WAWU Sounds",
-    label: "Music licensing",
-    blurb: "License your catalogue and distribute to every major platform.",
-    icon: "Music",
     soon: true,
   },
 ];
@@ -239,7 +231,6 @@ export async function LandingContent() {
             className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_55%_45%_at_50%_18%,var(--accent-tint-strong),transparent_70%)]"
             aria-hidden="true"
           />
-          <StickerWatermarks placement="hero" />
           <div className="relative mx-auto flex max-w-[1080px] flex-col items-center text-center">
             <span className="inline-flex min-h-[34px] items-center gap-2.5 rounded-full border border-accent bg-[rgba(11,10,13,0.6)] px-4 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-accent-hover shadow-[0_0_24px_var(--accent-tint-strong)] dt:px-5 dt:text-[12px] dt:tracking-[0.14em]">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
@@ -634,7 +625,6 @@ export async function LandingContent() {
 
         {/* ============ CREATOR TIERS ============ */}
         <section id="pricing" className="relative px-5 py-14 dt:py-20">
-          <StickerWatermarks placement="pricing" />
           <div className="relative mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
               <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Creator Tiers</span>
@@ -1035,7 +1025,6 @@ export async function LandingContent() {
         <section className="px-5 pb-20 pt-10 dt:pb-28">
           <div className="relative mx-auto max-w-[1240px] overflow-hidden rounded-[28px] border border-hairline bg-[linear-gradient(170deg,var(--surface-card),var(--accent-deep))] px-6 py-16 text-center dt:py-24">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_50%_100%,var(--accent-tint-strong),transparent_70%)]" aria-hidden="true" />
-            <StickerWatermarks placement="cta" />
             <div className="relative mx-auto flex max-w-[760px] flex-col items-center">
               <CaptionPill>Make the Move</CaptionPill>
               <span className="mt-6 text-[13px] font-bold uppercase tracking-[0.2em] text-accent-hover dt:text-[15px]">

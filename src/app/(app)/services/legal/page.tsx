@@ -22,7 +22,7 @@ import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill } fro
 import { formatNaira } from "@/lib/format";
 
 /**
- * WAWU Legal.
+ * Legal.
  *
  * The screen follows the two paths the catalogue defines. A `simple` service
  * is a form and a payment. A `consultation` one has to be walked: book and pay
@@ -114,7 +114,7 @@ export default function LegalPage() {
     <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
       <ProfileBackButton />
       <div className="flex flex-col gap-[6px]">
-        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">WAWU Legal</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Legal</span>
         <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Legal, without the runaround</h1>
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
           Register a business or file a return with no lawyer needed. For everything else, book a consultation.
@@ -237,7 +237,7 @@ function RequestFlow({
       if (!flutterwaveConfig) { setNote(message); return; }
       if (!customer) { setError("We need an email on your account before you can pay."); return; }
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
-        title: "WAWU Legal consultation",
+        title: "Legal consultation",
         description: `${updated.serviceName} · ${medium}`,
       });
       onChange(await verifyLegalConsultation(request.id, result.transaction_id));
@@ -272,7 +272,7 @@ function RequestFlow({
     try {
       const { flutterwaveConfig } = await initLegalPayment(request.id);
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
-        title: "WAWU Legal",
+        title: "Legal",
         description: request.serviceName,
       });
       onChange(await verifyLegalPayment(request.id, result.transaction_id));

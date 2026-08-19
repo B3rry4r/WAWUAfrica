@@ -7,15 +7,19 @@ const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      // "dt" (desktop) is a lower, more forgiving desktop cutoff than the
-      // app-wide "xl" (1280px) — used only by the signed-out marketing
-      // landing page, which was showing the mobile layout on real laptops
-      // whose effective CSS viewport sits under 1280px (very common with
-      // any OS/browser zoom above 100%, e.g. Windows' default 125%/150%
-      // scaling on a 1366-1920px-wide physical screen). Every other screen
-      // in the app keeps using "xl" unchanged — this doesn't touch them.
+      // Desktop starts at 1024px, everywhere.
+      //
+      // The landing page was moved to a 1024px cutoff ("dt") when it turned
+      // out to be serving the mobile layout on real laptops, but the rest of
+      // the app was left on Tailwind's default xl (1280px). That left a
+      // 1024-1279px band — an ordinary laptop, or any screen at Windows'
+      // default 125%/150% scaling — where the marketing page rendered as
+      // desktop and every signed-in screen rendered as a stretched mobile
+      // column. Overriding xl rather than rewriting 59 files keeps one cutoff
+      // and one meaning. "lg" is unused in this codebase, so nothing collides.
       screens: {
         dt: "1024px",
+        xl: "1024px",
       },
       colors: {
         page: "var(--surface-page)",

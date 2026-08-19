@@ -98,9 +98,9 @@ export default async function ExplorePage() {
             <Link href="/services" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="WAWUPay" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
-            <ListRow title="WAWUCare" subtitle={`See a doctor, from ${formatNaira(600)} a month`} icon="HeartPulse" href="/services/care" />
-            <ListRow title="WAWU Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
+            <ListRow title="Bills Payment" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
+            <ListRow title="Telemedicine" subtitle={`See a doctor, from ${formatNaira(600)} a month`} icon="HeartPulse" href="/services/care" />
+            <ListRow title="Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
             <ListRow title="CAC, NEPC, mentors and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
           </div>
         </section>
