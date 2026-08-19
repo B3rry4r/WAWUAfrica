@@ -41,18 +41,26 @@ const SHOWCASE: { icon: IconName; bg: string; type: string; title: string; creat
   },
 ];
 
-const FIELDS: { name: string; icon: IconName; bg: string }[] = [
-  { name: "Business", icon: "Briefcase", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
-  { name: "Trade", icon: "Ship", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
-  { name: "Finance", icon: "Landmark", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]" },
-  { name: "Entertainment", icon: "Music", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
-  { name: "Career", icon: "Rocket", bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]" },
-  { name: "Education", icon: "GraduationCap", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
-  { name: "Agriculture", icon: "Sprout", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]" },
-  { name: "Health", icon: "HeartPulse", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
-  { name: "Technology", icon: "Cpu", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
-  { name: "Creative Arts", icon: "Palette", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
-  { name: "Culture", icon: "Globe", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
+/**
+ * The industry marquee, in the WAWU palette.
+ *
+ * These used to mix the primary purple with three colours (aqua, coral, lime)
+ * that are not on the brand sheet at all. Each now takes one of the sheet's
+ * colours, rotated so no two neighbours match, over a dark base so the white
+ * label stays readable on every card.
+ */
+const FIELDS: { name: string; icon: IconName; tint: string }[] = [
+  { name: "Business", icon: "Briefcase", tint: "var(--wawu-lilac)" },
+  { name: "Trade", icon: "Ship", tint: "var(--wawu-sky)" },
+  { name: "Finance", icon: "Landmark", tint: "var(--wawu-green)" },
+  { name: "Entertainment", icon: "Music", tint: "var(--wawu-pink)" },
+  { name: "Career", icon: "Rocket", tint: "var(--wawu-lemon)" },
+  { name: "Education", icon: "GraduationCap", tint: "var(--wawu-sky)" },
+  { name: "Agriculture", icon: "Sprout", tint: "var(--wawu-green)" },
+  { name: "Health", icon: "HeartPulse", tint: "var(--wawu-pink)" },
+  { name: "Technology", icon: "Cpu", tint: "var(--wawu-lilac)" },
+  { name: "Creative Arts", icon: "Palette", tint: "var(--wawu-lemon)" },
+  { name: "Culture", icon: "Globe", tint: "var(--wawu-sky)" },
 ];
 
 /**
@@ -264,7 +272,7 @@ export async function LandingContent() {
             <h1 className="m-0 mt-7 text-[46px] font-bold leading-[1.02] tracking-[-0.04em] text-text-primary dt:text-[88px]">
               Turn Your WOW
               <br />
-              <HeroRotatingWord />
+              <HeroRotatingWord className="text-accent-hover [text-shadow:0_0_60px_var(--accent-tint-strong)]" />
             </h1>
             <p className="m-0 mt-6 max-w-[540px] text-[17px] leading-relaxed text-text-secondary dt:text-[19px]">
               Build. Earn. Grow. Thrive. All in one place.
@@ -468,7 +476,13 @@ export async function LandingContent() {
                   {[...FIELDS, ...FIELDS].map((f, i) => (
                     <div
                       key={`${f.name}-${i}`}
-                      className={`relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${f.bg} dt:h-[170px] dt:w-[270px]`}
+                      className="relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media dt:h-[170px] dt:w-[270px]"
+                      style={{
+                        // Per-card colour, so it cannot be a Tailwind class.
+                        // Dark base under the tint keeps the white label legible
+                        // even on lemon.
+                        backgroundImage: `linear-gradient(150deg, rgba(11,10,13,0.55), ${f.tint})`,
+                      }}
                     >
                       <span className="absolute -bottom-4 -right-4 opacity-25">
                         <Icon name={f.icon} size={110} color="#FFFFFF" strokeWidth={1.2} />
