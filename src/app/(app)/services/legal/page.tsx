@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   getLegalCatalogue,
+  getLegalAvailability,
   createLegalRequest,
   getMyLegalRequests,
   bookLegalConsultation,
@@ -14,11 +15,12 @@ import {
   type LegalCatalogue,
   type LegalServiceItem,
   type LegalRequest,
+  type LegalAvailability,
 } from "@/lib/api/lifestyle";
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill } from "@/components/ui";
+import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill, Toast } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -224,23 +226,50 @@ function RequestFlow({
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [medium, setMedium] = useState<"chat" | "zoom" | "physical" | null>(null);
+  const [slot, setSlot] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<LegalAvailability | null>(null);
+  const [toast, setToast] = useState<{ title: string; body?: string } | null>(null);
+
+  useEffect(() => {
+    if (request.path !== "consultation" || request.consultationPaidAt) return;
+    getLegalAvailability().then(setAvailability).catch(() => setAvailability(null));
+  }, [request.path, request.consultationPaidAt]);
   const [contract, setContract] = useState<{ contractText: string; amountNaira: number } | null>(null);
   const [signature, setSignature] = useState(fullName ?? "");
 
   const customer = checkoutCustomerFromSession(email ? { email, fullName } : null);
 
-  async function book(medium: "chat" | "zoom" | "physical") {
+  async function book(kind: "chat" | "zoom" | "physical", scheduledFor?: string) {
     setBusy(true); setError(null); setNote(null);
     try {
-      const { request: updated, flutterwaveConfig, message } = await bookLegalConsultation(request.id, medium);
+      const { request: updated, flutterwaveConfig, message } = await bookLegalConsultation(
+        request.id,
+        kind,
+        scheduledFor,
+      );
       onChange(updated);
-      if (!flutterwaveConfig) { setNote(message); return; }
+      if (!flutterwaveConfig) {
+        setNote(message);
+        setToast({
+          title: "Request received",
+          body: "We will email you to arrange the in-person consultation.",
+        });
+        return;
+      }
       if (!customer) { setError("We need an email on your account before you can pay."); return; }
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
         title: "Legal consultation",
-        description: `${updated.serviceName} · ${medium}`,
+        description: `${updated.serviceName} · ${kind}`,
       });
-      onChange(await verifyLegalConsultation(request.id, result.transaction_id));
+      const confirmed = await verifyLegalConsultation(request.id, result.transaction_id);
+      onChange(confirmed);
+      setToast({
+        title: "Consultation booked",
+        body: confirmed.scheduledFor
+          ? `${formatSlot(confirmed.scheduledFor)}. We have emailed you the details.`
+          : "We have emailed you the details.",
+      });
     } catch (e) {
       if (!isFlutterwaveCancelled(e)) setError(e instanceof Error ? e.message : "That did not complete.");
     } finally { setBusy(false); }
@@ -283,6 +312,9 @@ function RequestFlow({
 
   return (
     <div className="flex flex-col gap-[18px] p-[16px_16px_96px]">
+      {toast ? (
+        <Toast kind="success" title={toast.title} body={toast.body} onDismiss={() => setToast(null)} />
+      ) : null}
       <button type="button" onClick={onBack} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)]">
         <Icon name="ChevronLeft" size={16} color="var(--text-secondary)" /> All legal services
       </button>
@@ -299,32 +331,65 @@ function RequestFlow({
         </div>
       ) : null}
 
-      {/* Step: book a consultation. */}
+      {/* Step: book a consultation. How, then when, then pay. */}
       {request.path === "consultation" && !request.consultationPaidAt ? (
         <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
           <span className="text-[14px] font-semibold text-[var(--text-primary)]">Book your consultation</span>
           <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
             A lawyer talks through what you need before anything is quoted.
           </span>
-          {consultationOptions.map((o) => (
-            <button
-              key={o.medium}
-              type="button"
-              disabled={busy}
-              onClick={() => book(o.medium)}
-              className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[14px] text-left"
-            >
-              <span className="flex flex-col">
-                <span className="text-[14px] font-semibold text-[var(--text-primary)]">{o.label}</span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">
-                  {o.minutes ? `${o.minutes} minutes` : "Booked by email, fee agreed per matter"}
+          {consultationOptions.map((o) => {
+            const chosen = medium === o.medium;
+            return (
+              <button
+                key={o.medium}
+                type="button"
+                disabled={busy}
+                onClick={() => setMedium(chosen ? null : o.medium)}
+                className={`flex items-center justify-between rounded-[var(--radius-card)] border p-[14px] text-left ${
+                  chosen
+                    ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
+                }`}
+              >
+                <span className="flex flex-col">
+                  <span className="text-[14px] font-semibold text-[var(--text-primary)]">{o.label}</span>
+                  <span className="text-[12.5px] text-[var(--text-muted)]">
+                    {o.minutes ? `${o.minutes} minutes` : "Booked by email, fee agreed per matter"}
+                  </span>
                 </span>
-              </span>
-              <span className="text-[14px] font-bold text-[var(--text-primary)]">
-                {o.feeNaira ? formatNaira(o.feeNaira) : "On request"}
-              </span>
-            </button>
-          ))}
+                <span className="text-[14px] font-bold text-[var(--text-primary)]">
+                  {o.feeNaira ? formatNaira(o.feeNaira) : "On request"}
+                </span>
+              </button>
+            );
+          })}
+
+          {/*
+            Physical consultations are arranged by email and book no slot, so
+            the calendar only appears for the ones that happen at a set hour.
+          */}
+          {medium && medium !== "physical" ? (
+            <AvailabilityCalendar
+              availability={availability}
+              selected={slot}
+              onSelect={setSlot}
+            />
+          ) : null}
+
+          {medium ? (
+            <Button
+              full
+              disabled={busy || (medium !== "physical" && !slot)}
+              onClick={() => book(medium, slot ?? undefined)}
+            >
+              {busy
+                ? "Opening checkout…"
+                : medium === "physical"
+                  ? "Request an in-person consultation"
+                  : `Pay ${formatNaira(consultationOptions.find((o) => o.medium === medium)?.feeNaira ?? 0)}`}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
@@ -466,6 +531,125 @@ function IntakeStep({
       <Button full onClick={() => onSubmit(documents.map((d) => d.url))} disabled={busy || !documents.length}>
         {busy ? "Submitting…" : "Submit this request"}
       </Button>
+    </div>
+  );
+}
+
+/** "Thu 20 Aug, 9:00am" in Lagos time, which is where the practice sits. */
+function formatSlot(iso: string): string {
+  return new Date(iso).toLocaleString("en-NG", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Africa/Lagos",
+  });
+}
+
+/**
+ * The booking calendar.
+ *
+ * Consultations used to be paid for with no time attached, so nobody knew when
+ * theirs would actually happen. This shows the days a lawyer is free, and
+ * which hours on those days are already taken, before any money moves.
+ *
+ * Days are a horizontal strip rather than a month grid: the horizon is three
+ * weeks of weekdays, so a full month view would be mostly empty cells.
+ */
+function AvailabilityCalendar({
+  availability,
+  selected,
+  onSelect,
+}: {
+  availability: LegalAvailability | null;
+  selected: string | null;
+  onSelect: (iso: string) => void;
+}) {
+  const [day, setDay] = useState<string | null>(null);
+
+  if (!availability) return <Skeleton variant="card" />;
+
+  const days = availability.days.filter((d) => d.slots.some((s) => s.available));
+  if (!days.length) {
+    return (
+      <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+        No slots are open in the next three weeks. Choose an in-person consultation and we will arrange a time by email.
+      </span>
+    );
+  }
+
+  const activeDate = day ?? days[0].date;
+  const active = days.find((d) => d.date === activeDate) ?? days[0];
+
+  return (
+    <div className="flex flex-col gap-[10px]">
+      <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Pick a time</span>
+
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+        {days.map((d) => {
+          const on = d.date === activeDate;
+          const date = new Date(`${d.date}T12:00:00Z`);
+          const open = d.slots.filter((x) => x.available).length;
+          return (
+            <button
+              key={d.date}
+              type="button"
+              onClick={() => setDay(d.date)}
+              className={`flex shrink-0 flex-col items-center rounded-[12px] border px-[13px] py-[8px] ${
+                on
+                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)]"
+                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+              }`}
+            >
+              <span className="text-[11px] uppercase tracking-[0.06em]">
+                {date.toLocaleDateString("en-NG", { weekday: "short", timeZone: "Africa/Lagos" })}
+              </span>
+              <span className="text-[15px] font-bold">
+                {date.toLocaleDateString("en-NG", { day: "numeric", timeZone: "Africa/Lagos" })}
+              </span>
+              <span className={`text-[10px] ${on ? "opacity-80" : "text-[var(--text-muted)]"}`}>
+                {open} free
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {active.slots.map((sl) => {
+          const on = selected === sl.startsAt;
+          return (
+            <button
+              key={sl.startsAt}
+              type="button"
+              disabled={!sl.available}
+              onClick={() => onSelect(sl.startsAt)}
+              className={`rounded-[10px] border py-[9px] text-[12.5px] font-semibold ${
+                on
+                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)]"
+                  : sl.available
+                    ? "border-[var(--border-hairline)] bg-[var(--surface-elevated)] text-[var(--text-primary)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-disabled)] line-through"
+              }`}
+            >
+              {new Date(sl.startsAt).toLocaleTimeString("en-NG", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+                timeZone: "Africa/Lagos",
+              })}
+            </button>
+          );
+        })}
+      </div>
+
+      {selected ? (
+        <span className="text-[12.5px] text-[var(--text-secondary)]">
+          Booking {formatSlot(selected)} (Lagos time).
+        </span>
+      ) : null}
     </div>
   );
 }

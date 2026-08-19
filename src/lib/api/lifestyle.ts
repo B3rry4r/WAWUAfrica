@@ -204,6 +204,16 @@ export interface LegalRequest {
   createdAt: string;
 }
 
+export interface LegalAvailability {
+  timeZone: string;
+  slotMinutes: number;
+  days: { date: string; slots: { startsAt: string; available: boolean }[] }[];
+}
+
+/** When a lawyer is free. Drives the consultation booking calendar. */
+export const getLegalAvailability = () =>
+  apiFetch<LegalAvailability>("/api/hub/legal/availability", { authed: true });
+
 export const getLegalCatalogue = () =>
   apiFetch<LegalCatalogue>("/api/hub/legal/catalogue", { authed: true });
 
@@ -219,7 +229,11 @@ export const getMyLegalRequests = () =>
 export const getLegalRequest = (id: string) =>
   apiFetch<LegalRequest>(`/api/hub/legal/requests/${id}`, { authed: true });
 
-export const bookLegalConsultation = (id: string, medium: "chat" | "zoom" | "physical") =>
+export const bookLegalConsultation = (
+  id: string,
+  medium: "chat" | "zoom" | "physical",
+  scheduledFor?: string,
+) =>
   apiFetch<{
     request: LegalRequest;
     flutterwaveConfig: FlutterwaveConfig | null;
@@ -227,7 +241,7 @@ export const bookLegalConsultation = (id: string, medium: "chat" | "zoom" | "phy
   }>(`/api/hub/legal/requests/${id}/consultation`, {
     method: "POST",
     authed: true,
-    body: { medium },
+    body: { medium, ...(scheduledFor ? { scheduledFor } : {}) },
   });
 
 export const verifyLegalConsultation = (id: string, transactionId: string) =>
@@ -265,10 +279,10 @@ export const verifyLegalPayment = (id: string, transactionId: string) =>
 
 /* --------------------- Carried-over partner services --------------------- */
 
-export type PartnerServiceKind = "loans" | "pension" | "grants";
+export type PartnerServiceKind = "loans" | "pension" | "banking" | "grants";
 
 /**
- * The short request used for Loans/EasyBuy, Pensions and Grants: say what you need, attach anything relevant, partner reviews it.
+ * The short request used for Loans/EasyBuy, Pensions, Banking and Grants: say what you need, attach anything relevant, partner reviews it.
  * No payment is taken; onboarding happens with the partner.
  */
 export const applyForPartnerService = (body: {

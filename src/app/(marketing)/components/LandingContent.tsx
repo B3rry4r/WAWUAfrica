@@ -112,9 +112,16 @@ const QUICK_SERVICES: {
     href: "/services/grants/apply",
   },
   {
-    brand: "Travel and logistics",
-    label: "Flights and shipping",
-    blurb: "Book travel and move goods.",
+    brand: "Banking",
+    label: "Accounts and loans",
+    blurb: "Open a business account and reach SME loans.",
+    icon: "Landmark",
+    href: "/services/banking/apply",
+  },
+  {
+    brand: "Travel and hotel",
+    label: "Flights and hotels",
+    blurb: "Book flights and places to stay.",
     icon: "Plane",
     soon: true,
   },
@@ -314,13 +321,14 @@ export async function LandingContent() {
                       <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[9px] bg-accent-tint">
                         <Icon name={service.icon} size={14} color="var(--accent-hover)" strokeWidth={2} />
                       </span>
-                      <span className="flex min-w-0 flex-col">
-                        <span className="truncate text-[12.5px] font-semibold leading-tight text-text-primary">
-                          {service.brand}
-                        </span>
-                        <span className="truncate text-[10.5px] leading-tight text-text-muted">
-                          {service.soon ? "Coming soon" : service.label}
-                        </span>
+                      {/*
+                        Name only. The second line repeated what the name
+                        already said ("Pensions / Retirement") and turned a
+                        clean directory into noise. Anything not open yet is
+                        dimmed instead of captioned.
+                      */}
+                      <span className="min-w-0 truncate text-[12.5px] font-semibold leading-tight text-text-primary">
+                        {service.brand}
                       </span>
                     </>
                   );

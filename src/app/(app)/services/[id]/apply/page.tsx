@@ -7,11 +7,11 @@ import { applyForPartnerService, type PartnerServiceKind } from "@/lib/api/lifes
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ErrorState, FilePicker, Icon, StatusPill } from "@/components/ui";
 
-const PARTNER_KINDS: PartnerServiceKind[] = ["loans", "pension", "grants"];
+const PARTNER_KINDS: PartnerServiceKind[] = ["loans", "pension", "banking", "grants"];
 
 /**
  * The shared apply form for the partner services carried over from the
- * previous platform (Loans/EasyBuy, Pensions, Grants).
+ * previous platform (Loans/EasyBuy, Pensions, Banking, Grants).
  *
  * CAC and NEPC keep their own bespoke forms because they collect specific
  * filing details. These four never did: the old flow was "submit a short
@@ -151,6 +151,8 @@ function placeholderFor(kind: string): string {
       return "Tell us about your income and how much you would like to contribute.";
     case "loans":
       return "What do you need to finance, and roughly what does it cost?";
+    case "banking":
+      return "What do you need the account for, and are you after a loan or savings product?";
     case "grants":
       return "What are you building, and what would the funding go towards?";
     default:

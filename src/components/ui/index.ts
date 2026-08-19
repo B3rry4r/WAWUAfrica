@@ -26,4 +26,6 @@ export { Skeleton } from "./Skeleton";
 export { StatBlock } from "./StatBlock";
 export { StatusPill } from "./StatusPill";
 export { TierBadge } from "./TierBadge";
+export { Toast } from "./Toast";
+export type { ToastKind, ToastProps } from "./Toast";
 export { VerificationBadge } from "./VerificationBadge";

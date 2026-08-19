@@ -37,6 +37,8 @@ button, input, textarea, select { font-family: inherit; }
 @keyframes wawuMarquee { to { transform: translateX(-50%) } }
 @keyframes wawuMarqueeRev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
 @keyframes wawuFloat { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-9px) } }
+/* Top-of-screen notification: drops in from above the viewport edge. */
+@keyframes wawuToastIn { from { opacity: 0; transform: translateY(-14px) } to { opacity: 1; transform: translateY(0) } }
 @keyframes wawuNotifPulse {
   0%, 100% { opacity: 0.45; transform: translateY(3px) scale(0.985) }
   10%, 30% { opacity: 1; transform: none }
