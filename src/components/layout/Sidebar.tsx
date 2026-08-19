@@ -214,7 +214,7 @@ export function Sidebar() {
       <button
         type="button"
         onClick={signOut}
-        className="mt-[10px] flex h-11 w-full items-center gap-3 rounded-[12px] px-[13px] text-[14px] font-medium text-text-secondary transition-colors hover:bg-tag hover:text-text-primary"
+        className="mt-[10px] flex h-11 w-full items-center gap-3 rounded-[12px] px-[13px] text-[14px] font-medium text-text-secondary transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-text-primary"
       >
         <Icon name="LogOut" size={19} color="var(--text-secondary)" strokeWidth={2} />
         Sign out

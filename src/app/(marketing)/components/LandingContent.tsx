@@ -70,10 +70,7 @@ const QUICK_SERVICES: {
   brand: string;
   label: string;
   blurb: string;
-  icon?: IconName;
-  /** Separate products render their own mark instead of an icon. */
-  logo?: string;
-  tint?: string;
+  icon: IconName;
   href?: string;
   soon?: boolean;
 }[] = [
@@ -105,20 +102,26 @@ const QUICK_SERVICES: {
     icon: "PiggyBank",
     href: "/services/pension/apply",
   },
+];
+
+/**
+ * The two storefronts. Separate products with their own marks, so they get
+ * their own row and their logo at a readable size rather than being squeezed
+ * into a 44px icon chip alongside the utilities.
+ */
+const APPS: { name: string; logo: string; tint: string; blurb: string; href: string }[] = [
   {
-    brand: "WAWUBasket",
-    label: "Food and groceries",
-    blurb: "Fresh market, groceries and restaurants.",
+    name: "WAWUBasket",
     logo: "/wawubasket-logo.png",
     tint: "#A9D636",
+    blurb: "Fresh market, groceries and restaurants",
     href: "/marketplace/basket",
   },
   {
-    brand: "WAWUBeauty",
-    label: "Beauty and textiles",
-    blurb: "Beauty products and services, textiles, art.",
+    name: "WAWUBeauty",
     logo: "/wawubeauty-logo.png",
     tint: "#FF0084",
+    blurb: "Beauty products and services, textiles and art",
     href: "/marketplace/beauty",
   },
 ];
@@ -171,7 +174,7 @@ const FAQ = [
 
 function CaptionPill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex h-[32px] items-center gap-2 rounded-full border border-accent bg-accent-tint px-4 text-[11.5px] font-bold uppercase tracking-[0.12em] text-accent">
+    <span className="inline-flex h-[32px] items-center gap-2 rounded-full border border-hairline bg-[rgba(255,255,255,0.05)] px-4 text-[11.5px] font-bold uppercase tracking-[0.12em] text-text-primary">
       <span className="h-1.5 w-1.5 rounded-full bg-accent" />
       {children}
     </span>
@@ -276,21 +279,9 @@ export async function LandingContent() {
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
-                      {service.logo ? (
-                        <span
-                          className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border"
-                          style={{
-                            borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
-                            backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
-                          }}
-                        >
-                          <img src={service.logo} alt="" className="h-[15px] w-auto object-contain" />
-                        </span>
-                      ) : (
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
-                          <Icon name={service.icon!} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
-                        </span>
-                      )}
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
+                        <Icon name={service.icon} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                      </span>
                       {/*
                         Name only. The second line repeated what the name
                         already said ("Pensions / Retirement") and turned a
@@ -318,6 +309,28 @@ export async function LandingContent() {
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {APPS.map((app) => (
+                  <Link
+                    key={app.name}
+                    href={app.href}
+                    className="flex items-center gap-3 rounded-[14px] border px-4 py-3.5 no-underline transition-transform duration-200 hover:scale-[1.01]"
+                    style={{
+                      borderColor: `color-mix(in srgb, ${app.tint} 40%, transparent)`,
+                      backgroundColor: `color-mix(in srgb, ${app.tint} 10%, transparent)`,
+                    }}
+                  >
+                    {/* The mark at a size you can actually read, not squeezed
+                        into an icon chip. */}
+                    <img src={app.logo} alt={app.name} className="h-[26px] w-auto shrink-0 object-contain dt:h-[30px]" />
+                    <span className="min-w-0 flex-1 truncate text-[12px] leading-tight text-text-secondary">
+                      {app.blurb}
+                    </span>
+                    <Icon name="ArrowUpRight" size={17} color={app.tint} strokeWidth={2.2} />
+                  </Link>
+                ))}
               </div>
             </div>
 
@@ -377,7 +390,7 @@ export async function LandingContent() {
         {/* ============ ONE PROFILE MARQUEE ============ */}
         <section className="py-14 dt:py-20">
           <div className="mx-auto max-w-[1240px] px-5 text-center">
-            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Find WOW. Get WOW. Make WOW.</span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">Find WOW. Get WOW. Make WOW.</span>
             <h2 className="m-0 mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[64px]">
               Every Industry.
               <br />
@@ -413,7 +426,7 @@ export async function LandingContent() {
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
-              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Giving the WOW Experience</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">Giving the WOW Experience</span>
               <h2 className="m-0 mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[58px]">
                 YES, You Too Can <span className="text-accent-hover">Make It Big.</span>
               </h2>
@@ -511,7 +524,7 @@ export async function LandingContent() {
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
-              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">WOW Revenue Streams</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">WOW Revenue Streams</span>
               <h2 className="m-0 mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[58px]">
                 Monetize The WOW <span className="text-accent-hover">About You</span>
               </h2>
@@ -530,7 +543,7 @@ export async function LandingContent() {
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-accent">● Memberships</span>
+                  <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-text-secondary">● Memberships</span>
                   <span className="mt-2 block text-[24px] font-bold tracking-[-0.02em] text-text-primary">Recurring income from your biggest supporters</span>
                   <p className="m-0 mt-2 text-[14px] leading-normal text-text-secondary">
                     Yearly creator tiers, membership trials and promo codes. Steady, predictable, yours.
@@ -610,7 +623,7 @@ export async function LandingContent() {
         <section id="pricing" className="relative px-5 py-14 dt:py-20">
           <div className="relative mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
-              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">Creator Tiers</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">Creator Tiers</span>
               <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[48px]">
                 Go further, <span className="text-accent-hover">keep more</span>
               </h2>
@@ -783,7 +796,7 @@ export async function LandingContent() {
         <section id="comparison" className="px-5 py-14 dt:py-24">
           <div className="mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
-              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">WOW Comparison</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">WOW Comparison</span>
               <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-text-primary dt:text-[52px]">
                 Choosing between <span className="text-accent-hover">WAWU</span>,
                 <br className="hidden dt:block" /> Selar, Mainstack &amp; GROWL
@@ -910,7 +923,7 @@ export async function LandingContent() {
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
-              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent">The Community</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">The Community</span>
               <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-text-primary dt:text-[52px]">
                 Professionals, Entrepreneurs,
                 <br className="hidden dt:block" /> Artisans and <span className="text-accent-hover">Creatives</span>

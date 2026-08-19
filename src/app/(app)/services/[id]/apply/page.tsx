@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MOCK_SERVICES } from "@/lib/api/mocks/services";
 import { applyForPartnerService, type PartnerServiceKind } from "@/lib/api/lifestyle";
@@ -18,8 +18,11 @@ const PARTNER_KINDS: PartnerServiceKind[] = ["loans", "pension"];
  * request, the partner reviews it", so one form serves all four rather than
  * four near-identical copies.
  */
-export default function PartnerApplyPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: kind } = use(params);
+// `params` is a plain object in Next 14; it only becomes a Promise in 15.
+// Wrapping it in use() threw "An unsupported type was passed to use()" and took
+// the whole page down on every partner-service apply route.
+export default function PartnerApplyPage({ params }: { params: { id: string } }) {
+  const kind = params.id;
   const router = useRouter();
 
   const service = MOCK_SERVICES.find((s) => s.id === kind);

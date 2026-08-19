@@ -999,7 +999,7 @@ function RateSheet({
             type="button"
             onClick={() => onRate(n)}
             aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
-            className="grid h-11 w-11 place-items-center rounded-button transition-colors hover:bg-tag"
+            className="grid h-11 w-11 place-items-center rounded-button transition-colors hover:bg-[rgba(255,255,255,0.07)]"
           >
             <Icon
               name="Star"

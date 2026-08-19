@@ -74,7 +74,11 @@ button, input, textarea, select { font-family: inherit; }
   /* ---------- Borders ---------- */
   --border-hairline: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
-  --border-accent: rgba(148, 17, 201, 0.55);
+  /* Softened from 0.55. This border is used decoratively on 125 surfaces —
+     icon chips, cards, pills — so at full strength the whole app read as
+     purple outlines. Selected and active states set their own stronger accent
+     where the emphasis is actually meaningful. */
+  --border-accent: rgba(148, 17, 201, 0.30);
 
   /* ---------- Text ---------- */
   --text-primary: #FEFEFE;
@@ -103,7 +107,7 @@ button, input, textarea, select { font-family: inherit; }
   --accent-hover: #A813E3;
   --accent-press: #810FAF;
   --accent-deep: #471471;    /* trust, depth, financial/professional */
-  --accent-tint: rgba(148, 17, 201, 0.14);
+  --accent-tint: rgba(148, 17, 201, 0.10);
   --accent-tint-strong: rgba(148, 17, 201, 0.26);
   --accent-glow: 0 0 0 3px rgba(148, 17, 201, 0.28);
 

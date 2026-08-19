@@ -23,8 +23,14 @@ type ButtonProps = (BaseProps & ButtonHTMLAttributes<HTMLButtonElement> & { href
 
 const variantClass: Record<ButtonVariant, string> = {
   primary: "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press",
-  secondary: "bg-elevated text-text-primary border border-strong hover:bg-tag",
-  ghost: "bg-transparent text-text-primary hover:bg-tag",
+  // `hover:bg-tag` was the same colour as the card and tag surfaces these
+  // buttons sit on (1.14:1 against a card, 1.0:1 on a tag), so hovering made
+  // the button dissolve into its container. Lifting the surface and the border
+  // instead means the hover always reads, whatever it is sitting on.
+  secondary:
+    "bg-elevated text-text-primary border border-strong hover:border-accent hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--surface-elevated))]",
+  ghost:
+    "bg-transparent text-text-primary hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] hover:text-accent-hover",
   danger: "bg-danger text-on-accent hover:opacity-90",
 };
 
