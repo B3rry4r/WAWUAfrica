@@ -464,7 +464,7 @@ export async function LandingContent() {
                 </p>
                 <div className="mt-5 grid grid-cols-2 gap-2.5">
                   {[
-                    { label: "PPV ₦2,000", icon: "Lock" as IconName },
+                    { label: "PPV", icon: "Lock" as IconName },
                     { label: "Scheduled", icon: "Clock" as IconName },
                     { label: "Audience Favorite", icon: "Heart" as IconName },
                     { label: "Exclusive Behind-the-Scenes", icon: "Clapperboard" as IconName },
