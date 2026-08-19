@@ -46,7 +46,9 @@ export default function CarePage() {
     getHealthPlans()
       .then(setPlans)
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load health plans."));
-    getMyHealthSubscriptions().then(setMine).catch(() => setMine([]));
+    getMyHealthSubscriptions()
+      .then((rows) => setMine(Array.isArray(rows) ? rows : []))
+      .catch(() => setMine([]));
   }, []);
 
   async function onSubscribe() {

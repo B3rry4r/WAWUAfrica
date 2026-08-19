@@ -33,6 +33,8 @@ export default function PayPage() {
 
   const [categories, setCategories] = useState<BillCategory[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** The biller catalogue could not be reached at all, so nothing here can work. */
+  const [unavailable, setUnavailable] = useState(false);
 
   const [category, setCategory] = useState<BillCategory | null>(null);
   const [billers, setBillers] = useState<Biller[] | null>(null);
@@ -51,10 +53,12 @@ export default function PayPage() {
 
   useEffect(() => {
     getBillCategories()
-      .then(setCategories)
-      .catch((e) => setError(e instanceof Error ? e.message : "Could not load bill categories."));
+      .then((rows) => setCategories(Array.isArray(rows) ? rows : []))
+      .catch(() => setUnavailable(true));
     getMyBills()
-      .then((r) => setHistory(r.items))
+      // Defensive: a shape change here must degrade to "no history", never
+      // take the page down.
+      .then((rows) => setHistory(Array.isArray(rows) ? rows : []))
       .catch(() => setHistory([]));
   }, []);
 
@@ -179,7 +183,20 @@ export default function PayPage() {
 
       {error ? <ErrorState title="Something went wrong" body={error} /> : null}
 
-      {!categories ? (
+      {unavailable ? (
+        <div className="flex items-start gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]">
+          <Icon name="Info" size={18} color="var(--text-muted)" className="mt-[1px] shrink-0" />
+          <span className="flex flex-col gap-[3px]">
+            <span className="text-[14px] font-semibold text-[var(--text-primary)]">Bill payments are not switched on yet</span>
+            <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+              Our payment provider has not enabled this account for bills. Nothing you do here would go through, so we
+              have turned the form off until it is live.
+            </span>
+          </span>
+        </div>
+      ) : null}
+
+      {unavailable ? null : !categories ? (
         <Skeleton variant="row" />
       ) : (
         <Section title="1. What are you paying for?">

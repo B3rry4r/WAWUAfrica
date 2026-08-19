@@ -49,7 +49,9 @@ export default function LegalPage() {
     getLegalCatalogue()
       .then((c) => { setCatalogue(c); setCategory(c.categories[0] ?? null); })
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load legal services."));
-    getMyLegalRequests().then(setRequests).catch(() => setRequests([]));
+    getMyLegalRequests()
+      .then((rows) => setRequests(Array.isArray(rows) ? rows : []))
+      .catch(() => setRequests([]));
   }, []);
 
   const services = useMemo(

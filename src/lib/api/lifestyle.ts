@@ -100,8 +100,14 @@ export const verifyBillPayment = (id: string, transactionId: string) =>
     body: { transactionId },
   });
 
+/**
+ * Paginated endpoints come back through the response interceptor as a bare
+ * array (the envelope's `data` is the items, with paging alongside), not as
+ * `{ items }`. Typing it the other way made `.items` undefined at runtime and
+ * crashed the page on `history.length`.
+ */
 export const getMyBills = () =>
-  apiFetch<{ items: BillRecord[] }>("/api/hub/bills/mine", { authed: true });
+  apiFetch<BillRecord[]>("/api/hub/bills/mine", { authed: true });
 
 /* ----------------------------- Telemedicine ----------------------------- */
 

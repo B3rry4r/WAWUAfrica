@@ -57,6 +57,10 @@ Kept on disk so nothing is lost between messages. Updated as work lands.
       Banking/Grants applications, the KYC not-started fix and the legal
       awaiting_quote states are not live yet.
 
+## Queued (you asked to save this for last)
+- [ ] Too much purple in the UI. Bring white in as a second surface/accent in
+      places rather than purple everywhere.
+
 ## Needs a decision from you
 - [ ] The new backend (wawu-api) sends NO email at all: no mailer dependency
       exists. Purchases, KYC outcomes, legal deliverables and bill receipts
