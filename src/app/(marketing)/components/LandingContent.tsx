@@ -128,14 +128,6 @@ const QUICK_SERVICES: {
     href: "/services/grants/apply",
   },
   {
-    brand: "Banking",
-    tint: "var(--wawu-lilac)",
-    label: "Accounts and loans",
-    blurb: "Open a business account and reach SME loans.",
-    icon: "Landmark",
-    href: "/services/banking/apply",
-  },
-  {
     brand: "Travel and Hotel",
     tint: "var(--wawu-pink)",
     label: "Flights and hotels",
@@ -332,7 +324,7 @@ export async function LandingContent() {
                 whole hero. They sit in the hero now, deliberately small: this
                 is a directory of what the app can do, not a feature pitch.
               */}
-              <div className="grid flex-1 grid-cols-2 gap-2.5 dt:grid-cols-2">
+              <div className="grid flex-1 grid-cols-2 gap-2.5 dt:grid-cols-3">
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
@@ -410,16 +402,31 @@ export async function LandingContent() {
         <section className="px-5 py-14 dt:py-20">
           <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
             {[
-              { label: "FIND WOW", icon: "Compass" as IconName, body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
-              { label: "GET WOW", icon: "Sparkles" as IconName, body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
-              { label: "MAKE WOW", icon: "Rocket" as IconName, body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
-              { label: "FOR EVERYONE", icon: "Users" as IconName, body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
+              // One brand colour each, following the sheet's meanings: sky for
+              // discovery and connection, pink for the moment of unlocking,
+              // green for growth, lemon for everyone.
+              { label: "FIND WOW", icon: "Compass" as IconName, tint: "var(--wawu-sky)", body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
+              { label: "GET WOW", icon: "Sparkles" as IconName, tint: "var(--wawu-pink)", body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
+              { label: "MAKE WOW", icon: "Rocket" as IconName, tint: "var(--wawu-green)", body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
+              { label: "FOR EVERYONE", icon: "Users" as IconName, tint: "var(--wawu-lemon)", body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
             ].map((v) => (
-              <div key={v.label} className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-accent">
-                <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-accent bg-accent-tint transition-shadow duration-200 group-hover:shadow-[0_0_28px_var(--accent-tint-strong)]">
-                  <Icon name={v.icon} size={20} color="var(--accent)" strokeWidth={2} />
+              <div
+                key={v.label}
+                // The tint rides on a CSS variable so the hover border can be a
+                // real static Tailwind class rather than a JS mouse handler.
+                className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--tint)_50%,transparent)]"
+                style={{ ["--tint" as string]: v.tint }}
+              >
+                <span
+                  className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border"
+                  style={{
+                    borderColor: `color-mix(in srgb, ${v.tint} 45%, transparent)`,
+                    backgroundColor: `color-mix(in srgb, ${v.tint} 16%, transparent)`,
+                  }}
+                >
+                  <Icon name={v.icon} size={20} color={v.tint} strokeWidth={2} />
                 </span>
-                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-accent">{v.label}</span>
+                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em]" style={{ color: v.tint }}>{v.label}</span>
                 <p className="m-0 text-[14px] leading-normal text-text-secondary">{v.body}</p>
               </div>
             ))}

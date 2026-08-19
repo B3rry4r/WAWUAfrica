@@ -285,10 +285,10 @@ export const verifyLegalPayment = (id: string, transactionId: string) =>
 
 /* --------------------- Carried-over partner services --------------------- */
 
-export type PartnerServiceKind = "loans" | "pension" | "banking" | "grants";
+export type PartnerServiceKind = "loans" | "pension" | "grants";
 
 /**
- * The short request used for Loans/EasyBuy, Pensions, Banking and Grants: say what you need, attach anything relevant, partner reviews it.
+ * The short request used for Loans/EasyBuy, Pensions and Grants: say what you need, attach anything relevant, partner reviews it.
  * No payment is taken; onboarding happens with the partner.
  */
 export const applyForPartnerService = (body: {

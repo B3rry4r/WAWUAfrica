@@ -119,27 +119,6 @@ export const MOCK_SERVICES: PartnerService[] = [
     cta: { label: "Apply now", href: "/services/grants/apply" },
   },
   {
-    id: "banking",
-    slug: "banking",
-    name: "Banking",
-    tagline: "Accounts, savings, loans and SME products",
-    blurb:
-      "Open accounts, save, and access loans and SME products built for small businesses.",
-    icon: "Landmark",
-    status: "live",
-    turnaround: "Reviewed in 3 to 5 days",
-    priceFrom: "Free account opening",
-    partner: "WEMA Bank",
-    eligibility: ["Verified WAWUAfrica account", "Valid government ID", "BVN"],
-    benefits: [
-      "Free account opening",
-      "SME focused loan products",
-      "Savings with competitive interest",
-      "Digital banking tools",
-    ],
-    cta: { label: "Apply now", href: "/services/banking/apply" },
-  },
-  {
     id: "travel",
     slug: "travel",
     name: "Travel and Hotel",
