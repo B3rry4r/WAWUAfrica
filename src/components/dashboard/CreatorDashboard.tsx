@@ -26,7 +26,7 @@ import { StatBlock } from "@/components/ui/StatBlock";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ListRow } from "@/components/ui/ListRow";
-import { Avatar } from "@/components/ui";
+import { Avatar, BackLink } from "@/components/ui";
 
 /**
  * Real KYC state, not "in review" for everything that isn't approved. A
@@ -226,6 +226,9 @@ export function CreatorDashboard() {
         className="sticky top-0 z-20 hidden h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur xl:flex"
         style={{ backdropFilter: "var(--blur-chrome)" }}
       >
+        {/* Desktop has no bottom bar, so without this the dashboard is a dead
+            end unless you use the browser's own back button. */}
+        <BackLink label="" className="!h-9 !w-9 !justify-center !px-0" />
         <span className="text-[19px] font-semibold tracking-[-0.02em] text-text-primary">Dashboard</span>
         <span className="flex-1" />
         <span className="text-[13.5px] text-text-muted">{monthLabel}</span>

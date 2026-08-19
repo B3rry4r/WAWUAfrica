@@ -459,9 +459,15 @@ function AboutTab({ profile }: { profile: CreatorProfile }) {
       {Object.values(profile.socials).some(Boolean) && (
         <div className="flex flex-col gap-[10px]">
           <SectionLabel>Elsewhere</SectionLabel>
-          <div className="flex gap-[10px]">
-            {profile.socials.instagram && <SocialPill icon="instagram" label="Instagram" />}
-            {profile.socials.website && <SocialPill icon="Globe" label="Website" />}
+          {/*
+            These were spans, so a profile listed where someone could be found
+            and then gave you no way to go there. They are links now, opened in
+            a new tab, with rel=noopener since they point off-platform.
+          */}
+          <div className="flex flex-wrap gap-[10px]">
+            {socialLinks(profile.socials).map((s) => (
+              <SocialPill key={s.label} icon={s.icon} label={s.label} href={s.href} />
+            ))}
           </div>
         </div>
       )}
@@ -499,12 +505,37 @@ function BadgeRow({ icon, text }: { icon: ReactNode; text: string }) {
   );
 }
 
-function SocialPill({ icon, label }: { icon: string; label: string }) {
+/**
+ * Turns stored handles into reachable links. Handles are stored bare, so the
+ * platform prefix is added here; the link fields are already full URLs and are
+ * used as given. A handle someone typed with a leading "@" still works.
+ */
+function socialLinks(socials: CreatorProfile["socials"]): { icon: string; label: string; href: string }[] {
+  const handle = (v: string) => v.trim().replace(/^@/, "");
+  const url = (v: string) => (/^https?:\/\//i.test(v.trim()) ? v.trim() : `https://${v.trim()}`);
+  const out: { icon: string; label: string; href: string }[] = [];
+  if (socials.instagram) out.push({ icon: "Camera", label: "Instagram", href: `https://instagram.com/${handle(socials.instagram)}` });
+  if (socials.x) out.push({ icon: "AtSign", label: "X", href: `https://x.com/${handle(socials.x)}` });
+  if (socials.tiktok) out.push({ icon: "Music2", label: "TikTok", href: `https://tiktok.com/@${handle(socials.tiktok)}` });
+  if (socials.youtube) out.push({ icon: "PlayCircle", label: "YouTube", href: url(socials.youtube) });
+  if (socials.facebook) out.push({ icon: "Users", label: "Facebook", href: url(socials.facebook) });
+  if (socials.linkedin) out.push({ icon: "Briefcase", label: "LinkedIn", href: url(socials.linkedin) });
+  if (socials.whatsapp) out.push({ icon: "MessageCircle", label: "WhatsApp", href: `https://wa.me/${socials.whatsapp.replace(/\D/g, "")}` });
+  if (socials.website) out.push({ icon: "Globe", label: "Website", href: url(socials.website) });
+  return out;
+}
+
+function SocialPill({ icon, label, href }: { icon: string; label: string; href: string }) {
   return (
-    <span className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[14px] text-[13px] font-semibold text-text-secondary">
-      <Icon name={icon as IconName} size={15} color="var(--text-secondary)" strokeWidth={2} />
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[14px] text-[13px] font-semibold text-text-secondary no-underline transition-colors hover:border-accent hover:text-text-primary"
+    >
+      <Icon name={icon as IconName} size={15} color="currentColor" strokeWidth={2} />
       {label}
-    </span>
+    </a>
   );
 }
 

@@ -3,6 +3,7 @@ import type { Shop } from "@/types/marketplace";
 import { getShops } from "@/lib/api/marketplace";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { BackLink } from "@/components/ui/BackLink";
 import { HandoffPill } from "@/components/ui/HandoffPill";
 
 export default async function MarketplacePage() {
@@ -17,6 +18,7 @@ export default async function MarketplacePage() {
   return (
     <>
       <div className="flex flex-col gap-3.5 p-[16px_16px_96px] xl:hidden">
+        <BackLink />
         <div className="flex items-center gap-2.5">
           <span className="flex-1 text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
             Marketplace

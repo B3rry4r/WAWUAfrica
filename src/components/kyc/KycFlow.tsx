@@ -24,6 +24,17 @@ const docTypes = [
 
 type DocTypeValue = (typeof docTypes)[number]["value"];
 
+/**
+ * Countries verification is open to. Nigeria first because most creators are
+ * there, then the rest alphabetically. "Other" keeps someone from being locked
+ * out by a list that will always be incomplete.
+ */
+const KYC_COUNTRIES = [
+  "Nigeria", "Benin", "Cameroon", "Côte d'Ivoire", "Egypt", "Ethiopia", "Ghana", "Kenya",
+  "Liberia", "Morocco", "Rwanda", "Senegal", "Sierra Leone", "South Africa", "Tanzania",
+  "Togo", "Uganda", "Zambia", "Zimbabwe", "United Kingdom", "United States", "Canada", "Other",
+] as const;
+
 /** Banks WAWU can pay out to. Chosen by the creator, never assumed. */
 const payoutBanks = [
   "Access Bank", "Citibank Nigeria", "Ecobank Nigeria", "Fidelity Bank", "First Bank of Nigeria",
@@ -46,6 +57,8 @@ export function KycFlow() {
   const [consented, setConsented] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [country, setCountry] = useState("Nigeria");
+  const [nationalIdEquivalent, setNationalIdEquivalent] = useState("");
   const [bvn, setBvn] = useState("");
   const [nin, setNin] = useState("");
   const [payoutAccountNumber, setPayoutAccountNumber] = useState("");
@@ -73,14 +86,20 @@ export function KycFlow() {
 
   useEffect(loadStatus, []);
 
+  const nigerianCountry = country.trim().toLowerCase() === "nigeria";
+
   const submit = () => {
     setSubmitting(true);
     setSubmitError(null);
     kycApi
       .submit({
-        country: "Nigeria",
-        bvn,
-        nin,
+        country,
+        // Send only what the chosen country's rules require. The server
+        // validates by country (bvn+nin for Nigeria, national ID elsewhere),
+        // so sending empty strings for the other branch fails validation.
+        ...(nigerianCountry
+          ? { bvn, nin }
+          : { nationalIdEquivalent }),
         idDocumentType: docType,
         idDocumentUrl: idDocumentKey ?? "",
         payoutBankName,
@@ -142,7 +161,16 @@ export function KycFlow() {
       <div className="flex-1 pt-[20px] px-[20px] pb-[32px] flex flex-col gap-[18px]">
         {submitError ? <ErrorState title="Could not submit" description={submitError} onRetry={submit} /> : null}
         {!submitError && view === "form" && step === 1 ? (
-          <NationalIdStep bvn={bvn} nin={nin} onBvnChange={setBvn} onNinChange={setNin} />
+          <NationalIdStep
+            bvn={bvn}
+            nin={nin}
+            country={country}
+            nationalIdEquivalent={nationalIdEquivalent}
+            onBvnChange={setBvn}
+            onNinChange={setNin}
+            onCountryChange={setCountry}
+            onNationalIdChange={setNationalIdEquivalent}
+          />
         ) : null}
         {!submitError && view === "form" && step === 2 && !docUploaded ? (
           <DocumentStep
@@ -177,6 +205,8 @@ export function KycFlow() {
           <ReviewStep
             bvn={bvn}
             nin={nin}
+            country={country}
+            nationalIdEquivalent={nationalIdEquivalent}
             payoutAccountNumber={payoutAccountNumber}
             docType={docType}
             payoutBankName={payoutBankName}
@@ -192,7 +222,20 @@ export function KycFlow() {
 
       <div className="pt-[14px] px-[16px] pb-[24px] border-t border-t-[var(--border-hairline)] flex flex-col gap-[10px]">
         {submitError ? null : view === "form" && step === 1 ? (
-          <Button full size="lg" iconRight="ArrowRight" disabled={bvn.length !== 11 || nin.length !== 11} onClick={() => setStep(2)}>
+          <Button
+            full
+            size="lg"
+            iconRight="ArrowRight"
+            // Nigeria needs both 11-digit numbers; elsewhere one national ID
+            // number is the requirement, so the old check locked non-Nigerians
+            // on this step forever.
+            disabled={
+              nigerianCountry
+                ? bvn.length !== 11 || nin.length !== 11
+                : nationalIdEquivalent.trim().length < 4
+            }
+            onClick={() => setStep(2)}
+          >
             Continue
           </Button>
         ) : null}
@@ -266,41 +309,87 @@ function backStep(
 function NationalIdStep({
   bvn,
   nin,
+  country,
+  nationalIdEquivalent,
   onBvnChange,
   onNinChange,
+  onCountryChange,
+  onNationalIdChange,
 }: {
   bvn: string;
   nin: string;
+  country: string;
+  nationalIdEquivalent: string;
   onBvnChange: (v: string) => void;
   onNinChange: (v: string) => void;
+  onCountryChange: (v: string) => void;
+  onNationalIdChange: (v: string) => void;
 }) {
+  const nigerian = country.trim().toLowerCase() === "nigeria";
   return (
     <>
       <div className="flex flex-col gap-[8px]">
-        <h2 className="m-0 text-[24px] font-bold tracking-[-0.025em]">Your national ID</h2>
-        <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">Both are required in Nigeria.</p>
+        <h2 className="m-0 text-[24px] font-bold tracking-[-0.025em]">Your identity</h2>
+        <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
+          {nigerian
+            ? "BVN and NIN are both required in Nigeria."
+            : "Give the national ID number your country issues. Your passport or driver's licence works as the document."}
+        </p>
       </div>
 
-      <div className="flex items-center gap-[10px] py-[12px] px-[14px] rounded-[var(--radius-input)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-        <Icon name="MapPin" size={16} color="var(--text-muted)" />
-        <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Country on your account</span>
-        <span className="text-[13.5px] font-semibold">Nigeria</span>
+      {/*
+        This used to be a fixed "Nigeria" row, and BVN/NIN were the only fields,
+        so anyone outside Nigeria could not finish verification at all. The API
+        has always accepted a national-ID equivalent for other countries; the
+        form simply never offered it.
+      */}
+      <div className="flex flex-col gap-[8px]">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Country</span>
+        <div className="relative">
+          <select
+            value={country}
+            onChange={(e) => onCountryChange(e.target.value)}
+            className="flex h-[52px] w-full appearance-none items-center rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] text-[15px] text-[var(--text-primary)]"
+          >
+            {KYC_COUNTRIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <Icon
+            name="ChevronDown"
+            size={16}
+            strokeWidth={2.2}
+            color="var(--text-muted)"
+            className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2"
+          />
+        </div>
       </div>
 
-      <Input
-        label="BVN"
-        value={bvn}
-        onChange={(e) => onBvnChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
-        inputMode="numeric"
-        hint="11 digits."
-      />
-      <Input
-        label="NIN"
-        value={nin}
-        onChange={(e) => onNinChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
-        inputMode="numeric"
-        hint="11 digits."
-      />
+      {nigerian ? (
+        <>
+          <Input
+            label="BVN"
+            value={bvn}
+            onChange={(e) => onBvnChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
+            inputMode="numeric"
+            hint="11 digits."
+          />
+          <Input
+            label="NIN"
+            value={nin}
+            onChange={(e) => onNinChange(e.target.value.replace(/\D/g, "").slice(0, 11))}
+            inputMode="numeric"
+            hint="11 digits."
+          />
+        </>
+      ) : (
+        <Input
+          label="National ID number"
+          value={nationalIdEquivalent}
+          onChange={(e) => onNationalIdChange(e.target.value)}
+          hint="Whatever your country issues: national ID, passport number, or equivalent."
+        />
+      )}
 
       <div className="flex items-start gap-[10px] p-[14px] rounded-[var(--radius-input)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
         <Icon name="ShieldCheck" size={16} color="var(--text-muted)" className="mt-[1px]" />
@@ -465,6 +554,8 @@ function maskMiddle(value: string): string {
 function ReviewStep({
   bvn,
   nin,
+  country,
+  nationalIdEquivalent,
   payoutAccountNumber,
   docType,
   payoutBankName,
@@ -474,6 +565,8 @@ function ReviewStep({
 }: {
   bvn: string;
   nin: string;
+  country: string;
+  nationalIdEquivalent: string;
   payoutAccountNumber: string;
   docType: DocTypeValue;
   payoutBankName: string;
@@ -485,8 +578,10 @@ function ReviewStep({
     <>
       <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] overflow-hidden">
         {[
-          ["BVN", maskMiddle(bvn)],
-          ["NIN", maskMiddle(nin)],
+          // Show what was actually collected for this country.
+          ...(country.trim().toLowerCase() === "nigeria"
+            ? [["BVN", maskMiddle(bvn)], ["NIN", maskMiddle(nin)]]
+            : [["Country", country], ["National ID", maskMiddle(nationalIdEquivalent)]]),
           ["Document", docTypes.find((d) => d.value === docType)?.label ?? "ID document"],
           ["Payout", `${payoutBankName || "Bank not set"} ••••${payoutAccountNumber.slice(-4)}`],
         ].map(([k, v]) => (

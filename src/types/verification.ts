@@ -57,7 +57,20 @@ export interface OwnProfile {
   plan: CreatorTier;
   stats: OwnProfileStats;
   interests: string[];
-  socials: { instagram?: string; whatsapp?: string };
+  /**
+   * Where a creator can be reached. Handles are stored bare (no "@"); the
+   * link fields take a full URL.
+   */
+  socials: {
+    instagram?: string;
+    whatsapp?: string;
+    x?: string;
+    tiktok?: string;
+    youtube?: string;
+    facebook?: string;
+    linkedin?: string;
+    website?: string;
+  };
   /** User only — count, never a naira value. */
   credits: number;
   /** Creator only. */
@@ -71,5 +84,18 @@ export interface OwnProfileDraft {
   handle: string;
   bio: string;
   interests: string[];
-  socials: { instagram?: string; whatsapp?: string };
+  /**
+   * Where a creator can be reached. Handles are stored bare (no "@"); the
+   * link fields take a full URL.
+   */
+  socials: {
+    instagram?: string;
+    whatsapp?: string;
+    x?: string;
+    tiktok?: string;
+    youtube?: string;
+    facebook?: string;
+    linkedin?: string;
+    website?: string;
+  };
 }

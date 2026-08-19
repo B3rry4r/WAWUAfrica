@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon, Skeleton, EmptyState, ErrorState } from "@/components/ui";
+import { Icon, Skeleton, EmptyState, ErrorState, BackLink } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { getNotifications, markAllRead } from "@/lib/api/notifications";
 import { formatNaira, formatCredits } from "@/lib/format";
@@ -80,6 +80,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page xl:mx-auto xl:w-full xl:max-w-[700px]">
+      <div className="px-4 pt-3 xl:px-0"><BackLink /></div>
       <div className="flex items-center gap-3 border-b border-hairline px-4 py-4 xl:sticky xl:top-0 xl:z-10 xl:h-[68px] xl:bg-page xl:px-6 xl:py-0">
         <span className="flex-1 text-[17px] font-semibold xl:text-[19px] xl:tracking-[-0.02em]">Notifications</span>
         {unread > 0 ? (

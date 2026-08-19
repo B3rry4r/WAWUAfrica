@@ -127,6 +127,12 @@ interface HubMeResponse {
   interests: string[];
   instagramHandle: string | null;
   whatsappHandle: string | null;
+  xHandle: string | null;
+  tiktokHandle: string | null;
+  youtubeUrl: string | null;
+  facebookUrl: string | null;
+  linkedinUrl: string | null;
+  websiteUrl: string | null;
 }
 
 /** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubMeResponse doc comment) — never invent one. */
@@ -224,7 +230,16 @@ export async function getOwnProfile(): Promise<OwnProfile> {
       plan,
       stats: { published, sales: undefined, followers: undefined },
       interests: me.interests ?? [],
-      socials: { instagram: me.instagramHandle ?? undefined, whatsapp: me.whatsappHandle ?? undefined },
+      socials: {
+        instagram: me.instagramHandle ?? undefined,
+        whatsapp: me.whatsappHandle ?? undefined,
+        x: me.xHandle ?? undefined,
+        tiktok: me.tiktokHandle ?? undefined,
+        youtube: me.youtubeUrl ?? undefined,
+        facebook: me.facebookUrl ?? undefined,
+        linkedin: me.linkedinUrl ?? undefined,
+        website: me.websiteUrl ?? undefined,
+      },
       credits,
       earningsThisMonth,
       toReply: undefined,
@@ -256,6 +271,14 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
         handle: draft.handle,
         instagramHandle: draft.socials.instagram ?? "",
         whatsappHandle: draft.socials.whatsapp ?? "",
+        // Only send links that were filled in: the API validates these as
+        // URLs, so an empty string would be rejected rather than cleared.
+        ...(draft.socials.x ? { xHandle: draft.socials.x } : {}),
+        ...(draft.socials.tiktok ? { tiktokHandle: draft.socials.tiktok } : {}),
+        ...(draft.socials.youtube ? { youtubeUrl: draft.socials.youtube } : {}),
+        ...(draft.socials.facebook ? { facebookUrl: draft.socials.facebook } : {}),
+        ...(draft.socials.linkedin ? { linkedinUrl: draft.socials.linkedin } : {}),
+        ...(draft.socials.website ? { websiteUrl: draft.socials.website } : {}),
       } satisfies UpdateUserProfileBody,
     });
     // Re-fetch rather than hand-map the PATCH response: upsertMe's response

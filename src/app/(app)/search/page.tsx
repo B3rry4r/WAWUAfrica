@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge } from "@/components/ui";
+import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge, BackLink } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { ContentCard } from "@/components/content/ContentCard";
 import { FollowButton } from "@/components/shared/FollowButton";
@@ -89,6 +89,7 @@ export default function SearchPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page xl:mx-auto xl:w-full xl:max-w-[700px]">
+      <div className="px-4 pt-3 xl:px-0"><BackLink /></div>
       {/* Search header */}
       <div className="flex items-center gap-3 border-b border-hairline px-4 py-3.5 xl:sticky xl:top-0 xl:z-10 xl:h-[68px] xl:bg-page xl:px-6 xl:py-0">
         <div className="flex h-[42px] flex-1 items-center gap-2.5 rounded-full border border-hairline bg-input px-4 xl:h-10">

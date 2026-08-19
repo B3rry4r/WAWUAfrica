@@ -26,7 +26,7 @@ export default function EditProfilePage() {
     handle: "",
     bio: "",
     interests: [],
-    socials: { instagram: "", whatsapp: "" },
+    socials: { instagram: "", whatsapp: "", x: "", tiktok: "", youtube: "", facebook: "", linkedin: "", website: "" },
   });
 
   useEffect(() => {
@@ -165,6 +165,52 @@ export default function EditProfilePage() {
                 icon={"whatsapp" as IconName}
                 inputMode="tel"
                 placeholder="0801 234 5678"
+              />
+              {/*
+                Instagram and WhatsApp alone left most of where an audience
+                actually is unreachable from a profile. Handles are typed bare;
+                the link fields want a full URL because the API validates them
+                as one.
+              */}
+              <Input
+                label="X"
+                value={draft.socials.x ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, x: e.target.value } }))}
+                placeholder="username"
+              />
+              <Input
+                label="TikTok"
+                value={draft.socials.tiktok ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, tiktok: e.target.value } }))}
+                placeholder="username"
+              />
+              <Input
+                label="YouTube"
+                value={draft.socials.youtube ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, youtube: e.target.value } }))}
+                inputMode="url"
+                placeholder="https://youtube.com/@you"
+              />
+              <Input
+                label="Facebook"
+                value={draft.socials.facebook ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, facebook: e.target.value } }))}
+                inputMode="url"
+                placeholder="https://facebook.com/you"
+              />
+              <Input
+                label="LinkedIn"
+                value={draft.socials.linkedin ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, linkedin: e.target.value } }))}
+                inputMode="url"
+                placeholder="https://linkedin.com/in/you"
+              />
+              <Input
+                label="Website"
+                value={draft.socials.website ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, website: e.target.value } }))}
+                inputMode="url"
+                placeholder="https://yoursite.com"
               />
             </section>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { BackLink } from "@/components/ui";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { LearnCourse, LearnEntitlement, LearnGuide, Playbook } from "@/types/learn";
@@ -49,7 +50,8 @@ export default function LearnPage() {
     // (design D12): the banner moves into a persistent right rail so it stays
     // visible against every card, and courses go 3-across instead of stacked.
     <div className="flex flex-col gap-5 p-[16px_16px_96px] xl:flex-row xl:items-start xl:gap-6 xl:p-[26px]">
-      <div className="xl:hidden">
+      <div className="flex flex-col gap-5 xl:hidden">
+        <BackLink />
         <EntitlementBanner entitlement={entitlement} />
       </div>
 

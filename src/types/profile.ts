@@ -56,7 +56,16 @@ export interface CreatorProfile {
   memberSince?: string;
   replyTime?: string;
   categories: string[];
-  socials: { instagram?: string; website?: string };
+  socials: {
+    instagram?: string;
+    whatsapp?: string;
+    x?: string;
+    tiktok?: string;
+    youtube?: string;
+    facebook?: string;
+    linkedin?: string;
+    website?: string;
+  };
   content: ProfileContentItem[];
   communities: CreatorCommunity[];
   products: StoreProduct[];

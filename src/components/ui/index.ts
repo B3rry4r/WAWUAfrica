@@ -4,6 +4,7 @@
 
 export { Avatar } from "./Avatar";
 export { AccessBadge } from "./AccessBadge";
+export { BackLink } from "./BackLink";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { ComingSoonPill } from "./ComingSoonPill";

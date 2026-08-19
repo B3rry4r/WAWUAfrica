@@ -21,6 +21,11 @@ interface RealPublicCreatorProfile {
   interests: string[];
   instagramHandle: string | null;
   whatsappHandle: string | null;
+  xHandle: string | null;
+  tiktokHandle: string | null;
+  youtubeUrl: string | null;
+  facebookUrl: string | null;
+  linkedinUrl: string | null;
   websiteUrl: string | null;
   tier: "basic" | "pro";
   evgScore: number;
@@ -81,6 +86,12 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
     categories: real.interests,
     socials: {
       instagram: real.instagramHandle ?? undefined,
+      whatsapp: real.whatsappHandle ?? undefined,
+      x: real.xHandle ?? undefined,
+      tiktok: real.tiktokHandle ?? undefined,
+      youtube: real.youtubeUrl ?? undefined,
+      facebook: real.facebookUrl ?? undefined,
+      linkedin: real.linkedinUrl ?? undefined,
       website: real.websiteUrl ?? undefined,
     },
     content: [],
