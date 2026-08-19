@@ -142,7 +142,7 @@ export const MOCK_SERVICES: PartnerService[] = [
   {
     id: "travel",
     slug: "travel",
-    name: "Travel and hotel",
+    name: "Travel and Hotel",
     tagline: "Flights and places to stay",
     blurb: "Book and pay for flights and hotels without leaving the app.",
     icon: "Plane",

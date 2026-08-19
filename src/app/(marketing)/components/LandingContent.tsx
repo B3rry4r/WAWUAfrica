@@ -119,7 +119,7 @@ const QUICK_SERVICES: {
     href: "/services/banking/apply",
   },
   {
-    brand: "Travel and hotel",
+    brand: "Travel and Hotel",
     label: "Flights and hotels",
     blurb: "Book flights and places to stay.",
     icon: "Plane",
@@ -314,12 +314,12 @@ export async function LandingContent() {
                 whole hero. They sit in the hero now, deliberately small: this
                 is a directory of what the app can do, not a feature pitch.
               */}
-              <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-3 dt:grid-cols-3">
+              <div className="grid flex-1 grid-cols-2 gap-2.5 dt:grid-cols-2">
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
-                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[9px] bg-accent-tint">
-                        <Icon name={service.icon} size={14} color="var(--accent-hover)" strokeWidth={2} />
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-accent bg-accent-tint">
+                        <Icon name={service.icon} size={22} color="var(--accent-hover)" strokeWidth={2.2} />
                       </span>
                       {/*
                         Name only. The second line repeated what the name
@@ -327,13 +327,13 @@ export async function LandingContent() {
                         clean directory into noise. Anything not open yet is
                         dimmed instead of captioned.
                       */}
-                      <span className="min-w-0 truncate text-[12.5px] font-semibold leading-tight text-text-primary">
+                      <span className="min-w-0 truncate text-[15.5px] font-bold leading-tight tracking-[-0.01em] text-text-primary dt:text-[16.5px]">
                         {service.brand}
                       </span>
                     </>
                   );
                   const shell =
-                    "flex items-center gap-2.5 rounded-[12px] border border-hairline bg-[rgba(19,19,22,0.8)] px-2.5 py-2 backdrop-blur";
+                    "flex items-center gap-3 rounded-[14px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3.5 py-3 backdrop-blur";
                   return service.href ? (
                     <Link
                       key={service.brand}
