@@ -8,7 +8,7 @@ import { kycApi } from "./kyc";
 
 /** Basic ₦5,999/yr, Pro ₦18,999/yr. Yearly, paid up front. */
 export const currentSubscription: Subscription = {
-  plan: { tier: "pro", price: 18999, slots: 7, freeSlots: 2, split: 90, features: [] },
+  plan: { tier: "pro", price: 18999, slots: 15, freeSlots: 2, split: 90, features: [] },
   state: "active",
   renewsAt: "2027-08-14T00:00:00.000Z",
   cardLast4: "4412",

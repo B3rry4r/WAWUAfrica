@@ -28,11 +28,11 @@ export const PLANS: Record<CreatorTier, Plan> = {
   basic: {
     tier: "basic",
     price: 5999,
-    slots: 3,
+    slots: 6,
     freeSlots: 1,
     split: 85,
     features: [
-      "3 uploads, 1 free and 2 paid",
+      "6 uploads, 1 free and 5 paid",
       "Host open communities · 90% on credits",
       "1 free course, business playbook, purple badge",
     ],
@@ -40,11 +40,11 @@ export const PLANS: Record<CreatorTier, Plan> = {
   pro: {
     tier: "pro",
     price: 18999,
-    slots: 7,
+    slots: 15,
     freeSlots: 2,
     split: 90,
     features: [
-      "7 uploads instead of 3",
+      "15 uploads instead of 6",
       "Keep 90% instead of 85%",
       "Private communities and 3 free courses",
     ],

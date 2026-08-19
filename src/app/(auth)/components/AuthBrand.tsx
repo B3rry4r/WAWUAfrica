@@ -53,7 +53,7 @@ export function AuthBrandPanel() {
       {content.kind === "marketing" ? (
         <div className="mt-auto flex flex-col gap-[22px]">
           <span className="text-[34px] font-bold leading-[1.12] tracking-[-0.03em] text-text-primary">
-            Nigerians earning from what they already know.
+            Creators earning from what they already know.
           </span>
           <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-[rgba(11,10,13,0.55)] p-[22px]">
             <p className="m-0 text-[14.5px] leading-[1.55] text-text-secondary">

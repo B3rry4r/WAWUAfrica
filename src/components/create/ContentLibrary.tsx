@@ -62,7 +62,7 @@ export function ContentLibrary() {
     return items.filter((i) => i.status === filter);
   }, [items, filter]);
 
-  // Real slots total (Basic 3 / Pro 7, derived server-side from tier), never
+  // Real slots total (Basic 6 / Pro 15, derived server-side from tier), never
   // the frozen mock — see src/lib/api/mocks/session.ts.
   const { creator } = useCreatorState();
   const slotsTotal = creator?.slotsTotal ?? PLANS.basic.slots;

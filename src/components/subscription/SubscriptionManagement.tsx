@@ -454,8 +454,8 @@ export function SubscriptionManagement() {
             <span className="text-[20px] font-bold tracking-[-0.02em]">You are on {paidSummary.tier === "pro" ? "Pro" : "Basic"}</span>
             <span className="text-[14px] leading-[1.5] text-[var(--text-secondary)] max-w-[270px]">
               {paidSummary.tier === "pro"
-                ? "Seven slots, private communities, and 90% of every sale from now on."
-                : "Three slots, open communities, and 85% of every sale."}
+                ? "Fifteen slots, private communities, and 90% of every sale from now on."
+                : "Six slots, open communities, and 85% of every sale."}
             </span>
             <div className="flex flex-col gap-[9px] w-full py-[15px] px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
               <div className="flex items-center gap-[10px]">
@@ -516,7 +516,7 @@ export function SubscriptionManagement() {
             <div className="flex items-center gap-[12px] py-[14px] px-[15px] rounded-[var(--radius-input)] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
               <div className="flex-1 flex flex-col gap-[3px]">
                 <span className="text-[13.5px] font-semibold">Basic is {formatNaira(PLANS.basic.price)}</span>
-                <span className="text-[12.5px] text-[var(--text-secondary)]">Keeps 3 uploads and open communities</span>
+                <span className="text-[12.5px] text-[var(--text-secondary)]">Keeps 6 uploads and open communities</span>
               </div>
               <Button size="sm" variant="secondary" loading={downgrading} onClick={handleDowngrade}>
                 Move to Basic

@@ -668,7 +668,7 @@ export async function LandingContent() {
                 </div>
                 <div className="flex flex-col gap-2.5">
                   {[
-                    "3 uploads, 1 free and 2 paid",
+                    "6 uploads, 1 free and 5 paid",
                     "Unlimited messages",
                     "Join and host open communities",
                     "1 free course of your choice",
@@ -692,7 +692,7 @@ export async function LandingContent() {
                 <div className="flex flex-col gap-2.5">
                   {[
                     "Keep 90% instead of 85%",
-                    "7 uploads, 2 free and 5 paid",
+                    "15 uploads, 2 free and 13 paid",
                     "Unlimited messages",
                     "Open and private communities",
                     "Up to 3 free courses of your choice",
