@@ -5,14 +5,25 @@ import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { formatNaira } from "@/lib/format";
-import { getFeaturedContent } from "@/lib/api/content";
-import type { ContentPiece } from "@/types/content";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 import { HeroRotatingWord } from "./HeroRotatingWord";
 import { SmartScheduler } from "./SmartScheduler";
 
-const PIPELINE = ["Community", "Training", "Certification", "Employment", "Market Access", "Financial Inclusion", "Ownership"];
+/**
+ * What the ecosystem gives access to. Rendered in the hero's "Access to" card
+ * and again as the journey strip further down.
+ *
+ * Two items from the requested list are held back deliberately, because
+ * docs/01_SPEC.md forbids both by name and that doc is the tiebreaker:
+ *   - "Jobs": spec line 120 cuts jobs/gigs/recruiting entirely, "including
+ *     the word 'gigs' anywhere in copy".
+ *   - "Wallets": spec section 3 exists specifically to keep Credits from
+ *     drifting into wallet territory, and warns that the wallet problem tends
+ *     to reappear "under a different name".
+ * Both are one word away from going in if that call gets reversed.
+ */
+const PIPELINE = ["Training", "Payments", "Banking", "Healthcare", "Legal", "Travel"];
 
 /**
  * Exemplary showcase cards for the hero collage. The database has no creators
@@ -20,47 +31,19 @@ const PIPELINE = ["Community", "Training", "Certification", "Employment", "Marke
  * real featured content exists, its title/creator/price replace the sample
  * copy while the illustration stays until content carries its own preview.
  */
-const SHOWCASE: { icon: IconName; bg: string; type: string; title: string; creator: string; price: string; free: boolean }[] = [
-  {
-    icon: "GraduationCap",
-    bg: "bg-[linear-gradient(160deg,var(--accent-deep),var(--accent))]",
-    type: "Course",
-    title: "CAC in 7 days",
-    creator: "Adaeze Okonkwo",
-    price: "₦5,000",
-    free: false,
-  },
-  {
-    icon: "Clapperboard",
-    bg: "bg-[linear-gradient(160deg,rgba(11,10,13,0.55),var(--accent-deep))]",
-    type: "Video",
-    title: "Ankara pattern drafting",
-    creator: "Ifeanyi Nwosu",
-    price: "Free",
-    free: true,
-  },
-];
 
-/**
- * The industry marquee, in the WAWU palette.
- *
- * These used to mix the primary purple with three colours (aqua, coral, lime)
- * that are not on the brand sheet at all. Each now takes one of the sheet's
- * colours, rotated so no two neighbours match, over a dark base so the white
- * label stays readable on every card.
- */
-const FIELDS: { name: string; icon: IconName; tint: string }[] = [
-  { name: "Business", icon: "Briefcase", tint: "var(--wawu-lilac)" },
-  { name: "Trade", icon: "Ship", tint: "var(--wawu-sky)" },
-  { name: "Finance", icon: "Landmark", tint: "var(--wawu-green)" },
-  { name: "Entertainment", icon: "Music", tint: "var(--wawu-pink)" },
-  { name: "Career", icon: "Rocket", tint: "var(--wawu-lemon)" },
-  { name: "Education", icon: "GraduationCap", tint: "var(--wawu-sky)" },
-  { name: "Agriculture", icon: "Sprout", tint: "var(--wawu-green)" },
-  { name: "Health", icon: "HeartPulse", tint: "var(--wawu-pink)" },
-  { name: "Technology", icon: "Cpu", tint: "var(--wawu-lilac)" },
-  { name: "Creative Arts", icon: "Palette", tint: "var(--wawu-lemon)" },
-  { name: "Culture", icon: "Globe", tint: "var(--wawu-sky)" },
+const FIELDS: { name: string; icon: IconName; bg: string }[] = [
+  { name: "Business", icon: "Briefcase", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
+  { name: "Trade", icon: "Ship", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
+  { name: "Finance", icon: "Landmark", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]" },
+  { name: "Entertainment", icon: "Music", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
+  { name: "Career", icon: "Rocket", bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]" },
+  { name: "Education", icon: "GraduationCap", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
+  { name: "Agriculture", icon: "Sprout", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]" },
+  { name: "Health", icon: "HeartPulse", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
+  { name: "Technology", icon: "Cpu", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
+  { name: "Creative Arts", icon: "Palette", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
+  { name: "Culture", icon: "Globe", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
 ];
 
 /**
@@ -70,31 +53,20 @@ const FIELDS: { name: string; icon: IconName; tint: string }[] = [
  * link anywhere rather than opening a dead screen.
  */
 /**
- * Colour per service, as assigned on the brand sheet.
- *
- * One exception, made deliberately: Legal is Midnight/Ink (#111018), which on
- * this dark UI sits at 1.02:1 against the card behind it — invisible. Its
- * chip is filled with ink and the icon drawn in warm white instead, so it
- * still reads as the sober, authoritative one rather than another bright
- * colour, but can actually be seen. `iconColor` carries that override.
+ * The services strip. Every icon shares one colour, Electric Lilac from the
+ * brand sheet, rather than one colour per service: a row of seven different
+ * colours competed with itself, and this is a directory, not a chart.
  */
 const QUICK_SERVICES: {
   brand: string;
   label: string;
   blurb: string;
   icon: IconName;
-  /** A --wawu-* token name: the chip fill and border. */
-  tint: string;
-  /** Overrides the icon colour where the tint itself is unreadable on dark. */
-  iconColor?: string;
-  /** Fills the chip solid rather than tinting it. Used by ink. */
-  solidChip?: boolean;
   href?: string;
   soon?: boolean;
 }[] = [
   {
     brand: "Bills Payment",
-    tint: "var(--wawu-sky)",
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
     icon: "CreditCard",
@@ -102,7 +74,6 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Telemedicine",
-    tint: "var(--wawu-sky)",
     label: "Health cover",
     blurb: "See a doctor from ₦600 a month.",
     icon: "Stethoscope",
@@ -110,9 +81,6 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Legal",
-    tint: "var(--wawu-ink)",
-    iconColor: "var(--wawu-warm-white)",
-    solidChip: true,
     label: "Filings and lawyers",
     blurb: "CAC and tax filings, or book a lawyer.",
     icon: "Scale",
@@ -120,7 +88,6 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Loans/EasyBuy",
-    tint: "var(--wawu-lilac)",
     label: "Instalments",
     blurb: "Spread the cost over monthly payments.",
     icon: "Smartphone",
@@ -128,7 +95,6 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Pensions",
-    tint: "var(--wawu-green)",
     label: "Retirement",
     blurb: "Save for later on irregular income.",
     icon: "PiggyBank",
@@ -136,7 +102,6 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Grants",
-    tint: "var(--wawu-lemon)",
     label: "Funding",
     blurb: "Find grants you qualify for.",
     icon: "HandCoins",
@@ -144,7 +109,6 @@ const QUICK_SERVICES: {
   },
   {
     brand: "Travel and Hotel",
-    tint: "var(--wawu-pink)",
     label: "Flights and hotels",
     blurb: "Book flights and places to stay.",
     icon: "Plane",
@@ -231,16 +195,6 @@ function CheckOrX({ value, accent }: { value: string | boolean; accent?: boolean
 }
 
 export async function LandingContent() {
-  // No creators or content in the database yet is the normal state for launch:
-  // the SHOWCASE fallback below keeps the collage populated either way, so a
-  // fetch failure and an empty result render identically (sample cards).
-  let toWatch: ContentPiece[] = [];
-  try {
-    toWatch = await getFeaturedContent();
-  } catch {
-    // fall through to the showcase fallback
-  }
-
   return (
     <div className="relative min-h-screen overflow-x-clip bg-page">
       <div className="wawu-gridlines" aria-hidden="true" />
@@ -285,52 +239,24 @@ export async function LandingContent() {
           {/* Social proof: collage + stat cards (showcase images stand in until real content exists) */}
           <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[1fr_360px] dt:gap-6">
             <div className="flex flex-col gap-4 dt:gap-5">
-              <div className="grid grid-cols-2 gap-4 dt:gap-5">
-                {SHOWCASE.map((card, i) => {
-                  const real = toWatch[i];
-                  const title = real?.title ?? card.title;
-                  const creator = real?.creator?.fullName ?? card.creator;
-                  const free = real ? real.accessType === "free" : card.free;
-                  const price = real ? (real.accessType === "free" ? "Free" : `₦${real.price.toLocaleString("en-NG")}`) : card.price;
-                  return (
-                    <Link
-                      key={card.type}
-                      href="/sign-up"
-                      className={`group relative block overflow-hidden rounded-card border border-hairline ${card.bg} ${
-                        i === 0
-                          ? "rotate-[-1.6deg] animate-[wawuFloat_7s_ease-in-out_infinite]"
-                          : "translate-y-4 rotate-[1.6deg] animate-[wawuFloat_8s_ease-in-out_infinite] [animation-delay:1.2s]"
-                      }`}
-                    >
-                      <span className="grid h-[128px] w-full place-items-center dt:h-[150px]">
-                        <span className="grid place-items-center transition-transform duration-500 group-hover:scale-110" aria-hidden="true">
-                          {card.type === "Video" ? (
-                            <span className="grid h-11 w-11 place-items-center rounded-full border border-[rgba(255,255,255,0.35)] bg-[rgba(11,10,13,0.35)] backdrop-blur">
-                              <Icon name="Play" size={18} color="#FFFFFF" strokeWidth={1.8} className="translate-x-0.5 drop-shadow-[0_0_16px_rgba(255,255,255,0.45)]" />
-                            </span>
-                          ) : (
-                            <Icon name={card.icon} size={40} color="rgba(255,255,255,0.92)" strokeWidth={1.3} className="drop-shadow-[0_0_20px_rgba(255,255,255,0.35)]" />
-                          )}
-                        </span>
-                      </span>
-                      <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.85),transparent)]" style={{ height: "62%" }} aria-hidden="true" />
-                      <span className="absolute left-2.5 top-2.5 inline-flex h-[21px] items-center rounded-full border border-[rgba(255,255,255,0.25)] bg-[rgba(11,10,13,0.55)] px-2.5 text-[10px] font-semibold text-white backdrop-blur">
-                        {real ? real.contentType.charAt(0).toUpperCase() + real.contentType.slice(1) : card.type}
-                      </span>
-                      <span
-                        className={`absolute right-3 top-3 inline-flex h-[26px] items-center rounded-full px-3 text-[11.5px] font-bold backdrop-blur ${
-                          free ? "border border-[rgba(255,255,255,0.25)] bg-[rgba(11,10,13,0.55)] text-white" : "bg-accent text-on-accent"
-                        }`}
-                      >
-                        {price}
-                      </span>
-                      <span className="absolute inset-x-0 bottom-0 flex flex-col gap-0 px-3 pb-2.5">
-                        <span className="truncate text-[12.5px] font-bold leading-snug text-white dt:text-[13.5px]">{title}</span>
-                        <span className="truncate text-[10.5px] text-[rgba(255,255,255,0.7)]">{creator}</span>
-                      </span>
-                    </Link>
-                  );
-                })}
+              {/*
+                A 16:9 slot for the product video. It replaces two sample
+                content cards that were standing in for a database with nothing
+                in it yet — placeholder content pretending to be real content.
+                An empty frame that says what it is beats fake data.
+              */}
+              <div className="relative aspect-video w-full overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))]">
+                <span className="absolute inset-0 grid place-items-center">
+                  <span className="grid h-[68px] w-[68px] place-items-center rounded-full border border-[rgba(255,255,255,0.35)] bg-[rgba(11,10,13,0.4)] backdrop-blur transition-transform duration-300 hover:scale-105 dt:h-[84px] dt:w-[84px]">
+                    <Icon
+                      name="Play"
+                      size={30}
+                      color="#FFFFFF"
+                      strokeWidth={1.8}
+                      className="translate-x-0.5 drop-shadow-[0_0_20px_rgba(255,255,255,0.45)]"
+                    />
+                  </span>
+                </span>
               </div>
 
               {/*
@@ -343,26 +269,8 @@ export async function LandingContent() {
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
-                      <span
-                        className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border"
-                        style={{
-                          // The tint is per-service data, so it cannot be a
-                          // Tailwind class: those are compiled ahead of time
-                          // and a dynamic class name would never be generated.
-                          borderColor: service.solidChip
-                            ? `color-mix(in srgb, ${service.iconColor ?? service.tint} 32%, transparent)`
-                            : `color-mix(in srgb, ${service.tint} 45%, transparent)`,
-                          backgroundColor: service.solidChip
-                            ? service.tint
-                            : `color-mix(in srgb, ${service.tint} 16%, transparent)`,
-                        }}
-                      >
-                        <Icon
-                          name={service.icon}
-                          size={22}
-                          color={service.iconColor ?? service.tint}
-                          strokeWidth={2.2}
-                        />
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
+                        <Icon name={service.icon} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
                       </span>
                       {/*
                         Name only. The second line repeated what the name
@@ -406,7 +314,10 @@ export async function LandingContent() {
                   <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
                     <Icon name="Route" size={16} color="var(--accent)" strokeWidth={2.1} />
                   </span>
-                  <span className="mt-3 block text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Access to</span>
+                  {/* Sits alongside the 10M+ and 1.5M+ figures, so it carries the
+                      same weight, size and colour as they do rather than reading
+                      as a small purple caption. */}
+                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.03em] text-text-primary">Access to</span>
                   <span className="mt-1 block text-[13px] leading-relaxed text-text-secondary">
                     {PIPELINE.join(" → ")}
                   </span>
@@ -426,31 +337,19 @@ export async function LandingContent() {
         <section className="px-5 py-14 dt:py-20">
           <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
             {[
-              // One brand colour each, following the sheet's meanings: sky for
-              // discovery and connection, pink for the moment of unlocking,
-              // green for growth, lemon for everyone.
-              { label: "FIND WOW", icon: "Compass" as IconName, tint: "var(--wawu-sky)", body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
-              { label: "GET WOW", icon: "Sparkles" as IconName, tint: "var(--wawu-pink)", body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
-              { label: "MAKE WOW", icon: "Rocket" as IconName, tint: "var(--wawu-green)", body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
-              { label: "FOR EVERYONE", icon: "Users" as IconName, tint: "var(--wawu-lemon)", body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
+              { label: "FIND WOW", icon: "Compass" as IconName, body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
+              { label: "GET WOW", icon: "Sparkles" as IconName, body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
+              { label: "MAKE WOW", icon: "Rocket" as IconName, body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
+              { label: "FOR EVERYONE", icon: "Users" as IconName, body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
             ].map((v) => (
               <div
                 key={v.label}
-                // The tint rides on a CSS variable so the hover border can be a
-                // real static Tailwind class rather than a JS mouse handler.
-                className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--tint)_50%,transparent)]"
-                style={{ ["--tint" as string]: v.tint }}
+                className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-accent"
               >
-                <span
-                  className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border"
-                  style={{
-                    borderColor: `color-mix(in srgb, ${v.tint} 45%, transparent)`,
-                    backgroundColor: `color-mix(in srgb, ${v.tint} 16%, transparent)`,
-                  }}
-                >
-                  <Icon name={v.icon} size={20} color={v.tint} strokeWidth={2} />
+                <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-accent bg-accent-tint transition-shadow duration-200 group-hover:shadow-[0_0_28px_var(--accent-tint-strong)]">
+                  <Icon name={v.icon} size={20} color="var(--accent)" strokeWidth={2} />
                 </span>
-                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em]" style={{ color: v.tint }}>{v.label}</span>
+                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-accent">{v.label}</span>
                 <p className="m-0 text-[14px] leading-normal text-text-secondary">{v.body}</p>
               </div>
             ))}
@@ -476,13 +375,7 @@ export async function LandingContent() {
                   {[...FIELDS, ...FIELDS].map((f, i) => (
                     <div
                       key={`${f.name}-${i}`}
-                      className="relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media dt:h-[170px] dt:w-[270px]"
-                      style={{
-                        // Per-card colour, so it cannot be a Tailwind class.
-                        // Dark base under the tint keeps the white label legible
-                        // even on lemon.
-                        backgroundImage: `linear-gradient(150deg, rgba(11,10,13,0.55), ${f.tint})`,
-                      }}
+                      className={`relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${f.bg} dt:h-[170px] dt:w-[270px]`}
                     >
                       <span className="absolute -bottom-4 -right-4 opacity-25">
                         <Icon name={f.icon} size={110} color="#FFFFFF" strokeWidth={1.2} />
