@@ -109,19 +109,31 @@ const QUICK_SERVICES: {
  * their own row and their logo at a readable size rather than being squeezed
  * into a 44px icon chip alongside the utilities.
  */
-const APPS: { name: string; logo: string; tint: string; blurb: string; href: string }[] = [
+const APPS: {
+  name: string;
+  logo: string;
+  icon: string;
+  tint: string;
+  blurb: string;
+  categories: string[];
+  href: string;
+}[] = [
   {
     name: "WAWUBasket",
     logo: "/wawubasket-logo.png",
+    icon: "/wawubasket-icon.png",
     tint: "#A9D636",
-    blurb: "Fresh market, groceries and restaurants",
+    blurb: "Fresh market, groceries and restaurants, delivered.",
+    categories: ["Fresh Market", "Groceries", "Restaurants"],
     href: "/marketplace/basket",
   },
   {
     name: "WAWUBeauty",
     logo: "/wawubeauty-logo.png",
+    icon: "/wawubeauty-icon.png",
     tint: "#FF0084",
-    blurb: "Beauty products and services, textiles and art",
+    blurb: "Beauty products and services, textiles, shoes and art.",
+    categories: ["Beauty Products", "Beauty Services", "Textiles"],
     href: "/marketplace/beauty",
   },
 ];
@@ -311,24 +323,55 @@ export async function LandingContent() {
                 })}
               </div>
 
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {APPS.map((app) => (
                   <Link
                     key={app.name}
                     href={app.href}
-                    className="flex items-center gap-3 rounded-[14px] border px-4 py-3.5 no-underline transition-transform duration-200 hover:scale-[1.01]"
+                    className="group relative isolate flex min-h-[168px] flex-col overflow-hidden rounded-card border p-4 no-underline transition-transform duration-300 hover:-translate-y-0.5"
                     style={{
-                      borderColor: `color-mix(in srgb, ${app.tint} 40%, transparent)`,
-                      backgroundColor: `color-mix(in srgb, ${app.tint} 10%, transparent)`,
+                      borderColor: `color-mix(in srgb, ${app.tint} 38%, transparent)`,
+                      backgroundImage: `linear-gradient(155deg, color-mix(in srgb, ${app.tint} 16%, var(--surface-card)), var(--surface-card) 70%)`,
                     }}
                   >
-                    {/* The mark at a size you can actually read, not squeezed
-                        into an icon chip. */}
-                    <img src={app.logo} alt={app.name} className="h-[26px] w-auto shrink-0 object-contain dt:h-[30px]" />
-                    <span className="min-w-0 flex-1 truncate text-[12px] leading-tight text-text-secondary">
-                      {app.blurb}
+                    {/* The mark, oversized and bled off the corner, as artwork
+                        rather than decoration sitting in a box. */}
+                    <img
+                      src={app.icon}
+                      alt=""
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -bottom-6 -right-5 -z-10 h-[112px] w-auto opacity-[0.16] transition-transform duration-500 group-hover:scale-110"
+                    />
+
+                    <img src={app.logo} alt={app.name} className="h-[24px] w-auto self-start object-contain dt:h-[27px]" />
+
+                    <span className="mt-2.5 text-[12.5px] leading-[1.45] text-text-secondary">{app.blurb}</span>
+
+                    <span className="mt-3 flex flex-wrap gap-1.5">
+                      {app.categories.map((c) => (
+                        <span
+                          key={c}
+                          className="inline-flex h-[22px] items-center rounded-full border px-2 text-[10.5px] font-medium text-text-secondary"
+                          style={{ borderColor: `color-mix(in srgb, ${app.tint} 30%, transparent)` }}
+                        >
+                          {c}
+                        </span>
+                      ))}
                     </span>
-                    <Icon name="ArrowUpRight" size={17} color={app.tint} strokeWidth={2.2} />
+
+                    <span
+                      className="mt-auto inline-flex items-center gap-1.5 pt-3 text-[12.5px] font-semibold"
+                      style={{ color: app.tint }}
+                    >
+                      Open store
+                      <Icon
+                        name="ArrowRight"
+                        size={14}
+                        color={app.tint}
+                        strokeWidth={2.4}
+                        className="transition-transform duration-300 group-hover:translate-x-0.5"
+                      />
+                    </span>
                   </Link>
                 ))}
               </div>
