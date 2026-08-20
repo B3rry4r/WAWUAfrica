@@ -60,6 +60,18 @@ export const MOCK_SERVICES: PartnerService[] = [
     cta: { label: "Apply now", href: "/services/loans/apply" },
   },
   {
+    id: "care",
+    slug: "care",
+    name: "Telemedicine",
+    tagline: "See a doctor, get covered",
+    blurb:
+      "Virtual consultations with licensed doctors, medication cover and screening, paid monthly rather than yearly.",
+    icon: "Stethoscope",
+    status: "coming",
+    partner: "WellaHealth",
+    comingNote: "We are finishing the partner rollout. It opens here first.",
+  },
+  {
     id: "pension",
     slug: "pension",
     name: "Pensions",
@@ -69,7 +81,7 @@ export const MOCK_SERVICES: PartnerService[] = [
     icon: "PiggyBank",
     status: "live",
     turnaround: "Reviewed in 3 to 5 days",
-    priceFrom: "Free to start",
+    priceFrom: "No upfront cost",
     partner: "ARM Pension",
     eligibility: ["Verified WAWUAfrica account", "Valid government ID"],
     benefits: [

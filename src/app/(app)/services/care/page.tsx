@@ -12,7 +12,7 @@ import {
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
+import { Button, ErrorState, Icon, Input, PhoneInput, Skeleton, fullPhoneNumber, DEFAULT_DIAL_CODE } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -34,6 +34,7 @@ export default function CarePage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<HealthSubscription | null>(null);
 
+  const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -68,6 +69,7 @@ export default function CarePage() {
       const { subscriptionId, flutterwaveConfig } = await initHealthSubscription({
         planCode: selected.planCode,
         ...form,
+        phoneNumber: fullPhoneNumber(dialCode, form.phoneNumber),
         email: user?.email,
       });
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
@@ -136,7 +138,7 @@ export default function CarePage() {
       {!plans ? (
         <Skeleton variant="card" />
       ) : (
-        <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-2 xl:items-start xl:gap-[14px]">
+        <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] xl:items-start xl:gap-[14px]">
           {plans.map((p) => {
             const on = selected?.planCode === p.planCode;
             const open = expanded === p.planCode;
@@ -207,12 +209,12 @@ export default function CarePage() {
           <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Who is this cover for?</span>
           <Input label="First name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
           <Input label="Last name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
-          <Input
-            label="Phone number"
+          <PhoneInput
+            dialCode={dialCode}
             value={form.phoneNumber}
-            onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-            placeholder="08031234567"
-            inputMode="tel"
+            onDialCodeChange={setDialCode}
+            onValueChange={(v) => setForm({ ...form, phoneNumber: v })}
+            hint="Your cover is issued against this number."
           />
           <Input
             label="Date of birth"

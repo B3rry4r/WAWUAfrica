@@ -250,18 +250,18 @@ export function CreatorOnboarding() {
               <div className="flex flex-col gap-[9px]">
                 {proSelected ? (
                   <>
-                    <CheckRow>15 uploads, 2 free, 13 paid</CheckRow>
+                    <CheckRow>15 uploads, 2 included, 13 paid</CheckRow>
                     <CheckRow>Open private communities</CheckRow>
-                    <CheckRow>Up to 3 free courses of your choice</CheckRow>
+                    <CheckRow>Up to 3 courses of your choice, included</CheckRow>
                     <CheckRow>Priority support and recommended deals</CheckRow>
                     <CheckRow>Gold badge</CheckRow>
                     <CheckRow>Playbook and pension registration</CheckRow>
                   </>
                 ) : (
                   <>
-                    <CheckRow>6 uploads, 1 free, 5 paid</CheckRow>
+                    <CheckRow>6 uploads, 1 included, 5 paid</CheckRow>
                     <CheckRow>Unlimited messages in open communities</CheckRow>
-                    <CheckRow>1 free selected course</CheckRow>
+                    <CheckRow>1 selected course, included</CheckRow>
                     <CheckRow>Playbook and pension registration</CheckRow>
                     <CheckRow>Purple badge</CheckRow>
                   </>

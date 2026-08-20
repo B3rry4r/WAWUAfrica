@@ -317,7 +317,7 @@ export function CreatorDashboard() {
               const subtitle =
                 item.price > 0
                   ? `${item.activity ?? "Live"} · ${formatNaira(item.price)}`
-                  : `Free · ${item.activity ?? "No views yet"}`;
+                  : `No charge · ${item.activity ?? "No views yet"}`;
               return (
                 <ListRow
                   key={item.id}
@@ -390,7 +390,7 @@ export function CreatorDashboard() {
                 const subtitle =
                   item.price > 0
                     ? `${item.activity ?? "Live"} · ${formatNaira(item.price)}`
-                    : `Free · ${item.activity ?? "No views yet"}`;
+                    : `No charge · ${item.activity ?? "No views yet"}`;
                 return (
                   <ListRow
                     key={item.id}

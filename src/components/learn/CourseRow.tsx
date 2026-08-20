@@ -45,14 +45,14 @@ function CourseStateIndicator({ state, freeCoursesTotal }: { state: CourseEntitl
   if (state.status === "enrolled") {
     return (
       <div className="flex">
-        <StatusPill kind="success">Enrolled, free</StatusPill>
+        <StatusPill kind="success">Enrolled</StatusPill>
       </div>
     );
   }
   if (state.status === "available") {
     return (
       <div className="flex">
-        <StatusPill kind="info">{freeCoursesTotal === 1 ? "Use your free course" : "Use a free course"}</StatusPill>
+        <StatusPill kind="info">{freeCoursesTotal === 1 ? "Use your included course" : "Use an included course"}</StatusPill>
       </div>
     );
   }

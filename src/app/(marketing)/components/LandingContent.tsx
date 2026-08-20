@@ -60,8 +60,8 @@ const FIELDS: { name: string; icon: IconName; bg: string }[] = [
 /**
  * The services strip.
  *
- * Telemedicine, Grants and Travel are held back until they are ready to
- * announce; they ship as updates rather than sitting here as promises.
+ * Telemedicine is named but not yet openable. Grants and Travel are held back
+ * entirely until they are ready to announce.
  *
  * Basket and Beauty are separate products with their own marks and brand
  * colours, so they carry a logo rather than an icon.
@@ -94,6 +94,13 @@ const QUICK_SERVICES: {
     blurb: "Spread the cost over monthly payments.",
     icon: "Smartphone",
     href: "/services/loans/apply",
+  },
+  {
+    brand: "Telemedicine",
+    label: "Health cover",
+    blurb: "See a doctor and get covered.",
+    icon: "Stethoscope",
+    soon: true,
   },
   {
     brand: "Pensions",
@@ -254,12 +261,12 @@ export async function LandingContent() {
               Build. Earn. Grow. Thrive. All in one place.
             </p>
             <div className="mt-9">
-              <WhitePill href="/sign-up?type=creator">Join the Movement Free</WhitePill>
+              <WhitePill href="/sign-up?type=creator">Join the Movement</WhitePill>
             </div>
           </div>
 
           {/* Social proof: collage + stat cards (showcase images stand in until real content exists) */}
-          <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[1fr_360px] dt:gap-6">
+          <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[minmax(0,1fr)_300px] dt:gap-5 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-6">
             <div className="flex flex-col gap-4 dt:gap-5">
               {/*
                 A 16:9 slot for the product video. It replaces two sample
@@ -287,7 +294,7 @@ export async function LandingContent() {
                 whole hero. They sit in the hero now, deliberately small: this
                 is a directory of what the app can do, not a feature pitch.
               */}
-              <div className="grid flex-1 grid-cols-2 gap-2.5 dt:grid-cols-3">
+              <div className="grid flex-1 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
@@ -300,7 +307,7 @@ export async function LandingContent() {
                         clean directory into noise. Anything not open yet is
                         dimmed instead of captioned.
                       */}
-                      <span className="min-w-0 truncate text-[15.5px] font-bold leading-tight tracking-[-0.01em] text-text-primary dt:text-[16.5px]">
+                      <span className="min-w-0 text-[15px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[16px]">
                         {service.brand}
                       </span>
                     </>
@@ -323,7 +330,7 @@ export async function LandingContent() {
                 })}
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3">
                 {APPS.map((app) => (
                   <Link
                     key={app.name}
@@ -673,7 +680,7 @@ export async function LandingContent() {
             </div>
             <div className="mt-10 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
               <div className="hidden flex-col gap-4 rounded-card border border-hairline bg-card p-6 dt:flex">
-                <span className="text-[16px] font-semibold text-text-primary">Free</span>
+                <span className="text-[16px] font-semibold text-text-primary">Starter</span>
                 <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(0)}</span>
                 <div className="flex flex-col gap-2.5">
                   {[
@@ -681,7 +688,7 @@ export async function LandingContent() {
                     "Message creators",
                     "Join open communities",
                     "Shop the marketplace",
-                    "Learn with free guides",
+                    "Learn with our guides",
                   ].map((perk) => (
                     <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
                       <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
@@ -689,7 +696,7 @@ export async function LandingContent() {
                     </span>
                   ))}
                 </div>
-                <Button full variant="secondary" size="sm" href="/sign-up" className="mt-auto">Join free</Button>
+                <Button full variant="secondary" size="sm" href="/sign-up" className="mt-auto">Join now</Button>
               </div>
               <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-6">
                 <span className="self-start"><TierBadge tier="basic" /></span>
@@ -699,10 +706,10 @@ export async function LandingContent() {
                 </div>
                 <div className="flex flex-col gap-2.5">
                   {[
-                    "6 uploads, 1 free and 5 paid",
+                    "6 uploads, 1 included and 5 paid",
                     "Unlimited messages",
                     "Join and host open communities",
-                    "1 free course of your choice",
+                    "1 course of your choice, included",
                     "Free business playbook",
                     "Personal pension registration",
                   ].map((perk) => (
@@ -723,10 +730,10 @@ export async function LandingContent() {
                 <div className="flex flex-col gap-2.5">
                   {[
                     "Keep 90% instead of 85%",
-                    "15 uploads, 2 free and 13 paid",
+                    "15 uploads, 2 included and 13 paid",
                     "Unlimited messages",
                     "Open and private communities",
-                    "Up to 3 free courses of your choice",
+                    "Up to 3 courses of your choice, included",
                     "Free business playbook",
                     "Priority support",
                     "1 month of free health insurance",
@@ -955,7 +962,7 @@ export async function LandingContent() {
                 ))}
               </div>
               <div className="mt-9 flex flex-wrap justify-center gap-3.5">
-                <WhitePill href="/sign-up?type=creator">Join the Movement Free</WhitePill>
+                <WhitePill href="/sign-up?type=creator">Join the Movement</WhitePill>
                 <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
               </div>
             </div>

@@ -33,7 +33,10 @@ export function PriceChip({ free, amount, label, tone = "plain", size = "sm" }: 
         toneClass,
       ].join(" ")}
     >
-      {free ? "Free" : formatNaira(amount ?? 0)}
+      {/* Content a creator chose not to charge for. "Free" is gone from the
+          platform's language, so this states the price rather than labelling
+          the thing. */}
+      {free ? "₦0" : formatNaira(amount ?? 0)}
       {label ? <span className="opacity-70">{label}</span> : null}
     </span>
   );

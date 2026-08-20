@@ -163,7 +163,7 @@ export function CreateHub({ slotsUsed, slotsTotal, slotFree, tier, proPrice, pro
               </span>
               <span className="flex items-center gap-[9px] text-[13.5px] text-[var(--text-secondary)]">
                 <Icon name="Check" size={15} strokeWidth={2.4} color="var(--accent)" />
-                Private communities and 3 free courses
+                Private communities and 3 courses included
               </span>
             </div>
           </div>

@@ -41,12 +41,12 @@ export function DownloadSheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title={title} caption="Free download, it stays on your device.">
+    <Sheet open={open} onClose={onClose} title={title} caption="Yours to keep, it stays on your device.">
       {phase === "idle" ? (
         <div className="flex flex-col gap-4 p-[6px_0_2px]">
           <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
             {fileUrl
-              ? "Downloading is free and keeps your copy on your phone even offline."
+              ? "Downloading keeps your copy on your phone even offline."
               : "This one has no file attached yet. You can still read it in the app, and we'll add the download as soon as it's published."}
           </p>
           <Button full onClick={download} disabled={!fileUrl}>

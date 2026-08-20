@@ -436,7 +436,7 @@ const TEMPLATE_PACKS: TemplatePack[] = [
   {
     id: "t-invoice-receipt",
     kind: "template",
-    title: "Invoice and receipt templates",
+    title: "Templates & Resources",
     updated: "Updated June",
     fileCount: 6,
     description: "Six ready-to-edit invoice and receipt templates, for one-off sales, deposits and recurring orders.",

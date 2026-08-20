@@ -5,7 +5,7 @@ import { Icon } from "@/components/ui/Icon";
 export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEntitlementState; entitlement: LearnEntitlement }) {
   if (state.status === "enrolled") {
     return (
-      <Panel icon="Check" iconTone="success" title="Enrolled, free" subtitle="This used one of your free courses.">
+      <Panel icon="Check" iconTone="success" title="Enrolled" subtitle="This used one of your included courses.">
         <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
           Pick it back up any time. Alison keeps your place.
         </span>
@@ -24,7 +24,7 @@ export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEn
   }
 
   return (
-    <Panel icon="Info" iconTone="muted" title="No free courses left" subtitle="You&rsquo;ve used your free courses for this cycle.">
+    <Panel icon="Info" iconTone="muted" title="No courses left" subtitle="You&rsquo;ve used your included courses for this cycle.">
       <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
         Upgrade to Pro for more free courses, or enrol directly. WAWU just won&rsquo;t track this one as covered.
       </span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import Link from "next/link";
 import type { VerificationLevel } from "@/types/account";
 import type { OwnProfile, VerificationLevelEntry } from "@/types/verification";
@@ -170,6 +171,8 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
             )}
           </span>
         </div>
+        {/* Shares /profile/{handle}, the username they chose, not the id. */}
+        <ShareProfileButton handle={profile.handle} compact />
         <Link href="/profile/edit" className="no-underline">
           <Button size="sm" variant="secondary">
             Edit

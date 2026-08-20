@@ -7,6 +7,7 @@ import { getOwnProfile, saveProfile } from "@/lib/api/verification";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Input } from "@/components/ui/Input";
+import { PhoneInput, fullPhoneNumber, DEFAULT_DIAL_CODE } from "@/components/ui/PhoneInput";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -21,6 +22,8 @@ export default function EditProfilePage() {
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Stored as one string, but edited as dial code + number.
+  const [waDialCode, setWaDialCode] = useState(DEFAULT_DIAL_CODE);
   const [draft, setDraft] = useState<OwnProfileDraft>({
     name: "",
     handle: "",
@@ -158,13 +161,14 @@ export default function EditProfilePage() {
                 icon={"instagram" as IconName}
                 placeholder="username"
               />
-              <Input
+              <PhoneInput
                 label="WhatsApp"
-                value={draft.socials.whatsapp ?? ""}
-                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, whatsapp: e.target.value } }))}
-                icon={"whatsapp" as IconName}
-                inputMode="tel"
-                placeholder="0801 234 5678"
+                dialCode={waDialCode}
+                value={(draft.socials.whatsapp ?? "").replace(/^\+\d{1,4}/, "")}
+                onDialCodeChange={setWaDialCode}
+                onValueChange={(v) =>
+                  setDraft((d) => ({ ...d, socials: { ...d.socials, whatsapp: v ? fullPhoneNumber(waDialCode, v) : "" } }))
+                }
               />
               {/*
                 Instagram and WhatsApp alone left most of where an audience

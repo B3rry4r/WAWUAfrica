@@ -68,7 +68,7 @@ export function CommunityTabs({
           title={tab === "joined" ? "You haven't joined any" : "Nothing new right now"}
           caption={
             tab === "joined"
-              ? "Join a community, reading is free, sending costs one credit per message."
+              ? "Join a community, reading costs nothing, sending costs one credit per message."
               : "Check back soon for more communities."
           }
         />

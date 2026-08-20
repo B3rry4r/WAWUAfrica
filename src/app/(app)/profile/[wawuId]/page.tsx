@@ -16,6 +16,7 @@ import { TierBadge } from "@/components/ui/TierBadge";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import { SocialIcon, type SocialName } from "@/components/ui/SocialIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -510,22 +511,22 @@ function BadgeRow({ icon, text }: { icon: ReactNode; text: string }) {
  * platform prefix is added here; the link fields are already full URLs and are
  * used as given. A handle someone typed with a leading "@" still works.
  */
-function socialLinks(socials: CreatorProfile["socials"]): { icon: string; label: string; href: string }[] {
+function socialLinks(socials: CreatorProfile["socials"]): { icon: SocialName; label: string; href: string }[] {
   const handle = (v: string) => v.trim().replace(/^@/, "");
   const url = (v: string) => (/^https?:\/\//i.test(v.trim()) ? v.trim() : `https://${v.trim()}`);
-  const out: { icon: string; label: string; href: string }[] = [];
-  if (socials.instagram) out.push({ icon: "Camera", label: "Instagram", href: `https://instagram.com/${handle(socials.instagram)}` });
-  if (socials.x) out.push({ icon: "AtSign", label: "X", href: `https://x.com/${handle(socials.x)}` });
-  if (socials.tiktok) out.push({ icon: "Music2", label: "TikTok", href: `https://tiktok.com/@${handle(socials.tiktok)}` });
-  if (socials.youtube) out.push({ icon: "PlayCircle", label: "YouTube", href: url(socials.youtube) });
-  if (socials.facebook) out.push({ icon: "Users", label: "Facebook", href: url(socials.facebook) });
-  if (socials.linkedin) out.push({ icon: "Briefcase", label: "LinkedIn", href: url(socials.linkedin) });
-  if (socials.whatsapp) out.push({ icon: "MessageCircle", label: "WhatsApp", href: `https://wa.me/${socials.whatsapp.replace(/\D/g, "")}` });
-  if (socials.website) out.push({ icon: "Globe", label: "Website", href: url(socials.website) });
+  const out: { icon: SocialName; label: string; href: string }[] = [];
+  if (socials.instagram) out.push({ icon: "instagram", label: "Instagram", href: `https://instagram.com/${handle(socials.instagram)}` });
+  if (socials.x) out.push({ icon: "x", label: "X", href: `https://x.com/${handle(socials.x)}` });
+  if (socials.tiktok) out.push({ icon: "tiktok", label: "TikTok", href: `https://tiktok.com/@${handle(socials.tiktok)}` });
+  if (socials.youtube) out.push({ icon: "youtube", label: "YouTube", href: url(socials.youtube) });
+  if (socials.facebook) out.push({ icon: "facebook", label: "Facebook", href: url(socials.facebook) });
+  if (socials.linkedin) out.push({ icon: "linkedin", label: "LinkedIn", href: url(socials.linkedin) });
+  if (socials.whatsapp) out.push({ icon: "whatsapp", label: "WhatsApp", href: `https://wa.me/${socials.whatsapp.replace(/\D/g, "")}` });
+  if (socials.website) out.push({ icon: "website", label: "Website", href: url(socials.website) });
   return out;
 }
 
-function SocialPill({ icon, label, href }: { icon: string; label: string; href: string }) {
+function SocialPill({ icon, label, href }: { icon: SocialName; label: string; href: string }) {
   return (
     <a
       href={href}
@@ -533,7 +534,7 @@ function SocialPill({ icon, label, href }: { icon: string; label: string; href: 
       rel="noopener noreferrer"
       className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[14px] text-[13px] font-semibold text-text-secondary no-underline transition-colors hover:border-accent hover:text-text-primary"
     >
-      <Icon name={icon as IconName} size={15} color="currentColor" strokeWidth={2} />
+      <SocialIcon name={icon} size={15} />
       {label}
     </a>
   );

@@ -137,7 +137,7 @@ function TemplateDetail({ guide }: { guide: TemplatePack }) {
         <div className="min-w-0 flex-1">
           <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{guide.fileCount} editable files</span>
         </div>
-        <span className="text-[12.5px] font-bold text-[var(--success)]">Free</span>
+        <span className="text-[12.5px] font-bold text-[var(--success)]">No charge</span>
       </div>
       <DownloadButton title={guide.title} />
     </>

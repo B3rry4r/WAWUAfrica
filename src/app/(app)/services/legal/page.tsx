@@ -168,7 +168,7 @@ export default function LegalPage() {
             ))}
           </div>
 
-          <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-2 xl:gap-[14px]">
+          <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] xl:gap-[14px]">
             {services.map((s) => (
               <div key={s.code} className="flex h-full flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
                 <span className="flex items-start justify-between gap-3">

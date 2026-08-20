@@ -280,7 +280,7 @@ function PurchaseRow({ purchase, last }: { purchase: Purchase; last: boolean }) 
   const verb = TYPE_VERB[purchase.contentType];
   const date = new Date(purchase.purchasedAt);
   const dateLabel = date.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
-  const state = purchase.price === 0 ? "Free" : `Unlocked ${dateLabel}`;
+  const state = purchase.price === 0 ? "No charge" : `Unlocked ${dateLabel}`;
 
   return (
     <Link href={`/content/${purchase.contentId}`} className={`flex items-center gap-3.5 px-4 py-4 ${last ? "" : "border-b border-hairline"}`}>

@@ -383,7 +383,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
             ) : (
               <>
                 <div className="flex gap-1 rounded-full border border-hairline bg-tag p-1">
-                  {["Free", "Paid"].map((label) => {
+                  {["No charge", "Paid"].map((label) => {
                     const active = (label === "Paid") === paid;
                     return (
                       <button
@@ -679,7 +679,7 @@ function PriceStep({
       ) : null}
 
       <div className={`flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] ${firstUpload ? "opacity-[0.55]" : "opacity-100"}`}>
-        {["Free", "Paid"].map((label) => {
+        {["No charge", "Paid"].map((label) => {
           const active = (label === "Paid") === paid;
           return (
             <button
@@ -774,7 +774,7 @@ function Submitted({ type, title, price }: { type: ContentType; title: string; p
           <div className="flex-1 min-w-0 flex flex-col gap-[5px]">
             <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{title || "Untitled"}</span>
             <span className="text-[12.5px] text-[var(--text-secondary)]">
-              {CONTENT_TYPE_META[type].label} · {price > 0 ? `${formatNaira(price)}` : "Free"}
+              {CONTENT_TYPE_META[type].label} · {price > 0 ? `${formatNaira(price)}` : "No charge"}
             </span>
             <div className="flex">
               <StatusPill kind="warning" size="xs">Pending review</StatusPill>

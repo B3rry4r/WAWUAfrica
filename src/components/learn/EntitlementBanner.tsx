@@ -17,7 +17,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
           <Icon name="GraduationCap" size={17} color="var(--text-muted)" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">No free course yet</span>
+          <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">No course claimed yet</span>
           <span className="text-[12.5px] text-[var(--text-secondary)]">Free courses come with a creator subscription.</span>
         </div>
       </div>
@@ -36,7 +36,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
             {freeCoursesRemaining}
           </span>
           <span className="flex-1 text-[14px] text-[var(--text-secondary)]">
-            of {freeCoursesTotal} free course{freeCoursesTotal === 1 ? "" : "s"} left
+            of {freeCoursesTotal} included course{freeCoursesTotal === 1 ? "" : "s"} left
           </span>
         </div>
         <div className="flex gap-1.5">
@@ -61,7 +61,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
       <Icon name="GraduationCap" size={17} color="var(--accent)" strokeWidth={2.2} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[14px] font-semibold text-[var(--text-primary)]">
-          {freeCoursesRemaining} free course{freeCoursesRemaining === 1 ? "" : "s"} available
+          {freeCoursesRemaining} included course{freeCoursesRemaining === 1 ? "" : "s"} available
         </span>
         <span className="text-[12.5px] text-[var(--text-secondary)]">Comes with your {tier === "pro" ? "Pro" : "Basic"} tier</span>
       </div>

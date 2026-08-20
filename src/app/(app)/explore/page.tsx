@@ -82,7 +82,7 @@ export default async function ExplorePage() {
             <Link href="/learn" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Business Playbook" subtitle="96 pages · free to download" icon="BookOpen" href="/learn" />
+            <ListRow title="Business Playbook" subtitle="96 pages · download anytime" icon="BookOpen" href="/learn" />
             <ListRow
               title="Courses and guides"
               subtitle={`${learnCourses.length} courses · ${countryGuideCount} country guides`}
