@@ -6,6 +6,8 @@ import type { Community } from "@/types/credits";
 import { getCommunities } from "@/lib/api/communities";
 import { useCommunityThread } from "@/hooks/useCommunityThread";
 import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
+import { creatorGates } from "@/lib/auth/gates";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +15,7 @@ import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
-import { ROOMS_LIST_HEADER, RoomsDesktopList } from "@/components/communities/RoomsDesktopList";
+import { RoomsListHeader, RoomsDesktopList } from "@/components/communities/RoomsDesktopList";
 import { CommunityThreadDesktop } from "@/components/communities/CommunityThreadDesktop";
 
 const bubbleClass = {
@@ -27,6 +29,10 @@ export default function CommunityDetailPage() {
   const id = String(params?.id ?? "");
 
   const { user } = useSession();
+  // Live creator state, not the sign-in snapshot — the Rooms pane's "New"
+  // control is behind the same subscription gate as /communities/new itself.
+  const { creator, resolved } = useCreatorState();
+  const canHost = resolved && creatorGates({ creator }).canUpload;
   const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError } =
     useCommunityThread(id);
   const [text, setText] = useState("");
@@ -74,8 +80,8 @@ export default function CommunityDetailPage() {
         </div>
         <ThreePaneLayout
           listWidth={340}
-          listHeader={ROOMS_LIST_HEADER}
-          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+          listHeader={<RoomsListHeader canHost={canHost} />}
+          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} canHost={canHost} />}
           detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
         />
       </>
@@ -94,8 +100,8 @@ export default function CommunityDetailPage() {
         </div>
         <ThreePaneLayout
           listWidth={340}
-          listHeader={ROOMS_LIST_HEADER}
-          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+          listHeader={<RoomsListHeader canHost={canHost} />}
+          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} canHost={canHost} />}
           detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
         />
       </>
@@ -115,8 +121,8 @@ export default function CommunityDetailPage() {
         </div>
         <ThreePaneLayout
           listWidth={340}
-          listHeader={ROOMS_LIST_HEADER}
-          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+          listHeader={<RoomsListHeader canHost={canHost} />}
+          list={<RoomsDesktopList rooms={joinedRooms} activeId={id} canHost={canHost} />}
           detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
         />
       </>
@@ -243,8 +249,8 @@ export default function CommunityDetailPage() {
 
     <ThreePaneLayout
       listWidth={340}
-      listHeader={ROOMS_LIST_HEADER}
-      list={<RoomsDesktopList rooms={joinedRooms} activeId={id} />}
+      listHeader={<RoomsListHeader canHost={canHost} />}
+      list={<RoomsDesktopList rooms={joinedRooms} activeId={id} canHost={canHost} />}
       detail={<CommunityThreadDesktop id={id} onJoined={refreshJoinedRooms} />}
     />
     </>

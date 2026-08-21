@@ -21,6 +21,14 @@ const penalties: PenaltyKind[] = ["none", "warned", "disabled7", "disabled30"];
 // quick taps for common choices.
 const PRICE_PRESETS = [100, 500, 1000, 2500];
 
+/**
+ * The one abuse guard left on this field, and it is the server's rule
+ * (docs/01 §1, docs/02 §2.4: "min ₦50, no ceiling"). There is no maximum —
+ * the old ₦500 cap is gone, and the ₦50–₦500 range it came from does not
+ * exist anywhere in this product any more.
+ */
+const MIN_PRICE = 50;
+
 /** The price field's own id, so "Raise the price" can send focus to it. */
 const PRICE_FIELD_ID = "dm-price";
 
@@ -41,7 +49,15 @@ export function PaidMessagesSettings() {
   const { creator, resolved, reload: reloadCreatorState } = useCreatorState();
   // accountType is deliberately not part of this — see creatorGates().
   const gates = creatorGates({ creator });
-  const [price, setPrice] = useState(gates.dmPrice || 300);
+  /**
+   * null means "this creator has never set a price", and it must READ that
+   * way. This used to default to `gates.dmPrice || 300` — ₦300 was a leftover
+   * from the deleted ₦50–₦500 range, and it put a number in the field, in the
+   * earnings line and in the inbox header as if the creator had chosen it.
+   * Nobody had. An unset price is now an empty field with an ask attached, and
+   * Save stays closed until they answer it.
+   */
+  const [price, setPrice] = useState<number | null>(gates.dmPrice > 0 ? gates.dmPrice : null);
   const [penalty, setPenalty] = useState<PenaltyKind>("none");
   const [rate, setRate] = useState(0);
   // Real end-of-suspension timestamp from GET /dm/response-stats. Null when
@@ -55,7 +71,7 @@ export function PaidMessagesSettings() {
   // Real price/accept-toggle come from the session's creator state (GET
   // /api/hub/creator/state at login) — re-sync if that changes under us.
   useEffect(() => {
-    setPrice(gates.dmPrice || 300);
+    setPrice(gates.dmPrice > 0 ? gates.dmPrice : null);
     setEnabled(gates.dmEnabled);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gates.dmPrice, gates.dmEnabled]);
@@ -83,7 +99,10 @@ export function PaidMessagesSettings() {
   const tier = gates.tier ?? "basic";
   const tierLabel = tier === "pro" ? "Pro" : "Basic";
   const keep = PLANS[tier].split;
-  const dmEarn = Math.round((price * keep) / 100);
+  /** Never set: nothing to price, nothing to earn, nothing to state. */
+  const priceSet = price !== null && price > 0;
+  const dmEarn = priceSet ? Math.round((price * keep) / 100) : null;
+  const tooLow = price !== null && price > 0 && price < MIN_PRICE;
   const locked = penalty === "disabled7" || penalty === "disabled30";
   const untilLabel = disabledUntil ? formatUntil(disabledUntil) : null;
   const daysLeft = disabledUntil ? daysUntil(disabledUntil) : null;
@@ -100,7 +119,7 @@ export function PaidMessagesSettings() {
    * server-side, and clearing it locally would hide a live suspension.
    */
   const raisePrice = () => {
-    const next = PRICE_PRESETS.find((p) => p > price);
+    const next = PRICE_PRESETS.find((p) => p > (price ?? 0));
     if (next) setPrice(next);
     const field = document.getElementById(PRICE_FIELD_ID) as HTMLInputElement | null;
     field?.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -108,9 +127,12 @@ export function PaidMessagesSettings() {
   };
 
   const save = async () => {
+    // Turning paid messages ON without a price would ask fans to pay an amount
+    // nobody chose. Off with no price is fine — it charges nothing.
+    if (enabled && (!priceSet || tooLow)) return;
     setSaveState("saving");
     try {
-      await messagingApi.updateDmSettings({ dmEnabled: enabled, dmPrice: price });
+      await messagingApi.updateDmSettings({ dmEnabled: enabled, dmPrice: price ?? 0 });
       setSaveState("saved");
       reloadCreatorState();
       setTimeout(() => setSaveState("idle"), 2000);
@@ -220,8 +242,13 @@ export function PaidMessagesSettings() {
               <span className="text-[16px] font-semibold text-[var(--text-primary)]">Accept paid messages</span>
               <span className="text-[12.5px] text-[var(--text-secondary)]">
                 {/* There is no "on since" date on the creator state — the
-                    invented one that used to sit here is gone. */}
-                {enabled ? "On, fans can pay to ask you a question" : "Off, no one can message you"}
+                    invented one that used to sit here is gone. And "on" is
+                    only true once there is a price to charge. */}
+                {enabled
+                  ? priceSet
+                    ? `On, fans pay ${formatNaira(price)} to ask you a question`
+                    : "On, but nobody can ask until you set a price"
+                  : "Off, no one can message you"}
               </span>
             </div>
             <span
@@ -244,14 +271,20 @@ export function PaidMessagesSettings() {
           <div
             className="flex flex-col gap-[10px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
           >
+            {/* "Turn it BACK on" is only true for somebody who once had it on.
+                A creator who has never set a price has never had it on, and
+                telling them to restore something they never had is how this
+                whole feature stayed undiscovered. */}
             <span className="text-[14px] font-semibold text-[var(--text-primary)]">
-              Nothing is charged while it is off
+              {priceSet ? "Nothing is charged while it is off" : "You have not switched this on yet"}
             </span>
             <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
-              Fans cannot start a paid conversation. Turn it back on whenever you have time to answer.
+              {priceSet
+                ? "Fans cannot start a paid conversation. Turn it back on whenever you have time to answer."
+                : "Fans pay to ask you one question, and you answer inside 24 hours. Switch it on and name your price — you choose the amount, and you can change it whenever you like."}
             </span>
             <Button full variant="secondary" onClick={() => setEnabled(true)}>
-              Turn back on
+              {priceSet ? "Turn back on" : "Turn it on and set a price"}
             </Button>
           </div>
         ) : null}
@@ -259,14 +292,32 @@ export function PaidMessagesSettings() {
         {/* Also shown while warned — "raise your price" below is only a real
             fix if the field is actually on screen to raise. */}
         {!locked && enabled ? (
-          <NairaInput
-            id={PRICE_FIELD_ID}
-            label="Price per message"
-            value={price}
-            onChange={setPrice}
-            presets={PRICE_PRESETS}
-            hint="You set this. Charge what your time is worth."
-          />
+          <div className="flex flex-col gap-[12px]">
+            {/* The ask, for a creator who has never named a price. Without it
+                the field just sat there pre-filled with a number they never
+                chose. */}
+            {!priceSet ? (
+              <div className="flex flex-col gap-[8px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-accent)] p-[16px]">
+                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">
+                  What is one answer from you worth?
+                </span>
+                <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+                  You have not set a price yet, so nobody can pay to ask you anything. Pick one below or type your own —
+                  there is no ceiling, and you can change it whenever you like.
+                </span>
+              </div>
+            ) : null}
+            <NairaInput
+              id={PRICE_FIELD_ID}
+              label="Price per message"
+              value={price}
+              onValueChange={setPrice}
+              presets={PRICE_PRESETS}
+              placeholder="Set your price"
+              error={tooLow ? `The lowest we can charge is ${formatNaira(MIN_PRICE)}.` : undefined}
+              hint="You set this. Charge what your time is worth."
+            />
+          </div>
         ) : null}
 
         <div
@@ -284,8 +335,19 @@ export function PaidMessagesSettings() {
           <div className="flex items-start gap-[10px]">
             <Icon name="HandCoins" size={16} color="var(--text-secondary)" strokeWidth={2} className="mt-[1px]" />
             <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
-              You earn <span className="text-[var(--text-primary)] font-semibold">{formatNaira(dmEarn)}</span> of every{" "}
-              {formatNaira(price)}, {keep}% on {tierLabel}.
+              {/* No price, no figure. Stating an amount off a default nobody
+                  chose is what this whole screen is being fixed for. */}
+              {dmEarn !== null && price !== null ? (
+                <>
+                  You earn <span className="text-[var(--text-primary)] font-semibold">{formatNaira(dmEarn)}</span> of
+                  every {formatNaira(price)}, {keep}% on {tierLabel}.
+                </>
+              ) : (
+                <>
+                  You keep <span className="text-[var(--text-primary)] font-semibold">{keep}%</span> of whatever you
+                  charge, on {tierLabel}. Set a price above and this shows the exact figure.
+                </>
+              )}
             </span>
           </div>
           <div className="flex items-start gap-[10px]">
@@ -461,7 +523,17 @@ export function PaidMessagesSettings() {
             Couldn&apos;t save, check your connection and try again.
           </span>
         ) : null}
-        <Button full size="lg" disabled={locked || saveState === "saving"} onClick={save}>
+        {enabled && !locked && !priceSet ? (
+          <span className="text-[12.5px] text-[var(--text-muted)] text-center">
+            Set a price and this saves. Nobody is charged until you do.
+          </span>
+        ) : null}
+        <Button
+          full
+          size="lg"
+          disabled={locked || saveState === "saving" || (enabled && (!priceSet || tooLow))}
+          onClick={save}
+        >
           {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save"}
         </Button>
       </div>

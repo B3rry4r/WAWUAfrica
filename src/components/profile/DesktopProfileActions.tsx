@@ -27,6 +27,8 @@ export function DesktopProfileActions({
 }) {
   const [dmOpen, setDmOpen] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
+  // Same rule as mobile's ProfileActions: no real price, no paid-ask entry.
+  const canAsk = dmEnabled && creator.dmPrice > 0;
 
   return (
     <div className="flex items-center gap-[10px]">
@@ -35,10 +37,10 @@ export function DesktopProfileActions({
         size="md"
         variant="secondary"
         icon="MessageCircleQuestion"
-        disabled={!dmEnabled}
+        disabled={!canAsk}
         onClick={() => setDmOpen(true)}
       >
-        {dmEnabled ? `Ask${creator.dmPrice > 0 ? ` · ${formatNaira(creator.dmPrice)}` : ""}` : "Messages off"}
+        {canAsk ? `Ask · ${formatNaira(creator.dmPrice)}` : "Messages off"}
       </Button>
       <Button size="md" variant="secondary" icon="HandCoins" onClick={() => setTipOpen(true)}>
         Tip

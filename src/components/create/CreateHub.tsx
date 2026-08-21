@@ -120,6 +120,31 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
     </div>
   );
 
+  /**
+   * The other thing a creator can make. /create is the creator's slot-3
+   * destination (CLAUDE.md's locked nav), so it was the most-visited screen
+   * in the app with no route to the community feature both pricing cards
+   * sell. Uploading a piece and hosting a room are the two creative acts;
+   * only one of them had a door.
+   */
+  const communityCard = (
+    <Link
+      href="/communities/new"
+      className="flex items-center gap-[12px] rounded-card border border-hairline bg-card p-[16px] no-underline transition-colors hover:bg-surface-hover active:bg-surface-press"
+    >
+      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-decor bg-[var(--decor-tint)]">
+        <Icon name="Users" size={17} strokeWidth={2} color="var(--accent)" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+        <span className="text-[14.5px] font-semibold text-text-primary">Start a community instead</span>
+        <span className="text-[12.5px] leading-[1.4] text-text-muted">
+          Costs no upload slot. You keep 90% of every credit spent in it.
+        </span>
+      </span>
+      <Icon name="ChevronRight" size={16} strokeWidth={2.2} color="var(--text-muted)" />
+    </Link>
+  );
+
   return (
     <div className="flex flex-col dt:mx-auto dt:w-full dt:max-w-[1120px] dt:px-[26px] dt:py-[26px]">
       {/* Page head — the design's picker header, rendered in-page so it does
@@ -201,11 +226,13 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
               rail so it is not a 900px-wide button. */}
           <div className="dt:hidden">{cta}</div>
           <div className="dt:hidden">{slotsCard}</div>
+          <div className="dt:hidden">{communityCard}</div>
         </div>
 
         <aside className="hidden flex-col gap-[16px] dt:flex dt:sticky dt:top-[26px]">
           {slotsCard}
           {cta}
+          {communityCard}
           {tier !== "pro" ? (
             <div className="flex flex-col gap-[10px] rounded-card border border-decor bg-elevated p-[18px]">
               <div className="flex items-center gap-[10px]">

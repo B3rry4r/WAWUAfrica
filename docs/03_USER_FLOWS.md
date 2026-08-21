@@ -54,7 +54,7 @@
 5. Approved → free content goes fully live; paid content shows preview-only until purchased.
 
 ### B3. Turn on DM
-1. Profile settings → toggle DM on, set price (₦50–500/message).
+1. Profile settings → toggle DM on, set price (min ₦50, no ceiling — the creator sets it).
 2. Incoming DMs land in a creator inbox: message, countdown timer, "respond by [time]."
 3. Respond within 24 hours → earn 85% (or 90% if Pro-tier) of the message price.
 4. Miss the window → user refunded, creator earns nothing on that message, and it counts against the rolling no-response rate (warning at 10–30%, 7-day auto-disable at 30–50%, 30-day auto-disable above 50%).

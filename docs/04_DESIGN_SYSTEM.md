@@ -19,7 +19,7 @@ describes a product we are not building. These statements in it are **WRONG**:
 
 | DS readme says | Actual, per `docs/01_SPEC.md` |
 |---|---|
-| "No private messaging. Never design a DM." | **Paid DM is a core revenue stream.** ₦50–₦500/message, 24h response window, auto-refund. |
+| "No private messaging. Never design a DM." | **Paid DM is a core revenue stream.** Creator-set price, min ₦50 and no ceiling, 24h response window, auto-refund. |
 | Six post categories (Learn, Sell, Opportunity, Event, Question, Research) | The post feed is **removed**. Content types are video, course, audio, pdf, image, template. |
 | Trust Score points (course +50, purchase +20, spam −100…) | Not in scope. We use the verification ladder + EVG-lite. |
 | Opportunity / Event categories | **Both sections removed entirely.** |

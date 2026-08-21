@@ -291,3 +291,44 @@ accent tint). I had been re-fixing that. The live problem was the opposite:
       the two systems are not both just called "Verification".
 - [x] A `Wallet` icon labelled the Earnings row in Settings. There is no wallet
       in this product, ever.
+
+## Communities, creator setup, DM price
+- [x] **Communities could not be created. At all.** Not a missing button — there
+      was no endpoint: community.controller.ts had list/read/membership/join/
+      leave and nothing wrote a Community row. Yet hosting is SOLD:
+      docs/01_SPEC.md:73 gives Basic open communities, :81 gives Pro private
+      ones, and both pricing cards advertise it. Added POST /communities and
+      PATCH /communities/:id, gated on creator + subscriptionPaid, with private
+      requiring Pro. KYC deliberately NOT required — it gates earning, not
+      hosting, and a test pins that.
+      Frontend: /communities/new, a Hosting tab, a dashboard panel, and entry
+      points from /communities, the rooms rail and /create.
+- [x] **No creator onboarding.** /creator/setup — six steps, every completion
+      state read from LIVE data rather than a local checkbox, resumable, never
+      a wall. KYC is on it but excluded from the progress count, since it only
+      gates payouts.
+- [x] **The ₦300 default is gone** from PaidMessagesSettings and Inbox. An
+      unset price now reads as unset and asks the creator to choose, instead of
+      showing a figure as if they had picked it.
+- [x] **Per-thread earnings were computed from the creator's CURRENT price.**
+      They now use the price snapshotted when the buyer actually paid.
+- [x] **Buyers could not see any creator's real DM price.** The public-profile
+      aggregate did not select dmPrice/dmEnabled and nothing else exposed
+      another user's DM settings, so the client hardcoded `false`/`0` and EVERY
+      creator read as "Messages off" to EVERY buyer — paid messaging was
+      unusable from the only side that pays for it. Both fields are now on the
+      public-profile and search aggregates and wired through. "Enabled with no
+      price" is treated as closed, never as free.
+
+## Open — found while building the above
+- [ ] **Private communities are a dead end.** `join` writes status 'pending'
+      and NOTHING ever flips it to 'joined' — `grep "'joined'"` finds one write,
+      on the open-community path. So the Pro tier's headline differentiator
+      creates a room nobody can ever enter. Needs host approve/decline
+      endpoints plus a request queue in the UI.
+- [ ] No server-side host filter for communities; `getHostedCommunities`
+      filters client-side over the first 100 rows.
+- [ ] Community archive/delete deliberately absent: Community cascades onto
+      CreditSpend, so deleting one would destroy the credit-spend ledger that
+      creator earnings are computed from. Needs a schema column and a product
+      decision.

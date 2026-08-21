@@ -21,14 +21,18 @@ export function ProfileActions({
 }) {
   const [dmOpen, setDmOpen] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
+  // Paid messages are only genuinely open when there is a real price to
+  // charge. "On" with no price used to render a bare "Message" button that
+  // opened a sheet quoting ₦0 — a price the creator never set.
+  const canAsk = dmEnabled && creator.dmPrice > 0;
   return (
     <>
       <div className="flex flex-col gap-[7px] p-[0_18px_4px]">
         <div className="flex gap-2">
           <div className="flex flex-1">
-            {dmEnabled ? (
+            {canAsk ? (
               <Button full variant="secondary" onClick={() => setDmOpen(true)}>
-                Message {creator.dmPrice > 0 ? formatNaira(creator.dmPrice) : ""}
+                Message {formatNaira(creator.dmPrice)}
               </Button>
             ) : (
               <Button full variant="secondary" disabled>
@@ -40,8 +44,12 @@ export function ProfileActions({
             <Button full variant="secondary" size="sm" icon="HandCoins" aria-label="Tip" onClick={() => setTipOpen(true)} />
           </div>
         </div>
-        {!dmEnabled && (
-          <span className="text-[12px] text-[var(--text-muted)]">This creator has not switched paid messages on. Comment on their work instead.</span>
+        {!canAsk && (
+          <span className="text-[12px] text-[var(--text-muted)]">
+            {dmEnabled
+              ? "This creator has not set a message price yet. Comment on their work instead."
+              : "This creator has not switched paid messages on. Comment on their work instead."}
+          </span>
         )}
       </div>
       <DmPaySheet open={dmOpen} onClose={() => setDmOpen(false)} creator={creator} />

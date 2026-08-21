@@ -3,10 +3,12 @@ import { apiFetch, apiFetchPaginated, ApiError, isMockModeError } from "./client
 import { openFlutterwaveCheckout, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { sessionStorage } from "@/lib/auth/session-storage";
 import {
+  createMockCommunity,
   getMockCommunities,
   getMockCommunity,
   getMockCommunityMessages,
   getMockCreditsState,
+  getMockHostedCommunities,
   joinMockCommunity,
   sendMockCommunityMessage,
   topUpMockCredits,
@@ -130,6 +132,87 @@ export async function getCommunities(kind: "joined" | "discover"): Promise<Commu
   } catch (e) {
     if (!isMockModeError(e)) throw e;
     return getMockCommunities(kind);
+  }
+}
+
+/**
+ * Communities THIS account hosts.
+ *
+ * There is no hosted-communities endpoint and no `?host=` filter on
+ * GET /communities (registry-frozen: page/perPage only). But every real
+ * CommunityResponse carries `hostWawuId`, so this is a genuine filter over
+ * real rows rather than an invented list — it is exactly as complete as the
+ * first 100 communities the list endpoint returns, which is the same window
+ * getCommunities() already reads. If the catalogue ever outgrows that,
+ * this needs a real server-side filter, not a bigger perPage.
+ */
+// SEAM: replace with GET /api/hub/communities?host=:wawuId once the backend has one
+export async function getHostedCommunities(hostWawuId: string): Promise<Community[]> {
+  if (!hostWawuId) return [];
+  try {
+    const { data } = await apiFetchPaginated<CommunityWire>("/api/hub/communities?page=1&perPage=100", {
+      authed: true,
+    });
+    return data.filter((c) => c.hostWawuId === hostWawuId).map(toCommunity);
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    return getMockHostedCommunities(hostWawuId);
+  }
+}
+
+export interface CreateCommunityInput {
+  name: string;
+  description: string;
+  kind: "open" | "private";
+}
+
+/**
+ * POST /api/hub/communities — the create endpoint the Community module never
+ * had. Its gates live on the server and are deliberately NOT re-implemented
+ * here as the source of truth (the UI's own checks, from creatorGates(), are
+ * there to explain the rule before the request, never to replace it):
+ *   - creator account with `subscriptionPaid` — uploading/hosting gate
+ *   - `kind: "private"` additionally requires tier `pro` (docs/01 §4);
+ *     `kind: "open"` works on Basic (docs/01 §4, "unlimited messages in open
+ *     communities")
+ *   - KYC is NOT required — it gates earning, never creating (CLAUDE.md's
+ *     two-independent-gates rule)
+ *
+ * A real rejection (403 wrong tier / no subscription, 400 validation, 409
+ * duplicate name) is surfaced to the caller untouched. Only genuine mock mode
+ * — no backend configured at all — falls back to the in-memory community,
+ * same discipline as every other write in this file.
+ */
+export async function createCommunity(input: CreateCommunityInput): Promise<Community> {
+  try {
+    const wire = await apiFetch<CommunityWire>("/api/hub/communities", {
+      method: "POST",
+      authed: true,
+      body: { name: input.name, description: input.description, kind: input.kind },
+    });
+    // Make the host's membership REAL rather than assumed. Whether POST
+    // /communities also writes a CommunityMembership row for its creator is
+    // the server's business and not something this client can know, so it
+    // asks — POST /communities/:id/join is idempotent (community.service.ts
+    // `join` returns any existing row untouched), so this either creates the
+    // host's membership or confirms the one the create already made. Without
+    // it the host lands in the room they just created looking at a "Join
+    // community" button. A failure here is not a failed create: the community
+    // exists, and the room's own join control can still be used.
+    try {
+      await joinCommunity(wire.id);
+    } catch {
+      /* room created; membership can be settled from the room itself */
+    }
+    return toCommunity(wire);
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    const user = sessionStorage.getUser();
+    // SEAM: replace with POST /api/hub/communities
+    return createMockCommunity({
+      ...input,
+      host: { wawuId: user?.wawuId ?? "wawu-me", name: user?.fullName ?? "You" },
+    });
   }
 }
 

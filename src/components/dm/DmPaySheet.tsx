@@ -83,7 +83,26 @@ export function DmPaySheet({
 
   return (
     <Sheet open={open} onClose={onClose} title="Message" caption="Paid message, read by the creator directly.">
-      {!creator ? null : phase === "compose" ? (
+      {!creator ? null : creator.dmPrice <= 0 ? (
+        // A price of 0 is not a free message — it means we do not know what
+        // this creator charges (their public profile does not carry the
+        // figure yet; see getCreatorProfile's gap note). Never draw a "Send
+        // message · ₦0" button off that: it would charge nothing, promise a
+        // reply nobody is being paid for, and put a number in front of the
+        // fan that the creator never set.
+        <div className="flex flex-col gap-[14px] p-[6px_0_4px]">
+          <span className="text-[15.5px] font-semibold text-[var(--text-primary)]">
+            {creator.name.split(" ")[0]} has not set a message price
+          </span>
+          <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+            Paid messages open once they choose what one answer is worth. Follow them, or comment on their work in the
+            meantime.
+          </span>
+          <Button full variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      ) : phase === "compose" ? (
         <div className="flex flex-col gap-[16px]">
           <div className="flex items-center gap-[10px]">
             <Avatar initial={creator.name.charAt(0)} size={36} />

@@ -136,16 +136,21 @@ export function CreatorOnboarding() {
           </p>
         ) : null}
         <div className="flex w-full max-w-[320px] flex-col gap-[10px] pt-[6px]">
+          {/* Somebody who paid and bounced off this screen is exactly who the
+              setup checklist is for — it is the primary way on from here, and
+              it carries the verification ask as one of its rows. */}
+          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/creator/setup")}>
+            Finish setting up
+          </Button>
           {alreadyCopy ? (
-            <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/kyc")}>
+            <Button full size="lg" variant="secondary" onClick={() => router.replace("/kyc")}>
               {alreadyCopy.cta}
             </Button>
           ) : null}
           <Button
             full
             size="lg"
-            variant={alreadyGates.canEarn ? "primary" : "secondary"}
-            iconRight={alreadyGates.canEarn ? "ArrowRight" : undefined}
+            variant="secondary"
             onClick={() => router.replace("/creator")}
           >
             Go to your dashboard
@@ -242,14 +247,20 @@ export function CreatorOnboarding() {
           </div>
         </div>
         <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/kyc")}>
-            Verify my identity
+          {/* Paying used to end here, on a dashboard nobody had been shown how
+              to use. The setup checklist is the continuation of this same
+              story — it opens with verification listed on it (marked
+              skippable, because it is), alongside the paid-message price, the
+              first community and the first upload. */}
+          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/creator/setup")}>
+            Set up your account
           </Button>
           <Button full variant="ghost" onClick={() => router.push("/creator")}>
             Skip for now
           </Button>
           <span className="text-[12px] leading-[1.45] text-[var(--text-muted)] self-center text-center">
-            Skipping costs you nothing today. Verification waits at the top of your dashboard whenever you want it.
+            Six steps, none of them urgent — verification is one of them. Skipping costs you nothing today; the
+            checklist waits at the top of your dashboard whenever you want it.
           </span>
         </div>
       </div>

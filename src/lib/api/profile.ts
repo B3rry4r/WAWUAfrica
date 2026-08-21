@@ -28,6 +28,8 @@ interface RealPublicCreatorProfile {
   linkedinUrl: string | null;
   websiteUrl: string | null;
   tier: "basic" | "pro";
+  dmEnabled: boolean;
+  dmPrice: number | null;
   evgScore: number;
   contentCount: number;
   followerCount: number;
@@ -53,7 +55,13 @@ function formatFollowerCount(n: number): string {
  *    viewed. Falls back to `handle` (or the raw wawuId if even that is unset).
  *  - `verification`: the WAWU ID verification ladder for another user isn't
  *    exposed by this or any other endpoint. Defaults to "basic".
- *  - `dmEnabled` / `dmPrice`: no DM-pricing column/endpoint exists yet.
+ *  - `dmEnabled` / `dmPrice`: now REAL. These used to be hardcoded
+ *    `false`/`0` because the public-profile aggregate did not select them and
+ *    no other endpoint exposed another user's DM settings — so every creator
+ *    who had genuinely priced their messages read as "Messages off" to every
+ *    buyer, which made paid messaging unusable from the only side that pays
+ *    for it. The backend now returns both. "Enabled with no price set" is
+ *    still treated as CLOSED, never as a free message.
  *  - `location` / `memberSince` / `replyTime`: no such columns exist; left
  *    undefined (all three are optional on CreatorProfile).
  *  - `content` / `communities`: the endpoint returns COUNTS only
@@ -81,8 +89,10 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
       pieces: real.contentCount,
       evg: real.evgScore,
     },
-    dmEnabled: false,
-    dmPrice: 0,
+    // A creator who switched messages on but never set a price is not open
+    // for business — and must never be rendered as free.
+    dmEnabled: real.dmEnabled && (real.dmPrice ?? 0) > 0,
+    dmPrice: real.dmPrice ?? 0,
     categories: real.interests,
     socials: {
       instagram: real.instagramHandle ?? undefined,

@@ -26,6 +26,10 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ListRow } from "@/components/ui/ListRow";
 import { Avatar, BackLink } from "@/components/ui";
+import { CreatorSetupCard } from "@/components/onboarding/CreatorSetupChecklist";
+import { HostedCommunitiesPanel } from "@/components/communities/HostedCommunitiesPanel";
+import { getHostedCommunities } from "@/lib/api/communities";
+import type { Community } from "@/types/credits";
 import { HeldPayoutNote, VerificationBanner } from "./VerificationAsk";
 
 const typeIcons: Record<ContentType, IconName> = {
@@ -58,6 +62,10 @@ export function CreatorDashboard() {
   const [library, setLibrary] = useState<ContentItem[] | null>(null);
   // Real EVG, not the hardcoded "1,240" this used to print.
   const [evg, setEvg] = useState<number | null>(null);
+  // The communities this creator actually hosts. Communities were sold on both
+  // pricing cards and had no surface on this dashboard at all — no list, no
+  // create button, nothing. Null until the real read lands; never a fixture.
+  const [hosted, setHosted] = useState<Community[] | null>(null);
 
   useEffect(() => {
     if (!gates.isCreator) return;
@@ -93,6 +101,17 @@ export function CreatorDashboard() {
       .catch(() => {
         if (!cancelled) setLibrary([]);
       });
+    if (user?.wawuId) {
+      getHostedCommunities(user.wawuId)
+        .then((rows) => {
+          if (!cancelled) setHosted(rows);
+        })
+        .catch(() => {
+          // An empty list, not an error state — hosting nothing is the normal
+          // starting point and the panel below offers the way in either way.
+          if (!cancelled) setHosted([]);
+        });
+    }
     return () => {
       cancelled = true;
     };
@@ -209,6 +228,14 @@ export function CreatorDashboard() {
         </div>
       ) : null}
 
+      {/* Setup lives at one width too, for the same reason the ask above does.
+          Paying used to land a creator here with nothing telling them what to
+          do next; this is the way back into that flow, and it reads its state
+          live so it is accurate however many sessions later they return. */}
+      <div className="px-[20px] pt-[18px] xl:px-[26px] xl:pt-[22px]">
+        <CreatorSetupCard />
+      </div>
+
       <div className="xl:hidden pt-[18px] px-[20px] pb-[32px] flex flex-col gap-[16px]">
         <div
           className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
@@ -277,6 +304,8 @@ export function CreatorDashboard() {
             </div>
           </Link>
         ) : null}
+
+        <HostedCommunitiesPanel communities={hosted} />
 
         <div className="flex flex-col gap-[10px]">
           {approved ? (
@@ -349,6 +378,8 @@ export function CreatorDashboard() {
                 ))}
               </div>
             </div>
+
+            <HostedCommunitiesPanel communities={hosted} />
 
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">

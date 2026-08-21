@@ -158,6 +158,50 @@ export async function joinMockCommunity(id: string): Promise<boolean> {
   return true;
 }
 
+/**
+ * Communities this account hosts. Real communities carry a `hostWawuId`, so
+ * "mine" is a filter over the same list the discover/joined tabs read — there
+ * is no separate hosted-communities fixture and no separate endpoint.
+ */
+// SEAM: replace with GET /api/hub/communities (filtered by hostWawuId)
+export async function getMockHostedCommunities(hostWawuId: string): Promise<Community[]> {
+  await delay(240);
+  return MOCK_COMMUNITIES.filter((c) => c.host.wawuId === hostWawuId).map((c) => ({
+    ...c,
+    joined: MOCK_JOINED.has(c.id),
+  }));
+}
+
+/**
+ * Dev-mode stand-in for POST /communities. Pushes a genuinely new row into the
+ * same in-memory list every other mock read uses, so the community shows up in
+ * Hosting, in Discover and in the onboarding checklist immediately — it does
+ * not fabricate members or activity it could not have.
+ */
+// SEAM: replace with POST /api/hub/communities
+export async function createMockCommunity(input: {
+  name: string;
+  description: string;
+  kind: "open" | "private";
+  host: { wawuId: string; name: string };
+}): Promise<Community> {
+  await delay(420);
+  const community: Community = {
+    id: `c-${Date.now()}`,
+    name: input.name,
+    description: input.description,
+    host: { wawuId: input.host.wawuId, name: input.host.name },
+    memberCount: 0,
+    messagesToday: 0,
+    kind: input.kind,
+    joined: true,
+  };
+  MOCK_COMMUNITIES.push(community);
+  MOCK_JOINED.add(community.id);
+  MOCK_MESSAGES[community.id] = [];
+  return community;
+}
+
 // SEAM: replace with POST /api/hub/credits/purchase
 export async function topUpMockCredits(pack: CreditPackId): Promise<number> {
   await delay(500);

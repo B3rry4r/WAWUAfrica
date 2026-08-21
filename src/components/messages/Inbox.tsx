@@ -60,9 +60,20 @@ export function Inbox() {
     );
   }
 
-  const price = gates.dmPrice || 300;
+  // The creator's REAL price, and 0 when they have never set one. This used to
+  // read `gates.dmPrice || 300` — ₦300 is a leftover from the deleted
+  // ₦50–₦500 range, and it printed in the header as if the creator had chosen
+  // it. An unset price now says so, and links to the screen that fixes it.
+  const price = gates.dmPrice;
+  const priceSet = price > 0;
   const keep = PLANS[gates.tier ?? "basic"].split;
-  const dmEarn = Math.round((price * keep) / 100);
+  /**
+   * What the creator keeps on ONE thread, off that thread's own amount.
+   * Thread.price is the figure snapshotted when the buyer paid — a price
+   * change since then does not retroactively change what is owed, so this
+   * must never be computed from the creator's current setting.
+   */
+  const earnOn = (threadPrice: number) => Math.round((threadPrice * keep) / 100);
   const urgent = state.threads.filter((t) => !t.opened);
   const answered = state.threads.filter((t) => t.opened);
 
@@ -76,9 +87,13 @@ export function Inbox() {
         </span>
         <Link
           href="/messages/settings"
-          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline [font-feature-settings:var(--font-feature-tabular)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
+          className={`inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] border text-[11.5px] font-bold no-underline [font-feature-settings:var(--font-feature-tabular)] hover:border-strong hover:bg-surface-hover active:bg-surface-press ${
+            priceSet
+              ? "bg-[var(--surface-tag)] border-[var(--border-hairline)] text-[var(--text-secondary)]"
+              : "bg-[var(--accent-tint)] border-[var(--border-accent)] text-[var(--accent)]"
+          }`}
         >
-          {formatNaira(price)} each
+          {priceSet ? `${formatNaira(price)} each` : "Set your price"}
         </Link>
       </header>
 
@@ -151,7 +166,7 @@ export function Inbox() {
                   {t.expiresAt ? `Respond by ${formatDeadline(t.expiresAt)}` : "Awaiting your reply"}
                 </span>
                 <span className="text-[12.5px] font-bold [font-feature-settings:var(--font-feature-tabular)]">
-                  {formatNaira(dmEarn)} to earn
+                  {formatNaira(earnOn(t.price))} to earn
                 </span>
               </div>
               {/* No reply composer on mobile yet — the only working reply
@@ -189,7 +204,7 @@ export function Inbox() {
                 <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
                   {refunded
                     ? "Missed the window · earned nothing"
-                    : `Earned ${formatNaira(dmEarn)}${t.repliedIn ? ` · replied in ${t.repliedIn}` : ""}`}
+                    : `Earned ${formatNaira(earnOn(t.price))}${t.repliedIn ? ` · replied in ${t.repliedIn}` : ""}`}
                 </span>
               </div>
             </div>
