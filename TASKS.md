@@ -1,79 +1,52 @@
-# Open tasks — running list
+# WAWU — running task list
 
-Kept on disk so nothing is lost between messages. Updated as work lands.
+Kept on disk because it survives between messages. There is no todo tool in
+this Claude Code build (TaskOutput/TaskStop are for background processes), so
+this file is the list. Updated as observations come in.
 
-## Done and deployed
-- [x] Stickers made visible (20% mobile / 28% desktop, 4 on mobile)
-- [x] Quick Services section on landing, right after the hero
-- [x] "Financial Services" renamed to "Lifestyle Services"
-- [x] 25-category taxonomy, one source of truth, validated server-side
-- [x] Every category has a create point (mobile + desktop wizard)
-- [x] Ranking algorithm (engagement decayed by age; trending/recent/top)
-- [x] WAWUPay backend + screen (Flutterwave Bills)
-- [x] WAWUCare backend + screen (WellaHealth)
-- [x] WAWU Legal backend + screen (2 paths, consultation fees, contract signing)
+## Done this round
+- [x] Subscribed creator was shown "Become a creator" everywhere. Root cause:
+      the live creator-state refresh was gated on the session's `accountType`,
+      which is written once at sign-in and never revisited. Anyone who became a
+      creator after signing up kept a session saying "user" forever, so the
+      refresh never ran, creator state stayed null, and every gate offered
+      signup to someone who had already paid. Now asks the server regardless
+      and folds the answer back into the session.
+- [x] Onboarding now refuses to show the signup flow to someone already
+      subscribed (it used to fail only in the network tab with
+      "Already subscribed — use /upgrade, /downgrade, or /retry-payment").
+- [x] Verification was missing from the non-creator profile branch, so a plain
+      account could not reach the ladder at all.
+- [x] Verification was filed under "WAWU ID" in Settings. WAWU ID is the auth
+      service; relabelled to "Verification".
+- [x] DM price cap of NGN 50–500 removed, in the copy AND server-side. Floor of
+      NGN 50 kept as an abuse guard. docs/01_SPEC.md and 02_TECHNICAL_CONTEXT.md
+      updated to record the change and who asked for it.
+- [x] Buttons dissolving into their container on hover. Every `hover:bg-tag*`
+      in the app measured 1.05–1.14:1 against the surfaces those controls sit
+      on — no visible change. All replaced with a white overlay that reads on
+      any dark surface.
+- [x] Deep screens still mobile-width on desktop: saved, terms, partners,
+      marketplace/search, privacy, privacy/policy, privacy/blocked, about,
+      services/cac, services/nepc.
+- [x] Telemedicine ran as one long stacked column on desktop; plans and the
+      enrolment form are side by side now, form sticky.
+- [x] Profile added as a row in Settings; avatar in the mobile header links to
+      the profile (desktop already had one).
 
-## Done, pending deploy
-- [x] Simple legal services with no price -> "agreed after review" state
-- [x] Document intake for legal services that require documents
-- [x] Landing separated from app: `/` is always landing, app home is `/home`
-- [x] Landing header offers "Open app" when signed in
-- [x] In-app access points: services page, Explore rows, desktop sidebar
-- [x] Legacy services ported: EasyBuy, Pension, Banking, Grants (plain names,
-      real partners: CredPal, ARM Pension, WEMA Bank) + shared apply form
-- [x] Uploads bucket CORS (was completely unset; broke every browser upload)
-- [x] KYC "not started" no longer reported as "in review"
-- [x] Subscription: pre-checkout review screen removed, pay opens checkout directly
-- [x] "Confirming your payment" now waits for a real charge instead of showing
-      before the modal opens
-- [x] Creator onboarding no longer caps content prices ("You set the price")
-
-## Done, pending deploy (continued)
-- [x] Loading state on checkout entry points; Flutterwave script preloaded when
-      app chrome mounts so Pay opens the modal immediately
-- [x] Accessible sign-out: desktop sidebar + profile screen (was Settings only)
-- [x] Trademarked (R) logo installed everywhere: wawu-logo-white/dark,
-      wawu-icon-white/dark, plus SVGs
-- [x] Branded email header regenerated with the new mark (public/email-header.png)
-- [x] WAWU-ID email header repointed off the legacy production.wawuafrica.com
-      domain (code default + EMAIL_HEADER_URL in production)
-- [x] All nine auth emails rebranded to the app's dark/purple identity. The
-      template was a light one carried over from the previous platform, so a
-      new user's first email looked like a different company than the app.
-
-## Deploys: pushed to GitHub for Railway to build from
-- [x] `railway up` is broken from this machine: six consecutive deploys of both
-      services sat in INITIALIZING for ~7 minutes then FAILED, producing no build
-      logs at all, so the builds were never picked up. Not a code problem: a
-      local production build of the web app succeeds (65 routes) once Next's
-      static-generation workers are forced single-process, which is a quirk of
-      this sandbox, not of the app.
-- [x] Backend pushed: github.com/B3rry4r/WAWU-Backend (main)
-- [x] Frontend pushed: github.com/B3rry4r/WAWUAfrica (main)
-- [x] WAWU-ID pushed: github.com/B3rry4r/WAWU-ID (main)
-- [ ] Connect the Railway services to those repos so deploys build from git.
-      wawu-web is already live with everything. wawu-api is one commit behind:
-      /service-applications/partner/apply still 404s, so EasyBuy/Pension/
-      Banking/Grants applications, the KYC not-started fix and the legal
-      awaiting_quote states are not live yet.
-
-## Queued (you asked to save this for last)
-- [ ] Too much purple in the UI. Bring white in as a second surface/accent in
-      places rather than purple everywhere.
-
-## Needs a decision from you
-- [ ] The new backend (wawu-api) sends NO email at all: no mailer dependency
-      exists. Purchases, KYC outcomes, legal deliverables and bill receipts
-      currently notify nobody. WAWU-ID sends auth mail only (Resend).
-- [ ] DM price cap of NGN 50-500 is enforced server-side and written into
-      docs/01_SPEC.md line 23 and docs/02_TECHNICAL_CONTEXT.md. Your boss says
-      creators set their own rates. Removing it contradicts the locked spec, so
-      flagging rather than silently changing. Confirm and I lift the ceiling.
+## Open — needs your decision
+- [ ] Bottom nav: you want Settings in the bar and Profile inside it. CLAUDE.md
+      marks the 5-slot nav as LOCKED (Home · Communities · Explore/Create ·
+      Messages · Profile). Flagging rather than silently changing a locked
+      rule. Say go and I swap slot 5 to Settings.
+- [ ] "Jobs" and "Wallets" in the Access-to list: both cut by name in
+      docs/01_SPEC.md (line 120; section 3 on Credits not being a wallet).
+      Held out pending your call.
 
 ## Blocked on you (external)
-- [ ] Flutterwave Bills API: "Please enable IP Whitelisting". Needs enabling on
-      the Flutterwave account plus a static egress IP. WAWUPay cannot complete a
-      real bill until then.
-- [ ] Prices for the simple legal services (CAC, tax registration, NDPR filing,
-      business name reservation). Null today, so they route through "we quote it".
-- [ ] WAWUGo (flights) and music licensing: awaiting partner APIs.
+- [ ] Flutterwave Bills: "Please enable IP Whitelisting". Needs enabling on the
+      account plus a static egress IP. WAWUPay cannot complete a real bill.
+- [ ] Prices for the simple legal services (CAC, tax registration, NDPR filing).
+- [ ] WAWUGo / Travel and Music licensing partner APIs.
+- [ ] The new backend still sends NO email (no mailer dependency). Purchases,
+      KYC outcomes, legal deliverables and bill receipts notify nobody.

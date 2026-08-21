@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
 import { PLANS } from "@/types/subscription";
@@ -27,6 +28,7 @@ function CheckRow({ children }: { children: React.ReactNode }) {
 export function CreatorOnboarding() {
   const router = useRouter();
   const { user, setCreatorState } = useSession();
+  const { creator, loading: creatorLoading } = useCreatorState();
   const [step, setStep] = useState<Step>("value");
   /** True only while the checkout modal is being opened. */
   const [paying, setPaying] = useState(false);
@@ -97,6 +99,43 @@ export function CreatorOnboarding() {
       });
   };
 
+  // Somebody who has already paid must never be shown the signup flow again.
+  // Without this they walked the whole thing and were told, only in the network
+  // tab, "Already subscribed — use /upgrade, /downgrade, or /retry-payment".
+  if (creator?.subscriptionPaid && step !== "success") {
+    return (
+      <Centered>
+        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
+          <Icon name="Check" size={38} strokeWidth={2.4} color="var(--accent)" />
+        </span>
+        <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">You are already a creator</h2>
+        <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">
+          Your {creator.tier === "pro" ? "Pro" : "Basic"} subscription is active, so uploading and the creator tools are
+          already on.
+        </p>
+        <div className="flex w-full max-w-[320px] flex-col gap-[10px] pt-[6px]">
+          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/creator")}>
+            Go to your dashboard
+          </Button>
+          <Button full variant="secondary" onClick={() => router.replace("/subscription")}>
+            Manage subscription
+          </Button>
+        </div>
+      </Centered>
+    );
+  }
+
+  if (creatorLoading && !creator) {
+    return (
+      <Centered>
+        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--surface-card)] border border-[var(--border-strong)]">
+          <Icon name="Loader" size={34} strokeWidth={2.2} color="var(--accent)" />
+        </span>
+        <p className="m-0 text-[15px] text-[var(--text-secondary)]">Checking your account…</p>
+      </Centered>
+    );
+  }
+
   if (step === "processing") {
     return (
       <Centered>
@@ -162,7 +201,7 @@ export function CreatorOnboarding() {
             <div className="flex flex-col gap-[15px]">
               {[
                 { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates. You set the price." },
-                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: ` Set ${formatNaira(50)}–${formatNaira(500)} a message and reply within 24 hours.` },
+                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set your own price a message and reply within 24 hours." },
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">

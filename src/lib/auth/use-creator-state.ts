@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getCreatorState } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import type { CreatorState } from "@/types/auth";
 import { useSession } from "./session-provider";
 
@@ -27,7 +28,7 @@ interface UseCreatorStateResult {
  * see getCreatorState()'s doc comment for why a fresh read matters here.
  */
 export function useCreatorState(): UseCreatorStateResult {
-  const { user, hydrated } = useSession();
+  const { user, hydrated, setCreatorState } = useSession();
   const [creator, setCreator] = useState<CreatorState | null>(user?.creator ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,16 +39,35 @@ export function useCreatorState(): UseCreatorStateResult {
   }, [user]);
 
   useEffect(() => {
-    if (!hydrated || !user || user.accountType !== "creator") return;
+    // Deliberately NOT gated on the session's accountType.
+    //
+    // That value is written at sign-in and never revisited, so somebody who
+    // became a creator afterwards — or who subscribed on another device — kept
+    // a session that said "user" forever. This effect never ran for them, the
+    // creator state stayed null, and every gate in the app went on offering
+    // "Become a creator" to someone who had already paid. The server is the
+    // authority on whether an account has creator state; ask it.
+    if (!hydrated || !user) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     getCreatorState()
       .then((state) => {
-        if (!cancelled) setCreator(state);
+        if (cancelled) return;
+        setCreator(state);
+        // Fold it back into the session so the rest of the app agrees, and so
+        // the correction survives a reload.
+        if (state) setCreatorState(state);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Could not load your creator status.");
+        if (cancelled) return;
+        // 403 is the documented answer for an account with no CreatorState
+        // row: a plain user, not a failure. 404 likewise.
+        if (e instanceof ApiError && (e.status === 403 || e.status === 404)) {
+          setCreator(null);
+          return;
+        }
+        setError(e instanceof Error ? e.message : "Could not load your creator status.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -56,7 +76,7 @@ export function useCreatorState(): UseCreatorStateResult {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, user?.wawuId, user?.accountType, reloadKey]);
+  }, [hydrated, user?.wawuId, reloadKey]);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 

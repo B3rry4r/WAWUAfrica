@@ -42,7 +42,7 @@ export default function CacServicePage() {
 
   if (loading || !service) {
     return (
-      <div className="flex flex-col gap-[12px] p-[14px_16px_96px]">
+      <div className="flex flex-col gap-[12px] p-[14px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[860px] xl:p-[30px_28px_64px]">
         <div className="h-[56px] w-[56px] rounded-[16px] bg-[var(--surface-tag)]" />
         <div className="h-[120px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
       </div>

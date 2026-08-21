@@ -67,7 +67,7 @@ function Item({
         "text-[13px] font-semibold transition-colors duration-[var(--dur-fast)]",
         active
           ? "bg-[var(--accent-tint)] text-[var(--accent-hover)]"
-          : "text-[var(--text-secondary)] hover:bg-[var(--surface-tag)]"
+          : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.06)]"
       )}
     >
       <Icon name={icon} size={17}  />

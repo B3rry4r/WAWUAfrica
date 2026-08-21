@@ -59,7 +59,8 @@ export default function SettingsPage() {
         {
           title: "Account",
           rows: [
-            { title: "Edit profile", subtitle: profile.handle ? `@${profile.handle}` : undefined, icon: "UserRound", href: "/profile/edit" },
+            { title: "Profile", subtitle: profile.handle ? `@${profile.handle}` : undefined, icon: "CircleUser", href: "/profile" },
+            { title: "Edit profile", icon: "UserRound", href: "/profile/edit" },
             { title: "Verification", subtitle: "Badge and ladder", icon: "ShieldCheck", href: "/profile/verification" },
           ],
         },

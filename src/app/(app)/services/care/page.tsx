@@ -135,10 +135,17 @@ export default function CarePage() {
         </div>
       ))}
 
+      {/*
+        Plans and the enrolment form were stacked, so on a wide screen the page
+        ran on for two screens of scrolling with everything in one narrow
+        column. Side by side on desktop, stacked on mobile.
+      */}
+      <div className="flex flex-col gap-[18px] xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-[22px]">
+      <div className="flex flex-col gap-[14px]">
       {!plans ? (
         <Skeleton variant="card" />
       ) : (
-        <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] xl:items-start xl:gap-[14px]">
+        <div className="flex flex-col gap-[10px] xl:gap-[12px]">
           {plans.map((p) => {
             const on = selected?.planCode === p.planCode;
             const open = expanded === p.planCode;
@@ -204,8 +211,10 @@ export default function CarePage() {
         </div>
       )}
 
+      </div>
+
       {selected ? (
-        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px] xl:sticky xl:top-[22px]">
           <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Who is this cover for?</span>
           <Input label="First name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
           <Input label="Last name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
@@ -245,7 +254,12 @@ export default function CarePage() {
             Cover is registered against the phone number above with our care partner.
           </span>
         </div>
-      ) : null}
+      ) : (
+        <div className="hidden rounded-[var(--radius-card)] border border-dashed border-[var(--border-hairline)] p-[18px] text-[13px] leading-[1.5] text-[var(--text-muted)] xl:block">
+          Pick a plan to see what it covers and who it is for.
+        </div>
+      )}
+      </div>
     </div>
   );
 }

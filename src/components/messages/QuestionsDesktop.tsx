@@ -153,7 +153,7 @@ export function QuestionsDesktop() {
               onClick={() => setSelectedId(t.id)}
               aria-current={isSelected}
               className={`flex w-full gap-3 border-b border-hairline px-5 py-4 text-left transition-colors ${
-                isSelected ? "bg-accent-tint" : "hover:bg-tag/40"
+                isSelected ? "bg-accent-tint" : "hover:bg-[rgba(255,255,255,0.05)]"
               } ${t.status !== "awaiting" ? "opacity-70" : ""}`}
             >
               <Avatar initials={t.buyerInitials} size={44} />

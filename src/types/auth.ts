@@ -72,7 +72,7 @@ export interface CreatorState {
   slotsUsed: number;
   /** Basic 3, Pro 7. Derived from tier — never hardcode per screen. */
   slotsTotal: number;
-  /** ₦50–₦500 per message. 0 when DMs are off. */
+  /** Creator-set price per message. 0 when DMs are off. */
   dmPrice: number;
   dmEnabled: boolean;
 }

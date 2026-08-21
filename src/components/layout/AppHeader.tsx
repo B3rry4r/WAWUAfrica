@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Avatar } from "@/components/ui/Avatar";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
@@ -62,7 +63,7 @@ export function AppHeader() {
   }, []);
 
   const pathname = usePathname();
-  const { accountType } = useSession();
+  const { accountType, user } = useSession();
   if (hasOwnHeader(pathname)) return null;
 
   return (
@@ -85,6 +86,10 @@ export function AppHeader() {
       >
         <Icon name="Bell" size={17} />
         {unreadCount > 0 ? <span className="absolute right-2 top-[7px] h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" /> : null}
+      </Link>
+      {/* Desktop already has an avatar to the profile; mobile had none. */}
+      <Link href="/profile" aria-label="Your profile" className="shrink-0">
+        <Avatar initial={(user?.fullName ?? "?").charAt(0)} size={34} />
       </Link>
       {accountType === "creator" ? (
         <Link

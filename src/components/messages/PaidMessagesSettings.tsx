@@ -18,7 +18,9 @@ import { formatNaira } from "@/lib/format";
 
 const penalties: PenaltyKind[] = ["none", "warned", "disabled7", "disabled30"];
 
-const PRICE_PRESETS = [50, 100, 300, 500];
+// Suggestions, not a range. Creators set whatever they want; these are just
+// quick taps for common choices.
+const PRICE_PRESETS = [100, 500, 1000, 2500];
 
 /** The price field's own id, so "Raise the price" can send focus to it. */
 const PRICE_FIELD_ID = "dm-price";
@@ -260,7 +262,7 @@ export function PaidMessagesSettings() {
             value={price}
             onChange={setPrice}
             presets={PRICE_PRESETS}
-            hint={`Anything from ${formatNaira(50)} to ${formatNaira(500)}.`}
+            hint="You set this. Charge what your time is worth."
           />
         ) : null}
 
@@ -404,7 +406,7 @@ export function PaidMessagesSettings() {
               <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
                 {penalty === "disabled7"
                   ? "Publishing, communities, tips and your storefront all keep working. Only paid messages are paused."
-                  : `A ${formatNaira(500)} price with three answered messages beats a ${formatNaira(100)} price with thirty missed ones. Fewer, better paid questions.`}
+                  : "A higher price with three answered messages beats a low one with thirty missed. Fewer, better paid questions."}
               </span>
             </div>
 

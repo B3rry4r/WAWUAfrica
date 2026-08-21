@@ -53,7 +53,7 @@ const CREATING_ROWS: CategoryRow[] = [
 
 const ACCOUNT_ROWS: CategoryRow[] = [
   { key: "notifications", label: "Notifications", icon: "Bell", href: "/settings/notifications", internal: "notifications" },
-  { key: "wawu-id", label: "WAWU ID", icon: "ShieldCheck", href: "/profile/verification" },
+  { key: "verification", label: "Verification", icon: "ShieldCheck", href: "/profile/verification" },
   { key: "privacy", label: "Privacy", icon: "Lock", href: "/privacy" },
   { key: "saved", label: "Saved", icon: "Bookmark", href: "/saved" },
   { key: "about", label: "About and partners", icon: "Info", href: "/about" },
@@ -69,7 +69,7 @@ function categoryRowClass(active: boolean, danger?: boolean) {
     "flex h-[44px] shrink-0 items-center gap-3 rounded-xl px-3 text-[14px] transition-colors",
     active
       ? "border border-[var(--border-accent)] bg-[var(--accent-tint)] font-semibold text-[var(--text-primary)]"
-      : "border border-transparent font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-tag)]/60",
+      : "border border-transparent font-medium text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.06)]",
   ].join(" ");
 }
 

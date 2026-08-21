@@ -10,7 +10,7 @@ const PARTNERS = [
 
 export default function PartnersPage() {
   return (
-    <div className="flex flex-col gap-[14px] p-[14px_16px_96px]">
+    <div className="flex flex-col gap-[14px] p-[14px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[860px] xl:p-[30px_28px_64px]">
       <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">

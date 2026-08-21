@@ -130,6 +130,10 @@ export default function OwnProfilePage() {
             />
             <ListRow title="Saved" icon="Bookmark" meta={savedMeta} href="/saved" />
             <ListRow title="Credits" subtitle="1 per community message" icon="Ticket" meta={String(profile.credits)} href="/communities" />
+            {/* Verification is identity, not a creator perk: it was only listed
+                on the creator branch, so a plain account had no way to reach
+                the ladder at all. */}
+            <ListRow title="Verification" subtitle="Badge and ladder" icon="ShieldCheck" href="/profile/verification" />
             <ListRow title="Become a creator" subtitle="Publish content, host communities, get paid" icon="Sparkles" href="/onboarding" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>

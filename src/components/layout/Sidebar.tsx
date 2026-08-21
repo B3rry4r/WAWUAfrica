@@ -42,7 +42,7 @@ function navRowClass(active: boolean) {
     "flex h-[46px] items-center gap-[13px] rounded-2xl border px-[14px] text-[14.5px] transition-colors",
     active
       ? "border-accent bg-accent-tint font-semibold text-text-primary"
-      : "border-transparent font-medium text-text-secondary hover:bg-tag/60",
+      : "border-transparent font-medium text-text-secondary hover:bg-[rgba(255,255,255,0.06)]",
   ].join(" ");
 }
 

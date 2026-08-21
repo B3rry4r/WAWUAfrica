@@ -28,7 +28,7 @@ export default async function MarketplaceSearchPage({
   const total = results.basket.length + results.beauty.length;
 
   return (
-    <div className="flex flex-col gap-3.5 p-[16px_16px_96px]">
+    <div className="flex flex-col gap-3.5 p-[16px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[860px] xl:p-[30px_28px_64px]">
       <div className="flex items-center gap-2.5">
         <ProfileBackButton compact />
         <form action="/marketplace/search" className="flex flex-1 items-center gap-2">

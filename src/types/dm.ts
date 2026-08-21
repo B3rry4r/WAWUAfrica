@@ -6,7 +6,7 @@ export type DmPenaltyState = "none" | "warned" | "disabled_7d" | "disabled_30d";
 
 export interface DmSettings {
   dmEnabled: boolean;
-  /** Integer Naira, creator-set, ₦50–500. */
+  /** Integer Naira, creator-set. No ceiling: creators price their own time. */
   dmPrice: number;
 }
 

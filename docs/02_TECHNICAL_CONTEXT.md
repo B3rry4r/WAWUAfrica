@@ -61,7 +61,7 @@ New `variant: "content"` on the existing Post concept (`src/lib/feed-data.ts`).
 | `id` | uuid | |
 | `creatorWawuId` | uuid | |
 | `dmEnabled` | boolean | creator toggle |
-| `dmPrice` | integer (₦50–500) | creator-set |
+| `dmPrice` | integer (min ₦50, no ceiling) | creator-set |
 | `senderWawuId` | uuid | |
 | `amount` | integer | snapshot of `dmPrice` at send time |
 | `status` | `"awaiting_response" \| "responded" \| "refunded"` | |
