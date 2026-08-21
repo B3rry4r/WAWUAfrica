@@ -64,7 +64,12 @@ export function BottomNav() {
             key={item.href}
             href={item.href}
             className={`flex flex-1 flex-col items-center gap-[5px] text-[10.5px] font-semibold transition-colors ${
-              active ? "text-accent" : "text-text-muted"
+              // Hover lives on the UNSELECTED branch only. The current tab is
+              // accent and must stay unmistakably accent while the pointer is
+              // over it; lighting an inactive tab to accent on hover would
+              // make it impersonate the current one, so it brightens to
+              // text-primary (neutral) instead.
+              active ? "text-accent" : "text-text-muted hover:text-text-primary"
             }`}
           >
             <Icon name={item.icon} size={22} strokeWidth={active ? 2.4 : 2} />

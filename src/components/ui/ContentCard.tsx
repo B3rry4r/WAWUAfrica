@@ -30,7 +30,9 @@ export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardPro
     <button
       type="button"
       onClick={onClick}
-      className={`flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full border [font-family:var(--font-sans)] ${borderClass[item.status]} ${onClick ? "cursor-pointer" : "cursor-default"}`}
+      className={`flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full border [font-family:var(--font-sans)] ${borderClass[item.status]} ${
+        onClick ? "cursor-pointer hover:bg-surface-hover active:bg-surface-press" : "cursor-default"
+      }`}
     >
       <span
         className="w-[56px] h-[70px] rounded-[10px] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]"
@@ -107,10 +109,10 @@ export function ContentGridCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col gap-[10px] p-0 border-[none] bg-transparent text-left [font-family:var(--font-sans)] ${onClick ? "cursor-pointer" : "cursor-default"}`}
+      className={`flex flex-col gap-[10px] p-0 border-[none] bg-transparent text-left [font-family:var(--font-sans)] ${onClick ? "group cursor-pointer" : "cursor-default"}`}
     >
       <span
-        className="relative rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)] overflow-hidden w-full" style={{aspectRatio: ratio}}
+        className="relative rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)] group-hover:border-strong overflow-hidden w-full" style={{aspectRatio: ratio}}
       >
         {locked ? (
           <span
@@ -119,6 +121,14 @@ export function ContentGridCard({
             <Icon name="Lock" size={16} strokeWidth={2.2} color="var(--text-on-accent)" />
           </span>
         ) : null}
+        {/* The tile is art, not a surface: a fill hover on the button would
+            sit behind the cover image and never be seen. The hover reads as a
+            veil laid over the art instead — the heavier of the two neutral
+            state tokens, so it still registers over a bright image. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-transparent transition-colors group-hover:bg-state-press"
+        />
       </span>
       <span className="flex flex-col gap-[3px]">
         <span

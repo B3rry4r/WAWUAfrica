@@ -170,7 +170,7 @@ export function SignUpFlow() {
           <button
             type="button"
             onClick={() => setAccountType("user")}
-            className={`flex gap-3.5 rounded-card border bg-card p-4 text-left ${
+            className={`flex gap-3.5 rounded-card border bg-card p-4 text-left hover:bg-surface-hover active:bg-surface-press ${
               accountType === "user" ? "border-selected" : "border-hairline"
             }`}
           >
@@ -180,7 +180,7 @@ export function SignUpFlow() {
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-2">
                 <span className="text-[17px] font-semibold text-text-primary">I&apos;m here to discover</span>
-                <StatusPill kind="neutral">Free</StatusPill>
+                <StatusPill kind="neutral">No subscription</StatusPill>
               </span>
               <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
                 Browse and unlock content, message creators, join communities, shop the marketplace.
@@ -190,7 +190,7 @@ export function SignUpFlow() {
           <button
             type="button"
             onClick={() => setAccountType("creator")}
-            className={`flex flex-col gap-4 rounded-card border bg-elevated p-[18px] text-left ${
+            className={`flex flex-col gap-4 rounded-card border bg-elevated p-[18px] text-left hover:bg-surface-hover active:bg-surface-press ${
               accountType === "creator" ? "border-selected" : "border-hairline"
             }`}
           >
@@ -233,7 +233,7 @@ export function SignUpFlow() {
             <div className="flex items-center gap-2.5 rounded-input border border-decor bg-decor-tint px-3.5 py-[11px]">
               <Icon name="Upload" size={16} color="var(--accent)" strokeWidth={2.2} />
               <span className="flex-1 text-[13.5px] font-semibold">Creator account</span>
-              <button type="button" onClick={() => setStep("type")} className="text-[13px] font-semibold text-accent">
+              <button type="button" onClick={() => setStep("type")} className="text-[13px] font-semibold text-accent hover:text-text-primary">
                 Change
               </button>
             </div>
@@ -381,7 +381,9 @@ export function SignUpFlow() {
                   type="button"
                   onClick={() => setDetails({ ...details, gender: value })}
                   className={`h-11 flex-1 rounded-button text-[13.5px] font-semibold transition-colors ${
-                    details.gender === value ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
+                    details.gender === value
+                      ? "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press"
+                      : "border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
                   }`}
                 >
                   {label}
@@ -389,7 +391,7 @@ export function SignUpFlow() {
               ))}
             </div>
           </div>
-          <button type="button" onClick={() => setDetails({ ...details, acceptedTerms: !details.acceptedTerms })} className="flex items-start gap-[11px] pt-0.5 text-left">
+          <button type="button" onClick={() => setDetails({ ...details, acceptedTerms: !details.acceptedTerms })} className="flex items-start gap-[11px] pt-0.5 text-left hover:bg-state-hover active:bg-state-press">
             <span
               className={`mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] ${
                 details.acceptedTerms ? "bg-accent" : "border-[1.5px] border-danger bg-transparent"
@@ -439,7 +441,7 @@ export function SignUpFlow() {
                 type="button"
                 onClick={onResendOtp}
                 disabled={resending}
-                className="text-[13.5px] font-semibold text-accent disabled:opacity-60"
+                className="text-[13.5px] font-semibold text-accent hover:text-text-primary disabled:opacity-60 disabled:hover:text-accent"
               >
                 {resending ? "Resending…" : "Resend the code"}
               </button>
@@ -499,7 +501,9 @@ export function SignUpFlow() {
                 setInterests((prev) => (selected ? prev.filter((i) => i !== interest) : [...prev, interest]))
               }
               className={`inline-flex h-10 items-center gap-[7px] rounded-button px-4 text-[14px] transition-colors ${
-                selected ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
+                selected
+                  ? "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press"
+                  : "border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
               }`}
             >
               {selected ? <Icon name="Check" size={14} color="var(--text-on-accent)" strokeWidth={3} /> : null}
@@ -547,7 +551,7 @@ function AuthScaffold({
     <div className="flex min-h-screen flex-col xl:min-h-0">
       <div className={`flex items-center gap-3 px-[18px] pb-3.5 pt-4 xl:px-0 ${noBorder ? "" : "border-b border-hairline xl:border-0"}`}>
         {onBack ? (
-          <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag">
+          <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press">
             <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
           </button>
         ) : null}

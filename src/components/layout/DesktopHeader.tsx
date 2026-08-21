@@ -53,7 +53,7 @@ export function DesktopHeader() {
     >
       <Link
         href="/search"
-        className="flex h-10 w-[420px] items-center gap-[10px] rounded-full border border-hairline bg-input px-[14px] text-[14px] text-text-muted"
+        className="flex h-10 w-[420px] items-center gap-[10px] rounded-full border border-hairline bg-input px-[14px] text-[14px] text-text-muted hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="Search" size={16} color="var(--text-muted)" />
         Search content, creators, communities
@@ -62,7 +62,7 @@ export function DesktopHeader() {
       <Link
         href="/notifications"
         aria-label="Notifications"
-        className="relative grid h-10 w-10 place-items-center rounded-full border border-hairline bg-input text-text-secondary"
+        className="relative grid h-10 w-10 place-items-center rounded-full border border-hairline bg-input text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="Bell" size={18} />
         {unreadCount > 0 ? <span className="absolute right-[9px] top-2 h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" /> : null}
@@ -70,7 +70,7 @@ export function DesktopHeader() {
       <Link
         href="/profile"
         aria-label="Account"
-        className="flex h-10 items-center gap-[10px] rounded-full border border-hairline bg-input py-0 pl-[4px] pr-[6px]"
+        className="flex h-10 items-center gap-[10px] rounded-full border border-hairline bg-input py-0 pl-[4px] pr-[6px] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Avatar initial={firstName.charAt(0)} size={32} />
         <span className="text-[13.5px] font-semibold text-text-primary">{firstName}</span>

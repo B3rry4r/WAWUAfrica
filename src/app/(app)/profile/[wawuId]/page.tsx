@@ -404,8 +404,15 @@ function ShopTab({ profile }: { profile: CreatorProfile }) {
       ) : (
         <div className="grid grid-cols-2 content-start items-start gap-x-3 gap-y-[18px] xl:grid-cols-3 xl:gap-x-[18px]">
           {profile.products.map((p) => (
-            <Link key={p.id} href={`/marketplace/${p.platform}/${p.id}`} className="flex flex-col gap-[9px] no-underline">
-              <div className="aspect-square rounded-[var(--radius-media)] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]" />
+            <Link key={p.id} href={`/marketplace/${p.platform}/${p.id}`} className="group flex flex-col gap-[9px] no-underline">
+              {/* The tile is art, not a surface: the hover reads as a veil laid
+                  over it, the way ContentCard does it. */}
+              <div className="relative aspect-square overflow-hidden rounded-[var(--radius-media)] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] group-hover:border-strong">
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-transparent transition-colors group-hover:bg-state-press"
+                />
+              </div>
               <span className="text-[14px] font-semibold leading-[1.3] text-text-primary">{p.name}</span>
               <div className="flex">
                 <HandoffPill app={p.platform === "beauty" ? "WAWUBeauty" : "WAWUBasket"} />

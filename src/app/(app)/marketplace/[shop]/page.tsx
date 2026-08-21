@@ -54,7 +54,7 @@ export default async function ShopPage({
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium no-underline ${
                   active
                     ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
-                    : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                 }`}
               >
                 {c}
@@ -75,7 +75,7 @@ export default async function ShopPage({
               <Link
                 key={item.id}
                 href={`/marketplace/${shopId}/${item.id}`}
-                className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline"
+                className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
               >
                 <span className="h-[54px] w-[54px] shrink-0 rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]" />
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -109,7 +109,7 @@ export default async function ShopPage({
         >
           <Link
             href="/marketplace"
-            className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline"
+            className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary"
           >
             <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
             {shop.name}
@@ -129,7 +129,7 @@ export default async function ShopPage({
                   className={`shrink-0 rounded-full border px-[14px] py-[7px] text-[13px] font-medium no-underline ${
                     active
                       ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
-                      : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
+                      : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                   }`}
                 >
                   {c}
@@ -150,7 +150,7 @@ export default async function ShopPage({
                 <Link
                   key={item.id}
                   href={`/marketplace/${shopId}/${item.id}`}
-                  className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline"
+                  className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                 >
                   <span className="aspect-square w-full shrink-0 rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]" />
                   <div className="flex min-w-0 flex-1 flex-col gap-[4px]">

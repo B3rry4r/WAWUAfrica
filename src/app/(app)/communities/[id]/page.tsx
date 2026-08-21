@@ -223,7 +223,7 @@ export default function CommunityDetailPage() {
                   className={[
                     "grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full border-none",
                     text.trim() && !sending
-                      ? "cursor-pointer bg-accent text-[var(--text-on-accent)]"
+                      ? "cursor-pointer bg-accent text-[var(--text-on-accent)] hover:bg-accent-hover active:bg-accent-press"
                       : "cursor-default bg-tag text-[var(--text-disabled)]",
                   ].join(" ")}
                 >

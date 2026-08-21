@@ -84,7 +84,7 @@ export default function NotificationsPage() {
       <div className="flex items-center gap-3 border-b border-hairline px-4 py-4 xl:sticky xl:top-0 xl:z-10 xl:h-[68px] xl:bg-page xl:px-6 xl:py-0">
         <span className="flex-1 text-[17px] font-semibold xl:text-[19px] xl:tracking-[-0.02em]">Notifications</span>
         {unread > 0 ? (
-          <button type="button" onClick={onMarkAllRead} className="text-[13.5px] font-semibold text-accent">
+          <button type="button" onClick={onMarkAllRead} className="text-[13.5px] font-semibold text-accent hover:text-text-primary">
             Mark all read
           </button>
         ) : null}
@@ -112,13 +112,13 @@ export default function NotificationsPage() {
             caption="Nothing to see yet. Follow creators, unlock content or join a community, we will ping you here when it matters."
           />
           <div className="mt-4 flex flex-col gap-2.5">
-            <button type="button" onClick={() => router.push("/home")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold">
+            <button type="button" onClick={() => router.push("/home")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold hover:bg-surface-hover active:bg-surface-press">
               Browse the feed
             </button>
-            <button type="button" onClick={() => router.push("/explore")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold">
+            <button type="button" onClick={() => router.push("/explore")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold hover:bg-surface-hover active:bg-surface-press">
               Explore creators
             </button>
-            <button type="button" onClick={() => router.push("/communities")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold">
+            <button type="button" onClick={() => router.push("/communities")} className="rounded-button border border-hairline bg-tag px-5 py-3 text-[14px] font-semibold hover:bg-surface-hover active:bg-surface-press">
               Find a community
             </button>
           </div>
@@ -227,7 +227,9 @@ function NotificationRow({ notification: n }: { notification: AppNotification })
               type="button"
               onClick={() => router.push(actionHrefFor(n))}
               className={`inline-flex h-[32px] items-center rounded-button px-3.5 text-[12.5px] font-semibold ${
-                n.kind === "dm_deadline" ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
+                n.kind === "dm_deadline"
+                  ? "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press"
+                  : "border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
               }`}
             >
               {n.actionLabel}

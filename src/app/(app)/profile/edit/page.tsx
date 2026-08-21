@@ -141,7 +141,7 @@ export default function EditProfilePage() {
                         "inline-flex h-8 cursor-pointer items-center gap-[6px] rounded-full border px-[13px] text-[12.5px]",
                         active
                           ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-accent"
-                          : "border-hairline bg-tag font-medium text-text-secondary",
+                          : "border-hairline bg-tag font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
                       ].join(" ")}
                     >
                       {tag}

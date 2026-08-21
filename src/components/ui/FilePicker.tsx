@@ -107,9 +107,9 @@ export function FilePicker({
             type="button"
             onClick={clear}
             aria-label={`Remove ${uploaded.name}`}
-            className="grid h-[32px] w-[32px] shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent"
+            className="grid h-[32px] w-[32px] shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--text-muted)] hover:bg-state-hover hover:text-danger active:bg-state-press"
           >
-            <Icon name="X" size={16} color="var(--text-muted)" strokeWidth={2.2} />
+            <Icon name="X" size={16} strokeWidth={2.2} />
           </button>
         </div>
       ) : progress !== null ? (
@@ -130,7 +130,7 @@ export function FilePicker({
           type="button"
           onClick={choose}
           disabled={disabled}
-          className="flex cursor-pointer items-center gap-[12px] rounded-[var(--radius-input)] border border-dashed border-strong bg-[var(--surface-input)] p-[15px_14px] text-left disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex cursor-pointer items-center gap-[12px] rounded-[var(--radius-input)] border border-dashed border-strong bg-[var(--surface-input)] p-[15px_14px] text-left enabled:hover:bg-surface-hover enabled:active:bg-surface-press disabled:cursor-not-allowed disabled:opacity-60"
         >
           <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[var(--surface-tag)]">
             <Icon name={capture ? "Camera" : "Upload"} size={17} color="var(--text-secondary)" strokeWidth={2} />

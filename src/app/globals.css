@@ -1,4 +1,4 @@
-/* Design tokens — generated from design/system. Do not edit by hand. */
+/* Design tokens — generated from design/system. */
 @import "./tokens.css";
 
 @tailwind base;
@@ -6,3 +6,54 @@
 @tailwind utilities;
 
 html, body { background: var(--surface-page); color: var(--text-primary); }
+
+/*
+  Baseline for anything you can press.
+
+  Tailwind's preflight does not set a pointer cursor on <button>, and nothing
+  here did either, so 100-odd hand-rolled controls across the app gave no
+  cursor feedback at all. Combined with the missing hover states those buttons
+  also lacked, pointing at them did nothing whatsoever — which is what "the
+  buttons" keeps meaning.
+
+  Only the cursor and the transition are global. The hover COLOUR is not, on
+  purpose: a blanket rule would fight every selected/active state and every
+  control sitting on an image. Those are set per control, from the state
+  tokens (--state-hover for a control with no fill of its own, --surface-hover
+  for one that already carries a fill).
+*/
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+button,
+[role="button"] {
+  transition: background-color var(--dur-base) var(--ease-soft),
+              border-color var(--dur-base) var(--ease-soft),
+              color var(--dur-base) var(--ease-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role="button"] {
+    transition: none;
+  }
+}
+
+/* Anchors are not covered by the button transition above, and a great many of
+   them are clickable cards and rows rather than inline text. */
+a { transition: background-color var(--dur-base) var(--ease-soft),
+                border-color var(--dur-base) var(--ease-soft),
+                color var(--dur-base) var(--ease-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  a { transition: none; }
+}

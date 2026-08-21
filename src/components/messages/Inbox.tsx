@@ -76,7 +76,7 @@ export function Inbox() {
         </span>
         <Link
           href="/messages/settings"
-          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline [font-feature-settings:var(--font-feature-tabular)]"
+          className="inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[11.5px] font-bold text-[var(--text-secondary)] no-underline [font-feature-settings:var(--font-feature-tabular)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
         >
           {formatNaira(price)} each
         </Link>
@@ -84,7 +84,10 @@ export function Inbox() {
 
       <div className="py-[14px] px-[16px] flex flex-col gap-[12px]">
         {state.penalty !== "none" ? (
-          <Link href="/messages/settings" className="no-underline">
+          <Link
+            href="/messages/settings"
+            className="rounded-[var(--radius-card)] no-underline hover:bg-state-hover active:bg-state-press"
+          >
             <div
               className={`flex items-center gap-[10px] py-[12px] px-[14px] rounded-[var(--radius-card)] border ${
                 state.penalty === "warned"

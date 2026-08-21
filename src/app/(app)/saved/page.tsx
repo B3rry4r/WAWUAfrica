@@ -54,7 +54,7 @@ export default function SavedPage() {
             className={`inline-flex h-[32px] shrink-0 items-center whitespace-nowrap rounded-full px-[14px] text-[13px] font-semibold transition-colors ${
               filter === f.id
                 ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-                : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] font-medium"
+                : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] font-medium hover:bg-surface-hover active:bg-surface-press"
             }`}
           >
             {f.id === "all" && items ? `All ${items.length}` : f.label}

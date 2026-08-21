@@ -207,8 +207,8 @@ function IdentityBlock({ profile, isCreator, tier }: { profile: OwnProfile; isCr
 
 function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
   return (
-    <Link href="/creator" className="block no-underline">
-      <div className="flex flex-col gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-elevated p-[14px]">
+    <Link href="/creator" className="group block no-underline">
+      <div className="flex flex-col gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-elevated p-[14px] transition-colors group-hover:bg-surface-hover group-active:bg-surface-press">
         <div className="flex items-center gap-[11px]">
           <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
             <Icon name="ChartNoAxesColumn" size={17} color="var(--accent)" strokeWidth={2} />
@@ -239,8 +239,8 @@ function VerificationProgressCard({ tier, nextTier }: { tier: VerificationLevel;
         ? `Apply to be a ${VERIFY_TIER_LABELS[nextTier]}`
         : "You're at the top of the ladder";
   return (
-    <Link href="/profile/verification" className="block no-underline">
-      <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-hairline bg-card px-[15px] py-[14px]">
+    <Link href="/profile/verification" className="group block no-underline">
+      <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-hairline bg-card px-[15px] py-[14px] transition-colors group-hover:bg-surface-hover group-active:bg-surface-press">
         <VerificationBadge tier={tier} size={20} />
         <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
           <span className="text-[14px] font-semibold text-text-primary">{label}</span>

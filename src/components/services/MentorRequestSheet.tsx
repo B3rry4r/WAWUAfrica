@@ -116,7 +116,7 @@ export function MentorRequestSheet({
                     className={`inline-flex h-[34px] items-center gap-[6px] rounded-full border px-[12px] text-[12.5px] transition-colors ${
                       active
                         ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-[var(--text-primary)]"
-                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
+                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                     }`}
                   >
                     {active ? <Icon name="Check" size={12} color="var(--accent)" strokeWidth={2.6} /> : null}
@@ -152,7 +152,7 @@ export function MentorRequestSheet({
                     className={`flex flex-1 flex-col items-center gap-[3px] rounded-[var(--radius-input)] border py-[11px] ${
                       active
                         ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)]"
-                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                     }`}
                   >
                     <span className="text-[11.5px] font-semibold">{d.weekday}</span>
@@ -175,7 +175,7 @@ export function MentorRequestSheet({
                     className={`flex-1 rounded-[var(--radius-input)] border py-[9px] text-[13px] font-semibold capitalize ${
                       active
                         ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)]"
-                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+                        : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                     }`}
                   >
                     {t}

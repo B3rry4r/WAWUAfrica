@@ -125,7 +125,7 @@ export default async function ProductPage({
             href={shopHandoffUrl(shopId, product.id)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-[50px] items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent)] text-[15px] font-semibold text-[var(--text-on-accent)] no-underline xl:h-[52px]"
+            className="flex h-[50px] items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent)] text-[15px] font-semibold text-[var(--text-on-accent)] no-underline hover:bg-accent-hover active:bg-accent-press xl:h-[52px]"
           >
             Buy in {shopName}
             <Icon name="ArrowUpRight" size={17} color="var(--text-on-accent)" />

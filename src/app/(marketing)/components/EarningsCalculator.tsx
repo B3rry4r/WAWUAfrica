@@ -44,7 +44,7 @@ export function EarningsCalculator() {
               type="button"
               onClick={opt.on}
               className={`h-[28px] rounded-full px-3 text-[12px] font-bold transition-colors ${
-                opt.active ? "bg-accent text-on-accent" : "text-text-secondary"
+                opt.active ? "bg-accent text-on-accent" : "text-text-secondary hover:bg-state-hover active:bg-state-press"
               }`}
             >
               {opt.label}

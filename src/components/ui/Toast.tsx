@@ -78,7 +78,7 @@ export function Toast({ kind = "success", title, body, onDismiss, duration = 600
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss"
-          className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full"
+          className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full hover:bg-state-hover active:bg-state-press"
         >
           <Icon name="X" size={15} color="var(--text-muted)" strokeWidth={2.2} />
         </button>

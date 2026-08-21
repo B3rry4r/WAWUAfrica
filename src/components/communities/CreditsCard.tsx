@@ -72,7 +72,7 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
             <span className="text-[26px] font-extrabold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
               {balance}
             </span>
-            <span className="text-[12px] text-text-muted">One credit sends one message. Reading is free.</span>
+            <span className="text-[12px] text-text-muted">One credit sends one message. Reading costs nothing.</span>
           </div>
           <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
             Top up
@@ -95,7 +95,7 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
                     "flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] border-[1.5px] p-[14px_15px] text-left",
                     active
                       ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
-                      : "border-hairline bg-input",
+                      : "border-hairline bg-input hover:border-strong hover:bg-surface-hover active:bg-surface-press",
                   ].join(" ")}
                 >
                   <span
@@ -148,7 +148,7 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
             <div className="flex flex-col gap-[5px]">
               <span className="text-[17px] font-bold text-text-primary">{added} credits added</span>
               <span className="text-[13.5px] text-text-secondary">
-                You now have <b>{balance}</b> credits. Reading communities is always free.
+                You now have <b>{balance}</b> credits. Reading communities never costs one.
               </span>
             </div>
             <Button full onClick={close}>

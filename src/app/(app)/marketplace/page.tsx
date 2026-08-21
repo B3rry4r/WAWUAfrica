@@ -26,7 +26,7 @@ export default async function MarketplacePage() {
           <Link
             href="/marketplace/search"
             aria-label="Search the marketplace"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)]"
+            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
           >
             <Icon name="Search" size={16} color="var(--text-secondary)" />
           </Link>
@@ -37,7 +37,7 @@ export default async function MarketplacePage() {
             <Link
               key={shop.id}
               href={`/marketplace/${shop.id}`}
-              className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px] no-underline"
+              className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
             >
               <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
                 <Icon
@@ -87,7 +87,7 @@ export default async function MarketplacePage() {
               <Link
                 key={shop.id}
                 href={`/marketplace/${shop.id}`}
-                className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px] no-underline"
+                className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
               >
                 <div className="flex items-center gap-[12px]">
                   <span className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">

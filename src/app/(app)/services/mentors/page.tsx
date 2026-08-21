@@ -61,7 +61,7 @@ export default function MentorsPage() {
         </div>
 
         <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-          Free 45-minute sessions with creators who have already done what you&apos;re trying to do.
+          45-minute sessions, at no charge, with creators who have already done what you&apos;re trying to do.
         </p>
 
         <CategoryChips category={category} allCount={allMentors.length} categories={categories} />
@@ -90,8 +90,8 @@ export default function MentorsPage() {
           className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-[var(--border-hairline)] bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
           style={{ backdropFilter: "var(--blur-chrome)" }}
         >
-          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
-            <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary">
+            <Icon name="ArrowLeft" size={18} />
             Services
           </Link>
           <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Mentors</span>
@@ -130,8 +130,8 @@ function CategoryChips({ category, allCount, categories }: { category: string; a
         href="/services/mentors"
         className={`shrink-0 rounded-full px-[14px] py-[7px] text-[13px] font-semibold no-underline ${
           category === "All"
-            ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-            : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] font-medium"
+            ? "bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-accent-hover active:bg-accent-press"
+            : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] font-medium hover:border-strong hover:bg-surface-hover active:bg-surface-press"
         }`}
       >
         All {allCount}
@@ -142,8 +142,8 @@ function CategoryChips({ category, allCount, categories }: { category: string; a
           href={`/services/mentors?category=${encodeURIComponent(c)}`}
           className={`shrink-0 rounded-full px-[14px] py-[7px] text-[13px] font-semibold no-underline ${
             category === c
-              ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-              : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] font-medium"
+              ? "bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-accent-hover active:bg-accent-press"
+              : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] font-medium hover:border-strong hover:bg-surface-hover active:bg-surface-press"
           }`}
         >
           {c}
@@ -157,7 +157,7 @@ function MentorRow({ m }: { m: Mentor }) {
   return (
     <Link
       href={`/services/mentors/${m.id}`}
-      className={`flex items-start gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:h-full xl:flex-col xl:gap-[12px] xl:p-[18px] ${
+      className={`flex items-start gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:bg-surface-hover active:bg-surface-press xl:h-full xl:flex-col xl:gap-[12px] xl:p-[18px] ${
         m.openForRequests ? "" : "opacity-70"
       }`}
     >

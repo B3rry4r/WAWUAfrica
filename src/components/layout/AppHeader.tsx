@@ -82,7 +82,7 @@ export function AppHeader() {
       <img src="/wawu-icon-white.png" alt="WAWU" className="h-[26px] w-[26px] object-contain" />
       <Link
         href="/search"
-        className="flex h-[36px] flex-1 items-center gap-2 rounded-full border border-hairline bg-input px-3 text-[13.5px] text-text-muted"
+        className="flex h-[36px] flex-1 items-center gap-2 rounded-full border border-hairline bg-input px-3 text-[13.5px] text-text-muted hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="Search" size={15} color="var(--text-muted)" />
         Search creators and content
@@ -90,13 +90,17 @@ export function AppHeader() {
       <Link
         href="/notifications"
         aria-label="Notifications"
-        className="relative grid h-9 w-9 place-items-center rounded-full border border-hairline bg-input text-text-secondary"
+        className="relative grid h-9 w-9 place-items-center rounded-full border border-hairline bg-input text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="Bell" size={17} />
         {unreadCount > 0 ? <span className="absolute right-2 top-[7px] h-[7px] w-[7px] rounded-full bg-accent" aria-hidden="true" /> : null}
       </Link>
       {/* Desktop already has an avatar to the profile; mobile had none. */}
-      <Link href="/profile" aria-label="Your profile" className="shrink-0">
+      <Link
+        href="/profile"
+        aria-label="Your profile"
+        className="shrink-0 rounded-full hover:bg-state-hover active:bg-state-press"
+      >
         <Avatar initial={(user?.fullName ?? "?").charAt(0)} size={34} />
       </Link>
       {!resolved ? (
@@ -105,7 +109,7 @@ export function AppHeader() {
         <Link
           href="/explore"
           aria-label="Browse"
-          className="grid h-9 w-9 place-items-center rounded-full border border-decor bg-decor-tint text-accent"
+          className="grid h-9 w-9 place-items-center rounded-full border border-decor bg-decor-tint text-accent hover:border-strong hover:bg-surface-hover active:bg-surface-press"
         >
           <Icon name="LayoutGrid" size={17} strokeWidth={2.2} />
         </Link>

@@ -104,7 +104,7 @@ export function NotificationsSettingsBody() {
                       aria-checked={on}
                       aria-label={r.label}
                       onClick={() => toggle(r.key)}
-                      className={`relative h-[28px] w-[46px] shrink-0 cursor-pointer rounded-full border-none transition-[background] duration-[160ms] ${on ? "bg-[var(--accent)]" : "bg-[var(--surface-tag)]"}`}
+                      className={`relative h-[28px] w-[46px] shrink-0 cursor-pointer rounded-full border-none transition-[background] duration-[160ms] ${on ? "bg-[var(--accent)] hover:bg-accent-hover" : "bg-[var(--surface-tag)] hover:bg-surface-hover"}`}
                     >
                       <span
                         className={`absolute top-[3px] h-[22px] w-[22px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-[left] duration-[160ms] ease-[cubic-bezier(.32,.72,0,1)] ${on ? "left-[21px]" : "left-[3px]"}`}

@@ -112,7 +112,7 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
       </span>
       <Link
         href="/create/library"
-        className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-accent"
+        className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-accent hover:text-text-primary"
       >
         Manage my content
         <Icon name="ArrowRight" size={14} strokeWidth={2.2} />
@@ -144,7 +144,7 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
                 <button
                   type="button"
                   onClick={() => setUpsellOpen(true)}
-                  className="border-none bg-transparent p-0 text-[12.5px] font-semibold text-accent underline underline-offset-2"
+                  className="border-none bg-transparent p-0 text-[12.5px] font-semibold text-accent underline underline-offset-2 hover:text-text-primary"
                 >
                   See your options
                 </button>

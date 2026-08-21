@@ -262,8 +262,11 @@ export function SubscriptionManagement() {
           hides here instead of stacking above it — the same mechanism /services and
           /content already use for their own local headers. */}
       <div className="hidden h-[68px] shrink-0 items-center gap-4 border-b border-[var(--border-hairline)] px-[26px] xl:flex">
-        <Link href="/settings" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
-          <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+        <Link
+          href="/settings"
+          className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-accent-hover"
+        >
+          <Icon name="ArrowLeft" size={18} />
           Settings
         </Link>
         <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em]">Subscription</span>
@@ -674,7 +677,7 @@ function CurrentView({
           <div className="flex items-center gap-[10px]">
             <Icon name="CreditCard" size={15} color="var(--text-muted)" />
             <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{cardLast4 ? `Card ending ${cardLast4}` : "No card saved"}</span>
-            <button type="button" onClick={onChangeCard} className="text-[13px] font-semibold text-[var(--accent)] bg-transparent border-0 cursor-pointer p-0">
+            <button type="button" onClick={onChangeCard} className="text-[13px] font-semibold text-[var(--accent)] bg-transparent border-0 cursor-pointer p-0 hover:text-text-primary">
               Change
             </button>
           </div>
@@ -728,7 +731,7 @@ function CurrentView({
         <button
           type="button"
           onClick={onCancel}
-          className="text-[13px] font-semibold text-[var(--text-secondary)] bg-transparent border-0 cursor-pointer py-[2px] px-0 self-start"
+          className="text-[13px] font-semibold text-[var(--text-secondary)] bg-transparent border-0 cursor-pointer py-[2px] px-0 self-start hover:text-accent-hover"
         >
           Do not renew
         </button>
@@ -750,7 +753,7 @@ function CurrentView({
           <button
             type="button"
             onClick={onChangeCard}
-            className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left cursor-pointer"
+            className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left cursor-pointer hover:bg-surface-hover active:bg-surface-press"
           >
             <Icon name="CreditCard" size={16} color="var(--text-muted)" />
             <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Use a different card</span>
@@ -1080,7 +1083,7 @@ function DesktopSubscriptionView({
             <button
               type="button"
               onClick={onChangeCard}
-              className="flex cursor-pointer items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[16px] py-[15px] text-left"
+              className="flex cursor-pointer items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[16px] py-[15px] text-left hover:bg-surface-hover active:bg-surface-press"
             >
               <Icon name="CreditCard" size={16} color="var(--text-muted)" />
               <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Use a different card</span>

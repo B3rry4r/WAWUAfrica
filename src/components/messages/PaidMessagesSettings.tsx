@@ -174,7 +174,7 @@ export function PaidMessagesSettings() {
               className={`h-[30px] py-0 px-[12px] rounded-[999px] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
                 penalty === p
                   ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
-                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
+                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
               }`}
             >
               {p === "none" ? "Good" : p === "warned" ? "Warning" : p === "disabled7" ? "Off 7d" : "Off 30d"}
@@ -210,7 +210,7 @@ export function PaidMessagesSettings() {
           <button
             type="button"
             onClick={() => setEnabled(!enabled)}
-            className={`flex items-center gap-[14px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left w-full border font-[family-name:var(--font-sans)] ${
+            className={`flex items-center gap-[14px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left w-full border font-[family-name:var(--font-sans)] hover:bg-surface-hover active:bg-surface-press ${
               enabled
                 ? "bg-[var(--surface-elevated)] border-[var(--border-selected)]"
                 : "bg-[var(--surface-card)] border-[var(--border-hairline)]"

@@ -9,7 +9,7 @@ export function DownloadButton({ title, fileUrl }: { title: string; fileUrl?: st
   return (
     <>
       <Button full size="lg" icon="Download" onClick={() => setOpen(true)}>
-        Free download · PDF
+        Download · PDF
       </Button>
       <DownloadSheet open={open} onClose={() => setOpen(false)} title={title} fileUrl={fileUrl} />
     </>

@@ -67,8 +67,8 @@ export default function ComingSoonServicePage() {
           className="hidden h-[68px] shrink-0 items-center gap-4 border-b border-[var(--border-hairline)] bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur xl:flex"
           style={{ backdropFilter: "var(--blur-chrome)" }}
         >
-          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
-            <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary">
+            <Icon name="ArrowLeft" size={18} />
             Services
           </Link>
         </div>
@@ -148,8 +148,8 @@ export default function ComingSoonServicePage() {
           className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-[var(--border-hairline)] bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
           style={{ backdropFilter: "var(--blur-chrome)" }}
         >
-          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
-            <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary">
+            <Icon name="ArrowLeft" size={18} />
             Services
           </Link>
           <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">{service.name}</span>

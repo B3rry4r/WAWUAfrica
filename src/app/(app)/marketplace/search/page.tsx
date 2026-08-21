@@ -92,7 +92,7 @@ export default async function MarketplaceSearchPage({
                 <Link
                   key={r.id}
                   href={r.href}
-                  className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline"
+                  className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                 >
                   <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
                     <Icon name="GraduationCap" size={17} color="var(--accent)" />
@@ -122,7 +122,7 @@ function Pill({ label, q, shop, active }: { label: string; q: string; shop?: "ba
       className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium no-underline ${
         active
           ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
-          : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
+          : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       }`}
     >
       {label}
@@ -148,7 +148,7 @@ function ResultGroup({
         <Link
           key={item.id}
           href={`/marketplace/${shop}/${item.id}`}
-          className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline"
+          className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
         >
           <span className="h-[46px] w-[46px] shrink-0 rounded-[10px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]" />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">

@@ -66,7 +66,7 @@ const ACCOUNT_ROWS: CategoryRow[] = [
 
 function categoryRowClass(active: boolean, danger?: boolean) {
   if (danger) {
-    return "mt-auto flex h-[44px] shrink-0 items-center gap-3 rounded-xl px-3 text-[14px] font-medium text-[var(--danger)]";
+    return "mt-auto flex h-[44px] shrink-0 items-center gap-3 rounded-xl px-3 text-[14px] font-medium text-[var(--danger)] hover:bg-state-hover active:bg-state-press";
   }
   return [
     "flex h-[44px] shrink-0 items-center gap-3 rounded-xl px-3 text-[14px] transition-colors",

@@ -182,7 +182,7 @@ export default function CarePage() {
                 <button
                   type="button"
                   onClick={() => setSelected(p)}
-                  className="flex items-baseline justify-between gap-3 p-[16px] text-left"
+                  className="flex items-baseline justify-between gap-3 rounded-[inherit] p-[16px] text-left hover:bg-[var(--state-hover)] active:bg-[var(--state-press)]"
                 >
                   <span className="text-[15.5px] font-bold text-[var(--text-primary)]">{p.planName}</span>
                   <span className="whitespace-nowrap text-[16px] font-bold text-[var(--text-primary)]">
@@ -199,7 +199,7 @@ export default function CarePage() {
                       type="button"
                       onClick={() => setExpanded(open ? null : p.planCode)}
                       aria-expanded={open}
-                      className="flex items-center gap-1.5 px-[16px] pb-[14px] text-[12.5px] font-semibold text-[var(--accent)]"
+                      className="flex items-center gap-1.5 px-[16px] pb-[14px] text-[12.5px] font-semibold text-[var(--accent)] hover:text-[var(--text-primary)]"
                     >
                       {open ? "Hide what is covered" : "What is covered"}
                       <Icon
@@ -254,8 +254,8 @@ export default function CarePage() {
                 onClick={() => setForm({ ...form, gender: g })}
                 className={`flex-1 rounded-[var(--radius-chip)] border px-[14px] py-2 text-[13px] ${
                   form.gender === g
-                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
-                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
                 }`}
               >
                 {g}

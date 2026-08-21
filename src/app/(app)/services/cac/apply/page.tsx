@@ -187,7 +187,7 @@ export default function CacApplyPage() {
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em] text-[var(--text-primary)]">Application in</h2>
         <p className="m-0 max-w-[290px] text-[15px] leading-[1.55] text-[var(--text-secondary)]">
-          We will check your names against the CAC register and file the first one that is free.
+          We will check your names against the CAC register and file the first one that is available.
         </p>
 
         <div className="flex w-full flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px] text-left">
@@ -237,7 +237,7 @@ export default function CacApplyPage() {
       <div className="flex flex-col gap-[6px]">
         <h2 className="m-0 text-[21px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Business details</h2>
         <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-          Give three name choices in order of preference. CAC takes the first one that is free.
+          Give three name choices in order of preference. CAC takes the first one that is available.
         </p>
       </div>
 
@@ -268,8 +268,8 @@ export default function CacApplyPage() {
                 className={[
                   "h-[44px] flex-1 cursor-pointer rounded-full border text-[13px] font-semibold",
                   active
-                    ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--text-on-accent)]"
-                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]",
+                    ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]",
                 ].join(" ")}
               >
                 {opt.label}
@@ -368,7 +368,7 @@ export default function CacApplyPage() {
           <span className="text-[12.5px] text-[var(--text-muted)]">{second || "—"}</span>
           <span className="text-[12.5px] text-[var(--text-muted)]">{third || "—"}</span>
         </div>
-        <button type="button" onClick={() => setStep(1)} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)]">
+        <button type="button" onClick={() => setStep(1)} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)] hover:text-[var(--text-primary)]">
           Edit
         </button>
       </div>
@@ -378,7 +378,7 @@ export default function CacApplyPage() {
   );
 
   const confirmToggle = (
-    <button type="button" onClick={() => setConfirmed((v) => !v)} className="flex cursor-pointer items-start gap-[11px] border-0 bg-transparent p-0 text-left">
+    <button type="button" onClick={() => setConfirmed((v) => !v)} className="flex cursor-pointer items-start gap-[11px] border-0 bg-transparent p-0 text-left hover:bg-[var(--state-hover)] active:bg-[var(--state-press)]">
       <span
         className={[
           "mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] border",
@@ -520,8 +520,8 @@ export default function CacApplyPage() {
           className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
           style={{ backdropFilter: "var(--blur-chrome)" }}
         >
-          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
-            <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary">
+            <Icon name="ArrowLeft" size={18} />
             Services
           </Link>
           <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">CAC registration</span>
@@ -543,6 +543,9 @@ export default function CacApplyPage() {
                     "flex items-center gap-[11px] rounded-[var(--radius-input)] border p-[14px_16px] text-left",
                     state === "current" ? "border-[var(--border-selected)] bg-[var(--selected-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
                     n <= step ? "cursor-pointer" : "cursor-default",
+                    // Hover only on a completed step you can actually go back to.
+                    // The current step keeps its selected fill; upcoming ones are disabled.
+                    n < step ? "hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]" : "",
                   ].join(" ")}
                 >
                   <span
@@ -589,7 +592,7 @@ function ReviewRow({ label, value, onEdit, last = false }: { label: string; valu
     <div className={`flex items-center gap-[12px] p-[14px_16px] ${last ? "" : "border-b border-[var(--border-hairline)]"}`}>
       <span className="flex-1 text-[13px] text-[var(--text-secondary)]">{label}</span>
       <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{value}</span>
-      <button type="button" onClick={onEdit} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)]">
+      <button type="button" onClick={onEdit} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)] hover:text-[var(--text-primary)]">
         Edit
       </button>
     </div>

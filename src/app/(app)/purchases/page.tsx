@@ -78,7 +78,7 @@ export default function MyPurchasesPage() {
             type="button"
             onClick={() => setFilter(t.id)}
             className={`relative flex h-full items-center text-[14.5px] transition-colors ${
-              filter === t.id ? "font-semibold text-text-primary" : "text-text-muted"
+              filter === t.id ? "font-semibold text-text-primary" : "text-text-muted hover:text-text-primary"
             }`}
           >
             {t.label}
@@ -103,7 +103,7 @@ export default function MyPurchasesPage() {
             type="button"
             onClick={() => setFilter(t.id)}
             className={`inline-flex h-[34px] shrink-0 items-center whitespace-nowrap rounded-button px-[14px] text-[13.5px] font-semibold transition-colors ${
-              filter === t.id ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
+              filter === t.id ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
             }`}
           >
             {t.label}
@@ -283,7 +283,7 @@ function PurchaseRow({ purchase, last }: { purchase: Purchase; last: boolean }) 
   const state = purchase.price === 0 ? "No charge" : `Unlocked ${dateLabel}`;
 
   return (
-    <Link href={`/content/${purchase.contentId}`} className={`flex items-center gap-3.5 px-4 py-4 ${last ? "" : "border-b border-hairline"}`}>
+    <Link href={`/content/${purchase.contentId}`} className={`flex items-center gap-3.5 px-4 py-4 hover:bg-state-hover active:bg-state-press ${last ? "" : "border-b border-hairline"}`}>
       <span
         className="grid h-[64px] w-[64px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
       >

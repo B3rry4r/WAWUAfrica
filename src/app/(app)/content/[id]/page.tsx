@@ -395,7 +395,7 @@ function ContentHeader({
 }) {
   return (
     <div className="flex items-center gap-3 border-b border-hairline px-[18px] py-3 xl:h-[68px] xl:px-[26px] xl:py-0">
-      <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag">
+      <button type="button" onClick={onBack} aria-label="Back" className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press">
         <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
       </button>
       <span className="flex-1 text-[16px] font-semibold">{title}</span>
@@ -403,7 +403,7 @@ function ContentHeader({
         type="button"
         onClick={onShare}
         aria-label={shared ? "Link copied" : "Share"}
-        className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary"
+        className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name={shared ? "Check" : "Share2"} size={16} color={shared ? "var(--accent)" : undefined} />
       </button>
@@ -412,7 +412,7 @@ function ContentHeader({
         onClick={onToggleSave}
         aria-label={saved ? "Remove from saved" : "Save"}
         aria-pressed={saved}
-        className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary"
+        className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="Bookmark" size={16} color={saved ? "var(--accent)" : undefined} fill={saved ? "var(--accent)" : "none"} />
       </button>
@@ -467,7 +467,7 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
     <div className="flex flex-col gap-2.5">
       <h1 className="m-0 text-[22px] font-bold leading-snug tracking-[-0.015em]">{content.title}</h1>
       <div className="flex items-center gap-2">
-        <Link href={`/profile/${content.creator.wawuId}`} className="flex min-w-0 items-center gap-2">
+        <Link href={`/profile/${content.creator.wawuId}`} className="flex min-w-0 items-center gap-2 hover:text-accent-hover">
           <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-accent-tint text-[13px] font-semibold text-accent-hover">
             {content.creator.fullName.charAt(0)}
           </span>
@@ -659,7 +659,7 @@ function EngagementRow({
         <button
           type="button"
           onClick={onShare}
-          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold"
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold hover:bg-surface-hover active:bg-surface-press"
         >
           <Icon name={shared ? "Check" : "Share2"} size={15} color={shared ? "var(--accent)" : "var(--text-secondary)"} />
           {shared ? "Copied" : "Share"}
@@ -668,7 +668,7 @@ function EngagementRow({
           type="button"
           onClick={onToggleSave}
           aria-pressed={content.saved}
-          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold"
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold hover:bg-surface-hover active:bg-surface-press"
         >
           <Icon name="Bookmark" size={15} color={content.saved ? "var(--accent)" : "var(--text-secondary)"} fill={content.saved ? "var(--accent)" : "none"} />
           {content.saved ? "Saved" : "Save"}
@@ -676,7 +676,7 @@ function EngagementRow({
         <button
           type="button"
           onClick={onRate}
-          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold"
+          className="flex flex-1 items-center justify-center gap-2 rounded-button border border-hairline bg-tag py-2.5 text-[13px] font-semibold hover:bg-surface-hover active:bg-surface-press"
         >
           <Icon name="Star" size={15} color={rated ? "var(--accent)" : "var(--text-secondary)"} fill={rated ? "var(--accent)" : "none"} />
           {rated ? `Rated ${rated}` : "Rate"}
@@ -732,7 +732,7 @@ function Comments({
                 <Icon name="Heart" size={14} color="var(--text-muted)" />
                 {c.likes}
               </span>
-              <button type="button" onClick={() => onReply(c.name)} className="text-[12.5px] font-semibold text-text-muted">
+              <button type="button" onClick={() => onReply(c.name)} className="text-[12.5px] font-semibold text-text-muted hover:text-accent-hover">
                 Reply
               </button>
             </div>
@@ -756,7 +756,7 @@ function Comments({
           type="submit"
           disabled={!draft.trim()}
           aria-label="Post comment"
-          className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-accent text-on-accent disabled:cursor-not-allowed disabled:opacity-40"
+          className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-accent text-on-accent enabled:hover:bg-accent-hover enabled:active:bg-accent-press disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Icon name="ArrowUp" size={15} color="var(--text-on-accent)" strokeWidth={2.4} />
         </button>
@@ -827,7 +827,7 @@ function DesktopUnlockDialog({ open, onClose, content, payment, onRetry, onRefre
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-card text-text-secondary"
+                className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-card text-text-secondary hover:bg-surface-hover active:bg-surface-press"
               >
                 <Icon name="X" size={17} />
               </button>

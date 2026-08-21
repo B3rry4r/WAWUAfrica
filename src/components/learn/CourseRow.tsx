@@ -15,7 +15,7 @@ export function CourseRow({ course, state, freeCoursesTotal }: { course: LearnCo
   return (
     <Link
       href={`/learn/courses/${course.id}`}
-      className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:flex-col xl:gap-[11px] xl:p-0"
+      className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press xl:flex-col xl:gap-[11px] xl:p-0"
     >
       <div className="h-16 w-16 shrink-0 rounded-[12px] border border-[var(--border-hairline)] bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:aspect-video xl:h-auto xl:w-full xl:rounded-[var(--radius-media)]" />
       <div className="flex min-w-0 flex-1 flex-col gap-[5px]">

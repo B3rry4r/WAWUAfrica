@@ -54,7 +54,7 @@ export function CommunityTabs({
               "h-[38px] flex-1 cursor-pointer rounded-[var(--radius-input)] border-none text-[14px] font-semibold",
               tab === t
                 ? "bg-card text-text-primary shadow-[0_1px_4px_rgba(0,0,0,0.24)]"
-                : "bg-transparent text-text-muted",
+                : "bg-transparent text-text-muted hover:bg-state-hover active:bg-state-press",
             ].join(" ")}
           >
             {t === "joined" ? "Yours" : "Discover"}
@@ -79,7 +79,7 @@ export function CommunityTabs({
               <Link
                 key={c.id}
                 href={`/communities/${c.id}`}
-                className="flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] p-3 no-underline"
+                className="flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] p-3 no-underline transition-colors hover:bg-state-hover active:bg-state-press"
               >
                 <CommunityRow c={c} />
               </Link>
@@ -88,7 +88,7 @@ export function CommunityTabs({
                 key={c.id}
                 type="button"
                 onClick={() => doJoin(c.id)}
-                className="flex w-full cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] border-none bg-transparent p-3 text-left no-underline"
+                className="flex w-full cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] border-none bg-transparent p-3 text-left no-underline hover:bg-state-hover active:bg-state-press"
               >
                 <CommunityRow c={c} />
               </button>

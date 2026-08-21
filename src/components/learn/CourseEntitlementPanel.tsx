@@ -26,7 +26,7 @@ export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEn
   return (
     <Panel icon="Info" iconTone="muted" title="No courses left" subtitle="You&rsquo;ve used your included courses for this cycle.">
       <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
-        Upgrade to Pro for more free courses, or enrol directly. WAWU just won&rsquo;t track this one as covered.
+        Upgrade to Pro for more included courses, or enrol directly. WAWU just won&rsquo;t track this one as covered.
       </span>
     </Panel>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { getService } from "@/lib/api/services";
 import type { PartnerService } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
@@ -89,11 +88,9 @@ export default function NepcServicePage() {
         </div>
       </section>
 
-      <Link href="/services/nepc/apply" className="block no-underline">
-        <Button full size="lg">
-          Start now · Free
-        </Button>
-      </Link>
+      <Button full size="lg" href="/services/nepc/apply">
+        Start now
+      </Button>
     </div>
   );
 }

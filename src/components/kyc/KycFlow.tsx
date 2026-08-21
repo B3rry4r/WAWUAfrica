@@ -428,7 +428,7 @@ function DocumentStep({
               className={`inline-flex h-[38px] cursor-pointer items-center rounded-[999px] px-[15px] text-[13.5px] ${
                 active
                   ? "border-none bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
-                  : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
+                  : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
               }`}
             >
               {d.label}

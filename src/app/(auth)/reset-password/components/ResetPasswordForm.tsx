@@ -69,7 +69,7 @@ export function ResetPasswordForm() {
         <Link
           href="/sign-in"
           aria-label="Back"
-          className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag"
+          className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press"
         >
           <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
         </Link>
@@ -110,7 +110,7 @@ export function ResetPasswordForm() {
           <button
             type="button"
             onClick={() => setShowPassword((s) => !s)}
-            className="flex items-center gap-[7px] self-start text-[12.5px] font-semibold text-text-secondary"
+            className="flex items-center gap-[7px] self-start text-[12.5px] font-semibold text-text-secondary hover:text-accent-hover"
           >
             <Icon name={showPassword ? "EyeOff" : "Eye"} size={15} color="var(--text-muted)" strokeWidth={2.2} />
             {showPassword ? "Hide passwords" : "Show passwords"}

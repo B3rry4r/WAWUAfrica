@@ -263,7 +263,7 @@ export default function NepcApplyPage() {
                 type="button"
                 aria-label={`Remove ${m}`}
                 onClick={() => setMarkets((prev) => prev.filter((x) => x !== m))}
-                className="grid cursor-pointer place-items-center border-0 bg-transparent p-0"
+                className="grid cursor-pointer place-items-center border-0 bg-transparent p-0 hover:bg-[var(--state-hover)] active:bg-[var(--state-press)]"
               >
                 <Icon name="X" size={12} color="var(--accent)" strokeWidth={2.6} />
               </button>
@@ -272,7 +272,7 @@ export default function NepcApplyPage() {
           <button
             type="button"
             onClick={() => setPickerOpen((v) => !v)}
-            className="inline-flex h-[34px] cursor-pointer items-center gap-[6px] rounded-full border border-dashed border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[12px] text-[13px] font-medium text-[var(--text-muted)]"
+            className="inline-flex h-[34px] cursor-pointer items-center gap-[6px] rounded-full border border-dashed border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[12px] text-[13px] font-medium text-[var(--text-muted)] hover:border-strong hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
           >
             <Icon name="Plus" size={13} color="var(--text-muted)" strokeWidth={2.2} />
             Add
@@ -288,7 +288,7 @@ export default function NepcApplyPage() {
                   setMarkets((prev) => [...prev, c]);
                   setPickerOpen(false);
                 }}
-                className="inline-flex h-[30px] cursor-pointer items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[11px] text-[12.5px] font-medium text-[var(--text-secondary)]"
+                className="inline-flex h-[30px] cursor-pointer items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)] px-[11px] text-[12.5px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
               >
                 {c}
               </button>
@@ -386,7 +386,7 @@ export default function NepcApplyPage() {
     </div>
   );
 
-  // No fee to break down for NEPC (free to start) — the xl right rail instead
+  // No fee to break down for NEPC (nothing to start) — the xl right rail instead
   // carries a live summary of what's been entered, replacing the mobile
   // review step's need to be the first place the whole application is seen.
   const summaryCard = (
@@ -442,8 +442,8 @@ export default function NepcApplyPage() {
           className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
           style={{ backdropFilter: "var(--blur-chrome)" }}
         >
-          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline">
-            <Icon name="ArrowLeft" size={18} color="var(--text-secondary)" />
+          <Link href="/services" className="flex items-center gap-[9px] text-[14px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary">
+            <Icon name="ArrowLeft" size={18} />
             Services
           </Link>
           <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">NEPC registration</span>
@@ -465,6 +465,9 @@ export default function NepcApplyPage() {
                     "flex items-center gap-[11px] rounded-[var(--radius-input)] border p-[14px_16px] text-left",
                     state === "current" ? "border-[var(--border-selected)] bg-[var(--selected-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
                     n <= step ? "cursor-pointer" : "cursor-default",
+                    // Hover only on a completed step you can actually go back to.
+                    // The current step keeps its selected fill; upcoming ones are disabled.
+                    n < step ? "hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]" : "",
                   ].join(" ")}
                 >
                   <span
@@ -511,7 +514,7 @@ function ReviewRow({ label, value, onEdit, last = false }: { label: string; valu
     <div className={`flex items-center gap-[12px] p-[14px_16px] ${last ? "" : "border-b border-[var(--border-hairline)]"}`}>
       <span className="flex-1 text-[13px] text-[var(--text-secondary)]">{label}</span>
       <span className="truncate text-right text-[13.5px] font-semibold text-[var(--text-primary)]">{value}</span>
-      <button type="button" onClick={onEdit} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)]">
+      <button type="button" onClick={onEdit} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)] hover:text-[var(--text-primary)]">
         Edit
       </button>
     </div>

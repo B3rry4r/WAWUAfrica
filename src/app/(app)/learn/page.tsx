@@ -14,7 +14,7 @@ import { CourseRow } from "@/components/learn/CourseRow";
 import { LearnEntitlementRail } from "@/components/learn/LearnEntitlementRail";
 
 const eyebrow = "text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]";
-const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]";
+const seeAll = "text-[12.5px] font-semibold text-[var(--accent)] hover:text-text-primary";
 
 interface LearnData {
   entitlement: LearnEntitlement;
@@ -57,13 +57,19 @@ export default function LearnPage() {
       <div className="flex min-w-0 flex-1 flex-col gap-5 xl:gap-6">
         <section className={`flex-col gap-2.5 xl:hidden ${playbook ? "flex" : "hidden"}`}>
           <span className={`px-[2px] ${eyebrow}`}>Start here</span>
-          <Link href="/learn/playbook" className="no-underline block">
-            <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)]">
+          <Link href="/learn/playbook" className="group no-underline block">
+            <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] group-hover:border-strong">
               <div className="relative aspect-video w-full bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]">
                 <span className="absolute left-3 top-3 inline-flex h-[26px] items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.16)] bg-[rgba(11,10,13,0.62)] px-2.5 text-[11.5px] font-bold text-white backdrop-blur-[10px]">
                   <Icon name="BookOpen" size={12} color="var(--text-on-accent)" strokeWidth={2.2} />
                   Playbook
                 </span>
+                {/* The cover is art: a fill hover on the link would sit behind it
+                    and never be seen. Same veil pattern as ContentCard. */}
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-transparent transition-colors group-hover:bg-state-press"
+                />
               </div>
               <div className="flex flex-col gap-[9px] p-4">
                 <span className="text-[18px] font-semibold leading-[1.25] tracking-[-0.015em] text-[var(--text-primary)]">
@@ -76,7 +82,7 @@ export default function LearnPage() {
                   </span>
                   <span className="inline-flex h-[38px] items-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent)] px-4 text-[13.5px] font-semibold text-[var(--text-on-accent)]">
                     <Icon name="Download" size={16} color="var(--text-on-accent)" strokeWidth={2.2} />
-                    Free download
+                    Download
                   </span>
                 </div>
               </div>

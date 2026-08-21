@@ -399,7 +399,9 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
                     type="button"
                     onClick={() => setCategory(c.id)}
                     className={`rounded-full px-[14px] py-2 text-[13px] ${
-                      category === c.id ? "bg-accent font-semibold text-on-accent" : "bg-tag text-text-secondary"
+                      category === c.id
+                        ? "bg-accent font-semibold text-on-accent"
+                        : "bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
                     }`}
                   >
                     {c.name}
@@ -443,7 +445,9 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
                         type="button"
                         onClick={() => setPaid(label === "Paid")}
                         className={`h-[38px] flex-1 rounded-full border-none text-[13.5px] font-semibold ${
-                          active ? "bg-accent text-on-accent" : "bg-transparent text-text-secondary"
+                          active
+                            ? "bg-accent text-on-accent"
+                            : "bg-transparent text-text-secondary hover:bg-state-hover active:bg-state-press"
                         }`}
                       >
                         {label}
@@ -611,7 +615,7 @@ function PreviewStep({
       {isPdf ? (
         <div className="flex flex-col gap-[13px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
           <span className="text-[14px] font-semibold text-[var(--text-primary)]">Which pages people see before paying</span>
-          {/* Was a "pages shown free" slider stuck on 4: page-range previews
+          {/* Was a "pages shown at no charge" slider stuck on 4: page-range previews
               aren't part of the publish payload (CreateContentDto carries a
               previewAsset URL, nothing page-based), so the honest control is
               the preview file above — upload the extract you want to give away. */}
@@ -777,7 +781,7 @@ function PriceStep({
                   ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
                   : locked
                     ? "bg-transparent text-[var(--text-disabled)]"
-                    : "bg-transparent text-[var(--text-secondary)]"
+                    : "bg-transparent text-[var(--text-secondary)] hover:bg-state-hover active:bg-state-press"
               } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
             >
               {locked ? (

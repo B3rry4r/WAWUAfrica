@@ -118,9 +118,9 @@ function ReadingView({ playbook, onBack }: { playbook: Playbook; onBack: () => v
       <button
         type="button"
         onClick={onBack}
-        className="flex w-fit items-center gap-1.5 text-[12.5px] font-semibold text-[var(--accent)]"
+        className="flex w-fit items-center gap-1.5 text-[12.5px] font-semibold text-[var(--accent)] hover:text-text-primary"
       >
-        <Icon name="ChevronLeft" size={14} color="var(--accent)" />
+        <Icon name="ChevronLeft" size={14} />
         Back to overview
       </button>
       <div className="flex flex-col gap-5">

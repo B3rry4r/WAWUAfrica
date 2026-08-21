@@ -54,7 +54,7 @@ export function HomeFeed() {
                 type="button"
                 onClick={() => setTab(t.id)}
                 className={`relative pb-[12px] text-[14.5px] transition-colors xl:h-[54px] xl:pb-0 ${
-                  active ? "font-semibold text-text-primary" : "font-medium text-text-muted"
+                  active ? "font-semibold text-text-primary" : "font-medium text-text-muted hover:text-text-primary"
                 }`}
               >
                 {t.label}

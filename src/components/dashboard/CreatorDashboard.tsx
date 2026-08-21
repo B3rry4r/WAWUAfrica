@@ -256,9 +256,9 @@ export function CreatorDashboard() {
         </Button>
 
         {approved && urgentCount > 0 ? (
-          <Link href="/messages" className="no-underline">
+          <Link href="/messages" className="group no-underline">
             <div
-              className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]"
+              className="flex items-center gap-[12px] py-[15px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)] transition-colors group-hover:bg-surface-hover group-active:bg-surface-press"
             >
               <span className="grid place-items-center w-[38px] h-[38px] rounded-[12px] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
                 <Icon name="MessageCircle" size={17} color="var(--accent)" strokeWidth={2} />

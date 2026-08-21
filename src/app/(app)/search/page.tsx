@@ -103,12 +103,12 @@ export default function SearchPage() {
             aria-label="Search WAWU"
           />
           {query ? (
-            <button type="button" onClick={() => onQueryChange("")} aria-label="Clear" className="text-text-muted">
+            <button type="button" onClick={() => onQueryChange("")} aria-label="Clear" className="text-text-muted hover:text-text-primary">
               <Icon name="X" size={16} />
             </button>
           ) : null}
         </div>
-        <button type="button" onClick={() => router.push("/home")} className="shrink-0 text-[14.5px] font-semibold text-accent">
+        <button type="button" onClick={() => router.push("/home")} className="shrink-0 text-[14.5px] font-semibold text-accent hover:text-text-primary">
           Cancel
         </button>
       </div>
@@ -120,7 +120,7 @@ export default function SearchPage() {
             <div className="flex items-center">
               <span className="flex-1 text-[13px] font-bold uppercase tracking-[0.06em] text-text-muted">Recent</span>
               {recent.length ? (
-                <button type="button" onClick={() => setRecent([])} className="text-[12.5px] font-semibold text-accent">
+                <button type="button" onClick={() => setRecent([])} className="text-[12.5px] font-semibold text-accent hover:text-text-primary">
                   Clear
                 </button>
               ) : null}
@@ -135,7 +135,7 @@ export default function SearchPage() {
                       setQuery(r);
                       runSearch(r);
                     }}
-                    className="inline-flex h-[34px] items-center gap-1.5 rounded-button border border-hairline bg-tag px-3.5 text-[13.5px] font-medium text-text-secondary"
+                    className="inline-flex h-[34px] items-center gap-1.5 rounded-button border border-hairline bg-tag px-3.5 text-[13.5px] font-medium text-text-secondary hover:bg-surface-hover active:bg-surface-press"
                   >
                     <Icon name="Clock" size={13} color="var(--text-muted)" />
                     {r}
@@ -159,7 +159,7 @@ export default function SearchPage() {
                     setQuery(p);
                     runSearch(p);
                   }}
-                  className="inline-flex h-[34px] items-center gap-1.5 rounded-button border border-hairline bg-tag px-3.5 text-[13.5px] font-medium text-text-secondary"
+                  className="inline-flex h-[34px] items-center gap-1.5 rounded-button border border-hairline bg-tag px-3.5 text-[13.5px] font-medium text-text-secondary hover:bg-surface-hover active:bg-surface-press"
                 >
                   <Icon name="TrendingUp" size={13} color="var(--accent)" />
                   {p}
@@ -171,9 +171,12 @@ export default function SearchPage() {
           {/* Creators to know */}
           <section className="flex flex-col gap-3">
             <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-text-muted">Creators to know</span>
+            {/* The identity link is split in two (avatar + name) with Follow
+                outside both, so the hover belongs to the row and is keyed off
+                the links — Follow must not light a row it does not open. */}
             <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card">
               {suggestedCreators.map((c, i) => (
-                <div key={c.wawuId} className={`flex items-center gap-3 px-4 py-3.5 ${i ? "border-t border-hairline" : ""}`}>
+                <div key={c.wawuId} className={`flex items-center gap-3 px-4 py-3.5 has-[a:hover]:bg-state-hover ${i ? "border-t border-hairline" : ""}`}>
                   <Link href={`/profile/${c.wawuId}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
                     {c.fullName.charAt(0)}
                   </Link>
@@ -227,7 +230,7 @@ export default function SearchPage() {
                 type="button"
                 onClick={() => setTab(t)}
                 className={`inline-flex h-[34px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-button px-[14px] text-[13.5px] font-semibold transition-colors ${
-                  tab === t ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary"
+                  tab === t ? "bg-accent text-on-accent" : "border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
                 }`}
               >
                 {t === "all" ? "All" : t.charAt(0).toUpperCase() + t.slice(1)}
@@ -247,7 +250,7 @@ export default function SearchPage() {
           {(tab === "all" || tab === "creators") && results.creators.length ? (
             <section className="flex flex-col gap-2">
               {(tab === "all" ? results.creators.slice(0, 2) : results.creators).map((c) => (
-                <div key={c.wawuId} className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5">
+                <div key={c.wawuId} className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5 has-[a:hover]:bg-surface-hover">
                   <Link href={`/profile/${c.wawuId}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
                     {c.fullName.charAt(0)}
                   </Link>
@@ -291,7 +294,7 @@ export default function SearchPage() {
                   setQuery(w);
                   runSearch(w);
                 }}
-                className="inline-flex h-[34px] items-center rounded-button border border-hairline bg-tag px-3.5 text-[13.5px] font-medium text-text-secondary"
+                className="inline-flex h-[34px] items-center rounded-button border border-hairline bg-tag px-3.5 text-[13.5px] font-medium text-text-secondary hover:bg-surface-hover active:bg-surface-press"
               >
                 {w}
               </button>
@@ -314,7 +317,7 @@ function CommunityRow({ community }: { community: SearchCommunityResult }) {
   const [joining, setJoining] = useState(false);
 
   return (
-    <div className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5">
+    <div className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5 has-[a:hover]:bg-surface-hover">
       <Link href={`/communities/${community.id}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-tag text-text-secondary">
         <Icon name="Users" size={18} />
       </Link>
@@ -333,7 +336,7 @@ function CommunityRow({ community }: { community: SearchCommunityResult }) {
             .then(() => setJoined(true))
             .finally(() => setJoining(false));
         }}
-        className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold disabled:opacity-60"
+        className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold enabled:hover:bg-surface-hover enabled:active:bg-surface-press disabled:opacity-60"
       >
         {joined ? "Joined" : "Join"}
       </button>
@@ -363,7 +366,7 @@ function ContentResults({ items }: { items: ContentPiece[] }) {
     <>
       <div className="flex flex-col gap-2 xl:hidden">
         {items.map((c) => (
-          <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5">
+          <Link key={c.id} href={`/content/${c.id}`} className="flex items-center gap-3.5 rounded-card border border-hairline bg-card px-4 py-3.5 hover:border-strong hover:bg-surface-hover active:bg-surface-press">
             <span
               className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-card border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_10px,var(--surface-card)_10px_20px)] text-text-secondary"
             >

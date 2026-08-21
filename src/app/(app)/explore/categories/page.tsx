@@ -24,7 +24,7 @@ function CategoryTile({ id, name }: { id: ExploreCategoryId; name: string }) {
   return (
     <Link
       href={`/explore/creators?category=${id}`}
-      className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary no-underline"
+      className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
     >
       {name}
     </Link>

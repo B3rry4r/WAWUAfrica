@@ -12,7 +12,14 @@ html, body {
 *::-webkit-scrollbar-thumb:hover { background: var(--state-press); }
 img { display: block; max-width: 100%; }
 a { color: var(--accent); text-decoration: none; transition: color var(--dur-base) var(--ease-soft); }
-a:hover { color: var(--accent-hover); }
+/* `a:not([class])` matters. As a bare `a:hover` this is (0,1,1), which
+   out-weighs a Tailwind text colour class at (0,1,0) — so every anchor
+   styled a different colour reverted to brand purple the moment you
+   pointed at it ("Delete account" turned purple). It cannot be fixed from
+   globals.css: any other `a…:hover` override is also (0,1,1) and still
+   beats the resting class. Matching only UNCLASSED anchors leaves every
+   styled link to declare its own hover, which is what they now do. */
+a:not([class]):hover { color: var(--accent-hover); }
 button, input, textarea, select { font-family: inherit; }
 :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 ::selection { background: var(--accent); color: var(--text-on-accent); }

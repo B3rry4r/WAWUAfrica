@@ -112,7 +112,7 @@ export function SignInForm() {
                   setOtpError(e instanceof Error ? e.message : "Could not resend the code.");
                 }
               }}
-              className="self-center text-[13.5px] font-semibold text-accent"
+              className="self-center text-[13.5px] font-semibold text-accent hover:text-text-primary"
             >
               Resend code
             </button>
@@ -130,7 +130,7 @@ export function SignInForm() {
                 setOtpError(null);
                 setResendNotice(null);
               }}
-              className="self-center text-[13px] font-semibold text-text-secondary"
+              className="self-center text-[13px] font-semibold text-text-secondary hover:text-accent-hover"
             >
               Back to sign in
             </button>
@@ -177,13 +177,13 @@ export function SignInForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
-                className="flex items-center gap-[7px] text-[12.5px] font-semibold text-text-secondary"
+                className="flex items-center gap-[7px] text-[12.5px] font-semibold text-text-secondary hover:text-accent-hover"
               >
                 <Icon name={showPassword ? "EyeOff" : "Eye"} size={15} color="var(--text-muted)" strokeWidth={2.2} />
                 {showPassword ? "Hide password" : "Show password"}
               </button>
             </div>
-            <Link href="/forgot-password" className="self-start text-[13.5px] font-semibold text-accent">
+            <Link href="/forgot-password" className="self-start text-[13.5px] font-semibold text-accent hover:text-text-primary">
               Forgot your password?
             </Link>
           </div>
@@ -196,7 +196,7 @@ export function SignInForm() {
           </Button>
           <div className="flex items-center justify-center gap-1.5 text-[13px]">
             <span className="text-text-muted">New here?</span>
-            <Link href="/sign-up" className="font-semibold text-accent">
+            <Link href="/sign-up" className="font-semibold text-accent hover:text-text-primary">
               Create an account
             </Link>
           </div>

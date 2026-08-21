@@ -27,7 +27,7 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
         <ScreenHeader
           title="Creators"
           right={
-            <Link href="/search" aria-label="Search" className="grid place-items-center">
+            <Link href="/search" aria-label="Search" className="grid place-items-center rounded-full hover:bg-state-hover active:bg-state-press">
               <Icon name="Search" size={19} color="var(--text-secondary)" />
             </Link>
           }
@@ -42,7 +42,7 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
                 className={`inline-flex h-8 flex-shrink-0 items-center whitespace-nowrap rounded-[var(--radius-chip)] border px-[14px] text-[13px] no-underline ${
                   on
                     ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
-                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                 }`}
               >
                 {id ? categoryName(id) : "All"}
@@ -93,8 +93,10 @@ function CreatorRow({ wawuId, name, field, pieceCount, verification, following }
   return (
     // The row navigates via a stretched overlay link rather than wrapping its
     // contents: FollowButton must stay outside the link, or tapping Follow
-    // also navigates to the profile.
-    <div className="relative flex min-h-[86px] items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[0_14px]">
+    // also navigates to the profile. That overlay paints above the avatar and
+    // the text, so it cannot carry a fill of its own — the row carries the
+    // hover, keyed off the link so Follow does not light a row it never opens.
+    <div className="relative flex min-h-[86px] items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[0_14px] has-[a:hover]:border-strong has-[a:hover]:bg-surface-hover">
       <Link
         href={`/profile/${wawuId}`}
         aria-label={`${name}, ${field}`}

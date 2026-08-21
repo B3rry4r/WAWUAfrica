@@ -114,7 +114,7 @@ export function ContentLibrary() {
                   className={`inline-flex h-[32px] shrink-0 cursor-pointer items-center rounded-full px-[14px] font-[var(--font-sans)] text-[13px] ${
                     active
                       ? "border-none bg-accent font-semibold text-on-accent"
-                      : "border border-hairline bg-tag font-medium text-text-secondary"
+                      : "border border-hairline bg-tag font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press"
                   }`}
                 >
                   {filterLabels[f]} {f === "all" ? count : `· ${count}`}

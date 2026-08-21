@@ -34,7 +34,7 @@ export function CategoryFilterAside({ activeCategory }: { activeCategory?: Explo
       ))}
       <Link
         href="/explore/categories"
-        className="mt-2 px-[14px] py-[6px] text-[12.5px] font-semibold text-[var(--accent)] no-underline"
+        className="mt-2 px-[14px] py-[6px] text-[12.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
       >
         All {EXPLORE_CATEGORIES.length} categories
       </Link>

@@ -345,8 +345,8 @@ function Chips({
           onClick={() => onSelect(o.key)}
           className={`rounded-[var(--radius-chip)] border px-[14px] py-2 text-[13px] ${
             selected === o.key
-              ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
-              : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+              ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
+              : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
           }`}
         >
           {o.label}

@@ -37,7 +37,7 @@ export function ForgotPasswordForm() {
         <Link
           href="/sign-in"
           aria-label="Back"
-          className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag"
+          className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press"
         >
           <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
         </Link>

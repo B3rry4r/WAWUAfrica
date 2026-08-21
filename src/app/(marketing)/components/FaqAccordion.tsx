@@ -18,7 +18,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
           <button
             type="button"
             onClick={() => setOpen(open === i ? -1 : i)}
-            className="flex w-full items-center gap-3.5 px-[18px] py-[17px] text-left"
+            className="flex w-full items-center gap-3.5 px-[18px] py-[17px] text-left hover:bg-state-hover active:bg-state-press"
           >
             <span className="flex-1 text-[14.5px] font-semibold leading-normal text-text-primary">{item.q}</span>
             <Icon name={open === i ? "Minus" : "Plus"} size={17} color="var(--text-muted)" strokeWidth={2.2} />

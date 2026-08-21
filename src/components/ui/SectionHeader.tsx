@@ -13,7 +13,11 @@ export function SectionHeader({ caption, title, action, onAction }: SectionHeade
         <h2 className="text-[20px] font-semibold leading-snug tracking-[-0.015em] text-text-primary">{title}</h2>
       </div>
       {action ? (
-        <button type="button" onClick={onAction} className="shrink-0 text-[13.5px] font-semibold text-accent">
+        <button
+          type="button"
+          onClick={onAction}
+          className="shrink-0 text-[13.5px] font-semibold text-accent hover:text-text-primary"
+        >
           {action}
         </button>
       ) : null}

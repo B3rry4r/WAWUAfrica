@@ -310,7 +310,9 @@ export function CreatorOnboarding() {
                       setTier(label === "Pro" ? "pro" : "basic");
                     }}
                     className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] text-[13.5px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
-                      active ? "bg-[var(--accent)] text-[var(--text-on-accent)]" : "bg-transparent text-[var(--text-secondary)]"
+                      active
+                        ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+                        : "bg-transparent text-[var(--text-secondary)] hover:bg-state-hover active:bg-state-press"
                     }`}
                   >
                     {label}

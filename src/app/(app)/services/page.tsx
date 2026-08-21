@@ -146,7 +146,7 @@ export default function ServicesPage() {
           <span className={eyebrow}>Open now</span>
           <div className="flex flex-col gap-[10px]">
             {live.map((s) => (
-              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline">
+              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:bg-surface-hover active:bg-surface-press">
                 <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
                   <Icon name={s.icon as IconName} size={20} color="var(--accent)" />
                 </span>
@@ -172,7 +172,7 @@ export default function ServicesPage() {
           </div>
           <div className="flex flex-col gap-[10px]">
             {coming.map((s) => (
-              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] opacity-[0.82] no-underline">
+              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] opacity-[0.82] no-underline hover:bg-surface-hover active:bg-surface-press">
                 <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
                   <Icon name={s.icon as IconName} size={20} color="var(--text-muted)" />
                 </span>
@@ -269,7 +269,7 @@ export default function ServicesPage() {
                   <span className="pt-[4px] text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
                     Rejected applications are refunded in full.
                   </span>
-                  <Link href={`/services/applications/${featured.id}`} className="text-[12.5px] font-semibold text-[var(--accent)] no-underline">
+                  <Link href={`/services/applications/${featured.id}`} className="text-[12.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary">
                     View full tracking →
                   </Link>
                 </>

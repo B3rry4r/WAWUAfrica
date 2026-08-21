@@ -218,3 +218,39 @@ this file is the list. Updated as observations come in.
 - [ ] Blocked on you: Flutterwave Bills IP whitelisting; prices for the simple
       legal services; WAWUGo / music-licensing partner APIs.
 - [ ] CLAUDE.md still documents the old locked nav (slot 5 = Profile).
+
+## "The buttons" — the actual cause, finally measured
+The dissolving-hover bug WAS fixed (0 controls left using a container fill or
+accent tint). I had been re-fixing that. The live problem was the opposite:
+- [x] **103 of 114 `<button>` elements had NO hover state at all**, and there
+      was **no `cursor: pointer` on `<button>` anywhere in the app** — Tailwind
+      preflight does not set one and nothing here did. So on a hundred-odd
+      controls the cursor stayed an arrow AND nothing changed colour. Pointing
+      at them did literally nothing.
+- [x] **88 of 106 `<Link>` elements had no hover either** — nav items, content
+      cards, creator cards, list rows. Anchors are a bigger share of this app's
+      clickable surface than buttons.
+- [x] **Destructive links turned purple on hover.** tokens.css has a global
+      `a:hover { color: var(--accent-hover) }`, and an element selector
+      out-weighs a Tailwind class (0,1,1 vs 0,1,0). "Delete account" went
+      brand-purple. Scoped so a classed anchor owns its own hover.
+- [x] Global baseline added in globals.css: pointer cursor on anything
+      pressable, `not-allowed` on disabled, colour transitions for buttons and
+      anchors, `prefers-reduced-motion` respected. The hover COLOUR is
+      deliberately per-control, not global — a blanket rule would fight every
+      selected state and every control over a cover image.
+
+## Other real bugs found on the way
+- [x] **Uploads were 100% broken.** See the storage commit. Every upload in the
+      product: KYC, content, CAC, NEPC.
+- [x] **The MIME allowlist was advisory only.** The presigner silently drops
+      `ContentType` — neither signed nor hoisted — so a caller could presign as
+      image/jpeg, pass the allowlist, and PUT text/html. Exactly the stored-XSS
+      the allowlist's own comment says it exists to prevent. Now the server
+      names the object from the type it validated and read URLs force the type
+      and disposition on the way out.
+- [x] **Invalid HTML on two apply screens**: `<Link>` wrapping a `<Button>` is
+      a `<button>` inside an `<a>`. /services/cac and /services/nepc.
+- [x] **My earlier "free" sweep was line-based and wrong.** It missed every
+      instance where the word sat on a different line from its tag — including
+      a literal "Start now · Free" button. A JSX-aware sweep found 16 more.

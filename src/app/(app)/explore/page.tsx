@@ -10,7 +10,7 @@ import { CategoryFilterAside } from "./_components/CategoryFilterAside";
 import { CreatorGridCard } from "./_components/CreatorGridCard";
 
 const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]" as const;
-const seeAll = "text-[12.5px] font-semibold text-[var(--accent)]" as const;
+const seeAll = "text-[12.5px] font-semibold text-[var(--accent)] hover:text-text-primary" as const;
 
 export default async function ExplorePage() {
   const [categories, learnCourses, learnGuides, creators] = await Promise.all([
@@ -109,7 +109,7 @@ export default async function ExplorePage() {
 }
 
 const tileLink =
-  "flex h-[72px] items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[14px] no-underline text-inherit" as const;
+  "flex h-[72px] items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[14px] no-underline text-inherit hover:border-strong hover:bg-surface-hover active:bg-surface-press" as const;
 const tileTitle = "whitespace-nowrap text-[14.5px] font-semibold text-[var(--text-primary)]" as const;
 const tileSub = "whitespace-nowrap text-[12px] text-[var(--text-muted)]" as const;
 
@@ -154,7 +154,7 @@ function ShopCard({ id }: { id: keyof typeof SHOPS }) {
   return (
     <Link
       href={`/marketplace/${id}`}
-      className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline xl:gap-[14px] xl:p-[22px]"
+      className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press xl:gap-[14px] xl:p-[22px]"
     >
       {/* The real mark, not a generic icon: these are separate products. */}
       <img src={shop.logo} alt={shop.name} className="h-[26px] w-auto self-start object-contain xl:h-[30px]" />

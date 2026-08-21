@@ -92,7 +92,7 @@ function CountryGuideDetail({ guide }: { guide: CountryGuide }) {
       <div className="flex flex-col gap-2.5 rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-4">
         <span className="text-[14px] font-semibold text-[var(--text-primary)]">{guide.crossSell.heading}</span>
         <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">{guide.crossSell.body}</span>
-        <Link href={guide.crossSell.href} className="self-start text-[13px] font-semibold text-[var(--accent)]">
+        <Link href={guide.crossSell.href} className="self-start text-[13px] font-semibold text-[var(--accent)] hover:text-text-primary">
           {guide.crossSell.label}
         </Link>
       </div>

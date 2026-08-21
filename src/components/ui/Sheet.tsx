@@ -40,6 +40,9 @@ export function Sheet({ open = true, onClose, title, caption, children, desktop 
       role="dialog"
       aria-modal="true"
     >
+      {/* Backdrop. Deliberately has no hover: it is the page dimmed out, not a
+          control, and lighting up the whole screen under the sheet would read
+          as a bug. The close button in the header carries the affordance. */}
       <button
         type="button"
         aria-label="Close"
@@ -67,7 +70,7 @@ export function Sheet({ open = true, onClose, title, caption, children, desktop 
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-tag text-text-secondary transition-colors hover:text-text-primary"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-tag text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary active:bg-surface-press"
             >
               <Icon name="X" size={17} />
             </button>

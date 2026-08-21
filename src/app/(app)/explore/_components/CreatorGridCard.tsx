@@ -17,7 +17,10 @@ import { FollowButton } from "@/components/shared/FollowButton";
  */
 export function CreatorGridCard({ creator }: { creator: CreatorDiscovery }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-5">
+    // The hover belongs to the whole card, but it is driven by the identity
+    // link only: `has-[a:hover]` keeps FollowButton (a <button>, deliberately
+    // outside the link) from lighting the card it does not navigate.
+    <div className="flex flex-col items-start gap-3 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-5 has-[a:hover]:border-strong has-[a:hover]:bg-surface-hover">
       <Link
         href={`/profile/${creator.wawuId}`}
         className="flex w-full flex-col items-start gap-3 no-underline"

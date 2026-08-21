@@ -13,7 +13,7 @@ export function ScreenHeader({ title, right }: { title: string; right?: ReactNod
         type="button"
         onClick={() => router.back()}
         aria-label="Back"
-        className="grid h-[34px] w-[34px] shrink-0 cursor-pointer place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)]"
+        className="grid h-[34px] w-[34px] shrink-0 cursor-pointer place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
       </button>

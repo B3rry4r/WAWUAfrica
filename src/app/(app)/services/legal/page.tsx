@@ -148,7 +148,7 @@ export default function LegalPage() {
               key={r.id}
               type="button"
               onClick={() => setActive(r)}
-              className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] text-left"
+              className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] text-left hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
             >
               <span className="flex flex-col">
                 <span className="text-[14px] font-semibold text-[var(--text-primary)]">{r.serviceName}</span>
@@ -172,8 +172,8 @@ export default function LegalPage() {
                 onClick={() => setCategory(c)}
                 className={`inline-flex h-8 flex-shrink-0 items-center whitespace-nowrap rounded-[var(--radius-chip)] border px-[14px] text-[13px] ${
                   category === c
-                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)]"
-                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
+                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
                 }`}
               >
                 {c}
@@ -332,7 +332,7 @@ function RequestFlow({
       {toast ? (
         <Toast kind="success" title={toast.title} body={toast.body} onDismiss={() => setToast(null)} />
       ) : null}
-      <button type="button" onClick={onBack} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)]">
+      <button type="button" onClick={onBack} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)] hover:text-[var(--accent-hover)]">
         <Icon name="ChevronLeft" size={16} color="var(--text-secondary)" /> All legal services
       </button>
 
@@ -364,6 +364,8 @@ function RequestFlow({
                 disabled={busy}
                 onClick={() => setMedium(chosen ? null : o.medium)}
                 className={`flex items-center justify-between rounded-[var(--radius-card)] border p-[14px] text-left ${
+                  busy ? "" : "hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
+                } ${
                   chosen
                     ? "border-[var(--border-selected)] bg-[var(--surface-elevated)]"
                     : "border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
@@ -512,7 +514,7 @@ function IntakeStep({
 
   return (
     <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
-      <button type="button" onClick={onCancel} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)]">
+      <button type="button" onClick={onCancel} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)] hover:text-[var(--accent-hover)]">
         <Icon name="ChevronLeft" size={16} color="var(--text-secondary)" /> Back
       </button>
 
@@ -616,8 +618,8 @@ function AvailabilityCalendar({
               onClick={() => setDay(d.date)}
               className={`flex shrink-0 flex-col items-center rounded-[12px] border px-[13px] py-[8px] ${
                 on
-                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)]"
-                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
+                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
+                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
               }`}
             >
               <span className="text-[11px] uppercase tracking-[0.06em]">
@@ -645,9 +647,9 @@ function AvailabilityCalendar({
               onClick={() => onSelect(sl.startsAt)}
               className={`rounded-[10px] border py-[9px] text-[12.5px] font-semibold ${
                 on
-                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)]"
+                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
                   : sl.available
-                    ? "border-[var(--border-hairline)] bg-[var(--surface-elevated)] text-[var(--text-primary)]"
+                    ? "border-[var(--border-hairline)] bg-[var(--surface-elevated)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
                     : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-disabled)] line-through"
               }`}
             >

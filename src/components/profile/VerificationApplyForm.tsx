@@ -140,7 +140,7 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
                 type="button"
                 aria-label={`Remove ${f.name}`}
                 onClick={() => setUploaded((u) => u.filter((x) => x !== f))}
-                className="cursor-pointer border-none bg-transparent p-[2px]"
+                className="cursor-pointer border-none bg-transparent p-[2px] hover:bg-state-hover active:bg-state-press"
               >
                 <Icon name="X" size={15} color="var(--text-muted)" strokeWidth={2} />
               </button>

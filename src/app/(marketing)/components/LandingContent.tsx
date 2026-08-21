@@ -955,7 +955,7 @@ export async function LandingContent() {
                 Ready to Build Something Real?
               </h2>
               <p className="m-0 mt-4 text-[15px] leading-relaxed text-text-secondary">
-                Join a growing community of Professionals, Entrepreneurs, Artisans, Creators and start earning more with lower fees, better tools, instant payouts, and free training all on WAWUAfrica.
+                Join a growing community of Professionals, Entrepreneurs, Artisans, Creators and start earning more with lower fees, better tools, instant payouts, and training included all on WAWUAfrica.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-x-7 gap-y-2.5">
                 {["85-90% revenue share, best in Africa", "More features + Training + Financial Inclusion + Government partnerships", "Instant payouts"].map((b) => (
@@ -988,7 +988,7 @@ export async function LandingContent() {
             </div>
             <div className="mt-12 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
               {[
-                { handle: "@adaeze.biz", quote: "I was answering the same business questions free on WhatsApp for years. Now the answers are a course and they pay for my rent.", name: "Adaeze Okonkwo", meta: "Business Strategist, Enugu" },
+                { handle: "@adaeze.biz", quote: "I was answering the same business questions for nothing on WhatsApp for years. Now the answers are a course and they pay for my rent.", name: "Adaeze Okonkwo", meta: "Business Strategist, Enugu" },
                 { handle: "@ifeanyi.stitches", quote: "The paid DM changed everything. People are serious when they pay ₦300 to ask, and I reply the same day.", name: "Ifeanyi Nwosu", meta: "Fashion Designer, Aba" },
                 { handle: "@zainab.agro", quote: "I got my CAC certificate and sold my first training pack in the same week, on the same app. That is the difference.", name: "Zainab Bello", meta: "Agribusiness Trainer, Kano" },
               ].map((t) => (
@@ -1104,7 +1104,7 @@ export async function LandingContent() {
             <div key={col.label} className="flex flex-col gap-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">{col.label}</span>
               {col.links.map(([label, href]) => (
-                <Link key={label} href={href} className="text-[13.5px] text-text-secondary">
+                <Link key={label} href={href} className="text-[13.5px] text-text-secondary hover:text-text-primary">
                   {label}
                 </Link>
               ))}

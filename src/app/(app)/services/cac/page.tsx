@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { getCacTimeline, getService } from "@/lib/api/services";
 import type { PartnerService, ServiceApplicationTimeline } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
@@ -110,11 +109,9 @@ export default function CacServicePage() {
         </div>
       </section>
 
-      <Link href="/services/cac/apply" className="block no-underline">
-        <Button full size="lg">
-          Apply now
-        </Button>
-      </Link>
+      <Button full size="lg" href="/services/cac/apply">
+        Apply now
+      </Button>
     </div>
   );
 }

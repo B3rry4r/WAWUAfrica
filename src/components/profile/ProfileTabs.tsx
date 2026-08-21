@@ -43,7 +43,12 @@ export function ProfileTabs({
             href={`/profile/${wawuId}?tab=${tab.id}`}
             className={[
               "relative whitespace-nowrap pb-3 text-[14px] no-underline",
-              on ? "font-semibold text-[var(--text-primary)]" : "font-medium text-[var(--text-muted)]",
+              // Unselected branch only: the active tab already sits at
+              // text-primary and owns the accent underline, so it stays put
+              // under the pointer rather than reacting.
+              on
+                ? "font-semibold text-[var(--text-primary)]"
+                : "font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]",
             ].join(" ")}
           >
             {tab.label}
