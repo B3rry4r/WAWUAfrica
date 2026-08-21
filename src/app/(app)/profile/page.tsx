@@ -17,6 +17,7 @@ import { TierBadge } from "@/components/ui/TierBadge";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { ListRow } from "@/components/ui/ListRow";
 import { Icon } from "@/components/ui/Icon";
+import { KYC_STATUS_LABEL } from "@/components/dashboard/VerificationAsk";
 import { creatorGates } from "@/lib/auth/gates";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -121,7 +122,20 @@ export default function OwnProfilePage() {
             <ListRow title="My content" subtitle={`${profile.stats.published} published · ${slots.published} of ${slots.total} slots`} icon="Layers" href="/create/library" />
             <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
             <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
-            <ListRow title="Verification" icon="ShieldCheck" href="/profile/verification" />
+            {/* Two different systems, and this screen used to list only the
+                second one under the bare title "Verification" — so a creator
+                who had just submitted KYC came here, tapped it, and landed on
+                the public badge ladder, which knows nothing about their
+                submission. Identity/KYC (the earning gate, /kyc) is now its
+                own row and carries its live status. */}
+            <ListRow
+              title="Identity verification"
+              subtitle="ID and payout account, unlocks getting paid"
+              icon="IdCard"
+              meta={KYC_STATUS_LABEL[gates.kycStatus]}
+              href="/kyc"
+            />
+            <ListRow title="Verification badge" subtitle="Public trust ladder" icon="ShieldCheck" href="/profile/verification" />
             <ListRow
               title="My purchases"
               subtitle={purchasesError ? "Could not load" : undefined}

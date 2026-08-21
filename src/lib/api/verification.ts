@@ -46,16 +46,28 @@ const SUBMISSION_STATUS_MAP: Record<HubVerificationSubmission["status"], Verific
 /**
  * Static per-tier "why this level" copy. The real ladder endpoint returns
  * only {tier, achieved, currentTier, submission} — no descriptive text — so
- * this mirrors the design copy from the mock ladder (MOCK_VERIFICATION_LADDER)
- * to keep the UI's wording identical whether the ladder came from a real or
- * mock response.
+ * this supplies the wording for every rung.
+ *
+ * COPY RULE: every rung describes a BADGE APPLICATION made on this screen.
+ * None of it may describe what creator KYC collects.
+ *
+ * `verified_user` used to read "Government ID submitted and approved by
+ * hand." — an exact description of the KYC identity check (BVN/NIN + ID
+ * document + payout bank, POST /api/hub/kyc). Creators who had just finished
+ * KYC read that rung as a promise that their submission counted towards it,
+ * came here expecting to see it move, and saw an unchanged ladder. The two
+ * systems are independent by product rule (CLAUDE.md) and the copy now says
+ * so out loud on the rung that caused the confusion.
  */
 const TIER_COPY: Record<VerificationLevel, string> = {
-  basic: "Phone and email confirmed.",
-  verified_user: "Government ID submitted and approved by hand.",
-  verified_business: "Business documents, plus a website or active socials.",
-  certified_professional: "A professional qualification or a practising licence.",
-  trusted_partner: "Applied and approved as a WAWU partner.",
+  basic: "Phone and email confirmed. Every account starts here.",
+  verified_user:
+    "Apply with photo ID so buyers can see a real, named person is behind this account. Not the same as the KYC identity check that unlocks getting paid.",
+  verified_business:
+    "Apply with your business registration, plus a website or active socials in the same trading name.",
+  certified_professional:
+    "Apply with a current professional qualification or practising licence, confirmed by the body that issued it.",
+  trusted_partner: "Awarded by the WAWU partnerships team under a signed partnership agreement.",
 };
 
 /** Mirrors VERIFICATION_TIER_VALUES (verification-submission's DTO-side copy of the frozen Prisma enum). */
@@ -102,7 +114,15 @@ function fromHubLadder(entries: HubVerificationLadderEntry[]): VerificationLevel
         : rank === currentRank + 1
           ? "next"
           : "locked";
-    return { tier: e.tier, status, copy: TIER_COPY[e.tier] };
+    return {
+      tier: e.tier,
+      status,
+      copy: TIER_COPY[e.tier],
+      // The endpoint already returns the caller's own submission per rung —
+      // it was being dropped here, so a rung with an application in review
+      // rendered identically to one never applied for ("Start", no state).
+      submission: e.submission ? fromHubSubmission(e.submission) : undefined,
+    };
   });
 }
 

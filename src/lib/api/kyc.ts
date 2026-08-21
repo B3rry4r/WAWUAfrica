@@ -56,6 +56,8 @@ function fromHub(hub: HubKycSubmission | null): KycSubmission {
     payoutAccountNumber: hub.payoutAccountNumber,
     status: hub.status,
     rejectionReason: hub.rejectionReason ?? undefined,
+    submittedAt: hub.submittedAt,
+    reviewedAt: hub.reviewedAt ?? undefined,
   };
 }
 
@@ -96,7 +98,13 @@ export const kycApi: KycApi = {
       return fromHub(hub);
     } catch (e) {
       if (!isMockModeError(e)) throw e;
-      const updated: KycSubmission = { ...kycSubmission, ...submission, status: "pending" };
+      const updated: KycSubmission = {
+        ...kycSubmission,
+        ...submission,
+        status: "pending",
+        submittedAt: new Date().toISOString(),
+        reviewedAt: undefined,
+      };
       Object.assign(kycSubmission, updated);
       // SEAM: replace with POST /api/hub/kyc
       return mockRequest({ ...updated }, 800);

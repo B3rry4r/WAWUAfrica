@@ -18,6 +18,15 @@ export interface KycSubmission {
   payoutAccountNumber: string;
   status: KycStatus;
   rejectionReason?: string;
+  /**
+   * ISO timestamps from the KycSubmission row. Undefined only for the
+   * synthesised "not_started" record (no row exists yet). Without these the
+   * creator had no way to see WHEN they submitted, so a submission that had
+   * been sitting in review for a week looked identical to one sent a minute
+   * ago — and identical to never having submitted at all.
+   */
+  submittedAt?: string;
+  reviewedAt?: string;
 }
 
 export interface KycRequirement {

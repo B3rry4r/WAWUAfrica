@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { VerificationLevelEntry, VerificationSubmission } from "@/types/verification";
 import { getVerificationLadder, getVerificationSubmissions } from "@/lib/api/verification";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { KycStatusPanel } from "@/components/profile/KycStatusPanel";
 import { VerificationLadderList } from "@/components/profile/VerificationLadderList";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { VERIFY_TIER_LABELS } from "@/types/verification";
@@ -67,14 +68,26 @@ export default function VerificationPage() {
         </span>
       </div>
 
+      {/*
+        Two separate things live on this screen and they are never merged
+        (CLAUDE.md: "two independent gates"). KYC — the creator earning gate —
+        comes first, because it is the one people submit and then come here
+        looking for. Everything below the divider is the public badge ladder,
+        which has no effect on payouts at all.
+
+        Creator-only, and it renders nothing for a plain user.
+      */}
+      <KycStatusPanel />
+
       <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-4">
         <div className="flex items-center gap-[10px]">
           <Icon name="ShieldCheck" size={20} color="var(--accent)" strokeWidth={2} />
-          <span className="text-[15px] font-semibold text-text-primary">Manual verification</span>
+          <span className="text-[15px] font-semibold text-text-primary">Public trust badges</span>
         </div>
         <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">
-          Every badge on WAWU is reviewed by a real person. We never charge for verification, and we never send links
-          you have to click to “verify” yourself. If someone does, it isn’t us.
+          A badge is what buyers see next to your name. It is a separate application from the identity check above
+          and has no effect on getting paid. Every badge is reviewed by a real person. We never charge for one, and
+          we never send links you have to click to “verify” yourself. If someone does, it isn’t us.
         </p>
       </div>
 
@@ -87,8 +100,8 @@ export default function VerificationPage() {
             </span>
             <span className="text-[12.5px] text-text-secondary">
               {current.tier === "basic"
-                ? "Verify to show buyers you're real"
-                : "Reviewed and approved by hand"}
+                ? "Apply for a badge to show buyers who you are"
+                : "This badge was reviewed and awarded by hand"}
             </span>
           </div>
           <span className="text-[12px] font-semibold text-accent">Current</span>
@@ -97,11 +110,12 @@ export default function VerificationPage() {
 
       <section className="flex flex-col gap-[10px]">
         <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">
-          The ladder
+          The badge ladder
         </span>
         <VerificationLadderList ladder={ladder} nextTier={nextTier} />
         <p className="m-0 px-1 text-[11.5px] leading-[1.5] text-text-muted">
-          Verification is separate from your paid plan and your KYC status; the three are independent.
+          Your badge, your paid plan and your identity check are three independent things. Submitting your ID for
+          the identity check does not move you up this ladder, and a badge here does not release a payout.
         </p>
         <div className="flex gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-4">
           <Icon name="Info" size={17} color="var(--text-muted)" strokeWidth={2} className="mt-px shrink-0" />
@@ -113,8 +127,14 @@ export default function VerificationPage() {
 
       <section className="flex flex-col gap-[10px]">
         <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">
-          Recent
+          Recent badge applications
         </span>
+        {submissions.length === 0 && (
+          <p className="m-0 rounded-[var(--radius-card)] border border-hairline bg-card p-4 text-[12.5px] leading-[1.5] text-text-muted">
+            You haven&apos;t applied for a badge yet. Only badge applications are listed here — an identity check
+            submitted for payouts is tracked separately and never appears in this list.
+          </p>
+        )}
         <div className="flex flex-col gap-[10px]">
           {submissions.map((s, idx) => {
             const t = VERIFY_TIER_LABELS[s.tier];

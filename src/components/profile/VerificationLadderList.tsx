@@ -23,6 +23,10 @@ import { VerificationApplyForm } from "./VerificationApplyForm";
  * in the DOM; only one is visible at a given width (`xl:hidden` /
  * `hidden xl:inline-flex`), so behaviour genuinely differs per breakpoint
  * without a client-side viewport check.
+ *
+ * Badge applications ONLY. Nothing in this list reads, reflects or advances
+ * creator KYC — that is a separate system with its own block on the same
+ * screen (KycStatusPanel). Never wire one into the other.
  */
 export function VerificationLadderList({
   ladder,
@@ -37,25 +41,34 @@ export function VerificationLadderList({
     <div className="flex flex-col rounded-[var(--radius-card)] border border-hairline bg-card p-1">
       {ladder.map((level) => {
         const t = VERIFY_TIER_LABELS[level.tier];
-        const isNext = level.status === "next";
         const isYours = level.status === "yours";
         const expanded = expandedTier === level.tier;
+        // A rung you have already applied for must never keep offering an
+        // unqualified "Start" — that is what made a submitted application look
+        // like nothing had been recorded. The ladder endpoint returns the
+        // caller's own submission per rung; it is a BADGE application only,
+        // never anything to do with KYC.
+        const applied = level.submission;
+        const inReview = applied?.status === "in_review";
+        const rejected = applied?.status === "rejected";
+        const isNext = level.status === "next" && !inReview;
+        const isLocked = level.status === "locked" && !applied;
         return (
           <div key={level.tier} className="flex flex-col">
             <div
               className={[
                 "flex items-center gap-[13px] rounded-[var(--radius-input)] p-3",
-                isNext
+                isNext || inReview
                   ? "border border-[var(--border-selected)] bg-[var(--selected-tint)]"
                   : "border border-transparent bg-transparent",
-                level.status === "locked" ? "opacity-[0.55]" : "",
+                isLocked ? "opacity-[0.55]" : "",
               ].join(" ")}
             >
               {level.status === "done" ? (
                 <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-accent">
                   <Icon name="Check" size={15} color="var(--text-on-accent)" strokeWidth={2.6} />
                 </span>
-              ) : level.status === "locked" ? (
+              ) : isLocked ? (
                 <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-tag">
                   <Icon name="Lock" size={14} color="var(--text-muted)" strokeWidth={2} />
                 </span>
@@ -67,22 +80,37 @@ export function VerificationLadderList({
                   {level.tier === "basic" ? "Basic" : t}
                 </span>
                 <span className="text-[12px] leading-[1.4] text-text-secondary">{level.copy}</span>
+                {inReview && (
+                  <span className="text-[11.5px] leading-[1.4] text-text-muted">
+                    You applied{applied?.submittedAt ? ` on ${applied.submittedAt}` : ""}. Usually reviewed within
+                    2–5 working days.
+                  </span>
+                )}
+                {rejected && !isYours && (
+                  <span className="text-[11.5px] leading-[1.4] text-text-muted">
+                    {applied?.reason ?? "Your last application wasn't approved."}
+                  </span>
+                )}
               </div>
-              {isNext && (
+              {(isNext || (rejected && !isYours)) && (
                 <>
-                  <Link href={`/profile/verification/${nextTier}`} className="no-underline xl:hidden">
-                    <Button size="sm">Start</Button>
+                  <Link
+                    href={`/profile/verification/${rejected ? level.tier : nextTier}`}
+                    className="no-underline xl:hidden"
+                  >
+                    <Button size="sm">{rejected ? "Resubmit" : "Start"}</Button>
                   </Link>
                   <Button
                     size="sm"
                     className="hidden xl:inline-flex"
                     onClick={() => setExpandedTier(expanded ? null : level.tier)}
                   >
-                    {expanded ? "Close" : "Start"}
+                    {expanded ? "Close" : rejected ? "Resubmit" : "Start"}
                   </Button>
                 </>
               )}
-              {isYours && <StatusPill kind="info">You&apos;re here</StatusPill>}
+              {inReview && <StatusPill kind="warning">In review</StatusPill>}
+              {isYours && !inReview && <StatusPill kind="info">You&apos;re here</StatusPill>}
             </div>
             {expanded && (
               <div className="hidden rounded-[var(--radius-card)] border border-t-0 border-[var(--border-decor)] bg-[var(--surface-elevated)] p-5 xl:block">

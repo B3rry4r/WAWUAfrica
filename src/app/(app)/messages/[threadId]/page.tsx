@@ -6,7 +6,6 @@ import { getDmThread } from "@/lib/api/dm";
 import type { DmThreadDetail } from "@/types/dm";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -79,9 +78,15 @@ export default function DmThreadPage() {
         <div className="flex min-w-0 flex-1 items-center gap-[10px]">
           <Avatar initial={first} size={34} />
           <div className="flex min-w-0 flex-1 flex-col gap-px">
+            {/* No verification badge here. It used to render a hardcoded
+                `verified_user` tick beside every name in every thread, which
+                asserted a public trust level nobody had earned — DmThreadSummary
+                carries no verification field at all (see src/lib/api/dm.ts,
+                where even creatorName is a placeholder), so there was no data
+                behind it. Restore a badge only when the thread wire shape
+                actually carries the creator's ladder tier. */}
             <span className="flex items-center gap-[6px] text-[15px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
               {summary.creatorName}
-              <VerificationBadge tier="verified_user" size={14} />
             </span>
             <span className="text-[12px] text-[var(--text-muted)]">
               Paid message · ₦{summary.amount.toLocaleString("en-NG")}

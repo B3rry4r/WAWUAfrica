@@ -49,6 +49,11 @@ interface CategoryRow {
 // for a user account — it never says a user loses notification settings, so
 // this reads as the design's grouping shorthand rather than a product rule.
 const CREATING_ROWS: CategoryRow[] = [
+  // The earning gate (KycSubmission, /kyc). Distinct from the "Verification"
+  // row under Account below, which is the public badge ladder — same word,
+  // different system. Desktop listed only the ladder, so a creator had no
+  // route to their own KYC submission from settings at all.
+  { key: "identity", label: "Identity verification", icon: "IdCard", href: "/kyc" },
   { key: "paid-questions", label: "Paid questions", icon: "MessageCircleQuestion", href: "/messages/settings" },
   { key: "payouts", label: "Payouts", icon: "Banknote", href: "/earnings" },
   { key: "subscription", label: "Subscription", icon: "Crown", href: "/subscription" },
@@ -56,7 +61,7 @@ const CREATING_ROWS: CategoryRow[] = [
 
 const ACCOUNT_ROWS: CategoryRow[] = [
   { key: "notifications", label: "Notifications", icon: "Bell", href: "/settings/notifications", internal: "notifications" },
-  { key: "verification", label: "Verification", icon: "ShieldCheck", href: "/profile/verification" },
+  { key: "verification", label: "Verification badge", icon: "ShieldCheck", href: "/profile/verification" },
   { key: "privacy", label: "Privacy", icon: "Lock", href: "/privacy" },
   { key: "saved", label: "Saved", icon: "Bookmark", href: "/saved" },
   { key: "about", label: "About and partners", icon: "Info", href: "/about" },

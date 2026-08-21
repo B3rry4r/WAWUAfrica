@@ -69,6 +69,22 @@ export function verificationCopy(status: KycStatus): VerificationCopy | null {
   return status === "approved" ? null : COPY[status];
 }
 
+/**
+ * The short form, for a list row or a pill. All four states get their own
+ * word — collapsing "rejected" into "in review" told creators whose documents
+ * had been turned down that somebody was still looking at them.
+ *
+ * Deliberately says "Identity" nowhere and "badge" nowhere: callers pair it
+ * with a row title. Never use it to label the public verification ladder —
+ * that is a different system (VerificationSubmission, /profile/verification).
+ */
+export const KYC_STATUS_LABEL: Record<KycStatus, string> = {
+  not_started: "Not started",
+  pending: "In review",
+  approved: "Approved",
+  rejected: "Not approved",
+};
+
 const toneClass: Record<Tone, { panel: string; chip: string; iconColor: string }> = {
   accent: {
     panel: "bg-[var(--accent-tint-strong)] border-[var(--accent)]",

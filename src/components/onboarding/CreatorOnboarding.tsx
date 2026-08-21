@@ -14,6 +14,7 @@ import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TierBadge } from "@/components/ui/TierBadge";
+import { verificationCopy } from "@/components/dashboard/VerificationAsk";
 
 type Step = "value" | "tier" | "processing" | "success" | "failed";
 
@@ -107,6 +108,13 @@ export function CreatorOnboarding() {
   // Gates for the already-subscribed branch below. Never re-checks
   // `creator.kyc` inline — see src/lib/auth/gates.ts.
   const alreadyGates = creatorGates({ creator });
+  // One wording for all four KYC states, shared with every other surface that
+  // asks for verification (src/components/dashboard/VerificationAsk.tsx).
+  // This branch used to say "it is still outstanding" and offer "Verify my
+  // identity" to anyone who was not yet approved — including creators whose
+  // submission was already in review, and creators whose documents had been
+  // rejected, neither of whom is in an "outstanding" state.
+  const alreadyCopy = verificationCopy(alreadyGates.kycStatus);
 
   // Somebody who has already paid must never be shown the signup flow again.
   // Without this they walked the whole thing and were told, only in the network
@@ -121,16 +129,18 @@ export function CreatorOnboarding() {
         <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">
           Your {creator.tier === "pro" ? "Pro" : "Basic"} subscription is active, so uploading and the creator tools are
           already on.
-          {alreadyGates.canEarn
-            ? ""
-            : " Verification is the separate step that lets us pay you, and it is still outstanding."}
         </p>
+        {alreadyCopy ? (
+          <p className="m-0 max-w-[300px] text-[14px] leading-[1.5] text-[var(--text-secondary)]">
+            <span className="font-semibold text-[var(--text-primary)]">{alreadyCopy.headline}.</span> {alreadyCopy.body}
+          </p>
+        ) : null}
         <div className="flex w-full max-w-[320px] flex-col gap-[10px] pt-[6px]">
-          {alreadyGates.canEarn ? null : (
+          {alreadyCopy ? (
             <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/kyc")}>
-              Verify my identity
+              {alreadyCopy.cta}
             </Button>
-          )}
+          ) : null}
           <Button
             full
             size="lg"

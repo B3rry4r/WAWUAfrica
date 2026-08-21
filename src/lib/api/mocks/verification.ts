@@ -1,9 +1,6 @@
-import type { VerificationLevel } from "@/types/account";
 import type {
   OwnProfile,
   OwnProfileDraft,
-  VerificationLevelEntry,
-  VerificationSubmission,
 } from "@/types/verification";
 import { delay } from "../client";
 
@@ -30,27 +27,7 @@ export const MOCK_OWN_PROFILE: OwnProfile = {
   contentSlots: { published: 4, total: 7 },
 };
 
-export const MOCK_VERIFICATION_LADDER: VerificationLevelEntry[] = [
-  { tier: "basic", status: "done", copy: "Phone and email confirmed." },
-  { tier: "verified_user", status: "yours", copy: "Government ID submitted and approved by hand." },
-  { tier: "verified_business", status: "next", copy: "Business documents, plus a website or active socials." },
-  { tier: "certified_professional", status: "locked", copy: "A professional qualification or a practising licence." },
-  { tier: "trusted_partner", status: "locked", copy: "Applied and approved as a WAWU partner." },
-];
 
-/** Level submissions, newest first. Mirrors frame 6's three status cards. */
-export const MOCK_VERIFICATION_SUBMISSIONS: VerificationSubmission[] = [
-  { tier: "verified_business", status: "in_review", submittedAt: "12 August" },
-  { tier: "verified_user", status: "approved", submittedAt: "2 July", reviewedAt: "2 July" },
-  {
-    tier: "certified_professional",
-    status: "rejected",
-    submittedAt: "2 July",
-    reviewedAt: "4 August",
-    reason:
-      "The certificate you sent has expired. Send a current one, or a letter from the issuing body confirming you still hold it.",
-  },
-];
 
 // SEAM: replace with GET /api/hub/profile
 export async function getMockOwnProfile(): Promise<OwnProfile> {
@@ -70,26 +47,18 @@ export async function saveMockOwnProfile(draft: OwnProfileDraft): Promise<OwnPro
 }
 
 // SEAM: replace with GET /api/hub/verification/ladder
-export async function getMockLadder(): Promise<VerificationLevelEntry[]> {
-  await delay(300);
-  return MOCK_VERIFICATION_LADDER;
-}
 
 // SEAM: replace with GET /api/hub/verification/submissions
-export async function getMockVerificationSubmissions(): Promise<VerificationSubmission[]> {
-  await delay(300);
-  return MOCK_VERIFICATION_SUBMISSIONS;
-}
 
 // SEAM: replace with POST /api/hub/verification/submit
-export async function submitMockVerification(tier: VerificationLevel): Promise<VerificationSubmission> {
-  await delay(500);
-  const submission: VerificationSubmission = { tier, status: "in_review", submittedAt: "Today" };
-  MOCK_VERIFICATION_SUBMISSIONS.unshift(submission);
-  return submission;
-}
 
 // SEAM: replace with POST /api/hub/verification/submit
-export async function resubmitMockVerification(tier: VerificationLevel): Promise<VerificationSubmission> {
-  return submitMockVerification(tier);
-}
+
+/*
+ * The ladder/submission mocks that used to live here are gone. They had no
+ * callers — getVerificationLadder() has no mock fallback path — and they
+ * carried the OLD rung copy, including "Government ID submitted and approved
+ * by hand", which is a description of the KYC identity check rather than of
+ * the public trust badge. Leaving a dead fixture that says the wrong thing is
+ * how the wrong thing gets copied back in.
+ */

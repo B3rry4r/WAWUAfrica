@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { sendPaidDm } from "@/lib/api/dm";
 import { formatNaira } from "@/lib/format";
 import { Avatar, Button, Icon, Sheet, VerificationBadge } from "@/components/ui";
+import type { VerificationLevel } from "@/types/account";
 
 /**
  * "failure" means nothing was charged. "unconfirmed" is the opposite case:
@@ -20,6 +21,15 @@ export interface DmCreator {
   name: string;
   handle: string;
   dmPrice: number;
+  /**
+   * The creator's rung on the PUBLIC verification ladder (VerificationSubmission,
+   * /api/hub/verification/*) — never their KYC status, which is private to them
+   * and gates payouts, not trust. This sheet used to render a hardcoded
+   * `verified_user` tick beside every creator's name, so an unverified creator
+   * was shown to a fan, at the moment they were about to pay, as verified.
+   * Omitted defaults to "basic", which renders no badge at all.
+   */
+  verification?: VerificationLevel;
 }
 
 /** Compose → pay → processing → success/failure. One sheet, four states. */
@@ -79,7 +89,7 @@ export function DmPaySheet({
             <Avatar initial={creator.name.charAt(0)} size={36} />
             <span className="flex items-center gap-[6px] text-[15px] font-semibold text-[var(--text-primary)]">
               {creator.name}
-              <VerificationBadge tier="verified_user" size={15} />
+              <VerificationBadge tier={creator.verification ?? "basic"} size={15} />
             </span>
           </div>
           <textarea

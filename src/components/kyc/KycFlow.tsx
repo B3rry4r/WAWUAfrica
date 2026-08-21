@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { kycApi } from "@/lib/api/kyc";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import type { KycSubmission } from "@/types/kyc";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
@@ -51,6 +52,17 @@ function viewForStatus(status: "not_started" | "pending" | "approved" | "rejecte
 
 export function KycFlow() {
   const router = useRouter();
+  /**
+   * POST /api/hub/kyc also flips CreatorState.kycStatus to "pending"
+   * server-side, but nothing told the rest of the app that. Every other
+   * surface that shows verification state (creator dashboard, earnings,
+   * subscription, profile, settings) reads it through useCreatorState, which
+   * had a pre-submission snapshot folded into the session — so a creator
+   * submitted here, walked back out, and every one of those screens still
+   * said "You have not started verification yet". Refreshing the live state
+   * on success is what makes the submission visible everywhere else.
+   */
+  const { reload: reloadCreatorState } = useCreatorState();
   const [view, setView] = useState<View>("loading");
   const [step, setStep] = useState<Step>(1);
   const [docUploaded, setDocUploaded] = useState(false);
@@ -106,9 +118,15 @@ export function KycFlow() {
         payoutAccountNumber,
         status: "pending",
       })
-      .then(() => {
+      .then((saved) => {
         setSubmitting(false);
-        setView("pending");
+        // The stored row, not the optimistic one we posted: it carries the
+        // real submittedAt and the status the reviewer's queue actually
+        // assigned. Hardcoding "pending" here would have shown "in review"
+        // even if the server had come back with something else.
+        setSubmitted(saved);
+        setView(viewForStatus(saved.status));
+        reloadCreatorState();
       })
       .catch((err) => {
         setSubmitting(false);
@@ -215,7 +233,7 @@ export function KycFlow() {
             onConsent={() => setConsented((c) => !c)}
           />
         ) : null}
-        {view === "pending" ? <PendingState /> : null}
+        {view === "pending" ? <PendingState submission={submitted} /> : null}
         {view === "approved" ? <ApprovedState submission={submitted} /> : null}
         {view === "rejected" ? <RejectedState submission={submitted} onResubmit={() => setView("form")} /> : null}
       </div>
@@ -265,13 +283,11 @@ export function KycFlow() {
             Submit for verification
           </Button>
         ) : null}
-        {view === "pending" ? (
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/profile")}>
-            Go to your dashboard
-          </Button>
-        ) : null}
-        {view === "approved" ? (
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/profile")}>
+        {/* /profile is the profile screen, not the dashboard — the label and
+            the destination disagreed. The creator dashboard is where the
+            verification notice lives, so "your dashboard" now goes there. */}
+        {view === "pending" || view === "approved" ? (
+          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/creator")}>
             Go to your dashboard
           </Button>
         ) : null}
@@ -619,7 +635,59 @@ function ReviewStep({
   );
 }
 
-function PendingState() {
+/** "21 Aug 2026" — the date a submission was sent or reviewed. */
+function formatDay(iso?: string): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/**
+ * What was actually sent, on the screens that come AFTER sending it.
+ *
+ * Before this, a submitted KYC vanished: the pending screen described a review
+ * without naming a single thing under review, and there was nowhere else in
+ * the app to see it either. A creator could not tell whether the bank account
+ * they typed was the right one, nor whether the thing had been sitting there
+ * for a day or a fortnight. Identity numbers stay masked — this is a receipt,
+ * not a place to re-read a BVN.
+ */
+function SubmissionSummary({ submission }: { submission: KycSubmission | null }) {
+  if (!submission) return null;
+  const nigerian = submission.country.trim().toLowerCase() === "nigeria";
+  const idNumber = nigerian ? submission.bvn : submission.nationalIdEquivalent;
+  const rows: [string, string][] = [
+    ["Country", submission.country || "—"],
+    [nigerian ? "BVN" : "National ID", idNumber ? maskMiddle(idNumber) : "—"],
+    ["Document", docTypes.find((d) => d.value === submission.idDocumentType)?.label ?? "ID document"],
+    [
+      "Payout",
+      submission.payoutBankName
+        ? `${submission.payoutBankName} ••••${submission.payoutAccountNumber.slice(-4)}`
+        : "—",
+    ],
+  ];
+  const sent = formatDay(submission.submittedAt);
+  const reviewed = formatDay(submission.reviewedAt);
+  if (sent) rows.push(["Sent", sent]);
+  if (reviewed) rows.push(["Reviewed", reviewed]);
+  return (
+    <div className="flex w-full flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] overflow-hidden text-left">
+      <span className="px-[18px] pt-[15px] pb-[4px] text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
+        What you sent
+      </span>
+      {rows.map(([k, v]) => (
+        <div key={k} className="flex items-center gap-[12px] py-[13px] px-[18px] border-t border-t-[var(--border-hairline)] first-of-type:border-t-0">
+          <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{k}</span>
+          <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PendingState({ submission }: { submission: KycSubmission | null }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[30px] px-[12px] text-center">
       <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
@@ -627,6 +695,7 @@ function PendingState() {
       </span>
       <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">KYC submitted</h2>
       <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">Verification takes 1–3 days. We will notify you.</p>
+      <SubmissionSummary submission={submission} />
       <div className="flex flex-col gap-[14px] w-full p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
         <div className="flex items-center gap-[11px]">
           <Icon name="Check" size={17} strokeWidth={2.4} color="var(--success)" />
@@ -640,6 +709,15 @@ function PendingState() {
         </div>
         <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)] pt-[12px] border-t border-t-[var(--border-hairline)]">
           Start uploading now. Earnings from anything you sell are held and released once you are verified.
+        </span>
+        {/* Where to look afterwards. The old screen said "we will notify you"
+            and nothing else, so a creator who closed it had no idea the status
+            was readable anywhere — and the nearest thing they could find,
+            Profile → Verification, is the public badge ladder, a different
+            system entirely. */}
+        <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
+          Check back any time from Profile → Identity verification, or from the notice at the top of your creator
+          dashboard.
         </span>
       </div>
     </div>
@@ -658,6 +736,7 @@ function ApprovedState({ submission }: { submission: KycSubmission | null }) {
           ? `Earnings will land in your ${submission.payoutBankName} account ending ${submission.payoutAccountNumber.slice(-4)}.`
           : "Earnings will land in the bank account on your verified profile."}
       </p>
+      <SubmissionSummary submission={submission} />
       <div className="flex flex-col gap-[14px] w-full p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
         <div className="flex items-center gap-[11px]">
           <span className="flex-1 text-[14px] font-semibold">Uploading and selling</span>
@@ -695,6 +774,7 @@ function RejectedState({ submission, onResubmit }: { submission: KycSubmission |
           Fix one of the two and send it again, either a document in your bank&apos;s name, or a payout account in your ID&apos;s name.
         </span>
       </div>
+      <SubmissionSummary submission={submission} />
       <div className="flex flex-col gap-[14px] w-full p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
         <div className="flex items-center gap-[11px]">
           <span className="flex-1 text-[14px] font-semibold">Uploading and selling</span>

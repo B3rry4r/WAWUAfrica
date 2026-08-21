@@ -6,6 +6,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StatBlock } from "@/components/ui/StatBlock";
+import { StatusPill } from "@/components/ui/StatusPill";
+import { KYC_STATUS_LABEL } from "@/components/dashboard/VerificationAsk";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { useSession } from "@/lib/auth/session-provider";
 import { getEvgScore } from "@/lib/api/profile";
@@ -199,6 +201,21 @@ function CreatorRail({ creator }: { creator: CreatorState | null }) {
           <Skeleton variant="row" className="h-9" />
         ) : (
           <StatBlock value={formatNaira(earned)} label="Earned" align="start" size="md" />
+        )}
+        {/* The same figure means two different things depending on the KYC
+            gate — payable + held once verification clears, held only before
+            it does — and this card printed it under a bare "Earned" either
+            way. Naming the state (and the status behind it) is what stops a
+            held balance reading as money that has gone missing. */}
+        {earned === null ? null : gates.canEarn ? (
+          <StatusPill kind="success">Payable to your bank account</StatusPill>
+        ) : (
+          <div className="flex flex-col items-start gap-[7px]">
+            <StatusPill kind="warning">Held, not payable yet</StatusPill>
+            <Link href="/kyc" className="text-[12px] font-semibold text-accent no-underline">
+              Identity check · {KYC_STATUS_LABEL[gates.kycStatus]}
+            </Link>
+          </div>
         )}
         <div className="flex gap-[18px] border-t border-hairline pt-3">
           {/* GET /api/hub/content/mine has no units-sold/sales-count field

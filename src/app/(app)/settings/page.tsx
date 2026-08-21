@@ -9,6 +9,7 @@ import { ListRow } from "@/components/ui/ListRow";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { SettingsFooterActions } from "@/components/shared/SettingsFooterActions";
+import { KYC_STATUS_LABEL } from "@/components/dashboard/VerificationAsk";
 import { creatorGates } from "@/lib/auth/gates";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
@@ -78,9 +79,21 @@ export default function SettingsPage() {
               {
                 title: "Creator",
                 rows: [
+                  // The KYC gate had no entry anywhere in Settings. The only
+                  // row with "Verification" on it is the badge ladder above,
+                  // which is a separate system — so a creator looking for
+                  // their submitted ID and payout account found either
+                  // nothing or the wrong screen.
+                  {
+                    title: "Identity verification",
+                    subtitle: "ID and payout account, unlocks getting paid",
+                    icon: "IdCard",
+                    href: "/kyc",
+                    meta: KYC_STATUS_LABEL[gates.kycStatus],
+                  },
                   { title: "Subscription", subtitle: "Plan, billing and renewal", icon: "BadgeCheck", href: "/subscription" },
                   { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/messages/settings" },
-                  { title: "Earnings", subtitle: "Payouts and history", icon: "Wallet", href: "/earnings" },
+                  { title: "Earnings", subtitle: "Payouts and history", icon: "HandCoins", href: "/earnings" },
                 ],
               } satisfies Group,
             ]

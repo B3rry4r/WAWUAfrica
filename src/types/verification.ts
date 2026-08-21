@@ -16,6 +16,18 @@ export interface VerificationLevelEntry {
   tier: VerificationLevel;
   status: VerificationLadderStatus;
   copy: string;
+  /**
+   * The caller's own badge application for THIS rung, when one exists —
+   * GET /api/hub/verification/ladder returns it per entry. Present means
+   * "you have applied": the row must say so instead of offering an
+   * unqualified "Start", which is what made a pending application look like
+   * nothing had happened. Undefined means no application has been made.
+   *
+   * Badge applications only. This has nothing to do with creator KYC — that
+   * is a separate system with its own table and endpoint (src/lib/api/kyc.ts),
+   * surfaced through creatorGates().kycStatus.
+   */
+  submission?: VerificationSubmission;
 }
 
 /** Lifecycle of one level submission (frame 6). */

@@ -24,6 +24,10 @@ export function VerificationBadge({ tier, size = 16 }: VerificationBadgeProps) {
   return (
     <span
       className={`inline-grid shrink-0 place-items-center rounded-full ${colorClass[tier]} bg-[color-mix(in_srgb,currentColor_12%,transparent)]`}
+      // Runtime pixel geometry from a numeric prop — Tailwind's JIT cannot see
+      // `w-[${size}px]` as a class name, so this is the one legitimate use of
+      // an inline style. CLAUDE.md's rule is about tokens (colour, spacing,
+      // radius), all of which are still classes above.
       style={{ width: size, height: size }}
       title={tier.replaceAll("_", " ")}
       aria-label={`${tier.replaceAll("_", " ")} verified`}

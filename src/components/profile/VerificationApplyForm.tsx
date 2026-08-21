@@ -1,20 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { VerificationLevel } from "@/types/account";
-import { submitVerification, resubmitVerification } from "@/lib/api/verification";
+import {
+  getVerificationSubmissions,
+  submitVerification,
+  resubmitVerification,
+} from "@/lib/api/verification";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { FilePicker } from "@/components/ui/FilePicker";
 import type { UploadedFile } from "@/lib/api/uploads";
 
+/**
+ * What each BADGE application needs.
+ *
+ * `verified_user` used to ask for "a government-issued ID (Nigeria: BVN + NIN;
+ * elsewhere: the national-ID equivalent)" — word for word what the creator KYC
+ * check collects (src/types/kyc.ts, POST /api/hub/kyc). Two independent systems
+ * were describing themselves identically, so creators reasonably read one as the
+ * other. The badge asks for a photo ID whose name matches the account; it never
+ * asks for BVN/NIN digits or bank details, and it is not an earning gate.
+ */
 const REQUIREMENTS: Record<VerificationLevel, string[]> = {
   basic: ["A phone number and email on the account"],
   verified_user: [
-    "A government-issued ID (Nigeria: BVN + NIN; elsewhere: the national-ID equivalent)",
-    "A clear selfie to compare against the ID",
-    "Your phone number on the account",
+    "A photo ID showing your name and face — passport, driver's licence or national ID card",
+    "The name on that ID matching the name on your WAWU account",
+    "A clear photo of yourself to compare against the ID",
   ],
   verified_business: [
     "Business registration (CAC or equivalent)",
@@ -48,7 +62,30 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
   const [error, setError] = useState<string>();
 
   const requirements = REQUIREMENTS[tier];
-  const isResubmit = tier === "certified_professional";
+
+  // Whether this is a first application or a resubmission is a fact about the
+  // caller's own submissions, not about which rung they are on. This used to
+  // read `tier === "certified_professional"` — a hardcoded tier — so a rejected
+  // application on any other rung POSTed a fresh submission, and a first-ever
+  // application for certified_professional called resubmit and threw
+  // "No rejected certified_professional submission to resubmit". Ask instead.
+  // Falls back to "first application" if the lookup fails; that is the same
+  // behaviour as before for every rung but one, and the form stays usable.
+  const [isResubmit, setIsResubmit] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    getVerificationSubmissions()
+      .then((all) => {
+        if (cancelled) return;
+        setIsResubmit(all.some((s) => s.tier === tier && s.status === "rejected"));
+      })
+      .catch(() => {
+        if (!cancelled) setIsResubmit(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tier]);
 
   // Real uploads. This used to append the literal string "Document N.pdf"
   // with no file dialog and no upload, then submit `documents: []`, which the
@@ -85,10 +122,12 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
           <Icon name="Check" size={34} color="var(--success)" strokeWidth={2.6} />
         </span>
         <div className="flex flex-col gap-[6px]">
-          <span className="text-[20px] font-bold tracking-[-0.02em] text-text-primary">Application submitted</span>
+          <span className="text-[20px] font-bold tracking-[-0.02em] text-text-primary">
+            Badge application submitted
+          </span>
           <span className="text-[13.5px] leading-[1.5] text-text-secondary">
             We review every application by hand. This usually takes 2–5 working days. We’ll notify you here when
-            it’s done.
+            it’s done. Your identity check and your payouts are unaffected either way.
           </span>
         </div>
         <Button full onClick={finish} icon="ArrowRight">
@@ -103,11 +142,12 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
       <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-4">
         <div className="flex items-center gap-[10px]">
           <Icon name="ShieldCheck" size={20} color="var(--accent)" strokeWidth={2} />
-          <span className="text-[15px] font-semibold text-text-primary">Share who you are</span>
+          <span className="text-[15px] font-semibold text-text-primary">This is a badge application</span>
         </div>
         <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">
-          Our team reviews this by hand. Never send your BVN digits, passwords, or bank pins to anyone who asks for
-          them. WAWU only ever asks here.
+          A badge is public — it sits beside your name so buyers know who they are dealing with. It is not the
+          identity check that unlocks getting paid, and nothing here asks for your BVN, NIN, bank details or
+          passwords. Our team reviews every application by hand, and we never charge for one.
         </p>
       </div>
 
@@ -163,7 +203,7 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
       </section>
 
       <Button full disabled={uploaded.length === 0 || submitting} onClick={submit}>
-        {submitting ? "Submitting…" : "Submit application"}
+        {submitting ? "Submitting…" : isResubmit ? "Resubmit application" : "Submit application"}
       </Button>
       <p className="m-0 px-3 text-center text-[11.5px] leading-[1.5] text-text-muted">
         Usually reviewed within 2–5 working days.

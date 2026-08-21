@@ -254,3 +254,40 @@ accent tint). I had been re-fixing that. The live problem was the opposite:
 - [x] **My earlier "free" sweep was line-based and wrong.** It missed every
       instance where the word sat on a different line from its tag — including
       a literal "Start now · Free" button. A JSX-aware sweep found 16 more.
+
+## KYC submitted but nothing changed — the real causes
+- [x] **KycFlow never told the rest of the app.** The POST flips kycStatus to
+      `pending` server-side, but every other surface reads it through
+      `useCreatorState`, whose PRE-submission snapshot is persisted into the
+      session. So the dashboard, earnings, subscription and profile all kept
+      saying "You have not started verification yet" after a successful
+      submission. It now reloads creator state on success. THIS is why "no
+      other screen changed".
+- [x] **The submit handler discarded the server's answer** —
+      `.then(() => setView("pending"))` hardcoded the view, so it would have
+      shown "in review" whatever the server actually said.
+- [x] **The submission vanished.** Nothing anywhere showed what you had sent.
+      There is now a summary (country, masked ID, document type, payout bank
+      last 4, sent and reviewed dates) on the pending, approved and rejected
+      screens. `submittedAt`/`reviewedAt` were being dropped by the API mapper
+      even though the wire already returned them.
+- [x] **The Verification screen never read KYC at all** and its "Verified user"
+      rung said "Government ID submitted and approved by hand" — a description
+      of KYC, on the badge ladder. All five rungs rewritten as "Apply with…".
+- [x] **The ladder threw away data it already had.** `fromHubLadder` silently
+      dropped the per-rung `submission`, so a badge application IN REVIEW
+      rendered identically to one never applied for — and still offered
+      "Start". Now shows an In review pill and the date; rejected shows the
+      reason and offers Resubmit.
+- [x] **A hardcoded tier routed submissions to the wrong endpoint.**
+      `isResubmit = tier === "certified_professional"` meant a rejected
+      application on any other rung silently created a duplicate, and a
+      first-ever certified_professional application called resubmit, which
+      throws by construction.
+- [x] **Two DM surfaces fabricated a trust badge**, hardcoding `verified_user`
+      on every thread and pay sheet regardless of the creator.
+- [x] KYC had no entry point in Settings or on Profile at all. Added to both,
+      with live status, and the ladder rows relabelled "Verification badge" so
+      the two systems are not both just called "Verification".
+- [x] A `Wallet` icon labelled the Earnings row in Settings. There is no wallet
+      in this product, ever.
