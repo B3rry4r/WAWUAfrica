@@ -50,7 +50,7 @@ export default function NewContentPage() {
   // hold off on any gate decision until we actually know who is signed in.
   if (!hydrated) {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:max-w-none">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:max-w-none">
         <FlowHeader title="Upload" />
         <div className="flex flex-col gap-[12px] p-[16px]">
           <Skeleton height={80} radius="var(--radius-card)" />
@@ -65,7 +65,7 @@ export default function NewContentPage() {
   if (!gates.isCreator) {
     return (
       <>
-        <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
+        <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:hidden">
           <FlowHeader title="Upload" />
           <EmptyState
             icon="Sparkles"
@@ -99,7 +99,7 @@ export default function NewContentPage() {
   if (!gates.canUpload) {
     return (
       <>
-        <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
+        <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:hidden">
           <FlowHeader title="Upload" />
           <EmptyState
             icon="CreditCard"
@@ -127,7 +127,7 @@ export default function NewContentPage() {
   // Waiting on the resubmit item and/or the live library to load.
   if (resubmitItem === undefined || hasPublished === undefined) {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:max-w-none">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:max-w-none">
         <FlowHeader title="Upload" />
         <div className="flex flex-col gap-[12px] p-[16px]">
           <Skeleton height={80} radius="var(--radius-card)" />

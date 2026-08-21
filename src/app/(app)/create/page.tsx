@@ -21,7 +21,7 @@ export default function CreatePage() {
     return (
       <div className="flex flex-col min-h-[100%]">
         <FlowHeader title="Create" />
-        <div className="flex flex-col gap-[12px] p-[16px]">
+        <div className="flex flex-col gap-[12px] p-[16px] xl:mx-auto xl:w-full xl:max-w-[820px] xl:p-[28px]">
           <Skeleton height={80} radius="var(--radius-card)" />
           <Skeleton height={80} radius="var(--radius-card)" />
         </div>
@@ -70,7 +70,7 @@ export default function CreatePage() {
     return (
       <div className="flex flex-col min-h-[100%]">
         <FlowHeader title="Create" />
-        <div className="flex flex-col gap-[12px] p-[16px]">
+        <div className="flex flex-col gap-[12px] p-[16px] xl:mx-auto xl:w-full xl:max-w-[820px] xl:p-[28px]">
           <Skeleton height={80} radius="var(--radius-card)" />
           <Skeleton height={80} radius="var(--radius-card)" />
         </div>

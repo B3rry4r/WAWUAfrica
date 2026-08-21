@@ -34,7 +34,7 @@ const BASE_ITEMS: NavItem[] = [
   { href: "/communities", label: "Communities", icon: "Users" },
   { href: "/explore", label: "Explore", icon: "Compass" },
   { href: "/messages", label: "Messages", icon: "MessageCircle" },
-  { href: "/profile", label: "Profile", icon: "CircleUser" },
+  { href: "/settings", label: "Settings", icon: "Settings" },
 ];
 
 function navRowClass(active: boolean) {
@@ -112,7 +112,8 @@ export function Sidebar() {
       <img src="/wawu-logo-white.png" alt="WAWU" className="mx-[10px] mb-5 mt-[2px] h-6 w-auto object-contain" />
 
       {BASE_ITEMS.map((item) => {
-        const active = pathname === item.href;
+        const active =
+          item.href === "/home" ? pathname === item.href : pathname.startsWith(item.href);
         return (
           <Link key={item.href} href={item.href} className={navRowClass(active)}>
             <Icon

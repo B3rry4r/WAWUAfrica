@@ -153,7 +153,7 @@ export function CreatorOnboarding() {
 
   if (step === "success") {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
         <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center">
           <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
             <Icon name="Check" size={40} strokeWidth={2.6} color="var(--accent)" />
@@ -186,7 +186,7 @@ export function CreatorOnboarding() {
   }
 
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
       <FlowHeader title={title} onBack={() => (step === "value" ? router.back() : setStep("value"))} right={step === "tier" ? <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">Billed yearly</span> : undefined} />
 
       <div
@@ -356,7 +356,7 @@ export function CreatorOnboarding() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+    <div className="flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
       {children}
     </div>
   );

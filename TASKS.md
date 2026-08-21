@@ -34,14 +34,27 @@ this file is the list. Updated as observations come in.
 - [x] Profile added as a row in Settings; avatar in the mobile header links to
       the profile (desktop already had one).
 
+## Done this round (continued)
+- [x] Bottom nav and sidebar slot 5 swapped from Profile to Settings, on your
+      instruction. This overrides the "Navigation (locked)" rule in CLAUDE.md,
+      which should be updated to match. Profile is reached from the header
+      avatar and from a row inside Settings.
+- [x] Nav highlighting was exact-match, so opening anything inside a tab
+      unlit it. Prefix-aware now (Home stays exact so it does not swallow
+      every route).
+- [x] Nine more screens were pinned to the 430px mobile column or had no width
+      cap at all on desktop: KYC, subscription, paid messages, onboarding, the
+      publishing wizard, create/new, earnings, create, profile/edit.
+- [x] Telemedicine's two-column layout was splitting a single error message
+      across both columns with an empty placeholder beside it. The grid only
+      renders once there are plans.
+
 ## Open — needs your decision
-- [ ] Bottom nav: you want Settings in the bar and Profile inside it. CLAUDE.md
-      marks the 5-slot nav as LOCKED (Home · Communities · Explore/Create ·
-      Messages · Profile). Flagging rather than silently changing a locked
-      rule. Say go and I swap slot 5 to Settings.
 - [ ] "Jobs" and "Wallets" in the Access-to list: both cut by name in
       docs/01_SPEC.md (line 120; section 3 on Credits not being a wallet).
-      Held out pending your call.
+      Held out pending your call — say the word and both go in.
+- [ ] CLAUDE.md still documents the old locked nav (slot 5 = Profile). Worth
+      updating so the next person does not "fix" it back.
 
 ## Blocked on you (external)
 - [ ] Flutterwave Bills: "Please enable IP Whitelisting". Needs enabling on the

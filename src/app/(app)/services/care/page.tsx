@@ -136,15 +136,17 @@ export default function CarePage() {
       ))}
 
       {/*
-        Plans and the enrolment form were stacked, so on a wide screen the page
-        ran on for two screens of scrolling with everything in one narrow
-        column. Side by side on desktop, stacked on mobile.
+        Plans and the enrolment form were stacked, so on a wide screen this ran
+        for two screens of scrolling in one narrow column. Side by side on
+        desktop, stacked on mobile — and only once there are plans to show, so
+        an error is not split across two columns with an empty placeholder
+        beside it.
       */}
-      <div className="flex flex-col gap-[18px] xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-[22px]">
-      <div className="flex flex-col gap-[14px]">
       {!plans ? (
         <Skeleton variant="card" />
       ) : (
+      <div className="flex flex-col gap-[18px] xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-[22px]">
+        <div className="flex flex-col gap-[14px]">
         <div className="flex flex-col gap-[10px] xl:gap-[12px]">
           {plans.map((p) => {
             const on = selected?.planCode === p.planCode;
@@ -209,11 +211,9 @@ export default function CarePage() {
             );
           })}
         </div>
-      )}
+        </div>
 
-      </div>
-
-      {selected ? (
+        {selected ? (
         <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px] xl:sticky xl:top-[22px]">
           <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Who is this cover for?</span>
           <Input label="First name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
@@ -254,12 +254,13 @@ export default function CarePage() {
             Cover is registered against the phone number above with our care partner.
           </span>
         </div>
-      ) : (
-        <div className="hidden rounded-[var(--radius-card)] border border-dashed border-[var(--border-hairline)] p-[18px] text-[13px] leading-[1.5] text-[var(--text-muted)] xl:block">
-          Pick a plan to see what it covers and who it is for.
-        </div>
-      )}
+        ) : (
+          <div className="hidden rounded-[var(--radius-card)] border border-dashed border-[var(--border-hairline)] p-[18px] text-[13px] leading-[1.5] text-[var(--text-muted)] xl:block">
+            Pick a plan to see what it covers and who it is for.
+          </div>
+        )}
       </div>
+      )}
     </div>
   );
 }

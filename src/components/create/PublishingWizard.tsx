@@ -183,7 +183,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
 
   return (
     <>
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:hidden">
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:hidden">
       <FlowHeader title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepLabel}</span>} />
 
       <div className="flex-1 py-[18px] px-[16px] flex flex-col gap-[18px]">
@@ -760,7 +760,7 @@ function PriceStep({
 function Submitted({ type, title, price }: { type: ContentType; title: string; price: number }) {
   const router = useRouter();
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
       <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[28px] text-center">
         <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
           <Icon name="Clock" size={36} strokeWidth={2.2} color="var(--warning)" />

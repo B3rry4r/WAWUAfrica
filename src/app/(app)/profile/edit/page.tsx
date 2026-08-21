@@ -88,7 +88,7 @@ export default function EditProfilePage() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[760px]">
           <Skeleton className="h-[120px] w-full rounded-[var(--radius-card)]" />
           <Skeleton className="h-12 w-full rounded-[var(--radius-input)]" />
           <Skeleton className="h-12 w-full rounded-[var(--radius-input)]" />

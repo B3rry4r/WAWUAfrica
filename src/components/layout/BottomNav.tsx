@@ -28,7 +28,9 @@ export function BottomNav() {
       ? { href: "/create", label: "Create", icon: "PlusCircle" }
       : { href: "/explore", label: "Explore", icon: "Compass" },
     { href: "/messages", label: "Messages", icon: "MessageCircle" },
-    { href: "/profile", label: "Profile", icon: "CircleUser" },
+    // Slot 5 was Profile. Profile now lives inside Settings and on the
+    // header avatar; Settings is the destination people actually navigate to.
+    { href: "/settings", label: "Settings", icon: "Settings" },
   ];
 
   return (
@@ -36,7 +38,11 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-40 mx-auto flex h-[78px] w-full max-w-[430px] items-center border-t border-hairline bg-[rgba(19,19,22,0.86)] pb-[12px] [backdrop-filter:var(--blur-chrome)]"
     >
       {items.map((item) => {
-        const active = pathname === item.href;
+        // Exact match alone unlit the tab as soon as you opened anything
+        // inside it, e.g. /settings/notifications. Home stays exact so it does
+        // not swallow every route.
+        const active =
+          item.href === "/home" ? pathname === item.href : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}

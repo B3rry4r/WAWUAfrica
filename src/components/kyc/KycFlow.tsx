@@ -123,7 +123,7 @@ export function KycFlow() {
 
   if (view === "loading") {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
         <FlowHeader title="Verify your identity" />
         <div className="flex-1 pt-[20px] px-[20px] pb-[32px] flex flex-col gap-[14px]">
           <Skeleton height={22} width="60%" />
@@ -137,7 +137,7 @@ export function KycFlow() {
 
   if (view === "load-error") {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
         <FlowHeader title="Verify your identity" />
         <ErrorState title="Could not load your verification status" onRetry={loadStatus} />
       </div>
@@ -145,7 +145,7 @@ export function KycFlow() {
   }
 
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
       <FlowHeader
         title={headerTitle}
         right={

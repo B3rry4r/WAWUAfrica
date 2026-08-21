@@ -63,7 +63,7 @@ export function EarningsDashboard() {
     return (
       <div>
         <FlowHeader title="Earnings" />
-        <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+        <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px] xl:mx-auto xl:w-full xl:max-w-[820px] xl:px-[28px] xl:pt-[28px]">
           <Skeleton height={120} radius="var(--radius-card)" />
           <Skeleton height={160} radius="var(--radius-card)" />
         </div>
@@ -86,7 +86,7 @@ export function EarningsDashboard() {
     return (
       <div>
         <FlowHeader title="Earnings" />
-        <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+        <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px] xl:mx-auto xl:w-full xl:max-w-[820px] xl:px-[28px] xl:pt-[28px]">
           <Skeleton height={120} radius="var(--radius-card)" />
           <Skeleton height={160} radius="var(--radius-card)" />
         </div>
@@ -146,7 +146,7 @@ export function EarningsDashboard() {
         }
       />
 
-      <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+      <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px] xl:mx-auto xl:w-full xl:max-w-[820px] xl:px-[28px] xl:pt-[28px]">
         {!approved ? (
           <div
             className="flex flex-col gap-[14px] p-[18px] rounded-[var(--radius-card)] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.32)]"

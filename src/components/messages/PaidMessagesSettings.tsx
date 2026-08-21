@@ -122,7 +122,7 @@ export function PaidMessagesSettings() {
 
   if (!hydrated) {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
         <FlowHeader title="Paid messages" />
         <div className="flex flex-col gap-[12px] p-[16px]">
           <Skeleton height={80} radius="var(--radius-card)" />
@@ -137,7 +137,7 @@ export function PaidMessagesSettings() {
   // every one of these endpoints (same root cause as the /messages gate).
   if (!gates.isCreator) {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
         <FlowHeader title="Paid messages" />
         <EmptyState
           icon="Lock"
@@ -151,7 +151,7 @@ export function PaidMessagesSettings() {
   }
 
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0">
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
       <FlowHeader title="Paid messages" />
 
       {/*

@@ -234,7 +234,7 @@ export function SubscriptionManagement() {
   };
 
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 xl:min-h-0 xl:max-w-none">
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:min-h-0 xl:max-w-none">
       <div className="xl:hidden">
         <FlowHeader title={title} onBack={onBack} />
       </div>
