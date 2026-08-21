@@ -121,7 +121,7 @@ function Pill({ label, q, shop, active }: { label: string; q: string; shop?: "ba
       scroll={false}
       className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium no-underline ${
         active
-          ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+          ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
           : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
       }`}
     >

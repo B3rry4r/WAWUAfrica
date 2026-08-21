@@ -10,13 +10,22 @@ interface SheetProps {
   title?: string;
   caption?: string;
   children?: ReactNode;
+  /**
+   * Desktop presentation. "sheet" (default) keeps the bottom-anchored sheet
+   * at every width — nothing that already uses this component changes.
+   * "modal" is the treatment the desktop designs call for (design D4: "the
+   * mobile bottom sheet becomes a centred modal … page visibly behind it"),
+   * where a 430px panel glued to the bottom edge of a 1440px window reads as
+   * a phone screenshot pasted onto a desktop page. Opt in per screen.
+   */
+  desktop?: "sheet" | "modal";
 }
 
 /**
  * Bottom sheet primitive, per the design system's Sheet. Rendered in-place
  * (fixed overlay). Animates in via the wawuSheetIn keyframe in tokens.css.
  */
-export function Sheet({ open = true, onClose, title, caption, children }: SheetProps) {
+export function Sheet({ open = true, onClose, title, caption, children, desktop = "sheet" }: SheetProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -26,7 +35,11 @@ export function Sheet({ open = true, onClose, title, caption, children }: SheetP
   if (!open || !mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal="true">
+    <div
+      className={`fixed inset-0 z-50 flex items-end justify-center${desktop === "modal" ? " dt:items-center" : ""}`}
+      role="dialog"
+      aria-modal="true"
+    >
       <button
         type="button"
         aria-label="Close"
@@ -34,10 +47,15 @@ export function Sheet({ open = true, onClose, title, caption, children }: SheetP
         onClick={onClose}
       />
       <div
-        className="relative z-10 flex max-h-[88vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-sheet border-t border-x border-strong bg-elevated shadow-sheet [animation:wawuSheetIn_var(--dur-slow)_var(--ease-soft)]"
+        className={`relative z-10 flex max-h-[88vh] w-full max-w-[430px] flex-col overflow-hidden rounded-t-sheet border-t border-x border-strong bg-elevated shadow-sheet [animation:wawuSheetIn_var(--dur-slow)_var(--ease-soft)]${
+          desktop === "modal" ? " dt:max-w-[460px] dt:rounded-sheet dt:border" : ""
+        }`}
       >
         <div className="flex items-center gap-3 px-5 pt-3">
-          <span className="h-1 w-9 shrink-0 rounded-full bg-tag" aria-hidden="true" />
+          <span
+            className={`h-1 w-9 shrink-0 rounded-full bg-tag${desktop === "modal" ? " dt:hidden" : ""}`}
+            aria-hidden="true"
+          />
         </div>
         <div className="flex items-center gap-3 px-5 pt-3">
           <div className="min-w-0 flex-1">

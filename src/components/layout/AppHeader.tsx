@@ -5,8 +5,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { getNotifications } from "@/lib/api/notifications";
 import { useSession } from "@/lib/auth/session-provider";
+import { creatorGates } from "@/lib/auth/gates";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 
 /**
  * Route prefixes that render their own local back/title header and must not
@@ -63,7 +66,12 @@ export function AppHeader() {
   }, []);
 
   const pathname = usePathname();
-  const { accountType, user } = useSession();
+  const { user } = useSession();
+  // Live creator state rather than the session's frozen accountType — see
+  // creatorGates(). The Browse shortcut only exists on the creator side of
+  // this header, so it waits for a real answer instead of guessing.
+  const { creator, resolved } = useCreatorState();
+  const isCreator = creatorGates({ creator }).isCreator;
   if (hasOwnHeader(pathname)) return null;
 
   return (
@@ -91,11 +99,13 @@ export function AppHeader() {
       <Link href="/profile" aria-label="Your profile" className="shrink-0">
         <Avatar initial={(user?.fullName ?? "?").charAt(0)} size={34} />
       </Link>
-      {accountType === "creator" ? (
+      {!resolved ? (
+        <Skeleton variant="circle" className="h-9 w-9 shrink-0" />
+      ) : isCreator ? (
         <Link
           href="/explore"
           aria-label="Browse"
-          className="grid h-9 w-9 place-items-center rounded-full border border-accent bg-accent-tint text-accent"
+          className="grid h-9 w-9 place-items-center rounded-full border border-decor bg-decor-tint text-accent"
         >
           <Icon name="LayoutGrid" size={17} strokeWidth={2.2} />
         </Link>

@@ -611,7 +611,7 @@ function ReviewStep({
             consented ? "bg-[var(--accent)] border-none" : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
           }`}
         >
-          {consented ? <Icon name="Check" size={14} strokeWidth={3} color="#fff" /> : null}
+          {consented ? <Icon name="Check" size={14} strokeWidth={3} color="var(--text-on-accent)" /> : null}
         </span>
         <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">These details are mine and are correct.</span>
       </div>

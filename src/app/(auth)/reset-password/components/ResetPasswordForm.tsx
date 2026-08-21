@@ -45,7 +45,7 @@ export function ResetPasswordForm() {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="flex flex-1 flex-col items-center justify-center gap-[18px] px-8 py-10 text-center">
-          <span className="grid h-[88px] w-[88px] place-items-center rounded-button border border-accent bg-accent-tint">
+          <span className="grid h-[88px] w-[88px] place-items-center rounded-button border border-decor bg-decor-tint">
             <Icon name="KeyRound" size={40} color="var(--accent)" strokeWidth={2.2} />
           </span>
           <h1 className="m-0 text-[28px] font-bold tracking-[-0.03em]">Password updated</h1>

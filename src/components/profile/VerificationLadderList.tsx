@@ -46,14 +46,14 @@ export function VerificationLadderList({
               className={[
                 "flex items-center gap-[13px] rounded-[var(--radius-input)] p-3",
                 isNext
-                  ? "border border-[var(--border-accent)] bg-[var(--accent-tint)]"
+                  ? "border border-[var(--border-selected)] bg-[var(--selected-tint)]"
                   : "border border-transparent bg-transparent",
                 level.status === "locked" ? "opacity-[0.55]" : "",
               ].join(" ")}
             >
               {level.status === "done" ? (
                 <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-accent">
-                  <Icon name="Check" size={15} color="#fff" strokeWidth={2.6} />
+                  <Icon name="Check" size={15} color="var(--text-on-accent)" strokeWidth={2.6} />
                 </span>
               ) : level.status === "locked" ? (
                 <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-tag">
@@ -85,7 +85,7 @@ export function VerificationLadderList({
               {isYours && <StatusPill kind="info">You&apos;re here</StatusPill>}
             </div>
             {expanded && (
-              <div className="hidden rounded-[var(--radius-card)] border border-t-0 border-[var(--border-accent)] bg-[var(--surface-elevated)] p-5 xl:block">
+              <div className="hidden rounded-[var(--radius-card)] border border-t-0 border-[var(--border-decor)] bg-[var(--surface-elevated)] p-5 xl:block">
                 <VerificationApplyForm tier={level.tier} onDone={() => setExpandedTier(null)} />
               </div>
             )}

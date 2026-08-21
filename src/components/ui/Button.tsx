@@ -21,17 +21,19 @@ interface BaseProps {
 
 type ButtonProps = (BaseProps & ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined }) | (BaseProps & { href: string });
 
+// Hover is a NEUTRAL lift, never an accent tint. Two earlier attempts —
+// `hover:bg-tag` and then a 10–12% accent tint — both landed at 1.01–1.20:1
+// against the surfaces these buttons actually sit on, i.e. the button
+// dissolved into its container the moment you pointed at it. The tokens below
+// are measured: --surface-hover clears 1.3:1 against page/card/elevated in
+// both themes and 1.38:1 against the button's own resting fill, and
+// --state-hover clears 1.35:1 against every surface token in both themes.
 const variantClass: Record<ButtonVariant, string> = {
   primary: "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press",
-  // `hover:bg-tag` was the same colour as the card and tag surfaces these
-  // buttons sit on (1.14:1 against a card, 1.0:1 on a tag), so hovering made
-  // the button dissolve into its container. Lifting the surface and the border
-  // instead means the hover always reads, whatever it is sitting on.
   secondary:
-    "bg-elevated text-text-primary border border-strong hover:border-accent hover:bg-[color-mix(in_srgb,var(--accent)_12%,var(--surface-elevated))]",
-  ghost:
-    "bg-transparent text-text-primary hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] hover:text-accent-hover",
-  danger: "bg-danger text-on-accent hover:opacity-90",
+    "bg-elevated text-text-primary border border-strong hover:bg-surface-hover hover:border-strong active:bg-surface-press",
+  ghost: "bg-transparent text-text-primary hover:bg-state-hover active:bg-state-press",
+  danger: "bg-danger text-on-accent hover:bg-danger-hover active:bg-danger",
 };
 
 const sizeClass: Record<ButtonSize, string> = {

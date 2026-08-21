@@ -256,7 +256,7 @@ export default function NepcApplyPage() {
           {markets.map((m) => (
             <span
               key={m}
-              className="inline-flex h-[34px] items-center gap-[7px] rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)] px-[12px] text-[13px] font-semibold text-[var(--text-primary)]"
+              className="inline-flex h-[34px] items-center gap-[7px] rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)] px-[12px] text-[13px] font-semibold text-[var(--text-primary)]"
             >
               {m}
               <button
@@ -350,7 +350,7 @@ export default function NepcApplyPage() {
       )}
       {!submitError && (
         <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-          Free to start, an export agent reads this by hand and connects you to the right NEPC desk.
+          Nothing to start, an export agent reads this by hand and connects you to the right NEPC desk.
         </span>
       )}
     </div>
@@ -400,7 +400,7 @@ export default function NepcApplyPage() {
       <SummaryRow label="Documents ready" value={`${docsReadyCount} of ${docs.length}`} />
       <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-[10px]">
         <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">Cost</span>
-        <span className="text-[13.5px] font-bold text-[var(--success)]">Free to start</span>
+        <span className="text-[13.5px] font-bold text-[var(--success)]">Nothing to start</span>
       </div>
     </div>
   );
@@ -463,7 +463,7 @@ export default function NepcApplyPage() {
                   disabled={n > step}
                   className={[
                     "flex items-center gap-[11px] rounded-[var(--radius-input)] border p-[14px_16px] text-left",
-                    state === "current" ? "border-[var(--border-accent)] bg-[var(--accent-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
+                    state === "current" ? "border-[var(--border-selected)] bg-[var(--selected-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
                     n <= step ? "cursor-pointer" : "cursor-default",
                   ].join(" ")}
                 >
@@ -485,7 +485,7 @@ export default function NepcApplyPage() {
             })}
             <div className="mt-auto flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
               <span className="text-[12.5px] font-semibold text-[var(--text-primary)]">Need help?</span>
-              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your export plan before you submit, free.</span>
+              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your export plan before you submit, at no charge.</span>
             </div>
           </div>
 

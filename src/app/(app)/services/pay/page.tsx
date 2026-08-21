@@ -17,6 +17,7 @@ import {
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
 import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
@@ -30,6 +31,10 @@ import { formatNaira } from "@/lib/format";
  */
 export default function PayPage() {
   const { user } = useSession();
+  // Catalogue status. This tool lives at a static route, which Next resolves
+  // ahead of /services/[id], so a service the catalogue has closed would still
+  // open and take payment here unless the page refuses on its own.
+  const live = useServiceLive("pay");
 
   const [categories, setCategories] = useState<BillCategory[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -147,12 +152,20 @@ export default function PayPage() {
     }
   }
 
+  if (live === false) {
+    return <ServiceComingSoon name="Bills Payment" icon="Zap" />;
+  }
+
+  if (live === null) {
+    return <ServiceGateLoading />;
+  }
+
   if (receipt) {
     return (
       <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
         <ProfileBackButton />
-        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[26px] text-center">
-          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--accent-tint)]">
+        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] p-[26px] text-center">
+          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--decor-tint)]">
             <Icon name="Check" size={26} color="var(--accent)" strokeWidth={2.4} />
           </span>
           <span className="text-[19px] font-bold text-[var(--text-primary)]">Payment delivered</span>

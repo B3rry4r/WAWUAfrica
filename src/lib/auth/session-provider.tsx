@@ -33,6 +33,18 @@ interface SessionContextValue {
    * actually said. This writes the real session user instead.
    */
   setCreatorState: (creator: CreatorState) => void;
+  /**
+   * The server says this account has no creator state after all — drop the
+   * sign-in snapshot rather than leaving it to rot.
+   *
+   * Without this, a session whose localStorage still held a `creator` object
+   * from sign-in kept claiming creator access to every SYNCHRONOUS reader of
+   * the stored session (src/lib/api/learn.ts reads
+   * `creatorGates(sessionStorage.getUser())` with no await), even though the
+   * live hook had already been told 403/404. Same class of bug as the stale
+   * `accountType`, just pointing the other way.
+   */
+  clearCreatorState: () => void;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -92,6 +104,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setAccountTypeState("creator");
   }, []);
 
+  const clearCreatorState = useCallback(() => {
+    setUser((prev) => {
+      if (!prev || prev.creator == null) return prev;
+      const next: SessionUser = { ...prev, accountType: "user", creator: null };
+      sessionStorage.setUser(next);
+      return next;
+    });
+    sessionStorage.setAccountType("user");
+    setAccountTypeState("user");
+  }, []);
+
   const value = useMemo<SessionContextValue>(
     () => ({
       user,
@@ -103,8 +126,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setAccountType,
       setInterests,
       setCreatorState,
+      clearCreatorState,
     }),
-    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests, setCreatorState],
+    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests, setCreatorState, clearCreatorState],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
       <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-4 xl:flex-none xl:px-0">
         {sent ? (
           <div className="flex flex-col items-start gap-4">
-            <span className="grid h-[72px] w-[72px] place-items-center rounded-button border border-accent bg-accent-tint">
+            <span className="grid h-[72px] w-[72px] place-items-center rounded-button border border-decor bg-decor-tint">
               <Icon name="MailCheck" size={32} color="var(--accent)" strokeWidth={2.2} />
             </span>
             <h1 className="m-0 text-[26px] font-bold leading-[1.15] tracking-[-0.025em]">Check your email</h1>

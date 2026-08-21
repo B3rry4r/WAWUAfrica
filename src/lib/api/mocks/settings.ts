@@ -24,7 +24,7 @@ const SAVED_AT_BY_ID: Record<string, string> = {
   "ankara-pattern-drafting": "Yesterday",
   "welding-rebar": "2 days ago",
   "highlife-horn-stems": "3 days ago",
-  "invoice-pack-for-tailors": "5 days ago",
+  "measuring-for-tailors": "5 days ago",
   "cac-in-7-days": "Last week",
   "the-traders-playbook": "Last week",
   "dry-season-poultry": "Last month",

@@ -95,7 +95,7 @@ export function FilePicker({
       />
 
       {uploaded ? (
-        <div className="flex items-center gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-accent)] bg-[var(--accent-tint)] p-[13px_14px]">
+        <div className="flex items-center gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-[13px_14px]">
           <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[var(--surface-card)]">
             <Icon name="Check" size={17} color="var(--accent)" strokeWidth={2.6} />
           </span>

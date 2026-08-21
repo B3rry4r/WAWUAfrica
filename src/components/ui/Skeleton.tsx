@@ -4,7 +4,7 @@ interface SkeletonProps {
 }
 
 const base =
-  "relative overflow-hidden bg-tag [background-image:linear-gradient(110deg,transparent,rgba(255,255,255,0.07),transparent)]";
+  "relative overflow-hidden bg-tag [background-image:linear-gradient(110deg,transparent,var(--state-hover),transparent)]";
 const shimmer = "[background-size:200%_100%] [animation:wawuShimmer_1.4s_linear_infinite]";
 
 const variantClass = {

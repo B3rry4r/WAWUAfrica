@@ -4,13 +4,10 @@ export interface Paginated<T> {
   hasMore: boolean;
 }
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public code?: string
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
+/**
+ * There is exactly one ApiError, and it lives with the fetch wrapper that
+ * throws it. A second class by the same name used to be declared here; nothing
+ * threw it, but any `e instanceof ApiError` check that happened to import this
+ * one would have silently failed against a real error from the API layer.
+ */
+export { ApiError, NetworkError, isNetworkError } from "@/lib/api/client";

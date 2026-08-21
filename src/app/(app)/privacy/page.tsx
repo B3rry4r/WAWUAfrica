@@ -116,7 +116,7 @@ export default function PrivacyPage() {
         <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
           <Link
             href="/privacy/blocked"
-            className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)]"
+            className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-state-hover"
           >
             <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
               <Icon name="UserRoundX" size={18} strokeWidth={2} />
@@ -128,7 +128,7 @@ export default function PrivacyPage() {
           <button
             type="button"
             onClick={() => setExportState("confirm")}
-            className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)]"
+            className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-state-hover"
           >
             <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
               <Icon name="Download" size={18} strokeWidth={2} />
@@ -141,7 +141,7 @@ export default function PrivacyPage() {
           </button>
           <Link
             href="/privacy/policy"
-            className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)]"
+            className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-state-hover"
           >
             <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
               <Icon name="FileText" size={18} strokeWidth={2} />

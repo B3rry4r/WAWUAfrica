@@ -10,7 +10,7 @@ export function Avatar({ initial, initials, size = 36, className = "" }: AvatarP
   const label = initial ?? initials ?? "?";
   return (
     <span
-      className={`grid shrink-0 place-items-center rounded-full bg-accent-tint text-accent-hover ring-1 ring-border-accent ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full bg-accent-tint text-accent-hover ring-1 ring-[var(--border-decor)] ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.4 }}
       aria-hidden="true"
     >

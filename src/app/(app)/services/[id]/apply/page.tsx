@@ -71,8 +71,8 @@ export default function PartnerApplyPage({ params }: { params: { id: string } })
   if (reference) {
     return (
       <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
-        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[26px] text-center">
-          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--accent-tint)]">
+        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] p-[26px] text-center">
+          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--decor-tint)]">
             <Icon name="Check" size={26} color="var(--accent)" strokeWidth={2.4} />
           </span>
           <span className="text-[19px] font-bold text-[var(--text-primary)]">Request sent</span>

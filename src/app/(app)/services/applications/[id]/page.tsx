@@ -96,7 +96,7 @@ export default function ApplicationTrackingPage() {
   const statusHeader = (
     <div className="flex flex-col gap-[10px]">
       <div className="flex items-center gap-[12px]">
-        <span className="grid h-[48px] w-[48px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <span className="grid h-[48px] w-[48px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
           <Icon name={KIND_ICON[application.kind]} size={20} color="var(--accent)" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
@@ -147,14 +147,14 @@ export default function ApplicationTrackingPage() {
                 className={[
                   "grid h-[22px] w-[22px] place-items-center rounded-full",
                   t.status === "done"
-                    ? "border border-[var(--border-accent)] bg-[var(--accent)]"
+                    ? "border border-[var(--border-selected)] bg-[var(--accent)]"
                     : t.status === "current"
-                      ? "border border-[var(--border-accent)] bg-[var(--accent-tint)]"
+                      ? "border border-[var(--border-selected)] bg-[var(--selected-tint)]"
                       : "border border-[var(--border-hairline)] bg-[var(--surface-tag)]",
                 ].join(" ")}
               >
                 {t.status === "done" ? (
-                  <Icon name="Check" size={11} color="#fff" strokeWidth={3} />
+                  <Icon name="Check" size={11} color="var(--text-on-accent)" strokeWidth={3} />
                 ) : t.status === "current" ? (
                   <span className="h-[8px] w-[8px] rounded-full bg-[var(--accent)]" />
                 ) : (
@@ -162,7 +162,7 @@ export default function ApplicationTrackingPage() {
                 )}
               </span>
               {i < application.timeline.length - 1 && (
-                <span className={["w-[2px] min-h-[12px] flex-1", t.status === "done" ? "bg-[var(--border-accent)]" : "bg-[var(--border-hairline)]"].join(" ")} />
+                <span className={["w-[2px] min-h-[12px] flex-1", t.status === "done" ? "bg-[var(--border-selected)]" : "bg-[var(--border-hairline)]"].join(" ")} />
               )}
             </div>
             <div className={["flex min-w-0 flex-1 flex-col gap-[2px]", i < application.timeline.length - 1 ? "pb-[14px]" : ""].join(" ")}>

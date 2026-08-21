@@ -15,7 +15,7 @@ export function CourseEntitlementPanel({ state, entitlement }: { state: CourseEn
 
   if (state.status === "available") {
     return (
-      <Panel icon="GraduationCap" iconTone="accent" title="Covered by your tier" subtitle={`This uses your ${entitlement.freeCoursesTotal === 1 ? "1 free course" : "next free course"}`}>
+      <Panel icon="GraduationCap" iconTone="accent" title="Covered by your tier" subtitle={`This uses your ${entitlement.freeCoursesTotal === 1 ? "1 included course" : "next included course"}`}>
         <span className="border-t border-[var(--border-hairline)] pt-3 text-[12.5px] leading-[1.45] text-[var(--text-muted)]">
           Pro carries three. Basic carries one. Spend it on something you will finish.
         </span>
@@ -47,14 +47,14 @@ function Panel({
 }) {
   const iconWrap =
     iconTone === "success"
-      ? "border-[rgba(184,232,62,0.35)] bg-[var(--success-tint)]"
+      ? "border-[var(--border-success)] bg-[var(--success-tint)]"
       : iconTone === "accent"
-        ? "border-[var(--border-accent)] bg-[var(--accent-tint)]"
+        ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
         : "border-[var(--border-hairline)] bg-[var(--surface-tag)]";
   const iconColor = iconTone === "success" ? "var(--success)" : iconTone === "accent" ? "var(--accent)" : "var(--text-muted)";
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-4">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-4">
       <div className="flex items-center gap-[11px]">
         <span className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border ${iconWrap}`}>
           <Icon name={icon} size={17} color={iconColor} strokeWidth={2} />

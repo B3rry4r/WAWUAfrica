@@ -9,6 +9,8 @@ import { ListRow } from "@/components/ui/ListRow";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { SettingsFooterActions } from "@/components/shared/SettingsFooterActions";
+import { creatorGates } from "@/lib/auth/gates";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
 import { NotificationsSettingsBody } from "./notifications/NotificationsSettingsBody";
 import { DeleteAccountBody } from "./delete-account/DeleteAccountBody";
@@ -30,6 +32,12 @@ interface Group {
 }
 
 export default function SettingsPage() {
+  // GET own-profile's accountType is a second stale-truth path beside the
+  // session's (it knows nothing about whether a CreatorState row exists), so
+  // the live gate is consulted too and creator wins in either: the Creator
+  // group of rows must not vanish for somebody who is one.
+  const { creator, resolved: creatorResolved } = useCreatorState();
+  const gates = creatorGates({ creator });
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [error, setError] = useState<string>();
   const [selected, setSelected] = useState<InternalSettingsKey>("notifications");
@@ -52,7 +60,8 @@ export default function SettingsPage() {
     return <ErrorState title="Couldn't load settings" body={error} onRetry={load} />;
   }
 
-  const isCreator = profile?.accountType === "creator";
+  const isCreator = gates.isCreator || profile?.accountType === "creator";
+  const ready = profile !== null && creatorResolved;
 
   const groups: Group[] = profile
     ? [
@@ -97,7 +106,9 @@ export default function SettingsPage() {
   return (
     <>
       <div className="flex flex-col gap-[11px] p-[14px_16px_96px] xl:hidden">
-        {!profile ? (
+        {/* Skeleton — never the non-creator branch — until the creator fork is
+            actually knowable: this list is where the Creator group lives. */}
+        {!ready || !profile ? (
           <>
             <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
               <Skeleton variant="circle" className="h-[52px] w-[52px]" />
@@ -115,7 +126,9 @@ export default function SettingsPage() {
                 <span className="text-[12.5px] text-[var(--text-muted)]">{profile.email}</span>
               </div>
               <div className="flex flex-col items-end gap-[5px]">
-                {isCreator && <TierBadge tier={profile.plan} />}
+                {/* Live tier first — profile.plan is a stale "basic" when
+                    own-profile's accountType disagrees with creator state. */}
+                {isCreator && <TierBadge tier={gates.tier ?? profile.plan} />}
                 <span className="text-[11.5px] text-[var(--text-muted)]">
                   {isCreator ? "Creator" : "Member"} account
                 </span>

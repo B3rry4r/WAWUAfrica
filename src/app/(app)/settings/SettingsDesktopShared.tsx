@@ -4,7 +4,10 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
+import { creatorGates } from "@/lib/auth/gates";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { Icon } from "@/components/ui/Icon";
+import { Skeleton } from "@/components/ui/Skeleton";
 import type { IconName } from "@/components/ui/Icon";
 
 /**
@@ -69,7 +72,7 @@ function categoryRowClass(active: boolean, danger?: boolean) {
     "flex h-[44px] shrink-0 items-center gap-3 rounded-xl px-3 text-[14px] transition-colors",
     active
       ? "border border-[var(--border-accent)] bg-[var(--accent-tint)] font-semibold text-[var(--text-primary)]"
-      : "border border-transparent font-medium text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.06)]",
+      : "border border-transparent font-medium text-[var(--text-secondary)] hover:bg-state-hover",
   ].join(" ");
 }
 
@@ -82,8 +85,13 @@ export function SettingsCategoryList({
   onSelectInternal: (key: InternalSettingsKey) => void;
 }) {
   const router = useRouter();
-  const { accountType, signOut } = useSession();
-  const isCreator = accountType === "creator";
+  const { signOut } = useSession();
+  // Live creator state, not the session's sign-in-time accountType — that is
+  // written once at sign-in and never revisited, so the entire "Creating"
+  // group (paid questions, payouts, subscription) stayed hidden from anyone
+  // who became a creator after signing in.
+  const { creator, resolved } = useCreatorState();
+  const isCreator = creatorGates({ creator }).isCreator;
 
   const renderRow = (row: CategoryRow) => {
     const active = row.key === activeKey;
@@ -122,7 +130,16 @@ export function SettingsCategoryList({
 
   return (
     <div className="flex h-full flex-col gap-1 p-[14px]">
-      {isCreator ? (
+      {!resolved ? (
+        // Placeholder, not the plain-user list: dropping the Creating group in
+        // a beat later is the flash this whole fix exists to remove.
+        <>
+          <Skeleton className="mx-3 mb-1 mt-2 h-[11px] w-[64px] rounded" />
+          {CREATING_ROWS.map((row) => (
+            <Skeleton key={row.key} variant="row" className="h-[44px] rounded-xl" />
+          ))}
+        </>
+      ) : isCreator ? (
         <>
           <span className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Creating</span>
           {CREATING_ROWS.map(renderRow)}

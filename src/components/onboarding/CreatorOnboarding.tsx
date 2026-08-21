@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
+import { creatorGates } from "@/lib/auth/gates";
 import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
 import { PLANS } from "@/types/subscription";
@@ -74,7 +75,11 @@ export function CreatorOnboarding() {
         setCreatorState({
           tier: subscription.plan.tier,
           subscriptionPaid: subscription.state === "active",
-          kyc: user?.creator?.kyc ?? "pending",
+          // "not_started", never "pending". Paying for a subscription does not
+          // submit anything to review — defaulting to "pending" here is what
+          // put "Held, not payable yet · released as soon as verification
+          // clears" in front of creators who had never been asked to verify.
+          kyc: user?.creator?.kyc ?? "not_started",
           slotsUsed: user?.creator?.slotsUsed ?? 0,
           slotsTotal: subscription.plan.slots,
           dmPrice: user?.creator?.dmPrice ?? 0,
@@ -99,25 +104,43 @@ export function CreatorOnboarding() {
       });
   };
 
+  // Gates for the already-subscribed branch below. Never re-checks
+  // `creator.kyc` inline — see src/lib/auth/gates.ts.
+  const alreadyGates = creatorGates({ creator });
+
   // Somebody who has already paid must never be shown the signup flow again.
   // Without this they walked the whole thing and were told, only in the network
   // tab, "Already subscribed — use /upgrade, /downgrade, or /retry-payment".
   if (creator?.subscriptionPaid && step !== "success") {
     return (
       <Centered>
-        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
+        <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--decor-tint)] border border-[var(--border-decor)]">
           <Icon name="Check" size={38} strokeWidth={2.4} color="var(--accent)" />
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">You are already a creator</h2>
         <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">
           Your {creator.tier === "pro" ? "Pro" : "Basic"} subscription is active, so uploading and the creator tools are
           already on.
+          {alreadyGates.canEarn
+            ? ""
+            : " Verification is the separate step that lets us pay you, and it is still outstanding."}
         </p>
         <div className="flex w-full max-w-[320px] flex-col gap-[10px] pt-[6px]">
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/creator")}>
+          {alreadyGates.canEarn ? null : (
+            <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/kyc")}>
+              Verify my identity
+            </Button>
+          )}
+          <Button
+            full
+            size="lg"
+            variant={alreadyGates.canEarn ? "primary" : "secondary"}
+            iconRight={alreadyGates.canEarn ? "ArrowRight" : undefined}
+            onClick={() => router.replace("/creator")}
+          >
             Go to your dashboard
           </Button>
-          <Button full variant="secondary" onClick={() => router.replace("/subscription")}>
+          <Button full variant="ghost" onClick={() => router.replace("/subscription")}>
             Manage subscription
           </Button>
         </div>
@@ -154,13 +177,15 @@ export function CreatorOnboarding() {
   if (step === "success") {
     return (
       <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
-        <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center">
-          <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
-            <Icon name="Check" size={40} strokeWidth={2.6} color="var(--accent)" />
+        <div className="flex-1 flex flex-col items-center justify-center gap-[16px] py-[36px] px-[24px] text-center">
+          <span className="grid place-items-center w-[72px] h-[72px] rounded-[999px] bg-[var(--decor-tint)] border border-[var(--border-decor)]">
+            <Icon name="Check" size={34} strokeWidth={2.6} color="var(--accent)" />
           </span>
-          <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em]">You are on {tier === "pro" ? "Pro" : "Basic"}</h2>
-          <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[290px]">Uploading is on. Complete KYC next so we can pay you.</p>
-          <div className="flex flex-col gap-[8px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
+          <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">
+            Payment confirmed. You are on {tier === "pro" ? "Pro" : "Basic"}.
+          </h2>
+
+          <div className="flex flex-col gap-[8px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
             <div className="flex items-center gap-[10px]">
               <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Paid today</span>
               <span className="text-[14px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
@@ -172,14 +197,50 @@ export function CreatorOnboarding() {
               </span>
             </div>
           </div>
+
+          {/* The two gates, said plainly, at the one moment the creator is
+              guaranteed to be looking: right after the charge clears. They
+              used to be dropped straight onto the dashboard from here and
+              only ever learn about verification from a tinted strip they did
+              not notice — then find their earnings "held" for a review nobody
+              had ever asked them to start. Nothing below is a wall: the ask is
+              the primary action, and skipping it changes nothing about what
+              they can upload or sell. */}
+          <div className="flex flex-col gap-[14px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
+            <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
+              Two separate things
+            </span>
+            <div className="flex gap-[12px]">
+              <span className="grid place-items-center w-[30px] h-[30px] rounded-[10px] bg-[var(--success-tint)] border border-[rgba(184,232,62,0.28)] shrink-0">
+                <Icon name="Check" size={16} strokeWidth={2.6} color="var(--success)" />
+              </span>
+              <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
+                <span className="text-[var(--text-primary)] font-semibold">Uploading is unlocked.</span> That is what the
+                subscription you just paid for does. Publish and sell from today.
+              </span>
+            </div>
+            <div className="flex gap-[12px]">
+              <span className="grid place-items-center w-[30px] h-[30px] rounded-[10px] bg-[var(--accent)] shrink-0">
+                <Icon name="ShieldAlert" size={16} strokeWidth={2.4} color="var(--text-on-accent)" />
+              </span>
+              <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
+                <span className="text-[var(--text-primary)] font-semibold">Getting paid is not.</span> That takes
+                verification, which is a separate step and the only thing we have not asked you for yet. Until it clears,
+                what you earn is counted and held for you — nothing is lost.
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
           <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/kyc")}>
-            Start KYC
+            Verify my identity
           </Button>
-          <Button full variant="ghost" onClick={() => router.push("/profile")}>
-            Do it later
+          <Button full variant="ghost" onClick={() => router.push("/creator")}>
+            Skip for now
           </Button>
+          <span className="text-[12px] leading-[1.45] text-[var(--text-muted)] self-center text-center">
+            Skipping costs you nothing today. Verification waits at the top of your dashboard whenever you want it.
+          </span>
         </div>
       </div>
     );
@@ -205,7 +266,7 @@ export function CreatorOnboarding() {
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">
-                  <span className="grid place-items-center w-[38px] h-[38px] rounded-[12px] bg-[var(--accent-tint)] border border-[var(--border-accent)] shrink-0">
+                  <span className="grid place-items-center w-[38px] h-[38px] rounded-[12px] bg-[var(--decor-tint)] border border-[var(--border-decor)] shrink-0">
                     <Icon name={r.icon} size={17} strokeWidth={2} color="var(--accent)" />
                   </span>
                   <span className="flex-1 text-[14px] leading-[1.45] text-[var(--text-secondary)]">
@@ -220,17 +281,17 @@ export function CreatorOnboarding() {
               <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">Two steps</span>
               {[
                 ["Pick a yearly tier", ", unlocks uploading."],
-                ["Complete KYC", ", unlocks payouts. Takes 1–3 days."],
+                ["Verify your identity", ", unlocks getting paid. Reviewed in 1–3 days."],
               ].map(([s, r], i) => (
                 <div key={s} className="flex gap-[11px]">
-                  <span className="grid place-items-center w-[24px] h-[24px] rounded-[999px] bg-[var(--accent)] text-[#fff] text-[12px] font-bold shrink-0">{i + 1}</span>
+                  <span className="grid place-items-center w-[24px] h-[24px] rounded-[999px] bg-[var(--accent)] text-[var(--text-on-accent)] text-[12px] font-bold shrink-0">{i + 1}</span>
                   <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
                     <span className="text-[var(--text-primary)] font-semibold">{s}</span>
                     {r}
                   </span>
                 </div>
               ))}
-              <span className="text-[12.5px] leading-[1.45] text-[var(--text-muted)] pl-[35px]">You can upload and sell while KYC is in review.</span>
+              <span className="text-[12.5px] leading-[1.45] text-[var(--text-muted)] pl-[35px]">They are independent. You can upload and sell before verification, and before it clears — only the payout waits.</span>
             </div>
           </>
         ) : null}
@@ -261,7 +322,7 @@ export function CreatorOnboarding() {
             <div
               className={`flex flex-col gap-[15px] p-[20px] rounded-[var(--radius-card)] border ${
                 proSelected
-                  ? "bg-[var(--surface-elevated)] border-[var(--border-accent)]"
+                  ? "bg-[var(--surface-elevated)] border-[var(--border-selected)]"
                   : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
               }`}
             >
@@ -276,7 +337,7 @@ export function CreatorOnboarding() {
               <div
                 className={`flex items-center gap-[12px] p-[14px] rounded-[var(--radius-input)] border ${
                   proSelected
-                    ? "bg-[var(--accent-tint)] border-[var(--border-accent)]"
+                    ? "bg-[var(--selected-tint)] border-[var(--border-selected)]"
                     : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
                 }`}
               >

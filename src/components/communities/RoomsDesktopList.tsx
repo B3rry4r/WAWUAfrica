@@ -37,7 +37,7 @@ export function RoomsDesktopList({ rooms, activeId }: { rooms: Community[]; acti
             key={c.id}
             href={`/communities/${c.id}`}
             className={`flex w-full gap-3 border-b border-hairline px-5 py-[15px] text-left no-underline transition-colors ${
-              active ? "bg-accent-tint" : "hover:bg-[rgba(255,255,255,0.05)]"
+              active ? "bg-selected-tint" : "hover:bg-state-hover"
             }`}
           >
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border border-hairline bg-elevated">

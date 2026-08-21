@@ -171,7 +171,7 @@ export function SignUpFlow() {
             type="button"
             onClick={() => setAccountType("user")}
             className={`flex gap-3.5 rounded-card border bg-card p-4 text-left ${
-              accountType === "user" ? "border-accent" : "border-hairline"
+              accountType === "user" ? "border-selected" : "border-hairline"
             }`}
           >
             <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
@@ -191,11 +191,11 @@ export function SignUpFlow() {
             type="button"
             onClick={() => setAccountType("creator")}
             className={`flex flex-col gap-4 rounded-card border bg-elevated p-[18px] text-left ${
-              accountType === "creator" ? "border-accent" : "border-hairline"
+              accountType === "creator" ? "border-selected" : "border-hairline"
             }`}
           >
             <span className="flex gap-3.5">
-              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-accent bg-accent-tint">
+              <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-decor bg-decor-tint">
                 <Icon name="Upload" size={19} color="var(--accent)" strokeWidth={2} />
               </span>
               <span className="min-w-0 flex-1">
@@ -230,7 +230,7 @@ export function SignUpFlow() {
             </div>
           ) : null}
           {accountType === "creator" ? (
-            <div className="flex items-center gap-2.5 rounded-input border border-accent bg-accent-tint px-3.5 py-[11px]">
+            <div className="flex items-center gap-2.5 rounded-input border border-decor bg-decor-tint px-3.5 py-[11px]">
               <Icon name="Upload" size={16} color="var(--accent)" strokeWidth={2.2} />
               <span className="flex-1 text-[13.5px] font-semibold">Creator account</span>
               <button type="button" onClick={() => setStep("type")} className="text-[13px] font-semibold text-accent">
@@ -465,7 +465,7 @@ export function SignUpFlow() {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="flex flex-1 flex-col items-center justify-center gap-[18px] px-8 py-10 text-center">
-          <span className="grid h-[88px] w-[88px] place-items-center rounded-button border border-accent bg-accent-tint">
+          <span className="grid h-[88px] w-[88px] place-items-center rounded-button border border-decor bg-decor-tint">
             <Icon name="Check" size={40} color="var(--accent)" strokeWidth={2.6} />
           </span>
           <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em]">Email verified</h2>

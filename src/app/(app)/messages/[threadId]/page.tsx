@@ -98,7 +98,7 @@ export default function DmThreadPage() {
               "flex items-start gap-[9px] rounded-[var(--radius-input)] border p-[11px_13px]",
               summary.status === "refunded"
                 ? "border-[rgba(255,92,92,0.3)] bg-[var(--danger-tint)]"
-                : "border-[rgba(32,201,195,0.3)] bg-[var(--info-tint)]",
+                : "border-[var(--border-info)] bg-[var(--info-tint)]",
             ].join(" ")}
           >
             <span className="mt-px shrink-0">

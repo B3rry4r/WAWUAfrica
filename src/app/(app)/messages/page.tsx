@@ -2,7 +2,6 @@
 
 import { Inbox } from "@/components/messages/Inbox";
 import { QuestionsDesktop } from "@/components/messages/QuestionsDesktop";
-import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { FlowHeader } from "@/components/layout/FlowHeader";
@@ -10,9 +9,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Feedback";
 
 /**
- * Client Component: the gate below needs the real signed-in account type
- * (useSession/useCreatorState — localStorage-backed, unavailable during
- * SSR). Inbox/QuestionsDesktop are the CREATOR-side paid-DM inbox (fake
+ * Client Component: the gate below needs the real, live creator state
+ * (useCreatorState — a client-side GET, unavailable during SSR). Inbox/QuestionsDesktop are the CREATOR-side paid-DM inbox (fake
  * threads, "Reply now", "X to earn" copy) -- a plain user account has no
  * creator record and the real backend 403s ("creator accounts only") on
  * every one of the endpoints they call. Gate on account type the same way
@@ -20,11 +18,14 @@ import { Skeleton } from "@/components/ui/Feedback";
  * to creator-only UI backed by nothing real.
  */
 export default function MessagesPage() {
-  const { user, hydrated } = useSession();
-  const { creator } = useCreatorState();
-  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+  const { creator, resolved } = useCreatorState();
+  const gates = creatorGates({ creator });
 
-  if (!hydrated) {
+  // Skeleton until the SERVER has answered whether this account is a creator
+  // (`resolved` covers session hydration too). Hydration alone let the
+  // sign-in-time snapshot decide, so a creator who subscribed later was told
+  // "This inbox is for creators" about their own inbox.
+  if (!resolved) {
     return (
       <div className="flex flex-col min-h-[100%]">
         <FlowHeader title="Messages" />

@@ -1,4 +1,4 @@
-import type { CountryGuide, LearnCourse, LearnGuide, Playbook, ReferenceArticle, TemplatePack } from "@/types/learn";
+import type { CountryGuide, LearnCourse, LearnGuide, Playbook, ReferenceArticle } from "@/types/learn";
 import { delay } from "../client";
 
 export const MOCK_COURSES: LearnCourse[] = [
@@ -432,18 +432,14 @@ const REFERENCE_ARTICLES: ReferenceArticle[] = [
   },
 ];
 
-const TEMPLATE_PACKS: TemplatePack[] = [
-  {
-    id: "t-invoice-receipt",
-    kind: "template",
-    title: "Templates & Resources",
-    updated: "Updated June",
-    fileCount: 6,
-    description: "Six ready-to-edit invoice and receipt templates, for one-off sales, deposits and recurring orders.",
-  },
-];
+// The "Templates & Resources" pack (invoice/receipt templates) was removed on
+// your instruction. It was in the approved WAWU Learn design but was never
+// named in docs/00_PLATFORM_MAP.md's Learn section, which lists the Business
+// Playbook, country guides and "featured reference content" — so nothing in
+// the locked docs depends on it. TemplatePack stays in types/learn.ts so the
+// union and the detail view survive if you want it back.
 
-export const MOCK_GUIDES: LearnGuide[] = [...COUNTRY_GUIDES, ...REFERENCE_ARTICLES, ...TEMPLATE_PACKS];
+export const MOCK_GUIDES: LearnGuide[] = [...COUNTRY_GUIDES, ...REFERENCE_ARTICLES];
 
 /**
  * DEV ONLY mock enrollment store. Tracks which course ids have had a

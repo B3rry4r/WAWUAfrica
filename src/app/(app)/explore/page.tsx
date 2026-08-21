@@ -115,7 +115,7 @@ const tileSub = "whitespace-nowrap text-[12px] text-[var(--text-muted)]" as cons
 
 function IconTile({ icon }: { icon: IconName }) {
   return (
-    <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+    <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
       <Icon name={icon} size={18} color="var(--accent)" />
     </span>
   );
@@ -136,14 +136,14 @@ const SHOPS = {
   basket: {
     name: "WAWUBasket",
     logo: "/wawubasket-logo.png",
-    tint: "#A9D636",
+    tint: "var(--brand-basket)",
     tagline: "Food, groceries and fresh market",
     categories: ["Fresh Market", "Groceries", "Farm Produce", "Restaurants", "Drinks", "Snacks"],
   },
   beauty: {
     name: "WAWUBeauty",
     logo: "/wawubeauty-logo.png",
-    tint: "#FF0084",
+    tint: "var(--brand-beauty)",
     tagline: "Beauty, textiles, shoes and art",
     categories: ["Afro Beauty Products", "Afro Beauty Services", "Textiles", "Shoes & Bags", "Art", "Sustainability"],
   },

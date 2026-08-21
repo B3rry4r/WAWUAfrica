@@ -169,11 +169,11 @@ export const mockContent: ContentPiece[] = [
     fullAssetLocked: true,
   },
   {
-    id: "invoice-pack-for-tailors",
-    slug: "invoice-pack-for-tailors",
-    contentType: "template",
-    title: "Invoice pack for tailors",
-    description: "Printable invoice and measurement sheets built for a tailoring business. Fill, print, done.",
+    id: "measuring-for-tailors",
+    slug: "measuring-for-tailors",
+    contentType: "pdf",
+    title: "Measuring for tailors",
+    description: "How to take, record and re-use a client's measurements so a garment fits the first time.",
     category: "Business",
     accessType: "free",
     price: 0,
@@ -183,9 +183,9 @@ export const mockContent: ContentPiece[] = [
     likes: 58,
     saved: false,
     createdAt: "2026-08-10T11:00:00Z",
-    previewAssetUrl: "https://cdn.wawu.example/preview/invoice-pack-for-tailors/preview.pdf",
+    previewAssetUrl: "https://cdn.wawu.example/preview/measuring-for-tailors/preview.pdf",
     fullAssetLocked: false,
-    fullAssetUrl: "https://cdn.wawu.example/full/invoice-pack-for-tailors.pdf",
+    fullAssetUrl: "https://cdn.wawu.example/full/measuring-for-tailors.pdf",
     purchased: true,
   },
   {
@@ -271,7 +271,7 @@ export const mockContent: ContentPiece[] = [
 ];
 
 // SEAM: replace with GET /api/hub/content/purchases
-export const mockPurchasedIds = new Set(["invoice-pack-for-tailors", "cac-in-7-days", "the-traders-playbook", "welding-rebar", "highlife-horn-stems", "nsukka-market-in-oils"]);
+export const mockPurchasedIds = new Set(["measuring-for-tailors", "cac-in-7-days", "the-traders-playbook", "welding-rebar", "highlife-horn-stems", "nsukka-market-in-oils"]);
 
 // SEAM: replace with GET /api/hub/content/:id
 export function mockContentById(id: string): ContentDetailResponse | null {

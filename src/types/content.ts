@@ -137,6 +137,24 @@ export const CONTENT_TYPE_META: Record<ContentType, ContentTypeMeta> = {
   template: { label: "Template", group: "download", blurb: "Invoices, sheets, forms" },
 };
 
+/**
+ * The types a creator can pick when publishing.
+ *
+ * `template` is deliberately absent: you asked for the templates feature to be
+ * hidden. This does NOT remove the type — docs/01_SPEC.md:105 locks six
+ * content types including Template, and CLAUDE.md says the spec wins over an
+ * instruction that contradicts it, so the type stays in the union, existing
+ * template pieces keep rendering, and the DB shape is untouched. Only the
+ * publish picker stops offering it. Delete `template` from the filter below to
+ * put it back.
+ *
+ * FLAG: this is a real divergence from the locked spec. It needs to be written
+ * into docs/01_SPEC.md, or reversed.
+ */
+export const PUBLISHABLE_CONTENT_TYPES: ContentType[] = (
+  Object.keys(CONTENT_TYPE_META) as ContentType[]
+).filter((t) => t !== "template");
+
 export type ContentStatus = "live" | "review" | "rejected";
 
 export interface ContentItem {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import Link from "next/link";
-import type { VerificationLevel } from "@/types/account";
+import type { CreatorTier, VerificationLevel } from "@/types/account";
 import type { OwnProfile, VerificationLevelEntry } from "@/types/verification";
 import { VERIFY_TIER_LABELS } from "@/types/verification";
 import { getOwnProfile, getVerificationLadder } from "@/lib/api/verification";
@@ -17,14 +17,23 @@ import { TierBadge } from "@/components/ui/TierBadge";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { ListRow } from "@/components/ui/ListRow";
 import { Icon } from "@/components/ui/Icon";
-import { useSession } from "@/lib/auth/session-provider";
+import { creatorGates } from "@/lib/auth/gates";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 const eyebrowClass = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted";
 
 export default function OwnProfilePage() {
-  const { signOut } = useSession();
+  // This screen used to fork on `profile.accountType === "creator"` alone,
+  // which is a SECOND stale-truth path beside the session's accountType: it is
+  // whatever GET own-profile happened to say, and it has no idea whether a
+  // CreatorState row exists. It disagreed with creatorGates(), so a creator
+  // could be offered "Become a creator" here while /create let them upload.
+  // Both truths are consulted now and creator wins in either: the signup row
+  // renders only when NOTHING anywhere says creator.
+  const { creator, resolved: creatorResolved } = useCreatorState();
+  const gates = creatorGates({ creator });
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [ladder, setLadder] = useState<VerificationLevelEntry[]>([]);
   const [purchasesCount, setPurchasesCount] = useState<number | null>(null);
@@ -65,7 +74,10 @@ export default function OwnProfilePage() {
     return <ErrorState title={error} onRetry={load} />;
   }
 
-  if (!profile) {
+  // Skeleton, never the user branch, until the creator fork is knowable: the
+  // rows below differ wholesale between account types, and guessing wrong for
+  // a frame is exactly the bug this screen was reported for.
+  if (!profile || !creatorResolved) {
     return (
       <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
         <div className="flex items-center gap-3">
@@ -78,7 +90,8 @@ export default function OwnProfilePage() {
     );
   }
 
-  const isCreator = profile.accountType === "creator";
+  const isCreator = gates.isCreator || profile.accountType === "creator";
+  const slots = profile.contentSlots ?? { published: gates.slotsUsed, total: gates.slotsTotal };
   const currentLevel = ladder.find((l) => l.status === "yours");
   const nextLevel = ladder.find((l) => l.status === "next");
   const purchasesMeta = purchasesError ? "—" : purchasesCount === null ? undefined : String(purchasesCount);
@@ -86,7 +99,7 @@ export default function OwnProfilePage() {
 
   return (
     <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
-      <IdentityBlock profile={profile} />
+      <IdentityBlock profile={profile} isCreator={isCreator} tier={gates.tier ?? profile.plan} />
       {isCreator && <CreatorDashboardCard profile={profile} />}
       <VerificationProgressCard tier={currentLevel?.tier ?? profile.verification} nextTier={nextLevel?.tier} />
 
@@ -105,7 +118,7 @@ export default function OwnProfilePage() {
         {isCreator ? (
           <>
             <ListRow title="Creator dashboard" subtitle="Earnings, uploads, messages" icon="LayoutDashboard" href="/creator" />
-            <ListRow title="My content" subtitle={`${profile.stats.published} published · ${profile.contentSlots?.published} of ${profile.contentSlots?.total} slots`} icon="Layers" href="/create/library" />
+            <ListRow title="My content" subtitle={`${profile.stats.published} published · ${slots.published} of ${slots.total} slots`} icon="Layers" href="/create/library" />
             <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
             <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
             <ListRow title="Verification" icon="ShieldCheck" href="/profile/verification" />
@@ -134,28 +147,18 @@ export default function OwnProfilePage() {
                 on the creator branch, so a plain account had no way to reach
                 the ladder at all. */}
             <ListRow title="Verification" subtitle="Badge and ladder" icon="ShieldCheck" href="/profile/verification" />
+            {/* Only reachable when neither the live CreatorState nor the
+                profile record says creator — see the fork note at the top. */}
             <ListRow title="Become a creator" subtitle="Publish content, host communities, get paid" icon="Sparkles" href="/onboarding" />
             <ListRow title="Settings" icon="Settings" href="/settings" />
           </>
         )}
-        {/*
-          Signing out was only reachable at the bottom of Settings. Profile is
-          where people look for it, so it lives here too.
-        */}
-        <button
-          type="button"
-          onClick={signOut}
-          className="mt-[10px] flex h-[52px] w-full items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[15px] text-[15px] font-semibold text-[var(--text-secondary)]"
-        >
-          <Icon name="LogOut" size={19} color="var(--text-secondary)" strokeWidth={2} />
-          Sign out
-        </button>
       </div>
     </div>
   );
 }
 
-function IdentityBlock({ profile }: { profile: OwnProfile }) {
+function IdentityBlock({ profile, isCreator, tier }: { profile: OwnProfile; isCreator: boolean; tier: CreatorTier }) {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
@@ -167,10 +170,13 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
           </div>
           <span className="text-[13px] text-text-muted">
             @{profile.handle}
-            {profile.accountType === "creator" && (
+            {isCreator && (
               <>
                 {" · "}
-                <TierBadge tier={profile.plan} />
+                {/* Live tier first: GET own-profile only reads creator state
+                    when its own accountType says "creator", so profile.plan
+                    is a stale "basic" whenever those two disagree. */}
+                <TierBadge tier={tier} />
               </>
             )}
           </span>
@@ -184,7 +190,7 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
         </Link>
       </div>
       {profile.bio && <p className="m-0 text-[14px] leading-[1.5] text-text-secondary">{profile.bio}</p>}
-      {profile.accountType === "creator" && (
+      {isCreator && (
         <div className="flex gap-7 border-b border-t border-hairline py-[14px]">
           <StatBlock value={String(profile.stats.published)} label="Published" align="start" size="sm" />
           {profile.stats.sales !== undefined && (
@@ -202,9 +208,9 @@ function IdentityBlock({ profile }: { profile: OwnProfile }) {
 function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
   return (
     <Link href="/creator" className="block no-underline">
-      <div className="flex flex-col gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
+      <div className="flex flex-col gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-elevated p-[14px]">
         <div className="flex items-center gap-[11px]">
-          <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+          <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
             <Icon name="ChartNoAxesColumn" size={17} color="var(--accent)" strokeWidth={2} />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1">

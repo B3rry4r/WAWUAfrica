@@ -66,8 +66,8 @@ function Item({
         "inline-flex h-[38px] items-center gap-[7px] rounded-full px-[13px]",
         "text-[13px] font-semibold transition-colors duration-[var(--dur-fast)]",
         active
-          ? "bg-[var(--accent-tint)] text-[var(--accent-hover)]"
-          : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.06)]"
+          ? "bg-[var(--selected-tint)] text-[var(--accent-hover)]"
+          : "text-[var(--text-secondary)] hover:bg-state-hover"
       )}
     >
       <Icon name={icon} size={17}  />

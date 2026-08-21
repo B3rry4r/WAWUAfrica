@@ -96,7 +96,7 @@ export default function MentorsPage() {
           </Link>
           <span className="ml-[10px] text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Mentors</span>
           <span className="flex-1" />
-          <span className="text-[13.5px] text-[var(--text-muted)]">Free 45-minute sessions, on a call</span>
+          <span className="text-[13.5px] text-[var(--text-muted)]">45-minute sessions, on a call, at no charge</span>
         </div>
 
         <div className="flex flex-col gap-[20px] p-[26px]">

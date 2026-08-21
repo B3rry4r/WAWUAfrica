@@ -1,75 +1,26 @@
-import type { ReactNode } from "react";
-import { Icon, type IconName } from "./Icon";
-
-export interface EmptyStateProps {
-  icon?: IconName;
-  title: string;
-  description?: string;
-  action?: ReactNode;
-}
-
-export function EmptyState({ icon = "Inbox", title, description, action }: EmptyStateProps) {
-  return (
-    <div
-      className="flex flex-col items-center gap-[12px] py-[48px] px-[28px] text-center"
-    >
-      <span
-        className="grid place-items-center w-[64px] h-[64px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)]"
-      >
-        <Icon name={icon} size={26} strokeWidth={1.8} color="var(--text-muted)" />
-      </span>
-      <h3 className="m-0 text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
-        {title}
-      </h3>
-      {description ? (
-        <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-w-[300px]">
-          {description}
-        </p>
-      ) : null}
-      {action}
-    </div>
-  );
-}
-
-export interface ErrorStateProps {
-  title?: string;
-  description?: string;
-  onRetry?: () => void;
-}
-
-export function ErrorState({
-  title = "Something went wrong",
-  description = "We could not load this right now. Check your connection and try again.",
-  onRetry,
-}: ErrorStateProps) {
-  return (
-    <div
-      className="flex flex-col items-center gap-[12px] py-[48px] px-[28px] text-center"
-    >
-      <span
-        className="grid place-items-center w-[64px] h-[64px] rounded-[999px] bg-[var(--danger-tint)] border border-[var(--border-hairline)]"
-      >
-        <Icon name="TriangleAlert" size={26} strokeWidth={1.8} color="var(--danger)" />
-      </span>
-      <h3 className="m-0 text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
-        {title}
-      </h3>
-      <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)] max-w-[300px]">
-        {description}
-      </p>
-      {onRetry ? (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-[6px] inline-flex items-center gap-[7px] h-[44px] py-0 px-[20px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[14px] font-semibold cursor-pointer [font-family:var(--font-sans)]"
-        >
-          <Icon name="RotateCcw" size={15} strokeWidth={2.2} color="currentColor" />
-          Try again
-        </button>
-      ) : null}
-    </div>
-  );
-}
+/**
+ * Historical import path.
+ *
+ * This file used to define its OWN EmptyState, ErrorState and Skeleton —
+ * second copies of the components in this same folder, which CLAUDE.md forbids
+ * ("Never fork a component. If a screen needs a variant, add a prop"). The
+ * forks were not harmless: this ErrorState defaulted its description to
+ * "We could not load this right now. Check your connection and try again.",
+ * so every screen that rendered it without a description told the user their
+ * connection had failed — including the Earnings screen, where the real answer
+ * was a 403 from the server explaining that the account was not a creator.
+ *
+ * EmptyState and ErrorState now re-export the real ones, whose props were
+ * widened to accept this file's names (`description`, a ReactNode `action`, an
+ * optional `icon`) so the call sites did not have to change.
+ *
+ * Skeleton is still defined here: it takes runtime pixel dimensions, while the
+ * canonical one takes named variants, and merging them is a mechanical change
+ * across ~25 call sites that is not worth bundling into a bug fix. Tracked in
+ * TASKS.md.
+ */
+export { EmptyState, type EmptyStateProps } from "./EmptyState";
+export { ErrorState, type ErrorStateProps } from "./ErrorState";
 
 export interface SkeletonProps {
   width?: number | string;
@@ -82,9 +33,10 @@ export function Skeleton({ width = "100%", height = 14, radius = 8, circle = fal
   return (
     <div
       className="bg-[linear-gradient(110deg,_var(--surface-tag)_25%,_var(--surface-elevated)_50%,_var(--surface-tag)_75%)] shrink-0 [background-size:200%_100%] [animation:wawuShimmer_1.6s_ease-in-out_infinite]"
-      // `width`/`height` were destructured but never applied, so every
-      // skeleton collapsed to 0px (and `shrink-0` kept it there in a flex
-      // column) — 25 call sites rendered a blank screen while loading.
+      // Runtime pixel geometry, so Tailwind's JIT cannot see these values as
+      // class names. `width`/`height` were destructured but never applied, so
+      // every skeleton collapsed to 0px (and `shrink-0` kept it there in a
+      // flex column) — 25 call sites rendered a blank screen while loading.
       style={{
         width: circle ? height : width,
         height,

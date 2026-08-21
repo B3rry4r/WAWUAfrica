@@ -17,10 +17,10 @@ export interface ToastProps {
 
 const TONE: Record<ToastKind, { border: string; tint: string; icon: string; color: string }> = {
   success: {
-    border: "border-[var(--border-accent)]",
-    tint: "bg-[var(--accent-tint)]",
+    border: "border-success",
+    tint: "bg-success-tint",
     icon: "Check",
-    color: "var(--accent)",
+    color: "var(--success)",
   },
   info: {
     border: "border-[var(--border-hairline)]",
@@ -29,7 +29,7 @@ const TONE: Record<ToastKind, { border: string; tint: string; icon: string; colo
     color: "var(--text-secondary)",
   },
   error: {
-    border: "border-[rgba(255,92,92,0.4)]",
+    border: "border-danger",
     tint: "bg-[var(--danger-tint)]",
     icon: "TriangleAlert",
     color: "var(--danger)",

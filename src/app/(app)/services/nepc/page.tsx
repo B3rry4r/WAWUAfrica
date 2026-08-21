@@ -61,7 +61,7 @@ export default function NepcServicePage() {
       </div>
 
       <div className="flex flex-col gap-[12px]">
-        <span className="grid h-[56px] w-[56px] place-items-center rounded-[16px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <span className="grid h-[56px] w-[56px] place-items-center rounded-[16px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
           <Icon name={service.icon as IconName} size={24} color="var(--accent)" />
         </span>
         <span className="text-[24px] font-extrabold tracking-[-0.025em] text-[var(--text-primary)]">
@@ -77,7 +77,7 @@ export default function NepcServicePage() {
         <div className="flex flex-col gap-[8px]">
           {STEPS.map((s, i) => (
             <div key={s.title} className="flex gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[12px_14px]">
-              <span className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)] text-[13px] font-bold text-[var(--accent)]">
+              <span className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)] text-[13px] font-bold text-[var(--accent)]">
                 {i + 1}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-[2px]">

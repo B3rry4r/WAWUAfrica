@@ -58,8 +58,8 @@ export function SmartScheduler() {
                   isOn
                     ? "bg-accent font-bold text-on-accent"
                     : isSuggested
-                      ? "border border-accent bg-accent-tint text-text-primary"
-                      : "text-text-secondary hover:bg-[rgba(255,255,255,0.10)]"
+                      ? "border border-selected bg-selected-tint text-text-primary"
+                      : "text-text-secondary hover:bg-state-hover"
                 }`}
               >
                 {day}

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { messagingApi } from "@/lib/api/messaging";
-import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { PLANS } from "@/types/subscription";
@@ -39,9 +38,9 @@ function daysUntil(iso: string): number {
 const DEV_TOOLS_ENABLED = process.env.NODE_ENV !== "production";
 
 export function PaidMessagesSettings() {
-  const { user, hydrated } = useSession();
-  const { creator, reload: reloadCreatorState } = useCreatorState();
-  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+  const { creator, resolved, reload: reloadCreatorState } = useCreatorState();
+  // accountType is deliberately not part of this — see creatorGates().
+  const gates = creatorGates({ creator });
   const [price, setPrice] = useState(gates.dmPrice || 300);
   const [penalty, setPenalty] = useState<PenaltyKind>("none");
   const [rate, setRate] = useState(0);
@@ -120,7 +119,11 @@ export function PaidMessagesSettings() {
     }
   };
 
-  if (!hydrated) {
+  // Skeleton until the SERVER has answered whether this account is a creator
+  // (`resolved` covers session hydration too). Waiting on hydration alone let
+  // the sign-in-time snapshot answer, and it says "user" forever for anyone
+  // who became a creator afterwards — they got "Set up a creator account".
+  if (!resolved) {
     return (
       <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
         <FlowHeader title="Paid messages" />
@@ -170,7 +173,7 @@ export function PaidMessagesSettings() {
               onClick={() => setPenalty(p)}
               className={`h-[30px] py-0 px-[12px] rounded-[999px] text-[11.5px] font-semibold cursor-pointer border font-[family-name:var(--font-sans)] ${
                 penalty === p
-                  ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                  ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
                   : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-muted)]"
               }`}
             >
@@ -209,7 +212,7 @@ export function PaidMessagesSettings() {
             onClick={() => setEnabled(!enabled)}
             className={`flex items-center gap-[14px] p-[16px] rounded-[var(--radius-card)] cursor-pointer text-left w-full border font-[family-name:var(--font-sans)] ${
               enabled
-                ? "bg-[var(--surface-elevated)] border-[var(--border-accent)]"
+                ? "bg-[var(--surface-elevated)] border-[var(--border-selected)]"
                 : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
             }`}
           >
@@ -230,7 +233,7 @@ export function PaidMessagesSettings() {
             >
               <span
                 className={`absolute top-[3px] w-[24px] h-[24px] rounded-[999px] ${
-                  enabled ? "right-[3px] left-auto bg-[#fff]" : "right-auto left-[3px] bg-[var(--text-disabled)]"
+                  enabled ? "right-[3px] left-auto bg-[var(--text-on-accent)]" : "right-auto left-[3px] bg-[var(--text-disabled)]"
                 }`}
               />
             </span>

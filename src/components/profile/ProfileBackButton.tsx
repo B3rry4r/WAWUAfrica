@@ -41,7 +41,7 @@ export function ProfileBackButton({ compact = false }: { compact?: boolean }) {
             }
       }
     >
-      <Icon name="ChevronLeft" size={18} color={compact ? "var(--text-primary)" : "#fff"} strokeWidth={2.2} />
+      <Icon name="ChevronLeft" size={18} color={compact ? "var(--text-primary)" : "var(--text-on-accent)"} strokeWidth={2.2} />
     </button>
   );
 }

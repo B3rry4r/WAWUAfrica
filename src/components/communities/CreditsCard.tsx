@@ -61,8 +61,8 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
   return (
     <>
       {showCard ? (
-        <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-elevated p-[14px]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
             <Icon name="Ticket" size={18} color="var(--accent)" strokeWidth={2} />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -94,14 +94,14 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
                   className={[
                     "flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] border-[1.5px] p-[14px_15px] text-left",
                     active
-                      ? "border-[var(--border-accent)] bg-[var(--accent-tint)]"
+                      ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
                       : "border-hairline bg-input",
                   ].join(" ")}
                 >
                   <span
                     className={[
                       "grid h-5 w-5 shrink-0 place-items-center rounded-full border-[1.5px]",
-                      active ? "border-accent" : "border-strong",
+                      active ? "border-selected" : "border-strong",
                     ].join(" ")}
                   >
                     {active && <span className="h-2.5 w-2.5 rounded-full bg-accent" />}
@@ -110,7 +110,7 @@ export function CreditsCard({ initialBalance, showCard = true, defaultOpen = fal
                     <span className="flex items-center gap-2 text-[15px] font-semibold text-text-primary">
                       {p.credits} credits
                       {id === "popular" && (
-                        <span className="rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.04em] text-accent">
+                        <span className="rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.04em] text-accent">
                           Popular
                         </span>
                       )}

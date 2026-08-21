@@ -112,7 +112,7 @@ export default function MentorDetailPage() {
       </div>
       <div className="flex items-center gap-[10px]">
         <Icon name="HandCoins" size={15} color="var(--text-muted)" />
-        <span className="text-[13.5px] text-[var(--text-secondary)]">Free, mentors volunteer their time</span>
+        <span className="text-[13.5px] text-[var(--text-secondary)]">No charge, mentors volunteer their time</span>
       </div>
       <div className="flex items-center gap-[10px]">
         <Icon name="Languages" size={15} color="var(--text-muted)" />

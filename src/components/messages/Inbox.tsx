@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { messagingApi } from "@/lib/api/messaging";
-import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { PLANS } from "@/types/subscription";
@@ -28,9 +27,9 @@ function formatDeadline(iso: string): string {
 }
 
 export function Inbox() {
-  const { user } = useSession();
   const { creator } = useCreatorState();
-  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+  // accountType is deliberately not part of this — see creatorGates().
+  const gates = creatorGates({ creator });
   const [state, setState] = useState<MessagingState | null>(null);
   const [error, setError] = useState(false);
 

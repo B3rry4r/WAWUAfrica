@@ -140,7 +140,7 @@ export default function EditProfilePage() {
                       className={[
                         "inline-flex h-8 cursor-pointer items-center gap-[6px] rounded-full border px-[13px] text-[12.5px]",
                         active
-                          ? "border-[var(--border-accent)] bg-[var(--accent-tint)] font-semibold text-accent"
+                          ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-accent"
                           : "border-hairline bg-tag font-medium text-text-secondary",
                       ].join(" ")}
                     >

@@ -43,7 +43,6 @@ export default function LearnPage() {
   const { entitlement, courses, playbook, guides } = data;
   const countryGuideCount = guides.filter((g) => g.kind === "country").length;
   const article = guides.find((g) => g.kind === "article");
-  const template = guides.find((g) => g.kind === "template");
 
   return (
     // Below xl: unchanged single-column mobile stack, banner on top. At xl
@@ -59,10 +58,10 @@ export default function LearnPage() {
         <section className={`flex-col gap-2.5 xl:hidden ${playbook ? "flex" : "hidden"}`}>
           <span className={`px-[2px] ${eyebrow}`}>Start here</span>
           <Link href="/learn/playbook" className="no-underline block">
-            <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)]">
+            <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)]">
               <div className="relative aspect-video w-full bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]">
                 <span className="absolute left-3 top-3 inline-flex h-[26px] items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.16)] bg-[rgba(11,10,13,0.62)] px-2.5 text-[11.5px] font-bold text-white backdrop-blur-[10px]">
-                  <Icon name="BookOpen" size={12} color="#fff" strokeWidth={2.2} />
+                  <Icon name="BookOpen" size={12} color="var(--text-on-accent)" strokeWidth={2.2} />
                   Playbook
                 </span>
               </div>
@@ -122,9 +121,7 @@ export default function LearnPage() {
             {article ? (
               <ListRow title={article.title} subtitle={`Guide · ${article.readMinutes} min read`} icon="FileText" href={`/learn/guides/${article.id}`} />
             ) : null}
-            {template ? (
-              <ListRow title={template.title} subtitle={`Download · ${template.fileCount} files`} icon="LayoutTemplate" href={`/learn/guides/${template.id}`} />
-            ) : null}
+            {/* The "Templates & Resources" row was removed on your instruction. */}
           </div>
         </section>
       </div>

@@ -16,7 +16,6 @@ import type { MessagingState } from "@/types/messaging";
 import type { ContentItem } from "@/types/content";
 import { PLANS } from "@/types/subscription";
 import type { ContentType } from "@/types/content";
-import type { KycStatus } from "@/types/account";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { TierBadge } from "@/components/ui/TierBadge";
@@ -27,44 +26,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ListRow } from "@/components/ui/ListRow";
 import { Avatar, BackLink } from "@/components/ui";
-
-/**
- * Real KYC state, not "in review" for everything that isn't approved. A
- * rejected creator was being told their documents were still being looked at,
- * and a creator who never started was told the same.
- */
-function KycNotice({ status }: { status: KycStatus }) {
-  if (status === "approved") return null;
-  const rejected = status === "rejected";
-  const copy =
-    status === "not_started"
-      ? { title: "Start verification to get paid", body: "Keep selling. Everything you earn is held until you verify.", link: "Start KYC" }
-      : rejected
-        ? { title: "Verification was not approved", body: "Nothing you have earned is lost. Send your ID again and we will look at it.", link: "Resubmit KYC" }
-        : { title: "KYC in review, 1 to 3 days", body: "Keep selling. Everything you earn is held until you are verified.", link: "Check status" };
-  return (
-    <div
-      className={`flex items-start gap-[11px] py-[14px] px-[15px] rounded-[var(--radius-input)] ${
-        rejected ? "bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.32)]" : "bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.28)]"
-      }`}
-    >
-      <Icon
-        name={rejected ? "TriangleAlert" : "Clock"}
-        size={16}
-        color={rejected ? "var(--danger)" : "var(--warning)"}
-        strokeWidth={2.2}
-        className="mt-[1px]"
-      />
-      <div className="flex-1 flex flex-col gap-[6px]">
-        <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{copy.title}</span>
-        <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">{copy.body}</span>
-        <Link href="/kyc" className="text-[12.5px] font-semibold text-[var(--accent)]">
-          {copy.link}
-        </Link>
-      </div>
-    </div>
-  );
-}
+import { HeldPayoutNote, VerificationBanner } from "./VerificationAsk";
 
 const typeIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -79,7 +41,7 @@ const typeIcons: Record<ContentType, IconName> = {
 export function CreatorDashboard() {
   const router = useRouter();
   const { user, hydrated } = useSession();
-  const { creator, loading } = useCreatorState();
+  const { creator, resolved } = useCreatorState();
   const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
 
   // Real GET /api/hub/content/mine/earnings — never the frozen mock. Starts
@@ -136,10 +98,10 @@ export function CreatorDashboard() {
     };
   }, [gates.isCreator, user?.wawuId]);
 
-  // Real session hasn't hydrated yet, or the creator snapshot hasn't loaded
-  // (e.g. a creator account with no CreatorState row yet) — hold off rather
-  // than render with nothing.
-  if (!hydrated || (loading && !creator) || !creator) return null;
+  // Hold off until the live creator state has actually settled (`resolved`),
+  // rather than painting from the sign-in-time snapshot — see
+  // useCreatorState. `!creator` after that means a genuine non-creator.
+  if (!hydrated || !resolved || !creator) return null;
 
   const tier = gates.tier ?? creator.tier;
   const approved = gates.canEarn;
@@ -237,11 +199,19 @@ export function CreatorDashboard() {
         </Button>
       </div>
 
-      <div className="xl:hidden pt-[18px] px-[20px] pb-[32px] flex flex-col gap-[16px]">
-        <KycNotice status={gates.kycStatus} />
+      {/* ONE ask, outside both breakpoint containers. It used to be rendered
+          twice — once inside `xl:hidden`, once inside `hidden xl:block` — which
+          is two chances to drift and no guarantee either one shows. This one
+          renders at every width. */}
+      {!approved ? (
+        <div className="px-[20px] pt-[18px] xl:px-[26px] xl:pt-[22px]">
+          <VerificationBanner status={gates.kycStatus} />
+        </div>
+      ) : null}
 
+      <div className="xl:hidden pt-[18px] px-[20px] pb-[32px] flex flex-col gap-[16px]">
         <div
-          className="flex flex-col gap-[12px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
+          className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
         >
           <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
             Earned this month
@@ -265,11 +235,11 @@ export function CreatorDashboard() {
               {keep}/{100 - keep} on {tierLabel}
             </span>
           </div>
-          {!approved ? (
-            <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)] pt-[12px] border-t border-t-[var(--border-hairline)]">
-              Released to your bank account as soon as verification clears. Nothing is lost while you wait.
-            </span>
-          ) : null}
+          {/* The way out lives in the card that states the problem — the copy
+              here is keyed to the REAL kyc status, so somebody who has never
+              submitted is told exactly that instead of being told to wait for
+              a review nobody is doing. */}
+          {!approved ? <HeldPayoutNote status={gates.kycStatus} /> : null}
         </div>
 
         <div className="flex gap-[12px]">
@@ -336,10 +306,8 @@ export function CreatorDashboard() {
       <div className="hidden xl:block xl:p-[26px]">
         <div className="grid grid-cols-[1fr_360px] items-start gap-[22px]">
           <div className="flex min-w-0 flex-col gap-[20px]">
-            <KycNotice status={gates.kycStatus} />
-
             <div className="grid grid-cols-4 gap-[16px]">
-              <div className="rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[linear-gradient(140deg,#5A0B7D,#9411C9)] p-[20px]">
+              <div className="rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[linear-gradient(140deg,var(--wawu-purple-deep),var(--accent))] p-[20px]">
                 <StatBlock value={earnedDisplay} label="Earned this month" align="start" size="md" />
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
@@ -369,7 +337,7 @@ export function CreatorDashboard() {
                     <div
                       className={`rounded-t-[12px] rounded-b-[4px] ${
                         i === 0
-                          ? "bg-[linear-gradient(180deg,#9411C9,#5A0B7D)]"
+                          ? "bg-[linear-gradient(180deg,var(--accent),var(--wawu-purple-deep))]"
                           : "border border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
                       }`}
                       style={{ height: `${Math.max(s.pct, 6)}%` }}
@@ -447,7 +415,7 @@ export function CreatorDashboard() {
               </div>
               <div className="h-[6px] rounded-[999px] bg-[var(--surface-tag)]">
                 <div
-                  className="h-[6px] rounded-[999px] bg-[linear-gradient(90deg,#5A0B7D,var(--accent))]"
+                  className="h-[6px] rounded-[999px] bg-[linear-gradient(90deg,var(--wawu-purple-deep),var(--accent))]"
                   style={{ width: `${Math.min(missedPct, 100)}%` }}
                 />
               </div>
@@ -478,16 +446,20 @@ export function CreatorDashboard() {
                 dashboard's existing "Paid out to GTB" treatment above. */}
             <div className="mt-auto flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[18px]">
               <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{earnedDisplay}</span>
+              <div className="flex flex-wrap gap-[8px]">
+                {approved ? (
+                  <StatusPill kind="success">Payable to your bank account</StatusPill>
+                ) : (
+                  <StatusPill kind="warning">Held, not payable yet</StatusPill>
+                )}
+              </div>
               {approved ? (
-                <StatusPill kind="success">Payable to your bank account</StatusPill>
+                <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
+                  Sent to your bank account automatically. No action needed.
+                </span>
               ) : (
-                <StatusPill kind="warning">Held, not payable yet</StatusPill>
+                <HeldPayoutNote status={gates.kycStatus} />
               )}
-              <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
-                {approved
-                  ? "Sent to your bank account automatically. No action needed."
-                  : "Released to your bank account as soon as verification clears."}
-              </span>
             </div>
           </div>
         </div>

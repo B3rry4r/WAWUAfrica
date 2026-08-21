@@ -86,7 +86,7 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
 
       {!community.joined ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 px-7 text-center">
-          <span className="mb-2 grid h-16 w-16 place-items-center rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+          <span className="mb-2 grid h-16 w-16 place-items-center rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)]">
             <Icon name={community.kind === "private" ? "Lock" : "Users"} size={26} color="var(--accent)" strokeWidth={1.9} />
           </span>
           <span className="text-[18px] font-bold text-text-primary">

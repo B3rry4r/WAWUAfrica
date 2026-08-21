@@ -45,7 +45,7 @@ export function ShareProfileButton({ handle, compact = false }: { handle: string
         type="button"
         onClick={share}
         aria-label="Share profile"
-        className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-tag transition-colors hover:bg-[rgba(255,255,255,0.08)]"
+        className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-tag transition-colors hover:bg-state-hover"
       >
         <Icon name={copied ? "Check" : "Share2"} size={16} color="var(--text-primary)" strokeWidth={2.1} />
       </button>
@@ -56,7 +56,7 @@ export function ShareProfileButton({ handle, compact = false }: { handle: string
     <button
       type="button"
       onClick={share}
-      className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[15px] text-[13.5px] font-semibold text-text-primary transition-colors hover:bg-[rgba(255,255,255,0.08)]"
+      className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[15px] text-[13.5px] font-semibold text-text-primary transition-colors hover:bg-state-hover"
     >
       <Icon name={copied ? "Check" : "Share2"} size={15} color="currentColor" strokeWidth={2.1} />
       {copied ? "Link copied" : "Share profile"}

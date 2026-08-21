@@ -24,7 +24,7 @@ export const libraryItems: ContentItem[] = [
     id: "c2",
     type: "video",
     title: "Pricing for market stalls",
-    meta: "Video · free · 1,204 views",
+    meta: `Video · ${formatNaira(0)} · 1,204 views`,
     price: 0,
     status: "live",
     isFirstUpload: true,
@@ -87,7 +87,8 @@ interface HubContentPieceResponse {
 function mapToContentItem(raw: HubContentPieceResponse): ContentItem {
   const status: ContentStatus = raw.status === "pending" ? "review" : raw.status;
   const typeLabel = CONTENT_TYPE_META[raw.contentType].label;
-  const priceLabel = raw.price > 0 ? formatNaira(raw.price) : "free";
+  // "Free" is gone from the platform's language — state the price instead.
+  const priceLabel = formatNaira(raw.price);
   const meta =
     status === "rejected"
       ? typeLabel
@@ -168,12 +169,12 @@ export const contentApi: ContentApi = {
     if (existing) {
       const firstUpload = !existing.some((i) => i.status === "live");
       if (firstUpload && item.price > 0) {
-        throw new ApiError("Your first upload has to be free. Publish it free, then price everything after.", 400);
+        throw new ApiError("Your first upload has to go out at ₦0. Publish this one at no charge, then price everything after it.", 400);
       }
 
       const inUse = existing.filter((i) => i.status !== "rejected").length;
       if (inUse >= creator.slotsTotal) {
-        throw new ApiError("All upload slots are in use. Remove a piece or upgrade to Pro to free a slot.", 409);
+        throw new ApiError("All upload slots are in use. Take a piece down, or move up to Pro for more room.", 409);
       }
     }
 

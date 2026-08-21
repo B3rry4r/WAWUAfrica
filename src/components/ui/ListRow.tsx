@@ -49,7 +49,7 @@ export function ListRow({ title, subtitle, icon, meta, onAction, trailing = "che
     </>
   );
   const cls =
-    "flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)]";
+    "flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-state-hover";
   if (href) {
     return (
       <Link href={href} className={cls}>

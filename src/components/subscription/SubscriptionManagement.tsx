@@ -11,9 +11,11 @@ import { subscriptionApi } from "@/lib/api/subscription";
 import { isFlutterwaveCancelled } from "@/lib/flutterwave";
 import type { BillingHistoryPage } from "@/lib/api/subscription";
 import { creatorGates } from "@/lib/auth/gates";
-import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { FlowHeader } from "@/components/layout/FlowHeader";
+import { VerificationBanner } from "@/components/dashboard/VerificationAsk";
 import { Button } from "@/components/ui/Button";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { ListRow } from "@/components/ui/ListRow";
 import { Sheet } from "@/components/ui/Sheet";
@@ -63,14 +65,18 @@ function CardLabel({ children }: { children: React.ReactNode }) {
 
 export function SubscriptionManagement() {
   const router = useRouter();
-  // Derive gates from the REAL signed-in user. This previously read the
+  // Derive gates from the REAL, LIVE creator state. This previously read the
   // frozen dev mock session (always creator/pro/paid), so the billing screen
-  // showed every visitor as a paid Pro creator regardless of their account.
-  const { user } = useSession();
-  const gates = creatorGates(user);
+  // showed every visitor as a paid Pro creator regardless of their account;
+  // it then read the session snapshot, which is written once at sign-in and
+  // so reported a stale tier and stale slot counts after any plan change.
+  const { creator } = useCreatorState();
+  const gates = creatorGates({ creator });
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "error" | "ready">("loading");
+  /** The caught load failure itself, so ErrorState can say what really happened. */
+  const [loadError, setLoadError] = useState<unknown>(null);
   const [screen, setScreen] = useState<Screen>("billing");
 
   const [showPaid, setShowPaid] = useState(false);
@@ -97,6 +103,7 @@ export function SubscriptionManagement() {
 
   const load = () => {
     setLoadState("loading");
+    setLoadError(null);
     subscriptionApi
       .getSubscription()
       // SEAM: replace with GET /api/hub/creator-subscription
@@ -104,7 +111,13 @@ export function SubscriptionManagement() {
         setSubscription(sub);
         setLoadState("ready");
       })
-      .catch(() => setLoadState("error"));
+      .catch((e: unknown) => {
+        // Keep the error. Discarding it is how a 403 that says "this area is
+        // only available to creator accounts" ended up on screen as "check
+        // your connection and try again".
+        setLoadError(e);
+        setLoadState("error");
+      });
   };
 
   useEffect(() => {
@@ -263,11 +276,12 @@ export function SubscriptionManagement() {
           <Skeleton variant="card" className="h-[140px]" />
         </div>
       ) : loadState === "error" || !subscription ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-[14px] px-[24px] text-center">
-          <Icon name="CircleAlert" size={30} color="var(--danger)" />
-          <span className="text-[15px] font-semibold">Could not load your billing</span>
-          <span className="text-[13px] text-[var(--text-secondary)]">Check your connection and try again.</span>
-          <Button onClick={load}>Try again</Button>
+        // Hand-rolled block replaced by the real ErrorState: it maps the
+        // caught error, so a 403 reads as "this is a creator-only area" with
+        // a route to /onboarding instead of a Retry button that can never
+        // succeed and a connection story that was never true.
+        <div className="flex-1">
+          <ErrorState error={loadError ?? undefined} onRetry={load} />
         </div>
       ) : (
         <>
@@ -300,7 +314,7 @@ export function SubscriptionManagement() {
 
             {screen === "upgrade" ? (
               <>
-                <div className="flex flex-col gap-[16px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]">
+                <div className="flex flex-col gap-[16px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-decor)]">
                   <CardLabel>The reason to move</CardLabel>
                   <div className="flex items-center gap-[14px]">
                     <div className="flex flex-col gap-[4px]">
@@ -446,7 +460,7 @@ export function SubscriptionManagement() {
               className={`grid place-items-center w-[72px] h-[72px] rounded-[999px] border ${
                 paidSummary.tier === "pro"
                   ? "bg-[rgba(255,183,3,0.14)] border-[rgba(255,183,3,0.34)]"
-                  : "bg-[var(--accent-tint)] border-[var(--border-accent)]"
+                  : "bg-[var(--selected-tint)] border-[var(--border-selected)]"
               }`}
             >
               <Icon name={paidSummary.tier === "pro" ? "Crown" : "Check"} size={30} strokeWidth={2.2} color={paidSummary.tier === "pro" ? "var(--brand-yellow)" : "var(--accent)"} />
@@ -467,6 +481,10 @@ export function SubscriptionManagement() {
                 <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatDate(subscription?.renewsAt)}</span>
               </div>
             </div>
+            {/* Post-checkout is the moment to ask for the OTHER gate. Paying
+                unlocks uploading; verification is what unlocks getting paid,
+                and it is never asked for anywhere else in a payment flow. */}
+            {gates.canEarn ? null : <VerificationBanner status={gates.kycStatus} className="w-full text-left" />}
             <div className="flex flex-col gap-[10px] w-full pt-[6px]">
               <Button full size="lg" icon="Plus" onClick={() => router.push("/create")}>
                 Use a new slot
@@ -513,7 +531,7 @@ export function SubscriptionManagement() {
             <CheckRow ok>Money you have already earned is still yours.</CheckRow>
           </Card>
           {tier === "pro" ? (
-            <div className="flex items-center gap-[12px] py-[14px] px-[15px] rounded-[var(--radius-input)] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
+            <div className="flex items-center gap-[12px] py-[14px] px-[15px] rounded-[var(--radius-input)] bg-[var(--decor-tint)] border border-[var(--border-decor)]">
               <div className="flex-1 flex flex-col gap-[3px]">
                 <span className="text-[13.5px] font-semibold">Basic is {formatNaira(PLANS.basic.price)}</span>
                 <span className="text-[12.5px] text-[var(--text-secondary)]">Keeps 6 uploads and open communities</span>
@@ -672,7 +690,7 @@ function CurrentView({
           <div className="h-[6px] rounded-[999px] bg-[var(--surface-tag)] overflow-hidden">
             <div className="h-full rounded-[999px] bg-[var(--accent)]" style={{width: `${Math.min(100, slotsPct)}%`}} />
           </div>
-          <span className="text-[12.5px] text-[var(--text-muted)]">{PLANS[tier].freeSlots} free and {PLANS[tier].slots - PLANS[tier].freeSlots} paid, included on {tier === "pro" ? "Pro" : "Basic"}.</span>
+          <span className="text-[12.5px] text-[var(--text-muted)]">{PLANS[tier].freeSlots} at no charge and {PLANS[tier].slots - PLANS[tier].freeSlots} priced, included on {tier === "pro" ? "Pro" : "Basic"}.</span>
         </Card>
       ) : null}
 
@@ -871,8 +889,8 @@ function DesktopSubscriptionView({
           <div
             className={`flex flex-col gap-[16px] rounded-[var(--radius-card)] border p-[24px] ${
               tier === "pro"
-                ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]"
-                : "border-[var(--border-accent)] bg-[linear-gradient(140deg,#3B0A55,#131316)]"
+                ? "border-[var(--border-selected)] bg-[var(--surface-elevated)]"
+                : "border-[var(--border-decor)] bg-[linear-gradient(140deg,var(--wawu-purple-deep),var(--surface-card))]"
             }`}
           >
             <div className="flex items-center gap-[12px]">
@@ -959,7 +977,7 @@ function DesktopSubscriptionView({
       <div className="flex min-w-0 flex-col gap-[16px]">
         {active && tier === "basic" ? (
           <>
-            <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[24px]">
+            <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-[24px]">
               <div className="flex items-center gap-[12px]">
                 <TierBadge tier="pro" />
                 <span className="text-[21px] font-semibold tracking-[-0.02em]">Pro · {formatNaira(PLANS.pro.price)} a year</span>
@@ -1011,7 +1029,7 @@ function DesktopSubscriptionView({
 
         {active && tier === "pro" ? (
           <>
-            <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[24px]">
+            <div className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-[24px]">
               <div className="flex items-center gap-[12px]">
                 <TierBadge tier="pro" />
                 <span className="text-[21px] font-semibold tracking-[-0.02em]">You&apos;re already on Pro</span>

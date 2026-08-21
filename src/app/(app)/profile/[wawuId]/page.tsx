@@ -322,7 +322,7 @@ function ContentRow({ item }: { item: CreatorProfile["content"][number] }) {
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:aspect-video xl:h-auto xl:w-full xl:rounded-none xl:border-0 xl:border-b xl:border-hairline">
         {item.locked && (
           <div className="absolute inset-0 grid place-items-center bg-[var(--locked-veil)]">
-            <Icon name="Lock" size={15} color="#fff" strokeWidth={2.2} />
+            <Icon name="Lock" size={15} color="var(--text-on-accent)" strokeWidth={2.2} />
           </div>
         )}
         <span className="absolute right-2.5 top-2.5 hidden xl:flex">{priceNode}</span>
@@ -351,7 +351,7 @@ function CommunityTab({ profile }: { profile: CreatorProfile }) {
       <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-hairline bg-card px-[14px] py-[13px]">
         <Icon name="Ticket" size={15} color="var(--text-muted)" strokeWidth={2} className="mt-px" />
         <span className="flex-1 text-[12.5px] leading-[1.5] text-text-secondary">
-          Reading is free. Sending a message in an open community costs 1 credit.
+          Reading costs nothing. Sending a message in an open community costs 1 credit.
         </span>
       </div>
     </div>
@@ -364,14 +364,14 @@ function CommunityRow({ profile, community }: { profile: CreatorProfile; communi
     <div
       className={[
         "flex gap-[14px] rounded-[var(--radius-card)] border bg-card p-[14px]",
-        privateC ? "border-[var(--border-accent)]" : "border-hairline",
+        privateC ? "border-[var(--border-decor)]" : "border-hairline",
       ].join(" ")}
     >
       <span
         className={[
           "grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border",
           privateC
-            ? "border-[var(--border-accent)] bg-[var(--accent-tint)]"
+            ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
             : "border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]",
         ].join(" ")}
       >
@@ -532,7 +532,7 @@ function SocialPill({ icon, label, href }: { icon: SocialName; label: string; hr
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[14px] text-[13px] font-semibold text-text-secondary no-underline transition-colors hover:border-accent hover:text-text-primary"
+      className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[14px] text-[13px] font-semibold text-text-secondary no-underline transition-colors hover:border-strong hover:text-text-primary"
     >
       <SocialIcon name={icon} size={15} />
       {label}

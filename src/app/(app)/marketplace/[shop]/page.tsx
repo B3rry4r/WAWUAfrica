@@ -53,7 +53,7 @@ export default async function ShopPage({
                 href={c === "All" ? `/marketplace/${shopId}` : `/marketplace/${shopId}?category=${c}`}
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-medium no-underline ${
                   active
-                    ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                    ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
                     : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
                 }`}
               >
@@ -128,7 +128,7 @@ export default async function ShopPage({
                   href={c === "All" ? `/marketplace/${shopId}` : `/marketplace/${shopId}?category=${c}`}
                   className={`shrink-0 rounded-full border px-[14px] py-[7px] text-[13px] font-medium no-underline ${
                     active
-                      ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                      ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
                       : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)]"
                   }`}
                 >

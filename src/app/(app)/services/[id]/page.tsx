@@ -106,8 +106,8 @@ export default function ComingSoonServicePage() {
 
         <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">{service.blurb}</p>
 
-        <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[14px]">
-          <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-[14px]">
+          <span className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
             <Icon name="Crown" size={18} color="var(--brand-yellow)" fill="var(--brand-yellow)" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
@@ -171,8 +171,8 @@ export default function ComingSoonServicePage() {
 
           <p className="m-0 max-w-[440px] text-[15px] leading-[1.6] text-[var(--text-secondary)]">{service.blurb}</p>
 
-          <div className="flex w-full max-w-[440px] items-center gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-[18px]">
-            <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+          <div className="flex w-full max-w-[440px] items-center gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-[18px]">
+            <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
               <Icon name="Crown" size={20} color="var(--brand-yellow)" fill="var(--brand-yellow)" />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-[3px] text-left">

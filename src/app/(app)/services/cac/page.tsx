@@ -59,7 +59,7 @@ export default function CacServicePage() {
       </div>
 
       <div className="flex flex-col gap-[12px]">
-        <span className="grid h-[56px] w-[56px] place-items-center rounded-[16px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <span className="grid h-[56px] w-[56px] place-items-center rounded-[16px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
           <Icon name={service.icon as IconName} size={24} color="var(--accent)" />
         </span>
         <span className="text-[24px] font-extrabold tracking-[-0.025em] text-[var(--text-primary)]">
@@ -82,21 +82,21 @@ export default function CacServicePage() {
                   className={[
                     "grid h-[22px] w-[22px] place-items-center rounded-full",
                     t.status === "done"
-                      ? "border border-[var(--border-accent)] bg-[var(--accent)]"
+                      ? "border border-[var(--border-selected)] bg-[var(--accent)]"
                       : t.status === "current"
-                        ? "border border-[var(--border-accent)] bg-[var(--accent-tint)]"
+                        ? "border border-[var(--border-selected)] bg-[var(--selected-tint)]"
                         : "border border-[var(--border-hairline)] bg-[var(--surface-tag)]",
                   ].join(" ")}
                 >
                   {t.status === "done" ? (
-                    <Icon name="Check" size={11} color="#fff" strokeWidth={3} />
+                    <Icon name="Check" size={11} color="var(--text-on-accent)" strokeWidth={3} />
                   ) : t.status === "current" ? (
                     <span className="h-[8px] w-[8px] rounded-full bg-[var(--accent)]" />
                   ) : (
                     <span className="text-[11px] font-bold text-[var(--text-muted)]">{i + 1}</span>
                   )}
                 </span>
-                {i < timeline.length - 1 && <span className={["w-[2px] min-h-[12px] flex-1", t.status === "done" ? "bg-[var(--border-accent)]" : "bg-[var(--border-hairline)]"].join(" ")} />}
+                {i < timeline.length - 1 && <span className={["w-[2px] min-h-[12px] flex-1", t.status === "done" ? "bg-[var(--border-selected)]" : "bg-[var(--border-hairline)]"].join(" ")} />}
               </div>
               <div className={["flex min-w-0 flex-1 flex-col gap-[2px]", i < timeline.length - 1 ? "pb-[14px]" : ""].join(" ")}>
                 <span className="flex items-center gap-[8px] text-[14px] font-semibold text-[var(--text-primary)]">

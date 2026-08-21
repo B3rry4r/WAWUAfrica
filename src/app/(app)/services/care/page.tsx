@@ -11,8 +11,8 @@ import {
 } from "@/lib/api/lifestyle";
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
-import { getService } from "@/lib/api/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
 import { BackLink, Button, ErrorState, Icon, Input, PhoneInput, Skeleton, fullPhoneNumber, DEFAULT_DIAL_CODE } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
@@ -35,15 +35,8 @@ export default function CarePage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<HealthSubscription | null>(null);
 
-  /**
-   * Whether this service is open yet, from the catalogue.
-   *
-   * This page lives at a static route, which Next resolves ahead of the
-   * dynamic /services/[id] detail page — so the "Notify me" button on the
-   * coming-soon card opened the full enrolment flow, payment and all. The page
-   * has to refuse on its own, which also covers anyone with the URL.
-   */
-  const [live, setLive] = useState<boolean | null>(null);
+  // Catalogue status — see useServiceLive for why each tool checks its own.
+  const live = useServiceLive("care");
   const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
   const [form, setForm] = useState({
     firstName: "",
@@ -54,13 +47,9 @@ export default function CarePage() {
   });
 
   useEffect(() => {
-    getService("care")
-      .then((svc) => setLive(svc ? svc.status === "live" : false))
-      // A catalogue that will not load is not permission to sell.
-      .catch(() => setLive(false));
-  }, []);
-
-  useEffect(() => {
+    // `live` MUST be in the deps. It starts null, so with an empty dep array
+    // this effect early-returned once and never ran again — the plans and the
+    // enrolment list never loaded at all.
     if (live !== true) return;
     getHealthPlans()
       .then(setPlans)
@@ -68,7 +57,7 @@ export default function CarePage() {
     getMyHealthSubscriptions()
       .then((rows) => setMine(Array.isArray(rows) ? rows : []))
       .catch(() => setMine([]));
-  }, []);
+  }, [live]);
 
   async function onSubscribe() {
     if (!selected) return;
@@ -107,36 +96,19 @@ export default function CarePage() {
   }
 
   if (live === false) {
-    return (
-      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
-        <BackLink />
-        <div className="flex flex-col items-start gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
-          <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-elevated)]">
-            <Icon name="Stethoscope" size={22} color="var(--text-secondary)" strokeWidth={2} />
-          </span>
-          <span className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Telemedicine is coming soon</span>
-          <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">
-            We are finishing the rollout with our care partner. It opens here first, and nothing is charged until it does.
-          </p>
-        </div>
-      </div>
-    );
+    return <ServiceComingSoon name="Telemedicine" icon="Stethoscope" />;
   }
 
   if (live === null) {
-    return (
-      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px]">
-        <Skeleton variant="card" />
-      </div>
-    );
+    return <ServiceGateLoading />;
   }
 
   if (done) {
     return (
       <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
         <ProfileBackButton />
-        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[26px] text-center">
-          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--accent-tint)]">
+        <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] p-[26px] text-center">
+          <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--decor-tint)]">
             <Icon name="HeartPulse" size={26} color="var(--accent)" strokeWidth={2.2} />
           </span>
           <span className="text-[19px] font-bold text-[var(--text-primary)]">You are covered</span>
@@ -167,7 +139,7 @@ export default function CarePage() {
       {error ? <ErrorState title="Something went wrong" body={error} /> : null}
 
       {mine.filter((m) => m.status === "delivered").map((m) => (
-        <div key={m.id} className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--accent-tint)] p-[14px]">
+        <div key={m.id} className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-[14px]">
           <Icon name="ShieldCheck" size={20} color="var(--accent)" />
           <span className="flex flex-col">
             <span className="text-[14px] font-semibold text-[var(--text-primary)]">{m.planName} is active</span>
@@ -199,7 +171,7 @@ export default function CarePage() {
               <div
                 key={p.planCode}
                 className={`flex flex-col rounded-[var(--radius-card)] border ${
-                  on ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]"
+                  on ? "border-[var(--border-selected)] bg-[var(--surface-elevated)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]"
                 }`}
               >
                 {/*

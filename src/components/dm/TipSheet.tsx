@@ -71,7 +71,7 @@ export function TipSheet({
                   className={[
                     "h-[54px] cursor-pointer rounded-[var(--radius-input)] border-[1.5px] text-[17px] font-bold [font-feature-settings:var(--font-feature-tabular)]",
                     active
-                      ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                      ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
                       : "border-[var(--border-hairline)] bg-[var(--surface-input)] text-[var(--text-primary)]",
                   ].join(" ")}
                 >

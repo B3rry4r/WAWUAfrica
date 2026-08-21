@@ -20,6 +20,7 @@ import {
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
+import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
 import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill, Toast } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
@@ -37,6 +38,10 @@ import { formatNaira } from "@/lib/format";
  */
 export default function LegalPage() {
   const { user } = useSession();
+  // Catalogue status. This tool lives at a static route, which Next resolves
+  // ahead of /services/[id], so a service the catalogue has closed would still
+  // open and take payment here unless the page refuses on its own.
+  const live = useServiceLive("legal");
   const [catalogue, setCatalogue] = useState<LegalCatalogue | null>(null);
   const [requests, setRequests] = useState<LegalRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +89,14 @@ export default function LegalPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (live === false) {
+    return <ServiceComingSoon name="Legal" icon="Scale" />;
+  }
+
+  if (live === null) {
+    return <ServiceGateLoading />;
   }
 
   if (intake) {
@@ -352,7 +365,7 @@ function RequestFlow({
                 onClick={() => setMedium(chosen ? null : o.medium)}
                 className={`flex items-center justify-between rounded-[var(--radius-card)] border p-[14px] text-left ${
                   chosen
-                    ? "border-[var(--border-accent)] bg-[var(--surface-elevated)]"
+                    ? "border-[var(--border-selected)] bg-[var(--surface-elevated)]"
                     : "border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
                 }`}
               >
@@ -425,7 +438,7 @@ function RequestFlow({
 
       {/* Step: read and sign the engagement letter. */}
       {request.quoteAmount != null && !request.contractSigned ? (
-        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[16px]">
+        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] p-[16px]">
           <span className="text-[14px] font-semibold text-[var(--text-primary)]">
             Quote: {formatNaira(request.quoteAmount)}
           </span>
@@ -451,7 +464,7 @@ function RequestFlow({
 
       {/* Step: pay for the work. Only reachable once signed. */}
       {request.contractSigned && !request.servicePaidAt ? (
-        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-card)] p-[16px]">
+        <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] p-[16px]">
           <span className="text-[14px] font-semibold text-[var(--text-primary)]">Signed. Ready to start.</span>
           <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
             Signed as {request.contractSignedAs}. Work begins once the fee is paid.
@@ -463,7 +476,7 @@ function RequestFlow({
       ) : null}
 
       {request.servicePaidAt ? (
-        <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--accent-tint)] p-[16px]">
+        <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-[16px]">
           <Icon name="Check" size={20} color="var(--accent)" strokeWidth={2.4} />
           <span className="text-[13.5px] leading-[1.5] text-[var(--text-primary)]">
             {request.deliveredAt

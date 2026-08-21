@@ -563,7 +563,7 @@ function LessonList({ content }: { content: ContentPiece }) {
       <div className="border-t border-hairline px-4 py-2.5 text-[12px] text-text-muted">
         <span className="inline-flex items-center gap-1.5">
           <Icon name="Lock" size={12} color="var(--text-muted)" />
-          Lesson 1 is free{content.accessType === "paid" ? `, unlock for ${formatNaira(content.price)}` : ""}
+          Lesson 1 is open{content.accessType === "paid" ? `, unlock for ${formatNaira(content.price)}` : ""}
         </span>
       </div>
     </div>
@@ -864,7 +864,7 @@ function UnlockDialogBody({
       {payment === "idle" ? (
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] border border-accent bg-accent-tint text-accent">
+            <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] border border-decor bg-decor-tint text-accent">
               <Icon name={typeVisual[content.contentType]} size={17} />
             </span>
             <span className="flex min-w-0 flex-col">
@@ -909,7 +909,7 @@ function UnlockDialogBody({
 
       {payment === "success" ? (
         <div className="flex flex-col items-center gap-4 py-2 text-center">
-          <span className="grid h-[64px] w-[64px] place-items-center rounded-button border border-accent bg-accent-tint">
+          <span className="grid h-[64px] w-[64px] place-items-center rounded-button border border-decor bg-decor-tint">
             <Icon name="Check" size={30} color="var(--accent)" strokeWidth={2.6} />
           </span>
           <div className="flex flex-col gap-1">
@@ -999,7 +999,7 @@ function RateSheet({
             type="button"
             onClick={() => onRate(n)}
             aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
-            className="grid h-11 w-11 place-items-center rounded-button transition-colors hover:bg-[rgba(255,255,255,0.07)]"
+            className="grid h-11 w-11 place-items-center rounded-button transition-colors hover:bg-state-hover"
           >
             <Icon
               name="Star"

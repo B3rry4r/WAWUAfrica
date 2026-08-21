@@ -10,6 +10,8 @@ import { FollowButton } from "@/components/shared/FollowButton";
 import { useSession } from "@/lib/auth/session-provider";
 import { getEvgScore } from "@/lib/api/profile";
 import { creatorGates } from "@/lib/auth/gates";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
+import type { CreatorState } from "@/types/auth";
 import { getPopularSearches, getSuggestedCreators } from "@/lib/api/search";
 import { messagingApi } from "@/lib/api/messaging";
 import { earningsApi } from "@/lib/api/earnings";
@@ -25,15 +27,28 @@ import type { Thread } from "@/types/messaging";
  * unconditionally, no wrapper needed.
  */
 export function HomeRightRail() {
-  const { accountType } = useSession();
-
-  const isCreator = accountType === "creator";
+  // Live creator state, not the session's sign-in-time accountType: that value
+  // never changes after sign-in, so a creator who subscribed afterwards kept
+  // getting the fan rail — "Become a creator" and all — on their own home
+  // feed. Nothing renders on either side of the fork until the server has
+  // actually answered; showing the fan rail "for now" IS the reported bug.
+  const { creator, resolved } = useCreatorState();
+  const isCreator = creatorGates({ creator }).isCreator;
 
   return (
     <aside className="hidden shrink-0 flex-col gap-4 xl:sticky xl:top-[22px] xl:flex xl:w-[320px] xl:self-start xl:py-[22px] xl:pr-[22px]">
-      {isCreator ? <CreatorRail /> : <UserRail />}
+      {!resolved ? (
+        <RailCard eyebrow={<Skeleton className="h-[11px] w-[92px] rounded" />}>
+          <Skeleton variant="row" className="h-[38px]" />
+          <Skeleton variant="row" className="h-[38px]" />
+        </RailCard>
+      ) : isCreator ? (
+        <CreatorRail creator={creator} />
+      ) : (
+        <UserRail />
+      )}
       <TrendingCard />
-      {isCreator ? null : <UpsellCard />}
+      {resolved && !isCreator ? <UpsellCard /> : null}
     </aside>
   );
 }
@@ -43,7 +58,8 @@ function RailCard({
   tone = "default",
   children,
 }: {
-  eyebrow: string;
+  /** Node rather than string so the unresolved rail can shim it with a Skeleton. */
+  eyebrow: React.ReactNode;
   tone?: "default" | "urgent";
   children: React.ReactNode;
 }) {
@@ -88,16 +104,26 @@ function UserRail() {
         </div>
       ) : (
         creators.slice(0, 2).map((c) => (
-          <div key={c.wawuId} className="flex items-center gap-[11px]">
+          // The identity block links to the public profile; FollowButton stays
+          // OUTSIDE that link, or tapping Follow navigates instead of
+          // following. Same structure as /explore/creators' CreatorRow.
+          <div key={c.wawuId} className="relative flex items-center gap-[11px]">
+            <Link
+              href={`/profile/${c.wawuId}`}
+              aria-label={`${c.fullName}, ${c.headline}`}
+              className="absolute inset-0 rounded-card no-underline"
+            />
             <Avatar initial={c.fullName} size={38} />
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-semibold">{c.fullName}</span>
               <span className="truncate text-[12px] text-text-muted">
                 {c.headline}
                 {c.location ? ` · ${c.location}` : ""}
               </span>
             </div>
-            <FollowButton wawuId={c.wawuId} initial={false} size="sm" />
+            <div className="relative flex shrink-0">
+              <FollowButton wawuId={c.wawuId} initial={false} size="sm" />
+            </div>
           </div>
         ))
       )}
@@ -105,9 +131,9 @@ function UserRail() {
   );
 }
 
-function CreatorRail() {
+function CreatorRail({ creator }: { creator: CreatorState | null }) {
   const { user } = useSession();
-  const gates = creatorGates(user);
+  const gates = creatorGates({ creator });
   const [evg, setEvg] = useState<number | null>(null);
 
   useEffect(() => {
@@ -235,7 +261,7 @@ function TrendingCard() {
 
 function UpsellCard() {
   return (
-    <div className="flex flex-col gap-[11px] rounded-card border border-accent bg-elevated p-[18px]">
+    <div className="flex flex-col gap-[11px] rounded-card border border-decor bg-elevated p-[18px]">
       <span className="text-[14.5px] font-semibold">Sell what you know</span>
       <span className="text-[12.5px] leading-[1.45] text-text-secondary">
         Creators keep 85%, 90% on Pro. Your first upload is free.

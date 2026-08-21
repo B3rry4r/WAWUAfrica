@@ -27,7 +27,7 @@ export function EarningsCalculator() {
   return (
     <div className="flex flex-col gap-5 rounded-card border border-hairline bg-card p-5 dt:p-6">
       <div className="flex items-center gap-3">
-        <span className="grid h-[40px] w-[40px] place-items-center rounded-[12px] border border-accent bg-accent-tint">
+        <span className="grid h-[40px] w-[40px] place-items-center rounded-[12px] border border-decor bg-decor-tint">
           <Icon name="Calculator" size={17} color="var(--accent)" strokeWidth={2} />
         </span>
         <span className="flex flex-col">
@@ -110,7 +110,7 @@ export function EarningsCalculator() {
             {compactNaira(monthly)}
           </span>
         </div>
-        <div className="rounded-input border border-accent bg-accent-tint p-4">
+        <div className="rounded-input border border-decor bg-decor-tint p-4">
           <span className="block text-[11px] font-bold uppercase tracking-[0.06em] text-accent">Yearly Potential</span>
           <span className="mt-1 block text-[26px] font-bold tracking-tight text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
             {compactNaira(yearly)}

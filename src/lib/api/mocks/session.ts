@@ -1,4 +1,5 @@
 import type { AccountType, CreatorTier, KycStatus } from "@/types/account";
+import { PLANS } from "@/types/subscription";
 
 export interface Session {
   accountType: AccountType;
@@ -27,7 +28,7 @@ export const currentSession: Session = {
     subscriptionPaid: true,
     kyc: "pending",
     slotsUsed: 4,
-    slotsTotal: 7,
+    slotsTotal: 15,
     dmPrice: 300,
   },
 };
@@ -46,7 +47,7 @@ export function setAccountType(type: AccountType): void {
 export function setCreatorTier(tier: CreatorTier): void {
   if (!currentSession.creator) return;
   currentSession.creator.tier = tier;
-  currentSession.creator.slotsTotal = tier === "pro" ? 7 : 3;
+  currentSession.creator.slotsTotal = PLANS[tier].slots;
 }
 
 export function setKycStatus(status: KycStatus): void {

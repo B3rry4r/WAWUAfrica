@@ -5,7 +5,7 @@ import { CATEGORIES, type CategoryId } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
 import { PLANS } from "@/types/subscription";
-import { useSession } from "@/lib/auth/session-provider";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
@@ -16,6 +16,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { NairaInput } from "@/components/ui/NairaInput";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { Sheet } from "@/components/ui/Sheet";
 import { ErrorState } from "@/components/ui/Feedback";
 import { ContentGridCard } from "@/components/ui/ContentCard";
 
@@ -37,38 +38,24 @@ const previewRatio: Record<ContentType, string> = {
   template: "3 / 4",
 };
 
-const uploadMeta: Record<ContentType, { file: string; meta: string; note: string; cover?: string }> = {
-  video: {
-    file: "stall-pricing-final.mp4",
-    meta: "248 MB · 12:08",
-    note: "MP4 or MOV, up to 2 GB. Landscape reads better in the feed.",
-  },
-  course: {
-    file: "cac-in-7-days-course",
-    meta: "6 lessons",
-    note: "Courses stream lesson by lesson. Buyers get the whole thing.",
-  },
-  audio: {
-    file: "pricing-answers.mp3",
-    meta: "42 MB · 26 min",
-    note: "MP3 or WAV, up to 200 MB. The preview is a 30 to 60 second clip.",
-  },
-  pdf: {
-    file: "traders-playbook.pdf",
-    meta: "8.4 MB · 34 pages",
-    note: "Buyers download the file and keep it. Do not upload anything you do not own the rights to.",
-    cover: "Books with a cover sell better than books without one.",
-  },
-  image: {
-    file: "market-pricing-sheet.png",
-    meta: "12 MB · 4000×3000",
-    note: "PNG or JPG, up to 50 MB. Keep it sharp, it is what people buy.",
-  },
-  template: {
-    file: "invoice-starter.xlsx",
-    meta: "640 KB · 3 sheets",
-    note: "Spreadsheets, forms and editable files. Buyers download and keep them.",
-  },
+/**
+ * The one line of guidance under each type's file picker.
+ *
+ * This used to be a `uploadMeta` table carrying a fake filename and a fake
+ * size for every type ("stall-pricing-final.mp4", "invoice-starter.xlsx",
+ * "248 MB · 12:08"). Nothing read them — FilePicker reports the real file's
+ * name and real byte progress — so they were dead fixtures pretending to be
+ * state, and one of them advertised a template. Only the note is real.
+ */
+const UPLOAD_NOTE: Record<ContentType, string> = {
+  video: "MP4 or MOV, up to 2 GB. Landscape reads better in the feed.",
+  course: "Courses stream lesson by lesson. Buyers get the whole thing.",
+  audio: "MP3 or WAV, up to 200 MB. The preview is a 30 to 60 second clip.",
+  pdf: "Buyers download the file and keep it. Do not upload anything you do not own the rights to.",
+  image: "PNG or JPG, up to 50 MB. Keep it sharp, it is what people buy.",
+  // Kept so an already-published piece of this type can still be fixed and
+  // resubmitted; the picker no longer offers it (PUBLISHABLE_CONTENT_TYPES).
+  template: "Spreadsheets, forms and editable files. Buyers download and keep them.",
 };
 
 /** `accept` per content type, so the picker offers the right files. */
@@ -84,16 +71,29 @@ const UPLOAD_ACCEPT: Record<ContentType, string> = {
 export interface PublishingWizardProps {
   type: ContentType;
   firstUpload: boolean;
+  /**
+   * No-charge slots still available on this creator's plan (Basic 1, Pro 2),
+   * excluding the piece being written now.
+   *
+   * The wizard used to model this as the single boolean above, so EVERY
+   * upload after the first was forced to be paid — a Pro creator silently lost
+   * the second no-charge slot their plan includes. The server has always
+   * allowed it (UPLOAD_ALLOWANCE_BY_TIER in the API), so the two disagreed and
+   * the UI was the stricter one.
+   */
+  noChargeSlotsLeft: number;
   /** Set when re-entering the wizard to fix and resubmit a rejected item. */
   resubmit?: { id: string; title: string };
 }
 
-export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWizardProps) {
+export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmit }: PublishingWizardProps) {
   const router = useRouter();
   const meta = CONTENT_TYPE_META[type];
-  const file = uploadMeta[type];
   const [step, setStep] = useState(0);
   const [paid, setPaid] = useState(!firstUpload);
+  // The first upload is forced to ₦0; after that it is a choice, but only
+  // while the plan still has a no-charge slot to spend.
+  const canChooseNoCharge = !firstUpload && noChargeSlotsLeft > 0;
   const [price, setPrice] = useState(1500);
   const [title, setTitle] = useState(resubmit ? resubmit.title : firstUpload ? "" : "The trader's playbook");
   const [description, setDescription] = useState("");
@@ -101,21 +101,25 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [discarding, setDiscarding] = useState(false);
   // The real uploaded asset. Publishing is blocked until this exists: the
   // backend requires a URL (CreateContentDto previewAsset is @IsUrl), so an
   // unattached upload previously guaranteed a 400.
   const [asset, setAsset] = useState<UploadedFile | null>(null);
-  // A genuinely separate free preview (cover image or sample clip).
+  // A genuinely separate, freely-viewable preview (cover image or sample clip).
   // `previewAsset` is public — the backend returns it to everyone, including
   // anonymous callers — so reusing the paid file here would hand the full
   // asset to anyone who reads the URL. Required for paid pieces.
   const [preview, setPreview] = useState<UploadedFile | null>(null);
 
-  const steps = ["Upload", "Free preview", "Details", "Price"];
+  const steps = ["Upload", "Preview", "Details", "Price"];
   const stepLabel = `Step ${step + 1} of 4`;
 
-  const { user } = useSession();
-  const gates = creatorGates(user);
+  // Live creator state, not the session's sign-in-time snapshot: tier decides
+  // the split shown on the price step (85/15 vs Pro's 90/10) and slot numbers,
+  // and a creator who upgraded after signing in was quoted the wrong one.
+  const { creator } = useCreatorState();
+  const gates = creatorGates({ creator });
   const tier = gates.tier ?? "basic";
   const tierIsPro = tier === "pro";
   const keep = PLANS[tier].split;
@@ -133,7 +137,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
     }
     const isPaid = paid && !firstUpload;
     if (isPaid && !preview) {
-      setPublishError("Paid pieces need a free preview — add a cover or short sample so buyers can see what they're paying for.");
+      setPublishError("Paid pieces need a preview — add a cover or short sample so buyers can see what they're paying for.");
       return;
     }
     setPublishing(true);
@@ -146,7 +150,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
         category,
         price: isPaid ? price : 0,
         // Free pieces are wholly public, so the file may serve as its own
-        // preview. Paid pieces must carry a distinct, genuinely free preview.
+        // preview. Paid pieces must carry a distinct, openly viewable preview.
         previewAssetUrl: preview?.fileUrl ?? asset.fileUrl,
         fullAssetUrl: asset.fileUrl,
       });
@@ -165,7 +169,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
   const desktopPrice = paid && !firstUpload ? price : 0;
 
   // D7 desktop header · 3-pill progress summary. The mobile `step` pointer
-  // (Upload → Free preview → Details → Price) is a literal current-screen
+  // (Upload → Preview → Details → Price) is a literal current-screen
   // index that doesn't map onto the desktop layout, which collapses those
   // into two simultaneous columns with nothing gated behind a "current
   // step". So the desktop pills read logical completion off the same
@@ -183,8 +187,30 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
 
   return (
     <>
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0 xl:hidden">
-      <FlowHeader title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]} right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepLabel}</span>} />
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] m-0 dt:hidden">
+      {/* Back walks the wizard backwards. It used to be FlowHeader's default
+          router.back(), which from step 3 threw you out of the upload
+          entirely and lost every field — there was no way back to step 2. */}
+      <FlowHeader
+        title={step === 0 ? (resubmit ? `Fix · ${meta.label}` : meta.label) : steps[step]}
+        backLabel={step === 0 ? "Back" : `Back to ${steps[step - 1].toLowerCase()}`}
+        onBack={() => {
+          if (publishError) {
+            setPublishError(null);
+            return;
+          }
+          if (step > 0) {
+            setStep(step - 1);
+            return;
+          }
+          if (asset || preview || title.trim() || description.trim()) {
+            setDiscarding(true);
+            return;
+          }
+          router.push("/create");
+        }}
+        right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepLabel}</span>}
+      />
 
       <div className="flex-1 py-[18px] px-[16px] flex flex-col gap-[18px]">
         {publishError ? (
@@ -210,6 +236,8 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
             {step === 3 ? (
               <PriceStep
                 firstUpload={firstUpload}
+                canChooseNoCharge={canChooseNoCharge}
+                noChargeSlotsLeft={noChargeSlotsLeft}
                 paid={paid}
                 onPaid={setPaid}
                 price={price}
@@ -249,7 +277,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
         {!publishError && step === 3 ? (
           <>
             <Button full size="lg" loading={publishing} onClick={submit}>
-              {resubmit ? "Resubmit for review" : firstUpload ? "Publish free" : "Submit for review"}
+              {resubmit ? "Resubmit for review" : firstUpload ? "Publish at ₦0" : "Submit for review"}
             </Button>
             <span className="text-[12px] text-[var(--text-muted)] self-center">
               {resubmit
@@ -266,12 +294,16 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
     {/* D7 · Publishing, desktop — the mobile 5-step wizard collapses into two
         columns: upload + details on the left, price + a live buyer-facing
         preview on the right, updating as the form fills in. */}
-    <div className="hidden xl:flex xl:h-full xl:min-h-0 xl:flex-col">
+    <div className="hidden dt:flex dt:h-full dt:min-h-0 dt:flex-col">
       <div className="flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur">
+        {/* Was a bare router.back() — one click binned a finished upload with
+            no warning, and on a direct load of /create/new there was nothing
+            behind it to go back to. Now it confirms when there is work to
+            lose and always lands on the picker. */}
         <button
           type="button"
-          onClick={() => router.back()}
-          className="flex items-center gap-[9px] border-none bg-transparent p-0 text-[14px] font-semibold text-text-secondary cursor-pointer"
+          onClick={() => setDiscarding(true)}
+          className="flex cursor-pointer items-center gap-[9px] border-none bg-transparent p-0 text-[14px] font-semibold text-text-secondary hover:text-text-primary"
         >
           <Icon name="X" size={18} color="var(--text-secondary)" />
           Discard
@@ -298,20 +330,31 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
           })}
         </div>
         <span className="flex-1" />
-        {publishError ? (
-          <span className="text-[13px] text-danger">{publishError}</span>
-        ) : null}
+        {/* The publish error used to be a bare span wedged into this 68px
+            header between two flex spacers, where a full sentence squashed
+            the step rail and the button. It now renders as a real alert at
+            the top of the money column, next to the fields it names. */}
         {/* "Save draft" (design D7) removed — there is no draft-persistence
             endpoint anywhere in this API layer, so a wired version would
             need to fake success. A dead button with no onClick is worse
             (looks real, does nothing silently); cutting it until a real
             drafts resource exists is the honest option. */}
         <Button size="sm" iconRight="ArrowRight" loading={publishing} onClick={submit}>
-          {resubmit ? "Resubmit for review" : firstUpload ? "Publish free" : "Publish"}
+          {resubmit ? "Resubmit for review" : firstUpload ? "Publish at ₦0" : "Publish"}
         </Button>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[1fr_420px] gap-[26px] overflow-y-auto p-[26px]">
+      {/*
+          A fixed `1fr 420px` split assumed a wide monitor. At 1024–1280 —
+          an ordinary laptop, or any screen at Windows' 125%/150% scaling —
+          the app Sidebar takes 244px and the rail took 420 of what was
+          left, so the upload/details column collapsed to ~280px: a title
+          field and 25 category chips in a phone-width strip next to a
+          half-empty rail. The rail is now 320px until there is genuinely
+          room for the design's 420, and the whole flow is width-capped so
+          it does not smear across an ultrawide either.
+        */}
+        <div className="mx-auto grid min-h-0 w-full max-w-[1560px] flex-1 grid-cols-[minmax(0,1fr)_320px] gap-[20px] overflow-y-auto p-[20px] [@media(min-width:1360px)]:grid-cols-[minmax(0,1fr)_420px] [@media(min-width:1360px)]:gap-[26px] [@media(min-width:1360px)]:p-[26px]">
         <div className="flex min-w-0 flex-col gap-[20px]">
           <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
             <span className="text-[14px] font-semibold text-text-primary">Your file</span>
@@ -319,7 +362,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
               folder="content/full"
               accept={UPLOAD_ACCEPT[type]}
               label={asset ? "Replace file" : `Choose your ${meta.label.toLowerCase()} file`}
-              hint={file.note}
+              hint={UPLOAD_NOTE[type]}
               onUploaded={setAsset}
               onCleared={() => setAsset(null)}
             />
@@ -368,16 +411,25 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
         </div>
 
         <div className="flex min-w-0 flex-col gap-[16px]">
+          {publishError ? (
+            <div
+              role="alert"
+              className="flex items-start gap-[10px] rounded-card border border-[rgba(255,92,92,0.28)] bg-[var(--danger-tint)] px-[14px] py-[13px]"
+            >
+              <Icon name="TriangleAlert" size={15} color="var(--danger)" className="mt-[1px] shrink-0" />
+              <span className="flex-1 text-[12.5px] leading-[1.5] text-text-secondary">{publishError}</span>
+            </div>
+          ) : null}
           <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-accent bg-card p-[22px]">
             <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Price</span>
             {firstUpload ? (
               <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-accent bg-elevated p-[16px]">
-                <span className="text-[15px] font-semibold text-text-primary">Your first one is free</span>
+                <span className="text-[15px] font-semibold text-text-primary">Your first one goes out at ₦0</span>
                 <p className="m-0 text-[13px] leading-[1.5] text-text-secondary">
                   Nobody has bought from you yet. Give this one away, then price everything after it.
                 </p>
                 <div className="flex">
-                  <StatusPill kind="info">Free · set for you</StatusPill>
+                  <StatusPill kind="info">₦0 · set for you</StatusPill>
                 </div>
               </div>
             ) : (
@@ -423,7 +475,7 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
                       ) : null}
                       <div className="flex items-center gap-[9px] pt-1">
                         <Icon name="Info" size={15} color="var(--warning)" />
-                        <span className="text-[12.5px] text-[#FFD37A]">
+                        <span className="text-[12.5px] text-[var(--warning)]">
                           Uses slot {nextSlot} of {gates.slotsTotal} · resets on renewal
                         </span>
                       </div>
@@ -435,9 +487,9 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
           </div>
 
           <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
-            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Free preview</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview</span>
             <span className="text-[13.5px] leading-[1.5] text-text-secondary">
-              You choose the giveaway — upload the clip, cover or extract buyers get for free.
+              You choose the giveaway — the clip, cover or extract buyers get before they pay.
             </span>
             {/* The picker the desktop pane was missing: submit() requires a
                 separate preview for paid pieces, so without this control
@@ -446,11 +498,11 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
             <FilePicker
               folder="content/preview"
               accept="image/png,image/jpeg,image/webp,video/mp4,application/pdf"
-              label={preview ? "Replace free preview" : "Add your free preview"}
+              label={preview ? "Replace the preview" : "Add a preview"}
               hint={
                 desktopPrice > 0
                   ? "Required for paid pieces: a cover or short sample buyers see before paying."
-                  : "Optional for free pieces."
+                  : "Optional when the piece is ₦0."
               }
               onUploaded={setPreview}
               onCleared={() => setPreview(null)}
@@ -475,6 +527,25 @@ export function PublishingWizard({ type, firstUpload, resubmit }: PublishingWiza
         </div>
       </div>
     </div>
+
+    {/* Shared by both widths: leaving an upload half-finished should ask
+        first, and should always land on a real screen. */}
+    <Sheet
+      desktop="modal"
+      open={discarding}
+      onClose={() => setDiscarding(false)}
+      title="Discard this upload?"
+      caption="Your file, price and details are not saved anywhere yet — closing now loses them."
+    >
+      <div className="flex flex-col gap-[10px]">
+        <Button full size="lg" variant="danger" onClick={() => router.push("/create")}>
+          Discard it
+        </Button>
+        <Button full size="lg" variant="secondary" onClick={() => setDiscarding(false)}>
+          Keep working on it
+        </Button>
+      </div>
+    </Sheet>
     </>
   );
 }
@@ -488,14 +559,13 @@ function UploadStep({
   asset: UploadedFile | null;
   onAsset: (file: UploadedFile | null) => void;
 }) {
-  const file = uploadMeta[type];
   return (
     <>
       <FilePicker
         folder="content/full"
         accept={UPLOAD_ACCEPT[type]}
         label={asset ? "Replace file" : `Choose your ${CONTENT_TYPE_META[type].label.toLowerCase()} file`}
-        hint={file.note}
+        hint={UPLOAD_NOTE[type]}
         onUploaded={onAsset}
         onCleared={() => onAsset(null)}
       />
@@ -519,7 +589,7 @@ function PreviewStep({
   return (
     <>
       <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
-        Anyone can see this much for free. Give away enough that they can tell it is good.
+        Anyone can see this much before paying. Give away enough that they can tell it is good.
       </p>
 
       {/* A real, separate preview file. This is served publicly, so it must
@@ -528,11 +598,11 @@ function PreviewStep({
       <FilePicker
         folder="content/preview"
         accept="image/png,image/jpeg,image/webp,video/mp4,application/pdf"
-        label={preview ? "Replace free preview" : "Add your free preview"}
+        label={preview ? "Replace the preview" : "Add a preview"}
         hint={
           isPaid
             ? "Required for paid pieces: a cover image or a short sample. Buyers see this before paying."
-            : "Optional for free pieces — your file is already public."
+            : "Optional at ₦0 — your file is already public."
         }
         onUploaded={onPreview}
         onCleared={() => onPreview(null)}
@@ -540,13 +610,13 @@ function PreviewStep({
 
       {isPdf ? (
         <div className="flex flex-col gap-[13px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-          <span className="text-[14px] font-semibold text-[var(--text-primary)]">Which pages people see free</span>
+          <span className="text-[14px] font-semibold text-[var(--text-primary)]">Which pages people see before paying</span>
           {/* Was a "pages shown free" slider stuck on 4: page-range previews
               aren't part of the publish payload (CreateContentDto carries a
               previewAsset URL, nothing page-based), so the honest control is
               the preview file above — upload the extract you want to give away. */}
           <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-            Upload the free extract as your preview above. The full file stays locked until someone buys.
+            Upload the extract you want to give away as the preview above. The full file stays locked until someone buys.
           </span>
         </div>
       ) : null}
@@ -559,7 +629,7 @@ function PreviewStep({
           <div className="relative flex-1 aspect-[3_/_4] rounded-[10px] overflow-hidden border border-[var(--border-hairline)]">
             <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] blur-[8px] scale-[1.12]" />
             <div className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center">
-              <Icon name="Lock" size={16} strokeWidth={2.2} color="#fff" />
+              <Icon name="Lock" size={16} strokeWidth={2.2} color="var(--text-on-accent)" />
             </div>
           </div>
         </div>
@@ -638,6 +708,8 @@ function DetailsStep({
 
 function PriceStep({
   firstUpload,
+  canChooseNoCharge,
+  noChargeSlotsLeft,
   paid,
   onPaid,
   price,
@@ -649,6 +721,8 @@ function PriceStep({
   proEarn,
 }: {
   firstUpload: boolean;
+  canChooseNoCharge: boolean;
+  noChargeSlotsLeft: number;
   paid: boolean;
   onPaid: (v: boolean) => void;
   price: number;
@@ -667,38 +741,49 @@ function PriceStep({
             <Icon name="Gift" size={20} strokeWidth={2} color="var(--accent)" />
           </span>
           <div className="flex flex-col gap-[7px]">
-            <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Your first one is free</span>
+            <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Your first one goes out at ₦0</span>
             <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
               Nobody has bought from you yet, so nobody knows the work is worth paying for. Give this one away, then price everything after it.
             </p>
           </div>
           <div className="flex">
-            <StatusPill kind="info">Free · set for you</StatusPill>
+            <StatusPill kind="info">₦0 · set for you</StatusPill>
           </div>
         </div>
+      ) : null}
+
+      {/* Not the first upload, but the plan's no-charge slots are spent. Say so,
+          rather than presenting a dead control with no explanation. */}
+      {!firstUpload && noChargeSlotsLeft <= 0 ? (
+        <p className="m-0 text-[13px] leading-[1.5] text-[var(--text-muted)]">
+          Your plan&rsquo;s no-charge uploads are used up, so this one carries a price. Moving up to Pro adds another.
+        </p>
       ) : null}
 
       <div className={`flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] ${firstUpload ? "opacity-[0.55]" : "opacity-100"}`}>
         {["No charge", "Paid"].map((label) => {
           const active = (label === "Paid") === paid;
+          // The first upload can only be ₦0; once the plan's no-charge slots
+          // are gone, only "Paid" is left.
+          const locked = label === "Paid" ? firstUpload : !firstUpload && !canChooseNoCharge;
           return (
             <button
               key={label}
               type="button"
-              disabled={firstUpload && label === "Paid"}
+              disabled={locked}
               onClick={() => onPaid(label === "Paid")}
               className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] text-[13.5px] font-semibold font-[var(--font-sans)] ${
                 active
                   ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-                  : firstUpload && label === "Paid"
+                  : locked
                     ? "bg-transparent text-[var(--text-disabled)]"
                     : "bg-transparent text-[var(--text-secondary)]"
-              } ${firstUpload && label === "Paid" ? "cursor-not-allowed" : "cursor-pointer"}`}
+              } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
             >
-              {firstUpload && label === "Paid" ? (
+              {locked ? (
                 <span className="inline-flex items-center gap-[7px]">
                   <Icon name="Lock" size={14} strokeWidth={2.2} color="var(--text-disabled)" />
-                  Paid
+                  {label}
                 </span>
               ) : (
                 label
@@ -712,11 +797,11 @@ function PriceStep({
         <div className="flex flex-col gap-[11px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
           <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">What happens next</span>
           <div className="flex gap-[11px]">
-            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">1</span>
-            <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">This goes live free and starts pulling people to your profile.</span>
+            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[var(--text-on-accent)] text-[11px] font-bold shrink-0">1</span>
+            <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">This goes live at ₦0 and starts pulling people to your profile.</span>
           </div>
           <div className="flex gap-[11px]">
-            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[#fff] text-[11px] font-bold shrink-0">2</span>
+            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[var(--text-on-accent)] text-[11px] font-bold shrink-0">2</span>
             <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">Your next upload can carry any price from {formatNaira(100)} to {formatNaira(5000)}.</span>
           </div>
         </div>
@@ -760,7 +845,7 @@ function PriceStep({
 function Submitted({ type, title, price }: { type: ContentType; title: string; price: number }) {
   const router = useRouter();
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
+    <div className="mx-auto flex min-h-[100vh] w-full max-w-[var(--mobile-column)] flex-col dt:my-0 dt:max-w-[560px] dt:justify-center">
       <div className="flex-1 flex flex-col items-center justify-center gap-[18px] py-[40px] px-[28px] text-center">
         <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--warning-tint)] border border-[rgba(255,183,3,0.3)]">
           <Icon name="Clock" size={36} strokeWidth={2.2} color="var(--warning)" />
@@ -819,7 +904,7 @@ function contentPublish(payload: {
     contentApi.publish({
       type: payload.type,
       title: payload.title,
-      meta: `${CONTENT_TYPE_META[payload.type].label} · ${payload.price > 0 ? formatNaira(payload.price) : "free"}`,
+      meta: `${CONTENT_TYPE_META[payload.type].label} · ${formatNaira(payload.price)}`,
       price: payload.price,
       description: payload.description,
       category: payload.category,

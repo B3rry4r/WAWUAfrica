@@ -29,12 +29,31 @@ const config: Config = {
         tag: "var(--surface-tag)",
         scrim: "var(--surface-scrim)",
 
+        // ACTION — the thing you press.
         accent: "var(--accent)",
         "accent-hover": "var(--accent-hover)",
         "accent-press": "var(--accent-press)",
         "accent-deep": "var(--accent-deep)",
         "accent-tint": "var(--accent-tint)",
         "accent-tint-strong": "var(--accent-tint-strong)",
+        "accent-soft": "var(--accent-soft)",
+        "accent-soft-tint": "var(--accent-soft-tint)",
+
+        // SELECTION — you already chose it.
+        "selected-tint": "var(--selected-tint)",
+        "selected-tint-strong": "var(--selected-tint-strong)",
+        "selected-text": "var(--selected-text)",
+
+        // DECORATION — framing only. Neutral on purpose; see tokens.css.
+        "decor-tint": "var(--decor-tint)",
+        "decor-tint-strong": "var(--decor-tint-strong)",
+        "decor-icon": "var(--decor-icon)",
+
+        // INTERACTION STATE — neutral hover/press, theme-aware.
+        "state-hover": "var(--state-hover)",
+        "state-press": "var(--state-press)",
+        "surface-hover": "var(--surface-hover)",
+        "surface-press": "var(--surface-press)",
 
         "text-primary": "var(--text-primary)",
         "text-secondary": "var(--text-secondary)",
@@ -43,6 +62,8 @@ const config: Config = {
         "on-accent": "var(--text-on-accent)",
         "on-light": "var(--text-on-light)",
 
+        "brand-basket": "var(--brand-basket)",
+        "brand-beauty": "var(--brand-beauty)",
         "brand-yellow": "var(--brand-yellow)",
         "brand-lime": "var(--brand-lime)",
         "brand-aqua": "var(--brand-aqua)",
@@ -53,6 +74,7 @@ const config: Config = {
         warning: "var(--warning)",
         "warning-tint": "var(--warning-tint)",
         danger: "var(--danger)",
+        "danger-hover": "var(--danger-hover)",
         "danger-tint": "var(--danger-tint)",
         info: "var(--info)",
         "info-tint": "var(--info-tint)",
@@ -63,6 +85,12 @@ const config: Config = {
         hairline: "var(--border-hairline)",
         strong: "var(--border-strong)",
         accent: "var(--border-accent)",
+        selected: "var(--border-selected)",
+        decor: "var(--border-decor)",
+        info: "var(--border-info)",
+        success: "var(--border-success)",
+        warning: "var(--border-warning)",
+        danger: "var(--border-danger)",
       },
       borderRadius: {
         chip: "var(--radius-chip)",

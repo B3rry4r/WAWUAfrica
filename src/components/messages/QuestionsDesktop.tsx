@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { messagingApi } from "@/lib/api/messaging";
-import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { PLANS } from "@/types/subscription";
@@ -51,9 +50,9 @@ const toneTextClass: Record<CountdownTone, string> = {
  * unconditionally alongside the mobile <Inbox />.
  */
 export function QuestionsDesktop() {
-  const { user } = useSession();
   const { creator } = useCreatorState();
-  const gates = creatorGates(user ? { accountType: user.accountType, creator } : null);
+  // accountType is deliberately not part of this — see creatorGates().
+  const gates = creatorGates({ creator });
   const [threads, setThreads] = useState<ThreadDetail[] | null>(null);
   const [error, setError] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -153,7 +152,7 @@ export function QuestionsDesktop() {
               onClick={() => setSelectedId(t.id)}
               aria-current={isSelected}
               className={`flex w-full gap-3 border-b border-hairline px-5 py-4 text-left transition-colors ${
-                isSelected ? "bg-accent-tint" : "hover:bg-[rgba(255,255,255,0.05)]"
+                isSelected ? "bg-selected-tint" : "hover:bg-state-hover"
               } ${t.status !== "awaiting" ? "opacity-70" : ""}`}
             >
               <Avatar initials={t.buyerInitials} size={44} />

@@ -79,7 +79,7 @@ export default function VerificationPage() {
       </div>
 
       {current && (
-        <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-elevated p-[14px]">
+        <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-elevated p-[14px]">
           <VerificationBadge tier={current.tier} size={34} />
           <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
             <span className="text-[15.5px] font-semibold text-text-primary">

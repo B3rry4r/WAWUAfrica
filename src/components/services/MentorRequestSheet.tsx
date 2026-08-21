@@ -115,7 +115,7 @@ export function MentorRequestSheet({
                     aria-pressed={active}
                     className={`inline-flex h-[34px] items-center gap-[6px] rounded-full border px-[12px] text-[12.5px] transition-colors ${
                       active
-                        ? "border-[var(--border-accent)] bg-[var(--accent-tint)] font-semibold text-[var(--text-primary)]"
+                        ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-[var(--text-primary)]"
                         : "border-[var(--border-hairline)] bg-[var(--surface-tag)] font-medium text-[var(--text-secondary)]"
                     }`}
                   >

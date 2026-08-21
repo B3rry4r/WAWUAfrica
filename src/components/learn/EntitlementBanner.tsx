@@ -18,7 +18,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">No course claimed yet</span>
-          <span className="text-[12.5px] text-[var(--text-secondary)]">Free courses come with a creator subscription.</span>
+          <span className="text-[12.5px] text-[var(--text-secondary)]">Courses at no charge come with a creator subscription.</span>
         </div>
       </div>
     );
@@ -26,7 +26,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
 
   if (variant === "full") {
     return (
-      <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-4">
+      <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-4">
         <div className="flex items-center gap-2.5">
           <TierBadge tier={tier} />
           <span className="flex-1 text-[12.5px] text-[var(--text-muted)]">Your entitlement</span>
@@ -57,7 +57,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-[var(--radius-input)] border border-[var(--border-accent)] bg-[var(--accent-tint)] p-[13px_15px]">
+    <div className="flex items-center gap-3 rounded-[var(--radius-input)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-[13px_15px]">
       <Icon name="GraduationCap" size={17} color="var(--accent)" strokeWidth={2.2} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[14px] font-semibold text-[var(--text-primary)]">

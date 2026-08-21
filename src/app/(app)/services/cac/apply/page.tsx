@@ -182,7 +182,7 @@ export default function CacApplyPage() {
   if (result) {
     return (
       <div className="flex flex-col items-center gap-[18px] p-[40px_28px_96px] text-center xl:mx-auto xl:mt-[8vh] xl:max-w-[440px] xl:p-0">
-        <span className="grid h-[88px] w-[88px] place-items-center rounded-full border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <span className="grid h-[88px] w-[88px] place-items-center rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)]">
           <Icon name="Check" size={40} color="var(--accent)" strokeWidth={2.6} />
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em] text-[var(--text-primary)]">Application in</h2>
@@ -385,7 +385,7 @@ export default function CacApplyPage() {
           confirmed ? "border-[var(--accent)] bg-[var(--accent)]" : "border-[var(--border-hairline)] bg-transparent",
         ].join(" ")}
       >
-        {confirmed && <Icon name="Check" size={14} color="#fff" strokeWidth={3} />}
+        {confirmed && <Icon name="Check" size={14} color="var(--text-on-accent)" strokeWidth={3} />}
       </span>
       <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">The details above are correct and the documents are mine.</span>
     </button>
@@ -541,7 +541,7 @@ export default function CacApplyPage() {
                   disabled={n > step}
                   className={[
                     "flex items-center gap-[11px] rounded-[var(--radius-input)] border p-[14px_16px] text-left",
-                    state === "current" ? "border-[var(--border-accent)] bg-[var(--accent-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
+                    state === "current" ? "border-[var(--border-selected)] bg-[var(--selected-tint)]" : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
                     n <= step ? "cursor-pointer" : "cursor-default",
                   ].join(" ")}
                 >
@@ -563,7 +563,7 @@ export default function CacApplyPage() {
             })}
             <div className="mt-auto flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
               <span className="text-[12.5px] font-semibold text-[var(--text-primary)]">Need help?</span>
-              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your answers before you pay, free.</span>
+              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your answers before you pay, at no charge.</span>
             </div>
           </div>
 

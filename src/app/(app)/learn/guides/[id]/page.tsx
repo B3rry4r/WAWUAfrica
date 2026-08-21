@@ -89,7 +89,7 @@ function CountryGuideDetail({ guide }: { guide: CountryGuide }) {
         </div>
       </section>
 
-      <div className="flex flex-col gap-2.5 rounded-[var(--radius-card)] border border-[var(--border-accent)] bg-[var(--surface-elevated)] p-4">
+      <div className="flex flex-col gap-2.5 rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-4">
         <span className="text-[14px] font-semibold text-[var(--text-primary)]">{guide.crossSell.heading}</span>
         <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">{guide.crossSell.body}</span>
         <Link href={guide.crossSell.href} className="self-start text-[13px] font-semibold text-[var(--accent)]">
@@ -131,7 +131,7 @@ function TemplateDetail({ guide }: { guide: TemplatePack }) {
       </div>
       <p className="m-0 text-[14.5px] leading-[1.55] text-[var(--text-secondary)]">{guide.description}</p>
       <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-3.5">
-        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
           <Icon name="LayoutTemplate" size={18} color="var(--accent)" />
         </span>
         <div className="min-w-0 flex-1">

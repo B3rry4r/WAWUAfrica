@@ -39,7 +39,7 @@ export default async function MarketplacePage() {
               href={`/marketplace/${shop.id}`}
               className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px] no-underline"
             >
-              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
                 <Icon
                   name={shop.id === "basket" ? "ShoppingBasket" : "Sparkles"}
                   size={18}
@@ -90,7 +90,7 @@ export default async function MarketplacePage() {
                 className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px] no-underline"
               >
                 <div className="flex items-center gap-[12px]">
-                  <span className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+                  <span className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
                     <Icon
                       name={shop.id === "basket" ? "ShoppingBasket" : "Sparkles"}
                       size={20}

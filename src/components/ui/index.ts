@@ -15,6 +15,7 @@ export { ErrorState } from "./ErrorState";
 export { FilePicker } from "./FilePicker";
 export { HandoffPill } from "./HandoffPill";
 export { Icon } from "./Icon";
+export type { IconName } from "./Icon";
 export { Input } from "./Input";
 export { ListRow } from "./ListRow";
 export { NairaInput } from "./NairaInput";

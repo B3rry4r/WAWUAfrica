@@ -31,9 +31,50 @@ should **not** be ported: `CATEGORIES`, `FILTERS`, `CategoryTag`, `CategoryBar`,
 `TrustScoreChip`, `LEGACY`.
 
 ## Brand
-Accent is **WAWU Purple `#9411C9`** (from the brand guidelines PDF), not the pink
-in the earlier `Colors.svg` — that sheet was superseded. Font is **Alan Sans** via
-`--font-sans`. Never hardcode either; use `var(--accent)` and `var(--font-sans)`.
+Accent is **WAWU Purple `#9411C9`** (from the brand guidelines PDF). Font is
+**Alan Sans** via `--font-sans`. Never hardcode either; use `var(--accent)` and
+`var(--font-sans)`.
+
+The rest of the palette is the **WAWU COLORS brand sheet** (`WAWU COLORS.jpeg` at
+the repo root), recorded verbatim as `--wawu-*` in `src/app/tokens.css`:
+
+| Token | Hex | Sheet's stated purpose |
+|---|---|---|
+| `--wawu-purple-deep` | `#290D43` | Primary brand colour |
+| `--wawu-ink` | `#111018` | Strength, sophistication, typography |
+| `--wawu-warm-white` | `#FAF8F5` | Main canvas |
+| `--wawu-lilac` | `#9B7BFF` | Creativity / digital |
+| `--wawu-pink` | `#FF0084` | Signature accent / moments of energy |
+| `--wawu-lemon` | `#F4E94E` | Fun / discovery / optimism |
+| `--wawu-green` | `#69D36A` | Growth / opportunity |
+| `--wawu-sky` | `#5BC8FF` | Technology / connection |
+
+## Colour roles — purple is for ACTION and CHOICE, nothing else
+Four different jobs used to resolve to the same purple, which is why every card,
+chip, border and icon tile came out violet. They are now separate tokens, and the
+**token name is the decision** — pick by what the element means, not by how it
+should look.
+
+| Job | Tokens | Colour |
+|---|---|---|
+| **Action** — you can press it | `--accent`, `--accent-hover`, `--accent-press` | WAWU Purple |
+| **Selection** — you already chose it | `--selected-tint`, `--border-selected`, `--selected-text` | WAWU Purple, stronger |
+| **Decoration** — framing only: icon tiles, notice panels, always-on card outlines | `--decor-tint`, `--decor-tint-strong`, `--border-decor`, `--decor-icon` | **neutral** |
+| **Information** | `--info`, `--info-tint`, `--border-info` | Sky Blue |
+| **Interaction state** — hover / press | `--state-hover`, `--state-press` (translucent), `--surface-hover`, `--surface-press` (opaque) | **neutral** |
+| **Focus ring** | `--focus-ring` | WAWU Purple |
+| Decorative purple (illustration, gradients) | `--accent-soft` (Electric Lilac) | never a button |
+
+**`--border-accent` and `--accent-tint` are legacy.** New decorative work takes
+`--border-decor` / `--decor-tint`; new selected states take `--border-selected` /
+`--selected-tint`.
+
+### Hover is never white, and never the accent
+`hover:bg-[rgba(255,255,255,0.06)]` is a **1.00:1 no-op on a white card** and an
+accent tint measures ~1.05:1 on a dark one — both make a control dissolve into its
+container. Use `--state-hover` (control with no fill of its own) or
+`--surface-hover` (control that already carries a fill). Both invert with the
+theme and are measured to clear 1.3:1 against every surface token in both themes.
 
 ## Ported and available now — `src/components/ui/`
 ```

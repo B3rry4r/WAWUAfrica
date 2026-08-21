@@ -42,7 +42,7 @@ export function NairaInput({
               className={[
                 "h-9 rounded-full border px-3 text-[13px] font-semibold transition-colors",
                 value === p
-                  ? "border-[var(--border-accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                  ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
                   : "border-hairline bg-card text-text-secondary",
               ].join(" ")}
             >

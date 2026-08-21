@@ -116,7 +116,7 @@ export function ContentGridCard({
           <span
             className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center"
           >
-            <Icon name="Lock" size={16} strokeWidth={2.2} color="#fff" />
+            <Icon name="Lock" size={16} strokeWidth={2.2} color="var(--text-on-accent)" />
           </span>
         ) : null}
       </span>

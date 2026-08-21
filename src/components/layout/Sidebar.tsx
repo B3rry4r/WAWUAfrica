@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "@/lib/auth/session-provider";
 import { creatorGates } from "@/lib/auth/gates";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { getOwnProfile } from "@/lib/api/verification";
 import { fetchUnreadDmCount } from "@/lib/api/dm";
 import { formatCredits, formatNaira } from "@/lib/format";
@@ -41,8 +41,8 @@ function navRowClass(active: boolean) {
   return [
     "flex h-[46px] items-center gap-[13px] rounded-2xl border px-[14px] text-[14.5px] transition-colors",
     active
-      ? "border-accent bg-accent-tint font-semibold text-text-primary"
-      : "border-transparent font-medium text-text-secondary hover:bg-[rgba(255,255,255,0.06)]",
+      ? "border-selected bg-selected-tint font-semibold text-text-primary"
+      : "border-transparent font-medium text-text-secondary hover:bg-state-hover",
   ].join(" ");
 }
 
@@ -53,10 +53,13 @@ function navRowClass(active: boolean) {
  * there unchanged.
  */
 export function Sidebar() {
-  const { user, accountType, signOut } = useSession();
   const pathname = usePathname();
-  const gates = creatorGates(user);
-  const isCreator = accountType === "creator";
+  // Live creator state, not the session's sign-in-time accountType: that value
+  // is never revisited, so a creator who subscribed after signing in used to
+  // get a rail with no Create button and no Dashboard row at all.
+  const { creator, resolved } = useCreatorState();
+  const gates = creatorGates({ creator });
+  const isCreator = gates.isCreator;
 
   // The foot card needs numbers (credits count / earnings this month) that
   // aren't on the client session object, so this reads the same profile SEAM
@@ -148,7 +151,15 @@ export function Sidebar() {
         Services
       </Link>
 
-      {isCreator ? (
+      {!resolved ? (
+        // Do NOT fall back to the fan rail while the answer is in flight — a
+        // creator would watch Create/Dashboard pop in a beat after first paint.
+        <>
+          <div className="mt-4 h-px bg-hairline" />
+          <Skeleton variant="row" className="mt-4 h-12 rounded-button" />
+          <Skeleton variant="row" className="mt-[6px] h-[46px]" />
+        </>
+      ) : isCreator ? (
         <>
           <div className="mt-4 h-px bg-hairline" />
           <Link
@@ -171,7 +182,12 @@ export function Sidebar() {
       ) : null}
 
       <div className="mt-auto flex flex-col gap-[10px] rounded-card border border-hairline bg-card p-4">
-        {isCreator ? (
+        {!resolved ? (
+          <>
+            <Skeleton variant="row" className="h-5" />
+            <Skeleton variant="row" className="h-9" />
+          </>
+        ) : isCreator ? (
           <>
             <div className="flex items-center gap-[10px]">
               <TierBadge tier={gates.tier ?? "basic"} />
@@ -208,18 +224,11 @@ export function Sidebar() {
       </div>
 
       {/*
-        Signing out used to exist only at the bottom of Settings, which is two
-        navigations deep. It is a thing people look for by eye, so it belongs
-        somewhere permanently visible.
+        No Sign out here. It lives in Settings, once — Settings is a top-level
+        row in this very rail (and the desktop Settings list has a dedicated
+        Sign out row), so the old "it's two navigations deep" argument for
+        duplicating it is gone, and design D1 · Shell never drew one.
       */}
-      <button
-        type="button"
-        onClick={signOut}
-        className="mt-[10px] flex h-11 w-full items-center gap-3 rounded-[12px] px-[13px] text-[14px] font-medium text-text-secondary transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-text-primary"
-      >
-        <Icon name="LogOut" size={19} color="var(--text-secondary)" strokeWidth={2} />
-        Sign out
-      </button>
     </aside>
   );
 }

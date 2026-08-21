@@ -37,7 +37,7 @@ function DesktopServiceCard({ s }: { s: PartnerService }) {
         <span
           className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border ${
             live
-              ? "border-[var(--border-accent)] bg-[var(--accent-tint)]"
+              ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
               : "border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
           }`}
         >
@@ -147,7 +147,7 @@ export default function ServicesPage() {
           <div className="flex flex-col gap-[10px]">
             {live.map((s) => (
               <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline">
-                <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-accent)] bg-[var(--accent-tint)]">
+                <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
                   <Icon name={s.icon as IconName} size={20} color="var(--accent)" />
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
@@ -242,8 +242,8 @@ export default function ServicesPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[18px]">
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
               <span className={eyebrow}>Included with any account</span>
-              <ListRow title="Mentors" subtitle="Book time with people who have done it · free" icon="UserRoundSearch" href="/services/mentors" />
-              <ListRow title="Business playbook" subtitle="The full guide, free to download" icon="BookOpen" href="/learn/playbook" />
+              <ListRow title="Mentors" subtitle="Book time with people who have done it · no charge" icon="UserRoundSearch" href="/services/mentors" />
+              <ListRow title="Business playbook" subtitle="The full guide, yours to download" icon="BookOpen" href="/learn/playbook" />
             </div>
 
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">

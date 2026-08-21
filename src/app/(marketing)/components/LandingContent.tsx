@@ -129,7 +129,7 @@ const APPS: {
     name: "WAWUBasket",
     logo: "/wawubasket-logo.png",
     icon: "/wawubasket-icon.png",
-    tint: "#A9D636",
+    tint: "var(--brand-basket)",
     blurb: "Fresh market, groceries and restaurants, delivered.",
     categories: ["Fresh Market", "Groceries", "Restaurants"],
     href: "/marketplace/basket",
@@ -138,7 +138,7 @@ const APPS: {
     name: "WAWUBeauty",
     logo: "/wawubeauty-logo.png",
     icon: "/wawubeauty-icon.png",
-    tint: "#FF0084",
+    tint: "var(--brand-beauty)",
     blurb: "Beauty products and services, textiles, shoes and art.",
     categories: ["Beauty Products", "Beauty Services", "Textiles"],
     href: "/marketplace/beauty",
@@ -163,7 +163,7 @@ interface CompareRow {
 const COMPARE_ROWS: CompareRow[] = [
   { feature: "Platform Fees", wawu: "10-15% (85-90% keep)", others: ["10-20% + /txn", "20%", "20%"] },
   { feature: "Ecosystem Reach", wawu: "10M+ users", others: ["1.5M+ fans", "2M+", "N/A"] },
-  { feature: "Training & Upskilling", wawu: "Free training for members", others: [false, false, false] },
+  { feature: "Training & Upskilling", wawu: "Training included for members", others: [false, false, false] },
   { feature: "Government Partnerships", wawu: "Federal Government-approved", others: [false, false, false] },
   { feature: "Device & Equipment Financing", wawu: "Partnerships", others: [false, false, false] },
   { feature: "Faith & Community Approach", wawu: true, others: [false, false, false] },
@@ -186,7 +186,7 @@ const FAQ = [
   { q: "What % of earnings does the platform take?", a: "WAWUAfrica takes 15% as standard and 10% on Pro. You keep 85% of everything you earn, content unlocks, paid DMs, tips and storefront sales, and 90% on every stream once you go Pro. There is no listing fee and no monthly platform fee." },
   { q: "Do I need to be verified to publish?", a: "No. Creator is an account type, pick it at signup or upgrade later, then pay a subscription (Basic or Pro) to publish content, turn on paid DMs and host communities. KYC is separate and only gates when you can receive payouts." },
   { q: "How quickly can I get paid out?", a: "Earnings are paid to your own bank account once KYC clears, never held in a platform wallet. No stories." },
-  { q: "Is there a minimum follower count to join?", a: "No. Whether you are just starting or an established creator ready to scale, you can join today and start publishing. Your first piece is free, you price everything after that." },
+  { q: "Is there a minimum follower count to join?", a: "No. Whether you are just starting or an established creator ready to scale, you can join today and start publishing. Your first piece goes out at no charge, you price everything after that." },
   { q: "What happens if a creator never replies to a paid DM?", a: "The sender is refunded in full after 24 hours and WAWU takes no fee on that refund. Creators who repeatedly miss the window have DMs switched off automatically." },
   { q: "What are WAWU Credits?", a: "Prepaid message units for open communities, one credit sends one message. They are a count, not a cash balance, and they are never converted back to naira." },
 ];
@@ -280,7 +280,7 @@ export async function LandingContent() {
                     <Icon
                       name="Play"
                       size={30}
-                      color="#FFFFFF"
+                      color="var(--text-on-accent)"
                       strokeWidth={1.8}
                       className="translate-x-0.5 drop-shadow-[0_0_20px_rgba(255,255,255,0.45)]"
                     />
@@ -318,7 +318,7 @@ export async function LandingContent() {
                     <Link
                       key={service.brand}
                       href={service.href}
-                      className={`${shell} no-underline transition-colors duration-200 hover:border-accent`}
+                      className={`${shell} no-underline transition-colors duration-200 hover:border-strong`}
                     >
                       {inner}
                     </Link>
@@ -386,15 +386,15 @@ export async function LandingContent() {
 
               <div className="flex flex-col gap-3">
                 <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
-                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
-                    <Icon name="Users" size={16} color="var(--accent)" strokeWidth={2.1} />
+                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)]">
+                    <Icon name="Users" size={16} color="var(--wawu-sky)" strokeWidth={2.1} />
                   </span>
                   <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
                   <span className="text-[12px] leading-snug text-text-secondary">Professionals, Entrepreneurs, Artisans on WAWUAfrica</span>
                 </div>
                 <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
-                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
-                    <Icon name="Route" size={16} color="var(--accent)" strokeWidth={2.1} />
+                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[color-mix(in_srgb,var(--wawu-lilac)_13%,transparent)]">
+                    <Icon name="Route" size={16} color="var(--wawu-lilac)" strokeWidth={2.1} />
                   </span>
                   {/* White and bold like the figures beside it, not a small
                       purple caption, but not headline-sized either. */}
@@ -404,8 +404,8 @@ export async function LandingContent() {
                   </span>
                 </div>
                 <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
-                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-accent-tint">
-                    <Icon name="Globe" size={16} color="var(--accent)" strokeWidth={2.1} />
+                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)]">
+                    <Icon name="Globe" size={16} color="var(--wawu-green)" strokeWidth={2.1} />
                   </span>
                   <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
                   <span className="text-[12px] leading-snug text-text-secondary">Fans, plus access to Pan-African ecosystems, communities, governments and institutions</span>
@@ -418,17 +418,21 @@ export async function LandingContent() {
         <section className="px-5 py-14 dt:py-20">
           <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
             {[
-              { label: "FIND WOW", icon: "Compass" as IconName, body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
-              { label: "GET WOW", icon: "Sparkles" as IconName, body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
-              { label: "MAKE WOW", icon: "Rocket" as IconName, body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
-              { label: "FOR EVERYONE", icon: "Users" as IconName, body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
+              // One hue each, straight off the WAWU COLORS brand sheet and its
+              // stated meanings — discovery, energy, growth, connection. Four
+              // identical purple tiles was the thing that made the page read
+              // as a single-colour app.
+              { label: "FIND WOW", icon: "Compass" as IconName, hue: "var(--wawu-lemon)", tile: "bg-[color-mix(in_srgb,var(--wawu-lemon)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-lemon)_32%,transparent)]", body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
+              { label: "GET WOW", icon: "Sparkles" as IconName, hue: "var(--wawu-pink)", tile: "bg-[color-mix(in_srgb,var(--wawu-pink)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-pink)_32%,transparent)]", body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
+              { label: "MAKE WOW", icon: "Rocket" as IconName, hue: "var(--wawu-green)", tile: "bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-green)_32%,transparent)]", body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
+              { label: "FOR EVERYONE", icon: "Users" as IconName, hue: "var(--wawu-sky)", tile: "bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-sky)_32%,transparent)]", body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
             ].map((v) => (
               <div
                 key={v.label}
-                className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-accent"
+                className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-strong"
               >
-                <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-accent bg-accent-tint transition-shadow duration-200 group-hover:shadow-[0_0_28px_var(--accent-tint-strong)]">
-                  <Icon name={v.icon} size={20} color="var(--accent)" strokeWidth={2} />
+                <span className={`grid h-[46px] w-[46px] place-items-center rounded-[14px] border ${v.tile}`}>
+                  <Icon name={v.icon} size={20} color={v.hue} strokeWidth={2} />
                 </span>
                 <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
                 <p className="m-0 text-[14px] leading-normal text-text-secondary">{v.body}</p>
@@ -459,7 +463,7 @@ export async function LandingContent() {
                       className={`relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${f.bg} dt:h-[170px] dt:w-[270px]`}
                     >
                       <span className="absolute -bottom-4 -right-4 opacity-25">
-                        <Icon name={f.icon} size={110} color="#FFFFFF" strokeWidth={1.2} />
+                        <Icon name={f.icon} size={110} color="var(--text-on-accent)" strokeWidth={1.2} />
                       </span>
                       <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.75),transparent)] px-4 pb-3 pt-8 text-[15px] font-bold text-white">
                         {f.name}
@@ -500,10 +504,10 @@ export async function LandingContent() {
               </div>
 
               {/* Real-Time Earnings panel with animated notifications */}
-              <div className="flex flex-col gap-5 overflow-hidden rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,var(--accent-deep),rgba(71,20,113,0.35))] p-6 dt:flex-row dt:items-center dt:p-8">
+              <div className="flex flex-col gap-5 overflow-hidden rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--wawu-green)_38%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:flex-row dt:items-center dt:p-8">
                 <div className="dt:flex-1">
                   <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[rgba(255,255,255,0.14)]">
-                    <Icon name="Zap" size={19} color="#FFFFFF" strokeWidth={2} />
+                    <Icon name="Zap" size={19} color="var(--text-on-accent)" strokeWidth={2} />
                   </span>
                   <span className="mt-4 block text-[21px] font-bold text-white">Real-Time Earnings</span>
                   <p className="m-0 mt-2 max-w-[340px] text-[14px] leading-normal text-[rgba(255,255,255,0.78)]">
@@ -523,7 +527,7 @@ export async function LandingContent() {
                       style={{ animationDelay: n.delay }}
                     >
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[rgba(255,255,255,0.12)]">
-                        <Icon name={n.icon} size={14} color="#FFFFFF" strokeWidth={2.1} />
+                        <Icon name={n.icon} size={14} color="var(--text-on-accent)" strokeWidth={2.1} />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[12.5px] font-semibold text-white">{n.label}</span>
@@ -536,9 +540,9 @@ export async function LandingContent() {
               </div>
 
               {/* WOW Vault panel */}
-              <div className="flex flex-col rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,rgba(71,20,113,0.85),rgba(148,17,201,0.3))] p-6 dt:col-span-1 dt:p-7">
+              <div className="flex flex-col rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--wawu-pink)_48%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:col-span-1 dt:p-7">
                 <span className="flex items-center gap-2.5 text-[19px] font-bold text-white">
-                  <Icon name="Vault" size={19} color="#FFFFFF" strokeWidth={2} />
+                  <Icon name="Vault" size={19} color="var(--text-on-accent)" strokeWidth={2} />
                   WOW Vault
                 </span>
                 <p className="m-0 mt-2 text-[13.5px] leading-normal text-[rgba(255,255,255,0.78)]">
@@ -555,7 +559,7 @@ export async function LandingContent() {
                       key={chip.label}
                       className="flex flex-col items-center gap-2 rounded-media border border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.09)] px-3 py-4 text-center text-[11.5px] font-semibold text-white backdrop-blur"
                     >
-                      <Icon name={chip.icon} size={18} color="#FFFFFF" strokeWidth={2} />
+                      <Icon name={chip.icon} size={18} color="var(--text-on-accent)" strokeWidth={2} />
                       {chip.label}
                     </span>
                   ))}
@@ -563,7 +567,7 @@ export async function LandingContent() {
               </div>
 
               {/* Smart Scheduler panel: the real, interactive widget */}
-              <div className="rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,rgba(148,17,201,0.5),var(--accent-deep))] p-6 dt:p-7">
+              <div className="rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--wawu-sky)_42%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:p-7">
                 <SmartScheduler />
               </div>
             </div>
@@ -604,7 +608,7 @@ export async function LandingContent() {
               {/* Icon tile grid */}
               <div className="grid grid-cols-2 gap-4 dt:grid-cols-3 dt:gap-5">
                 {STREAMS.map((s) => (
-                  <div key={s.title} className="group flex flex-col rounded-card border border-hairline bg-card p-4 transition-colors duration-200 hover:border-accent dt:p-5">
+                  <div key={s.title} className="group flex flex-col rounded-card border border-hairline bg-card p-4 transition-colors duration-200 hover:border-strong dt:p-5">
                     <span className="grid aspect-[4/3] place-items-center rounded-media bg-[radial-gradient(ellipse_at_center,var(--accent-tint),transparent_75%)]">
                       <Icon
                         name={s.icon}
@@ -710,7 +714,7 @@ export async function LandingContent() {
                     "Unlimited messages",
                     "Join and host open communities",
                     "1 course of your choice, included",
-                    "Free business playbook",
+                    "Business playbook included",
                     "Personal pension registration",
                   ].map((perk) => (
                     <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
@@ -734,9 +738,9 @@ export async function LandingContent() {
                     "Unlimited messages",
                     "Open and private communities",
                     "Up to 3 courses of your choice, included",
-                    "Free business playbook",
+                    "Business playbook included",
                     "Priority support",
-                    "1 month of free health insurance",
+                    "1 month of health insurance included",
                     "Personal pension registration",
                     "Recommended deals",
                   ].map((perk, i) => (
@@ -924,7 +928,7 @@ export async function LandingContent() {
                 <div className="mt-4 flex flex-col gap-2.5">
                   {[
                     "Integrated ecosystem: learn, earn, grow, collaborate",
-                    "Skills development: free training included",
+                    "Skills development: training included",
                     "Financial inclusion: device financing",
                     "Faith-based approach",
                     "Pan-African focus: designed for Africa & global",

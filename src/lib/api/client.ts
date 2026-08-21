@@ -8,17 +8,67 @@ export async function delay(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * The server answered, and the answer was a refusal. `status` is a REAL HTTP
+ * status — a reply we received, not a failure to receive one.
+ *
+ * `serverMessage` is set only when the backend actually explained itself in
+ * the body ({statusCode, message, data} — e.g. "This endpoint is only
+ * available to creator accounts."). `message` always has something in it, but
+ * it may be a synthesized "Request failed (403)" placeholder, which is a
+ * status code in a sentence and must never be shown to a user. UI copy comes
+ * from describeError() in ./errors, which reads `serverMessage` and ignores
+ * the placeholder.
+ */
 export class ApiError extends Error {
   readonly status: number;
   /** Machine-readable error code, when the backend sends one (e.g. WAWU ID's `USER_NOT_IN_WAWUID`). */
   readonly code?: string;
+  /** The backend's own explanation, verbatim — undefined when it sent none. */
+  readonly serverMessage?: string;
 
-  constructor(message: string, status: number, code?: string) {
+  constructor(message: string, status: number, code?: string, serverMessage?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.serverMessage = serverMessage;
   }
+}
+
+/**
+ * The request never got an answer at all: DNS/TLS failure, the device is
+ * offline, the origin is unreachable, or our own 8s timeout fired.
+ *
+ * This is the ONLY failure that is honestly a "network error". It extends
+ * ApiError with status 0 so existing `e instanceof ApiError` call sites keep
+ * working, but `isNetworkError()` (or the status-0 check) lets the UI tell
+ * "we could not reach WAWU" apart from "WAWU replied, and said no". Before
+ * this class existed a transport failure was rethrown as a bare TypeError
+ * ("Failed to fetch") or an AbortError DOMException, which no caller could
+ * distinguish from anything else — so every screen told the same connectivity
+ * story for both, including for a 403 with a perfectly good explanation in it.
+ */
+export class NetworkError extends ApiError {
+  /** `timeout` = our own AbortController fired at REQUEST_TIMEOUT_MS. `offline` = fetch itself rejected. */
+  readonly kind: "timeout" | "offline";
+
+  constructor(kind: "timeout" | "offline", options?: { cause?: unknown }) {
+    super(
+      kind === "timeout" ? "The request timed out before WAWU answered" : "Could not reach WAWU",
+      0,
+      undefined,
+      undefined,
+    );
+    this.name = "NetworkError";
+    this.kind = kind;
+    if (options && "cause" in options) this.cause = options.cause;
+  }
+}
+
+/** True only for a genuine transport failure — never for a 4xx/5xx the server actually sent. */
+export function isNetworkError(e: unknown): e is NetworkError {
+  return e instanceof NetworkError;
 }
 
 /** Thrown by apiFetch in mock mode so the try/catch→mock pattern short-circuits. */
@@ -153,6 +203,35 @@ export async function apiFetchPaginated<T>(
   return { data: envelope.data, pagination: envelope.pagination };
 }
 
+/**
+ * Pulls the server's own explanation out of a failed response.
+ *
+ * Handles both shapes this backend emits: `message` as a string (the Hub
+ * envelope, and Nest's default exception filter) and `message` as an array of
+ * strings (class-validator's field errors on a 400). Returns undefined for a
+ * body that carries no explanation at all — an empty body, HTML from a proxy,
+ * a bare status page — so the caller can tell "the server explained itself"
+ * apart from "the server said nothing", rather than inventing a sentence.
+ */
+async function readErrorBody(res: Response): Promise<{ message?: string; code?: string }> {
+  let data: unknown;
+  try {
+    data = await res.json();
+  } catch {
+    return {};
+  }
+  if (typeof data !== "object" || data === null) return {};
+  const body = data as { message?: unknown; code?: unknown; error?: unknown };
+  let message: string | undefined;
+  if (typeof body.message === "string" && body.message.trim()) message = body.message.trim();
+  else if (Array.isArray(body.message)) {
+    const parts = body.message.filter((m): m is string => typeof m === "string" && Boolean(m.trim()));
+    if (parts.length) message = parts.join(". ");
+  } else if (typeof body.error === "string" && body.error.trim()) message = body.error.trim();
+  const code = typeof body.code === "string" ? body.code : undefined;
+  return { message, code };
+}
+
 /** Shared fetch + timeout + auth + error-handling core for apiFetch/apiFetchPaginated. */
 async function rawFetch(path: string, options: ApiRequestOptions, isRetry = false): Promise<unknown> {
   if (USE_MOCKS) throw new MockModeError();
@@ -179,7 +258,12 @@ async function rawFetch(path: string, options: ApiRequestOptions, isRetry = fals
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch (e) {
-    throw e instanceof Error ? e : new ApiError("Network error", 0);
+    // fetch only rejects when the request never completed — there is no
+    // response and no status. Everything the server DID answer (401/403/404/
+    // 5xx) resolves normally and is handled below, so nothing that has a
+    // status can land here. Type it as such instead of rethrowing a bare
+    // TypeError/AbortError, which the UI could only ever guess at.
+    throw new NetworkError(controller.signal.aborted ? "timeout" : "offline", { cause: e });
   } finally {
     clearTimeout(timeout);
   }
@@ -200,16 +284,12 @@ async function rawFetch(path: string, options: ApiRequestOptions, isRetry = fals
   }
 
   if (!res.ok) {
-    let message = `Request failed (${res.status})`;
-    let code: string | undefined;
-    try {
-      const data = await res.json();
-      if (data && typeof data.message === "string") message = data.message;
-      if (data && typeof data.code === "string") code = data.code;
-    } catch {
-      /* non-JSON error body — keep the status message */
-    }
-    throw new ApiError(message, res.status, code);
+    // Read the body BEFORE deciding what this failure is. A 4xx carries the
+    // server's reason in exactly the same envelope a 200 does
+    // ({statusCode, message, data}) — dropping it is what left the UI with
+    // nothing to say but "check your connection".
+    const { message: serverMessage, code } = await readErrorBody(res);
+    throw new ApiError(serverMessage ?? `Request failed (${res.status})`, res.status, code, serverMessage);
   }
 
   if (res.status === 204) return undefined;

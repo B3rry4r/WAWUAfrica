@@ -21,7 +21,7 @@ export function BackLink({ label = "Back", className = "" }: { label?: string; c
     <button
       type="button"
       onClick={() => router.back()}
-      className={`inline-flex h-9 items-center gap-1.5 self-start rounded-full border border-hairline bg-card pl-2 pr-3.5 text-[13.5px] font-medium text-text-secondary transition-colors hover:bg-[rgba(255,255,255,0.06)] hover:text-text-primary ${className}`}
+      className={`inline-flex h-9 items-center gap-1.5 self-start rounded-full border border-hairline bg-card pl-2 pr-3.5 text-[13.5px] font-medium text-text-secondary transition-colors hover:bg-state-hover hover:text-text-primary ${className}`}
     >
       <Icon name="ChevronLeft" size={17} color="currentColor" strokeWidth={2.2} />
       {label}

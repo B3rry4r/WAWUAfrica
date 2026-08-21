@@ -12,7 +12,7 @@ export function TierBadge({ tier }: TierBadgeProps) {
       className={[
         "inline-flex h-[26px] items-center gap-1.5 rounded-full px-[11px] text-[11.5px] font-bold uppercase tracking-[0.04em]",
         isPro
-          ? "border border-[rgba(255,183,3,0.4)] bg-[rgba(255,183,3,0.12)] text-brand-yellow"
+          ? "border border-warning bg-warning-tint text-brand-yellow"
           : "border border-accent bg-accent-tint text-accent-hover",
       ].join(" ")}
     >
