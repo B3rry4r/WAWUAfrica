@@ -49,6 +49,19 @@ this file is the list. Updated as observations come in.
       across both columns with an empty placeholder beside it. The grid only
       renders once there are plans.
 
+## Done this round (continued)
+- [x] Telemedicine rendered as one enormous full-width card. Cause: the grids
+      used `auto-fit`, which COLLAPSES empty tracks, so a section holding one
+      card stretched it across the whole row. Switched to `auto-fill`, which
+      keeps the tracks. Verified the difference in an isolated render.
+- [x] The coming-soon Telemedicine card's "Notify me" opened the full working
+      enrolment flow, payment and all: /services/care is a static route and
+      Next resolves it ahead of the dynamic /services/[id] detail page. The
+      page now reads its own status from the catalogue and refuses when the
+      service is not live, which also covers anyone with the URL.
+- [x] "N/A" for a failed earnings read looked like a real figure of nothing;
+      now "Unavailable". Same for the purchases count on the profile.
+
 ## Open — needs your decision
 - [ ] "Jobs" and "Wallets" in the Access-to list: both cut by name in
       docs/01_SPEC.md (line 120; section 3 on Credits not being a wallet).

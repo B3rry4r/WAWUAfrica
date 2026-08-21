@@ -81,7 +81,7 @@ export default function OwnProfilePage() {
   const isCreator = profile.accountType === "creator";
   const currentLevel = ladder.find((l) => l.status === "yours");
   const nextLevel = ladder.find((l) => l.status === "next");
-  const purchasesMeta = purchasesError ? "N/A" : purchasesCount === null ? undefined : String(purchasesCount);
+  const purchasesMeta = purchasesError ? "—" : purchasesCount === null ? undefined : String(purchasesCount);
   const savedMeta = savedCount === null ? undefined : String(savedCount);
 
   return (

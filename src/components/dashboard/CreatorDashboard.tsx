@@ -150,7 +150,7 @@ export function CreatorDashboard() {
   // Real per-stream figures from the same response as the total above, so
   // the chart and the total finally agree.
   const streamRows = earningsStreamRows(earnings);
-  const earnedDisplay = earned !== null ? formatNaira(earned) : earningsFailed ? "N/A" : "···";
+  const earnedDisplay = earned !== null ? formatNaira(earned) : earningsFailed ? "Unavailable" : "···";
   const threads = messaging?.threads ?? [];
   const urgentCount = threads.filter((t) => !t.opened).length;
   const live = (library ?? []).filter((i) => i.status === "live");

@@ -221,7 +221,7 @@ export default function ServicesPage() {
 
           <div className="flex flex-col gap-[14px]">
             <span className={eyebrow}>Open now</span>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(255px,1fr))] gap-[18px]">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-[18px]">
               {live.map((s) => (
                 <DesktopServiceCard key={s.id} s={s} />
               ))}
@@ -231,7 +231,7 @@ export default function ServicesPage() {
           {coming.length ? (
             <div className="flex flex-col gap-[14px]">
               <span className={eyebrow}>Coming soon</span>
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(255px,1fr))] gap-[18px]">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-[18px]">
                 {coming.map((s) => (
                   <DesktopServiceCard key={s.id} s={s} />
                 ))}
@@ -239,7 +239,7 @@ export default function ServicesPage() {
             </div>
           ) : null}
 
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-[18px]">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[18px]">
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
               <span className={eyebrow}>Included with any account</span>
               <ListRow title="Mentors" subtitle="Book time with people who have done it · free" icon="UserRoundSearch" href="/services/mentors" />

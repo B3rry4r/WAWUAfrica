@@ -11,8 +11,9 @@ import {
 } from "@/lib/api/lifestyle";
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
+import { getService } from "@/lib/api/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ErrorState, Icon, Input, PhoneInput, Skeleton, fullPhoneNumber, DEFAULT_DIAL_CODE } from "@/components/ui";
+import { BackLink, Button, ErrorState, Icon, Input, PhoneInput, Skeleton, fullPhoneNumber, DEFAULT_DIAL_CODE } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -34,6 +35,15 @@ export default function CarePage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<HealthSubscription | null>(null);
 
+  /**
+   * Whether this service is open yet, from the catalogue.
+   *
+   * This page lives at a static route, which Next resolves ahead of the
+   * dynamic /services/[id] detail page — so the "Notify me" button on the
+   * coming-soon card opened the full enrolment flow, payment and all. The page
+   * has to refuse on its own, which also covers anyone with the URL.
+   */
+  const [live, setLive] = useState<boolean | null>(null);
   const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
   const [form, setForm] = useState({
     firstName: "",
@@ -44,6 +54,14 @@ export default function CarePage() {
   });
 
   useEffect(() => {
+    getService("care")
+      .then((svc) => setLive(svc ? svc.status === "live" : false))
+      // A catalogue that will not load is not permission to sell.
+      .catch(() => setLive(false));
+  }, []);
+
+  useEffect(() => {
+    if (live !== true) return;
     getHealthPlans()
       .then(setPlans)
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load health plans."));
@@ -86,6 +104,31 @@ export default function CarePage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (live === false) {
+    return (
+      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
+        <BackLink />
+        <div className="flex flex-col items-start gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
+          <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-elevated)]">
+            <Icon name="Stethoscope" size={22} color="var(--text-secondary)" strokeWidth={2} />
+          </span>
+          <span className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Telemedicine is coming soon</span>
+          <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">
+            We are finishing the rollout with our care partner. It opens here first, and nothing is charged until it does.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (live === null) {
+    return (
+      <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px]">
+        <Skeleton variant="card" />
+      </div>
+    );
   }
 
   if (done) {

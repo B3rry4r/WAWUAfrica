@@ -283,7 +283,7 @@ export default function PayPage() {
 
       {history.length ? (
         <Section title="Recent">
-          <div className="flex flex-col gap-[8px] xl:grid xl:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] xl:gap-[10px]">
+          <div className="flex flex-col gap-[8px] xl:grid xl:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] xl:gap-[10px]">
             {history.slice(0, 8).map((h) => (
               <div key={h.id} className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px]">
                 <span className="flex flex-col">
