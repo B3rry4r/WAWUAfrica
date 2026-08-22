@@ -1,4 +1,4 @@
-# WAWU Content/Creators — Technical Context (locked)
+# WAWU Content/Creators — Technical Context
 **Companion to `01_WAWU_Content_Creators_SPEC.md` — read that first.**
 **Contracts and structure only — field lists, endpoint shapes, component reuse, build sequencing. No implementation code.**
 **Supersedes all prior versions of this doc.**
@@ -78,7 +78,7 @@ New `variant: "content"` on the existing Post concept (`src/lib/feed-data.ts`).
 | `penaltyState` | `"none" \| "warned" \| "disabled_7d" \| "disabled_30d"` |
 | `dmDisabledUntil` | timestamp, nullable |
 
-Thresholds (locked, Section 2 of spec doc): <10% none, 10–30% warned, 30–50% disabled 7 days, >50% disabled 30 days.
+Thresholds (Section 2 of the spec doc): <10% none, 10–30% warned, 30–50% disabled 7 days, >50% disabled 30 days.
 
 ### 2.4 WAWU Credits
 

@@ -7,7 +7,7 @@ contracts in `docs/02_TECHNICAL_CONTEXT.md` as the target shape, not as live end
 
 ## Read before writing code
 - `docs/00_PLATFORM_MAP.md` — what the app is, what was cut
-- `docs/01_SPEC.md` — locked monetization model. This is the tiebreaker doc.
+- `docs/01_SPEC.md` — the monetization model as it stands today.
 - `docs/02_TECHNICAL_CONTEXT.md` — data model and API contracts
 - `docs/03_USER_FLOWS.md` — flows per persona
 - `docs/05_CONVENTIONS.md` — how we write code here
@@ -23,10 +23,16 @@ product-rule violations, dead ends, and convention drift fixed — see git log).
 this is greenfield work, not a fix pass. Follow the same account-type/gate rules
 as mobile — desktop is a new shell around the same product, not a different one.
 
-## Non-negotiable product rules
+## Product notes
+
+These are how the product currently works, so code matches itself — not rules to
+quote back at the product owner. If they ask for something that contradicts a
+line here, build it and update the line. The one exception is the cash-balance
+note, which carries a licensing consequence rather than a preference.
 - Naira (₦) only. Never dollars.
 - Revenue splits: 85/15 standard, 90/10 for Pro-tier creators. Never invent a rate.
-- **No wallet.** No cash balance, no withdrawal UI, no "cash out". Ever.
+- **No wallet today.** A cashable balance is a CBN licensing trigger in Nigeria,
+  so it is a deliberate decision rather than an oversight.
 - **WAWU Credits render as a COUNT** ("48 credits"), never a naira value, never cashable.
 - No DRM, no screenshot-blocking, no liveness/Face-ID. These do not exist in this product.
 - **Creator is an ACCOUNT TYPE**, not a trust-tier badge or an earned level.
@@ -35,14 +41,26 @@ as mobile — desktop is a new shell around the same product, not a different on
 - KYC is manual review. Nigeria: BVN + NIN. Elsewhere: national-ID equivalent.
 - WAWUBasket / WAWUBeauty are external apps. Handoff only — never rebuild their
   commerce engine.
-- No jobs, no gigs, no event tickets, no Opportunities section, no Events section.
+- No jobs, no gigs, no Opportunities section.
+- **Events are back** (product-owner reversal, 22 Aug 2026), as a user-submitted,
+  admin-moderated calendar. Same shape as the old app: no ticketing, no pricing,
+  no payment. "Going" is an interest signal, never money — as it always was.
 
-## Navigation (locked)
-Bottom bar, 5 slots. Slot 3 swaps by account type:
-`Home · Communities · [Explore | Create] · Messages · Profile`
-- User account → slot 3 is **Explore**
-- Creator account → slot 3 is **Create**
-Search and notifications live in the header on every screen.
+## Navigation
+Bottom bar, 5 slots, the SAME for everyone:
+`Home · Communities · Explore · Messages · Settings`
+Search and notifications live in the header on every screen. The avatar in the
+header opens Profile.
+
+**Create is a floating action button**, bottom-right above the bar, shown to
+creator accounts only. It is not a nav slot.
+
+Two product-owner overrides are folded in here, both deliberate:
+- Slot 3 no longer swaps by account type. It used to be Explore for users and
+  Create for creators; Explore now stays for everyone on mobile and Create
+  moved to the FAB (21 Aug 2026).
+- Slot 5 is Settings, not Profile. Profile is a row inside Settings and is also
+  reachable from the header avatar (21 Aug 2026).
 
 ## Code boundaries
 - **Tailwind classes, never `style={{}}`.** Tokens are CSS variables — read them
@@ -57,7 +75,8 @@ Search and notifications live in the header on every screen.
 - Creator gates come from `creatorGates()` in `src/lib/auth/gates.ts`. Never
   re-check `subscriptionPaid` / `kyc` inline.
 - One branch per flow, not per dev. See `docs/05_CONVENTIONS.md`.
-- If a task conflicts with `docs/01_SPEC.md`, the spec wins — stop and flag it.
+- If a task conflicts with `docs/01_SPEC.md`, the task wins — build it, then
+  update the doc so it stops disagreeing with the code.
 
 ## The design-system readme is stale on product truths
 `design/system/_ds/*/readme.md` was generated from the OLD repo. It says "never

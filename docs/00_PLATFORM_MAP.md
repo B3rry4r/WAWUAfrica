@@ -14,7 +14,44 @@ This is a **full consumer-app redesign**, not a feature addition. Content/creato
 | **The existing post feed** | Posts across `Learn / Sell / Opportunity / Event / Question / Research` categories, with votes. Content replaces this entirely as Home. The `CATEGORIES` system, `CreateSheet` post-composer, and post-variant `FeedCard` are all superseded. |
 | **EasyBuy** | Removed from Services. Routes `/services/easybuy` and `/services/easybuy/apply` retired. |
 | **Opportunities** | Grants/funding listings and apply flow. Routes `/opportunities`, `/opportunities/[id]`, `/opportunities/[id]/apply` retired. Frees up the bottom-nav slot and removes the naming collision entirely. |
-| **Events** | Listings, RSVP, recaps. Routes `/events`, `/events/[id]` retired. |
+| ~~**Events**~~ | ~~Listings, RSVP, recaps. Routes `/events`, `/events/[id]` retired.~~ **REVERSED 22 Aug 2026 by the product owner — see § 1a below.** |
+
+### 1a. What came back — Events (product-owner reversal, 22 Aug 2026)
+
+Events were cut in the original pass and are now reinstated at the product
+owner's explicit request. Recording it here rather than silently editing the
+row above, so the history of the decision stays readable.
+
+**What changed from the old feature.** The old Events were admin-created and
+admin-approved. Now **users create them**: any signed-in user submits an event,
+it lands `pending`, and an admin queue approves or rejects it with a reason —
+the same user-submitted → moderated shape content uploads already have, not a
+second moderation idiom. Admins keep full control: approve, reject-with-reason,
+feature/unfeature the rail, take a published event down with a reason, and
+restore one. Every decision is written to an audit trail naming who, when and
+why.
+
+**What did NOT come back: tickets.** `01_SPEC.md` cut event *tickets*, and that
+stays cut. There is no ticket, no price, no payment flow, no revenue split and
+no credit cost anywhere in Events. **"Going" is an interest signal only** — one
+signal per person, withdrawable, and a count of people rather than a count of
+sales. If an organiser charges for entry, that happens on the organiser's own
+site behind an external link; no money crosses this platform for an event. This
+is exactly why reinstating Events is low-risk, and it is the line that must not
+move — anything that starts to look like ticketing is a spec conflict, and
+`01_SPEC.md` wins.
+
+**Shape.** Date/time/timezone, name, host organisation, format (In-Person |
+Online), type (Workshop | Summit | Webinar | Meetup | Competition), location +
+address, speakers, a "going" count, a featured pin, status, and a past-event
+recap — carried over from the previous app's `EventItem`, minus everything
+money-shaped.
+
+**Backend.** Built in WAWU-Hub-API on branch `feat/events`: `src/event/`
+(app-facing) and `src/admin/events/` (moderation), on three new tables (the event, its speakers, the going signals) plus an
+audit side-table. `/api/hub/events/*` and `/api/hub/admin/events/*`.
+
+---
 
 **Survives the feed removal:** the comment/conversation thread component (`/conversation/[slug]`). It re-parents from posts to content pieces — content still needs comment, share, save, and rate per the original brief.
 
@@ -81,7 +118,7 @@ Training and Knowledge Hub become **one section**. They were always the same job
 
 **Current More drawer (9 items):** Profile, Training, Services, Knowledge Hub, Events, Saved, Settings, About, Become a Partner
 
-The cuts help a lot here. Opportunities vacates a bottom-nav slot outright; Events leaves the drawer; Training + Knowledge collapse from two drawer items into one.
+The cuts help a lot here. Opportunities vacates a bottom-nav slot outright; Training + Knowledge collapse from two drawer items into one. (Events left the drawer in the original pass and have since been reinstated — 22 Aug 2026, § 1a — so they need a home in navigation again; that placement is not yet decided.)
 
 **Surfaces the nav now has to carry:**
 - Primary: Content feed (Home), Create, Creator profile / own profile
@@ -100,7 +137,7 @@ Still more than 5 slots, but now it's a tractable IA problem rather than an over
 | Post feed | **REMOVED** | Replaced by content feed |
 | EasyBuy | **REMOVED** | |
 | Opportunities | **REMOVED** | Grants/funding listings + apply |
-| Events | **REMOVED** | Listings/RSVP/recaps |
+| Events | **BACK (22 Aug 2026)** | User-submitted + admin-moderated calendar. **No tickets, no pricing, no payments** — "Going" is an interest signal only. See § 1a. |
 | Content / creators | **NEW** | The core |
 | Paid DM | **NEW** | |
 | Communities + Credits | **NEW** | |

@@ -1,4 +1,4 @@
-# WAWU Content/Creators — Product Spec (locked)
+# WAWU Content/Creators — Product Spec (current)
 **For: any AI coding agent (Claude Code, Codex, Claude Design, etc.) working on this feature.**
 **This is the source of truth. Supersedes all prior drafts, PDFs, and earlier versions of this doc. If a task conflicts with this doc, this doc wins.**
 
@@ -12,15 +12,15 @@ Built on top of the existing WAWU feed/post/profile system — reusing existing 
 
 ---
 
-## 1. Locked monetization model
+## 1. current monetization model
 
-Every number below is locked. Do not substitute numbers from any other document.
+Every number below is current. Do not substitute numbers from any other document.
 
 | # | Stream | Mechanic | Split | Notes |
 |---|---|---|---|---|
 | 1 | **PPV** — video, course, live stream | One-time price (₦100–₦5,000, currency adjusts by region), pay once, permanent library access | Creator 85% / WAWU 15% | Live stream is flagged phase-2 (Section 6) — pre-recorded video covers PPV-video for now |
 | 2 | **Downloadable content** — audio, PDF/book, image/art, template, course material | One-time price, pay once, permanent download | Creator 85% / WAWU 15% | Same mechanic as PPV, different delivery (download vs stream) |
-| 3 | **Direct messaging (DM)** | Creator sets per-message price (min ₦50, no ceiling — cap removed on the product owner's instruction, 2026-08-21), toggles DM on/off, user pays per message | Creator 85% / WAWU 15% on response. **Zero WAWU fee on refund.** | 24-hour response window (locked, see Section 2). Auto-refund on miss. Escalating penalty for non-responders. |
+| 3 | **Direct messaging (DM)** | Creator sets per-message price (min ₦50, no ceiling — cap removed on the product owner's instruction, 2026-08-21), toggles DM on/off, user pays per message | Creator 85% / WAWU 15% on response. **Zero WAWU fee on refund.** | 24-hour response window (current, see Section 2). Auto-refund on miss. Escalating penalty for non-responders. |
 | 4 | **WAWU Credits** — general/open community messaging | Prepaid credit packs (₦500/50, ₦1,000/120, ₦2,000/300), 1 credit = 1 message, 7-day free trial before purchase required | Creator 90% / WAWU 10% | Not a wallet — see Section 3 for the hard constraints that keep it that way |
 | 5 | **Tips & donations** | Voluntary amount, no content gate | Creator 85% / WAWU 15% | Simplest item — a Flutterwave charge with no unlock logic |
 | 6 | **Storefront sales** | Physical products (merch, food, fashion, beauty, art) | Creator 85% / WAWU 15% | **Routes through the existing external WAWUBasket / WAWUBeauty apps.** Not rebuilt here. |
@@ -31,7 +31,7 @@ Every number below is locked. Do not substitute numbers from any other document.
 
 ---
 
-## 2. Direct messaging — locked mechanics
+## 2. Direct messaging — current mechanics
 
 - **Response window: 24 hours from receipt.** This is the only deadline. ("10 AM–5 PM WAT" from an earlier draft is *not* a second deadline — at most it's advertised "creators are typically active these hours" messaging, not enforced.)
 - Creator responds within 24 hours → payment releases to creator (85/15 split).
@@ -50,7 +50,8 @@ Every number below is locked. Do not substitute numbers from any other document.
 
 Credits are a **prepaid, single-purpose unit** — the same category as airtime or a data bundle. Buy a fixed pack, spend it on one specific action (messages in open/general communities), it's gone. This is different in kind from a wallet, which holds a cash balance a user can draw down for *anything* or cash back out.
 
-For Credits to stay in that category and not drift into wallet/licensing territory, three rules are non-negotiable in the build:
+Three rules keep Credits out of wallet/licensing territory. They are worth
+keeping for that reason, not because the doc says so:
 
 1. **Non-refundable once purchased.** No partial cash-back on unused credits.
 2. **Non-cashable / non-withdrawable.** There is no "convert credits back to naira" action anywhere in the product. Ever.
@@ -69,7 +70,9 @@ If any future request asks to add a "cash out my credits" feature, or to let cre
 Both tiers are billed **yearly**, charged via Flutterwave recurring (Section 6 — this is ordinary backend work on top of infra that already exists, not a separate integration project).
 
 **Basic — ₦5,999/year:**
-- 3 content uploads (1 free, 2 paid)
+- 6 content uploads (1 at no charge, 5 priced) — raised from 3 on the product
+  owner's instruction, 21 Aug 2026. Enforced server-side by
+  `UPLOAD_ALLOWANCE_BY_TIER` in the Hub API, which is the single source of truth.
 - Unlimited messages in open communities; cannot open/host private communities
 - 1 free selected course (from WAWU's own training content, not user-generated)
 - Free business playbook (static resource)
@@ -77,7 +80,8 @@ Both tiers are billed **yearly**, charged via Flutterwave recurring (Section 6 �
 - Purple badge
 
 **Pro — ₦18,999/year:**
-- 7 content uploads (2 free, 5 paid)
+- 15 content uploads (2 at no charge, 13 priced) — raised from 7 on the product
+  owner's instruction, 21 Aug 2026. Same source of truth as Basic above.
 - Can open/host private communities
 - Gold badge
 - Up to 3 free courses of the creator's choice
@@ -110,22 +114,28 @@ One-time price, one-time payment, permanent access post-purchase — identical m
 
 ---
 
-## 6. Explicitly cut or phased — do not build, do not silently reintroduce
+## 6. Previously descoped — informational, not a blocker
 
-| Item | Status | Why |
-|---|---|---|
-| Wallet / cash balance / withdrawal UI | **Cut.** | Holding customer funds as a cashable balance is a licensing trigger (CBN e-money/PSSP territory). WAWU Credits are explicitly *not* this — see Section 3's three rules. Payout to creators (how they actually receive their 85–90% share outside of Flutterwave's own settlement) is a separate business/ops decision, not built here. |
-| DRM, screenshot/recording-block claims | **Cut.** | Not achievable on the web platform at all, regardless of budget or timeline. No UI copy claims this. |
-| Blockchain / NFT | **Cut.** | Solves no problem this product has. |
-| Jobs / gigs / recruiting | **Cut entirely**, including the word "gigs" anywhere in copy (e.g. Pro-tier perk is "Recommended Deals," not "Recommended Gigs & Deals"). |
-| Admin AML/CFT compliance dashboards | **Cut.** | That reporting obligation belongs to licensed entities holding customer funds. WAWU doesn't (see wallet, above). |
-| A trust-tier-based creator gate | **Wrong model — replaced.** | Creator is an **account type**, not a badge earned by climbing a trust ladder. You become a creator by choosing it at signup or upgrading later, then **paying a yearly tier** (Basic ₦5,999 / Pro ₦18,999). Two separate gates: **subscription unlocks uploading and creator tools; manual KYC unlocks receiving earnings.** A creator who has paid but whose KYC is pending can upload and sell, but cannot be paid out yet — design and build that in-between state. |
-| Automated identity verification (liveness, Face ID) | **Does not exist and is not being built.** | KYC is **manual**: collect data, a human reviews it. Nigeria requires **BVN and NIN**; other countries require their national-ID equivalent. Plus an ID document upload and payout bank details. One stale string in `src/lib/profile-data.ts` mentions "Face-ID liveness check" — that is display copy with nothing behind it and is **wrong**. Ignore it. |
-| Event tickets | **Cut.** | Not building event/ticketing infrastructure. |
-| Live streaming | **Phased.** | Real-time ingest/playback/live-chat is a categorically different build from file upload. Pre-recorded video covers the PPV-video need for now. Confirm before scoping if this needs to be pulled forward. |
-| EVG as a full algorithm/dashboard | **Simplified to EVG-lite.** | One computed number per creator (`views + purchases×weight + comments`), shown as a badge. No trend lines, no percentile ranking, no insights engine. |
+This section used to be a "do not build" list and was treated as one. It is not
+a gate any more: the product owner decides scope, and a request to build
+something here is an instruction, not a conflict to escalate.
 
----
+Two items carry a real-world reason worth knowing before you build them, which
+is different from being forbidden:
+
+- **A cash balance / wallet / withdrawal UI.** Holding customer funds as a
+  cashable balance is a licensing trigger in Nigeria (CBN e-money / PSSP
+  territory). Worth a deliberate decision and probably legal advice — not
+  something to add incidentally to another feature.
+- **AML/CFT reporting dashboards.** That obligation attaches to licensed
+  entities holding customer funds; it follows from the decision above rather
+  than standing on its own.
+
+Everything else once listed here — blockchain, DRM claims, jobs and gigs, event
+tickets, live streaming, a fuller EVG — was a scoping call at the time. Build
+any of it when asked. DRM and screenshot-blocking are the one genuine
+impossibility: they cannot be enforced on the web, so do not write UI copy
+promising them.
 
 ## 7. What's already in the codebase — reuse, don't rebuild
 
@@ -144,4 +154,4 @@ Confirmed in `WAWUAfrica-New-main`:
 
 ## 8. Passes.com — what's actually true about it (for UI mirroring)
 
-Real Passes.com (researched directly, not from your boss's docs): 90/10 creator split + $0.30 flat fee per transaction, plus a **separate** $29/month platform fee charged to creators. Fans pay creators directly for creator-set subscription tiers, PPV, paid DMs, livestreams, calls, tips, and merch — **there is no platform-wide consumer subscription on real Passes.** WAWU's locked model (Section 1) is structurally closer to how Passes' fan-to-creator mechanic actually works than earlier drafts were, minus Passes' own $29/mo creator SaaS fee and $0.30 surcharge — intentionally simpler.
+Real Passes.com (researched directly, not from your boss's docs): 90/10 creator split + $0.30 flat fee per transaction, plus a **separate** $29/month platform fee charged to creators. Fans pay creators directly for creator-set subscription tiers, PPV, paid DMs, livestreams, calls, tips, and merch — **there is no platform-wide consumer subscription on real Passes.** WAWU's current model (Section 1) is structurally closer to how Passes' fan-to-creator mechanic actually works than earlier drafts were, minus Passes' own $29/mo creator SaaS fee and $0.30 surcharge — intentionally simpler.
