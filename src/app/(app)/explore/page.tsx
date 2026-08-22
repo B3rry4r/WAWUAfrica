@@ -8,6 +8,7 @@ import { HandoffPill } from "@/components/ui/HandoffPill";
 import { ListRow } from "@/components/ui/ListRow";
 import { CategoryFilterAside } from "./_components/CategoryFilterAside";
 import { CreatorGridCard } from "./_components/CreatorGridCard";
+import { ExploreEvents } from "./_components/ExploreEvents";
 
 const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]" as const;
 const seeAll = "text-[12.5px] font-semibold text-[var(--accent)] hover:text-text-primary" as const;
@@ -75,6 +76,12 @@ export default async function ExplorePage() {
             ))}
           </div>
         </section>
+
+        {/* Events lives here, not in the nav. The bottom bar is locked at five
+            slots for everyone and Create is a creator-only FAB — an event is
+            neither, so Explore is its home, the same way Services reaches its
+            own sub-tree from here on mobile. */}
+        <ExploreEvents />
 
         <section className="flex flex-col gap-[11px]">
           <div className="flex items-center gap-[10px] px-[2px]">
