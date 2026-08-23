@@ -111,6 +111,17 @@ export default async function ExplorePage() {
 
         <section className="flex flex-col gap-[11px]">
           <div className="flex items-center gap-[10px] px-[2px]">
+            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Professionals</span>
+            <Link href="/professionals" className={seeAll}>See all</Link>
+          </div>
+          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+            <ListRow title="Find a professional" subtitle="Lawyers, accountants, doctors and more — vetted before they are listed" icon="BriefcaseBusiness" href="/professionals" />
+            <ListRow title="Offer your own services" subtitle="Get listed in your field and be paid for your time" icon="IdCard" href="/professionals/apply" />
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-[11px]">
+          <div className="flex items-center gap-[10px] px-[2px]">
             <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Services</span>
             <Link href="/services" className={seeAll}>See all</Link>
           </div>
