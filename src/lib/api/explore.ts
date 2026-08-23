@@ -1,4 +1,5 @@
-import type { ExploreCategory, ExploreCategoryId } from "@/types/explore";
+import type { CreatorDiscovery, ExploreCategory, ExploreCategoryId } from "@/types/explore";
+import type { VerificationLevel } from "@/types/account";
 import { EXPLORE_CATEGORIES } from "@/types/explore";
 import { apiFetch, isMockModeError } from "./client";
 import { getMockCategories, getMockCreators, toggleMockFollow } from "./mocks/explore";
@@ -14,20 +15,55 @@ export async function getCategories(): Promise<ExploreCategory[]> {
   return EXPLORE_CATEGORIES;
 }
 
+/** One row of GET /api/hub/creators. */
+interface RealCreatorDiscoveryItem {
+  wawuId: string;
+  name: string;
+  handle: string | null;
+  field: string | null;
+  pieceCount: number;
+  verification: VerificationLevel;
+  following: boolean;
+}
+
 /**
- * GAP (genuine, not a wiring miss): there is no backend endpoint to list or
- * discover creators, filtered by category or otherwise. UserProfileController
- * (src/user-profile/user-profile.controller.ts) only exposes `GET /users/me`
- * and `GET /users/:wawuId/public-profile` — both single-profile reads, never
- * a collection. SearchResponseController's `tab=creators` can't stand in for
- * this either: `q` is required and non-empty, and searchCreators() only
- * ILIKE-matches `handle`/`bio` substrings — there is no `interests`/category
- * predicate, so passing a category name as `q` would silently return wrong
- * results (a creator whose bio happens to mention the word), not a real
- * filter. Left on mock data until a real discovery endpoint exists.
+ * Real creators, from `GET /api/hub/creators`.
+ *
+ * This used to return mock data, because no discovery endpoint existed:
+ * `/users/:wawuId/public-profile` is a single read and `/search` requires a
+ * non-empty `q`, so there was nothing to list from. The mock people had
+ * fabricated ids ("wawu-adaeze") that matched nothing in the database, which
+ * meant every profile link and every follow on Explore was broken by
+ * construction.
+ *
+ * ONE THING TO KNOW ABOUT `category`. The backend filters it against
+ * `UserProfile.interests`, and three different vocabularies currently land in
+ * that column: these 25 explore category ids (`agriculture_food`), the profile
+ * editor's own tags, and free-text from the seed. Filtering by an explore
+ * category therefore only matches profiles that actually chose one. The
+ * profile editor now offers these categories, so it becomes true as people
+ * edit their profiles — it is not retroactive.
  */
-export async function getCreators(category?: ExploreCategoryId) {
-  return getMockCreators(category);
+export async function getCreators(category?: ExploreCategoryId): Promise<CreatorDiscovery[]> {
+  const query = category ? `?category=${encodeURIComponent(category)}&perPage=50` : "?perPage=50";
+  try {
+    const rows = await apiFetch<RealCreatorDiscoveryItem[]>(`/api/hub/creators${query}`);
+    return rows.map((r) => ({
+      wawuId: r.wawuId,
+      name: r.name,
+      // `field` is the creator's first interest, and a creator who has listed
+      // none has no field. Empty string rather than a placeholder: the card
+      // renders "field · N pieces", and inventing a category for somebody is
+      // worse than the separator looking bare.
+      field: r.field ?? "",
+      pieceCount: r.pieceCount,
+      verification: r.verification,
+      following: r.following,
+    }));
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    return getMockCreators(category);
+  }
 }
 
 /**
@@ -37,16 +73,15 @@ export async function getCreators(category?: ExploreCategoryId) {
  * this call) picks which one to call; see the FollowButton.tsx call-site fix
  * required by this signature change.
  *
- * GAP (genuine, not a wiring miss): /explore and /explore/creators' entire
- * creator list is mock data with fabricated wawuIds (e.g. "wawu-adaeze")
- * that do not exist in the real DB — there is no creator-discovery endpoint
- * to source a real list from (see getCreators' doc comment). So a real
- * backend is genuinely unreachable for these ids and this POST/DELETE will
- * always 404 against it. Only fall back to the mock toggle when there is
- * truly no backend configured (isMockModeError) — a real 404/error must
- * propagate so FollowButton's existing rollback (`.catch(() => setFollowing(!next))`)
- * actually fires instead of the button lying that a follow against a
- * nonexistent creator succeeded.
+ * The ids reaching this are now REAL. Explore's creator list used to be mock
+ * data with fabricated wawuIds ("wawu-adaeze") that existed nowhere in the
+ * database, so every follow from that screen 404d by construction; it reads
+ * `GET /api/hub/creators` now, so the target of a follow is a real account.
+ *
+ * The mock fallback stays for genuinely-no-backend mode only (isMockModeError).
+ * A real 404 or error must still propagate so FollowButton's rollback
+ * (`.catch(() => setFollowing(!next))`) fires, rather than the button
+ * reporting a follow that did not happen.
  */
 export async function toggleFollow(wawuId: string, currentlyFollowing: boolean): Promise<boolean> {
   try {
