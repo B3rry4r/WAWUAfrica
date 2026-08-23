@@ -54,6 +54,12 @@ export interface CreatorProfile {
   dmEnabled: boolean;
   /** Integer Naira. Only shown when dmEnabled. */
   dmPrice: number;
+  /**
+   * Hours this creator has to reply before the buyer is refunded. A term of
+   * the sale, not a platform constant — it is no longer a fixed 24, so the
+   * buyer has to be shown the one they are actually paying against.
+   */
+  dmResponseHours: number;
   location?: string;
   memberSince?: string;
   replyTime?: string;

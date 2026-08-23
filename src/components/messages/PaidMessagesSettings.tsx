@@ -7,6 +7,7 @@ import { creatorGates } from "@/lib/auth/gates";
 import { PLANS } from "@/types/subscription";
 import type { PenaltyKind } from "@/types/messaging";
 import { NairaInput } from "@/components/ui/NairaInput";
+import { ChoiceChips } from "@/components/ui/ChoiceChips";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -28,6 +29,34 @@ const PRICE_PRESETS = [100, 500, 1000, 2500];
  * exist anywhere in this product any more.
  */
 const MIN_PRICE = 50;
+
+/**
+ * How long the creator has to reply before the fan is refunded automatically.
+ *
+ * This was a fixed 24 hours platform-wide. It is right for a fan asking one
+ * question and wrong for anyone quoting on real work, so creators choose —
+ * within the server's own 1–336 hour bounds (DTO: update-dm-settings).
+ *
+ * Changing it never moves a deadline already sold: each message stores the
+ * window it was paid against.
+ */
+const WINDOW_OPTIONS = [
+  { value: 24, label: "24 hours" },
+  { value: 48, label: "2 days" },
+  { value: 72, label: "3 days" },
+  { value: 168, label: "1 week" },
+] as const;
+
+/** "24 hours" / "3 days" — never a bare hour count once past a day. */
+function windowLabel(hours: number): string {
+  if (hours < 48) return `${hours} hour${hours === 1 ? "" : "s"}`;
+  if (hours % 168 === 0) {
+    const weeks = hours / 168;
+    return `${weeks} week${weeks === 1 ? "" : "s"}`;
+  }
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"}`;
+}
 
 /** The price field's own id, so "Raise the price" can send focus to it. */
 const PRICE_FIELD_ID = "dm-price";
@@ -66,6 +95,7 @@ export function PaidMessagesSettings() {
   const [disabledUntil, setDisabledUntil] = useState<string | null>(null);
   const [statsError, setStatsError] = useState(false);
   const [enabled, setEnabled] = useState(gates.dmEnabled);
+  const [windowHours, setWindowHours] = useState(gates.dmResponseHours);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   // Real price/accept-toggle come from the session's creator state (GET
@@ -73,8 +103,9 @@ export function PaidMessagesSettings() {
   useEffect(() => {
     setPrice(gates.dmPrice > 0 ? gates.dmPrice : null);
     setEnabled(gates.dmEnabled);
+    setWindowHours(gates.dmResponseHours);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gates.dmPrice, gates.dmEnabled]);
+  }, [gates.dmPrice, gates.dmEnabled, gates.dmResponseHours]);
 
   useEffect(() => {
     if (!gates.isCreator) return;
@@ -132,7 +163,11 @@ export function PaidMessagesSettings() {
     if (enabled && (!priceSet || tooLow)) return;
     setSaveState("saving");
     try {
-      await messagingApi.updateDmSettings({ dmEnabled: enabled, dmPrice: price ?? 0 });
+      await messagingApi.updateDmSettings({
+        dmEnabled: enabled,
+        dmPrice: price ?? 0,
+        dmResponseHours: windowHours,
+      });
       setSaveState("saved");
       reloadCreatorState();
       setTimeout(() => setSaveState("idle"), 2000);
@@ -281,7 +316,7 @@ export function PaidMessagesSettings() {
             <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
               {priceSet
                 ? "Fans cannot start a paid conversation. Turn it back on whenever you have time to answer."
-                : "Fans pay to ask you one question, and you answer inside 24 hours. Switch it on and name your price — you choose the amount, and you can change it whenever you like."}
+                : `Fans pay to ask you one question, and you answer inside ${windowLabel(windowHours)}. Switch it on and name your price — you choose the amount and the reply window, and you can change both whenever you like.`}
             </span>
             <Button full variant="secondary" onClick={() => setEnabled(true)}>
               {priceSet ? "Turn back on" : "Turn it on and set a price"}
@@ -317,6 +352,22 @@ export function PaidMessagesSettings() {
               error={tooLow ? `The lowest we can charge is ${formatNaira(MIN_PRICE)}.` : undefined}
               hint="You set this. Charge what your time is worth."
             />
+
+            <div className="flex flex-col gap-[8px]">
+              <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
+                How long you have to reply
+              </span>
+              <ChoiceChips
+                ariaLabel="How long you have to reply"
+                options={WINDOW_OPTIONS}
+                value={windowHours}
+                onSelect={setWindowHours}
+              />
+              <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
+                Miss it and the fan is refunded automatically. Buyers see this
+                before they pay, so pick a window you can actually keep.
+              </span>
+            </div>
           </div>
         ) : null}
 
@@ -329,7 +380,11 @@ export function PaidMessagesSettings() {
           <div className="flex items-start gap-[10px]">
             <Icon name="Clock" size={16} color="var(--text-secondary)" strokeWidth={2} className="mt-[1px]" />
             <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
-              Reply within <span className="text-[var(--text-primary)] font-semibold">24 hours</span> of each message.
+              Reply within{" "}
+              <span className="text-[var(--text-primary)] font-semibold">
+                {windowLabel(windowHours)}
+              </span>{" "}
+              of each message.
             </span>
           </div>
           <div className="flex items-start gap-[10px]">

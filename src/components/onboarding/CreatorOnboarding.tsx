@@ -283,7 +283,7 @@ export function CreatorOnboarding() {
             <div className="flex flex-col gap-[15px]">
               {[
                 { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates. You set the price." },
-                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set your own price a message and reply within 24 hours." },
+                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set your own price a message, and choose how long you get to reply." },
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">

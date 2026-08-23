@@ -21,6 +21,7 @@ interface CreatorLike {
   slotsTotal: number;
   dmPrice: number;
   dmEnabled?: boolean;
+  dmResponseHours?: number;
 }
 
 /**
@@ -62,6 +63,9 @@ export function creatorGates(source: GateSource) {
     tier: c?.tier ?? null,
     dmEnabled: !!c?.dmEnabled,
     dmPrice: c?.dmPrice ?? 0,
+    // 24 is the server's own default for a row that predates the setting —
+    // matched here so the UI never shows a window the backend would not use.
+    dmResponseHours: c?.dmResponseHours ?? 24,
     slotsUsed: c?.slotsUsed ?? 0,
     slotsTotal: c?.slotsTotal ?? 0,
     slotsRemaining: Math.max(0, (c?.slotsTotal ?? 0) - (c?.slotsUsed ?? 0)),

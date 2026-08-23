@@ -19,7 +19,11 @@ export interface DirectMessage {
   amount: number;
   status: DmStatus;
   sentAt: string;
-  /** sentAt + 24h — the single locked deadline. */
+  /**
+   * sentAt + the creator's reply window — locked at send time and never
+   * recomputed. No longer always 24h: creators choose their own window, and
+   * each message keeps the one it was paid against.
+   */
   deadlineAt: string;
   respondedAt?: string | null;
 }

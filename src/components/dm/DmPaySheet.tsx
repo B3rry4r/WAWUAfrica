@@ -22,6 +22,12 @@ export interface DmCreator {
   handle: string;
   dmPrice: number;
   /**
+   * Hours this creator has to reply before the payment is refunded. Shown
+   * before the buyer pays, because it is what the money buys. Defaults to 24
+   * — the server's own default — when a caller has not got it.
+   */
+  dmResponseHours?: number;
+  /**
    * The creator's rung on the PUBLIC verification ladder (VerificationSubmission,
    * /api/hub/verification/*) — never their KYC status, which is private to them
    * and gates payouts, not trust. This sheet used to render a hardcoded
@@ -30,6 +36,17 @@ export interface DmCreator {
    * Omitted defaults to "basic", which renders no badge at all.
    */
   verification?: VerificationLevel;
+}
+
+/** "24 hours" / "3 days" — never a bare hour count once past a day. */
+function windowLabel(hours: number): string {
+  if (hours < 48) return `${hours} hour${hours === 1 ? "" : "s"}`;
+  if (hours % 168 === 0) {
+    const weeks = hours / 168;
+    return `${weeks} week${weeks === 1 ? "" : "s"}`;
+  }
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"}`;
 }
 
 /** Compose → pay → processing → success/failure. One sheet, four states. */
@@ -125,7 +142,8 @@ export function DmPaySheet({
             </span>
           </div>
           <p className="m-0 text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-            {creator.name.split(" ")[0]} has 24 hours to reply. If not, you’re refunded automatically. No questions.
+            {creator.name.split(" ")[0]} has {windowLabel(creator.dmResponseHours ?? 24)} to reply. If not,
+            you’re refunded automatically. No questions.
           </p>
           <Button full disabled={!text.trim()} onClick={pay}>
             Send message · {formatNaira(creator.dmPrice)}
@@ -145,7 +163,8 @@ export function DmPaySheet({
           <div className="flex flex-col gap-[5px]">
             <span className="text-[17px] font-bold text-[var(--text-primary)]">Your message is in</span>
             <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-              You’ll be notified when {creator.name.split(" ")[0]} replies. If there’s no reply in 24 hours, you’re
+              You’ll be notified when {creator.name.split(" ")[0]} replies. If there’s no reply in{" "}
+              {windowLabel(creator.dmResponseHours ?? 24)}, you’re
               refunded automatically.
             </span>
           </div>
