@@ -7,6 +7,8 @@ export { AccessBadge } from "./AccessBadge";
 export { BackLink } from "./BackLink";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
+export { ChoiceChips } from "./ChoiceChips";
+export type { ChoiceChipOption, ChoiceChipsProps } from "./ChoiceChips";
 export { Callout } from "./Callout";
 export type { CalloutTone } from "./Callout";
 export { ComingSoonPill } from "./ComingSoonPill";

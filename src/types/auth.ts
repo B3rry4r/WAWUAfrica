@@ -75,6 +75,8 @@ export interface CreatorState {
   /** Creator-set price per message. 0 when DMs are off. */
   dmPrice: number;
   dmEnabled: boolean;
+  /** Hours the creator has to reply before the payer is refunded. */
+  dmResponseHours?: number;
 }
 
 export interface SessionUser {

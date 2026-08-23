@@ -278,7 +278,11 @@ export interface MessagingApi {
   /** Creator's answer — releases the held payment. */
   replyToThread: (id: string, text: string) => Promise<ThreadDetail>;
   /** Paid-messages settings Save — persists price + accept-toggle. */
-  updateDmSettings: (input: { dmEnabled: boolean; dmPrice: number }) => Promise<void>;
+  updateDmSettings: (input: {
+    dmEnabled: boolean;
+    dmPrice: number;
+    dmResponseHours?: number;
+  }) => Promise<void>;
 }
 
 export const messagingApi: MessagingApi = {
@@ -373,7 +377,7 @@ export const messagingApi: MessagingApi = {
       return mockRequest(cloneThread(thread));
     }
   },
-  // SEAM: replace with PATCH /api/hub/creator/dm-settings { dmEnabled, dmPrice }
+  // SEAM: replace with PATCH /api/hub/creator/dm-settings { dmEnabled, dmPrice, dmResponseHours }
   updateDmSettings: async (input) => {
     try {
       await apiFetch<unknown>("/api/hub/creator/dm-settings", {

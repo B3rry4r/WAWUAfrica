@@ -1,5 +1,6 @@
 "use client";
 import { Input, type InputProps } from "./Input";
+import { ChoiceChips } from "./ChoiceChips";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -33,23 +34,12 @@ export function NairaInput({
   return (
     <div className="flex flex-col gap-2">
       {presets && presets.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {presets.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => emit(p)}
-              className={[
-                "h-9 rounded-full border px-3 text-[13px] font-semibold transition-colors",
-                value === p
-                  ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
-                  : "border-hairline bg-card text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
-              ].join(" ")}
-            >
-              {formatNaira(p)}
-            </button>
-          ))}
-        </div>
+        <ChoiceChips
+          ariaLabel="Suggested amounts"
+          options={presets.map((p) => ({ value: p, label: formatNaira(p) }))}
+          value={value}
+          onSelect={emit}
+        />
       ) : null}
       <Input
         {...rest}

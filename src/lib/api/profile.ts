@@ -30,6 +30,7 @@ interface RealPublicCreatorProfile {
   tier: "basic" | "pro";
   dmEnabled: boolean;
   dmPrice: number | null;
+  dmResponseHours?: number;
   evgScore: number;
   contentCount: number;
   followerCount: number;
@@ -93,6 +94,8 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
     // for business — and must never be rendered as free.
     dmEnabled: real.dmEnabled && (real.dmPrice ?? 0) > 0,
     dmPrice: real.dmPrice ?? 0,
+    // 24 matches the server's default for a creator who has never changed it.
+    dmResponseHours: real.dmResponseHours ?? 24,
     categories: real.interests,
     socials: {
       instagram: real.instagramHandle ?? undefined,
