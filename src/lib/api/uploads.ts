@@ -21,6 +21,9 @@ export type UploadFolder =
   | "content/full"
   | "kyc/id-document"
   | "service-application/document"
+  // A practising licence or qualification supporting a professional-profile
+  // application. Its own prefix, matching UPLOAD_FOLDERS in the backend.
+  | "professional/document"
   | "avatars"
   // A community's own cover image, and a photo posted into a room. Two
   // destinations, not one, matching UPLOAD_FOLDERS in the backend's

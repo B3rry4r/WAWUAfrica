@@ -115,6 +115,8 @@ export function Sidebar() {
 
   const eventsActive = pathname.startsWith('/events');
 
+  const professionalsActive = pathname.startsWith('/professionals');
+
   return (
     <aside className="hidden w-[244px] shrink-0 flex-col gap-[6px] overflow-y-auto border-r border-hairline bg-page px-[14px] py-[22px] xl:flex xl:h-screen">
       <img src="/wawu-logo-white.png" alt="WAWU" className="mx-[10px] mb-5 mt-[2px] h-6 w-auto object-contain" />
@@ -169,6 +171,21 @@ export function Sidebar() {
           strokeWidth={eventsActive ? 2.4 : 2}
         />
         Events
+      </Link>
+
+      {/*
+        Also not a bottom-bar slot, so mobile reaches it through Explore and
+        Services. Someone looking for a lawyer should not have to know that
+        WAWU calls them "creators".
+      */}
+      <Link href="/professionals" className={navRowClass(professionalsActive)}>
+        <Icon
+          name="BriefcaseBusiness"
+          size={20}
+          color={professionalsActive ? "var(--accent)" : "var(--text-secondary)"}
+          strokeWidth={professionalsActive ? 2.4 : 2}
+        />
+        Professionals
       </Link>
 
       {!resolved ? (
