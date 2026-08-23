@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon, Skeleton, EmptyState, ErrorState, BackLink } from "@/components/ui";
+import { Icon, Skeleton, EmptyState, ErrorState } from "@/components/ui";
+import { FlowHeader } from "@/components/layout/FlowHeader";
 import type { IconName } from "@/components/ui/Icon";
 import { getNotifications, markAllRead } from "@/lib/api/notifications";
 import { formatNaira, formatCredits } from "@/lib/format";
@@ -80,15 +81,25 @@ export default function NotificationsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-page xl:mx-auto xl:w-full xl:max-w-[700px]">
-      <div className="px-4 pt-3 xl:px-0"><BackLink /></div>
-      <div className="flex items-center gap-3 border-b border-hairline px-4 py-4 xl:sticky xl:top-0 xl:z-10 xl:h-[68px] xl:bg-page xl:px-6 xl:py-0">
-        <span className="flex-1 text-[17px] font-semibold xl:text-[19px] xl:tracking-[-0.02em]">Notifications</span>
-        {unread > 0 ? (
-          <button type="button" onClick={onMarkAllRead} className="text-[13.5px] font-semibold text-accent hover:text-text-primary">
-            Mark all read
-          </button>
-        ) : null}
-      </div>
+      {/* One row, one bar. The back control used to sit in its own block above
+          this one — measured 52px higher than the title's centre line and 23px
+          out horizontally, which is the reported back-button/title
+          misalignment. FlowHeader centres both on the same axis. */}
+      <FlowHeader
+        title="Notifications"
+        sticky
+        right={
+          unread > 0 ? (
+            <button
+              type="button"
+              onClick={onMarkAllRead}
+              className="shrink-0 text-[13.5px] font-semibold text-accent hover:text-text-primary"
+            >
+              Mark all read
+            </button>
+          ) : undefined
+        }
+      />
 
       {error ? (
         <ErrorState title="Could not load notifications" body={error} onRetry={load} />

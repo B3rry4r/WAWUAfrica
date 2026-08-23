@@ -5,6 +5,7 @@ import { getService } from "@/lib/api/services";
 import type { PartnerService } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ErrorState, Icon } from "@/components/ui";
+import { PageColumn } from "@/components/layout/PageColumn";
 import type { IconName } from "@/components/ui/Icon";
 
 const STEPS = [
@@ -51,7 +52,7 @@ export default function NepcServicePage() {
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+    <PageColumn>
       <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
@@ -88,9 +89,10 @@ export default function NepcServicePage() {
         </div>
       </section>
 
-      <Button full size="lg" href="/services/nepc/apply">
+      {/* Natural width at desktop — see PageColumn. */}
+      <Button full size="lg" href="/services/nepc/apply" className="xl:w-auto xl:self-start">
         Start now
       </Button>
-    </div>
+    </PageColumn>
   );
 }

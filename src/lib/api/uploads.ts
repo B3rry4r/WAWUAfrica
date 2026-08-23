@@ -21,7 +21,13 @@ export type UploadFolder =
   | "content/full"
   | "kyc/id-document"
   | "service-application/document"
-  | "avatars";
+  | "avatars"
+  // A community's own cover image, and a photo posted into a room. Two
+  // destinations, not one, matching UPLOAD_FOLDERS in the backend's
+  // presign-upload.dto.ts — the cover is written by the host alone, a message
+  // photo by any member. Both are image-only server-side.
+  | "community/image"
+  | "community/message";
 
 interface PresignResponse {
   uploadUrl: string;

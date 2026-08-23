@@ -1,10 +1,41 @@
-import type { Community, CommunityMessage, CreditPackId, CreditsState } from "@/types/credits";
+import type {
+  Community,
+  CommunityJoinRequest,
+  CommunityMessage,
+  CreditPackId,
+  CreditsState,
+} from "@/types/credits";
 import { CREDIT_PACKS } from "@/types/credits";
 import { delay } from "../client";
 
 /** Balances the signed-in user's credits and joins. Never a currency value. */
 let MOCK_BALANCE = 48;
 const MOCK_JOINED = new Set<string>(["funmi-books", "zainab-farmers", "adaeze-agro"]);
+/** Private communities this account has ASKED to join and is still waiting on. */
+const MOCK_PENDING = new Set<string>();
+
+/**
+ * The host's review queue, keyed by community id. Only private communities
+ * ever have one — an open room admits instantly, so a pending row cannot
+ * exist for it. Seeded for `ifeanyi-tailors`, the private fixture below, so
+ * the queue screen has something real-shaped to render in dev mode; one
+ * requester deliberately has no handle, because the server returns null for
+ * anyone who has not set one.
+ */
+const MOCK_JOIN_REQUESTS: Record<string, { wawuId: string; handle: string | null; requestedAt: string }[]> = {
+  "ifeanyi-tailors": [
+    {
+      wawuId: "wawu-chidera",
+      handle: "chidera_fabrics",
+      requestedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      wawuId: "wawu-tobi",
+      handle: null,
+      requestedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    },
+  ],
+};
 
 const MOCK_COMMUNITIES: Community[] = [
   {
@@ -117,7 +148,11 @@ export async function getMockCreditsState(): Promise<CreditsState> {
 // SEAM: replace with GET /api/hub/communities
 export async function getMockCommunities(kind: "joined" | "discover"): Promise<Community[]> {
   await delay(280);
-  const all = MOCK_COMMUNITIES.map((c) => ({ ...c, joined: MOCK_JOINED.has(c.id) }));
+  const all = MOCK_COMMUNITIES.map((c) => ({
+    ...c,
+    joined: MOCK_JOINED.has(c.id),
+    pending: MOCK_PENDING.has(c.id),
+  }));
   return kind === "joined" ? all.filter((c) => c.joined) : all.filter((c) => !c.joined);
 }
 
@@ -125,7 +160,7 @@ export async function getMockCommunities(kind: "joined" | "discover"): Promise<C
 export async function getMockCommunity(id: string): Promise<Community | null> {
   await delay(250);
   const c = MOCK_COMMUNITIES.find((x) => x.id === id);
-  return c ? { ...c, joined: MOCK_JOINED.has(c.id) } : null;
+  return c ? { ...c, joined: MOCK_JOINED.has(c.id), pending: MOCK_PENDING.has(c.id) } : null;
 }
 
 // SEAM: replace with GET /api/hub/communities/:id/messages
@@ -134,16 +169,25 @@ export async function getMockCommunityMessages(id: string): Promise<CommunityMes
   return MOCK_MESSAGES[id] ?? [];
 }
 
-/** 1 credit per message in open communities; reading is always free. */
+/**
+ * 1 credit per message in open communities; reading is always free. A photo
+ * costs the same ONE credit as a sentence — the real service prices by
+ * message, never by content type, and the mock must not imply otherwise.
+ */
 // SEAM: replace with POST /api/hub/communities/:id/messages
-export async function sendMockCommunityMessage(id: string, text: string): Promise<CommunityMessage> {
+export async function sendMockCommunityMessage(
+  id: string,
+  text: string,
+  imageUrl: string | null = null,
+): Promise<CommunityMessage> {
   await delay(350);
   MOCK_BALANCE = Math.max(0, MOCK_BALANCE - 1);
   const msg: CommunityMessage = {
     id: `cm-${Date.now()}`,
     communityId: id,
     sender: { wawuId: "wawu-me", name: "Amara Okafor" },
-    text,
+    text: text || null,
+    imageUrl,
     costInCredits: 1,
     sentAt: "Just now",
   };
@@ -151,11 +195,96 @@ export async function sendMockCommunityMessage(id: string, text: string): Promis
   return msg;
 }
 
+/**
+ * Dev-mode stand-in for PATCH /communities/:id (image only). Mutates the same
+ * in-memory row every other mock read uses, so the new picture shows up in
+ * the rooms list and the room header immediately.
+ */
+// SEAM: replace with PATCH /api/hub/communities/:id
+export async function updateMockCommunityImage(id: string, imageUrl: string | null): Promise<Community> {
+  await delay(300);
+  const community = MOCK_COMMUNITIES.find((c) => c.id === id);
+  if (!community) throw new Error("Community not found");
+  community.imageUrl = imageUrl;
+  return { ...community, joined: MOCK_JOINED.has(community.id) };
+}
+
 // SEAM: replace with POST /api/hub/communities/:id/join
-export async function joinMockCommunity(id: string): Promise<boolean> {
+export async function joinMockCommunity(id: string): Promise<"joined" | "pending"> {
   await delay(250);
+  // Mirrors the server's rule exactly (CommunityService.join): an open room
+  // admits instantly, a private one files a request the host must approve.
+  // Returning "joined" for both here would hide the pending screen from
+  // dev-mode work on the very flow it exists for.
+  const community = MOCK_COMMUNITIES.find((c) => c.id === id);
+  if (community?.kind === "private") {
+    MOCK_PENDING.add(id);
+    MOCK_JOIN_REQUESTS[id] = [
+      ...(MOCK_JOIN_REQUESTS[id] ?? []),
+      { wawuId: "wawu-me", handle: "you", requestedAt: new Date().toISOString() },
+    ];
+    return "pending";
+  }
   MOCK_JOINED.add(id);
-  return true;
+  return "joined";
+}
+
+// SEAM: replace with GET /api/hub/communities/:id/membership
+export async function getMockMembership(id: string): Promise<"joined" | "pending" | null> {
+  await delay(120);
+  if (MOCK_JOINED.has(id)) return "joined";
+  if (MOCK_PENDING.has(id)) return "pending";
+  return null;
+}
+
+// SEAM: replace with GET /api/hub/communities/:id/requests
+export async function getMockJoinRequests(communityId: string): Promise<CommunityJoinRequest[]> {
+  await delay(220);
+  return (MOCK_JOIN_REQUESTS[communityId] ?? []).map((r) => ({
+    communityId,
+    user: { wawuId: r.wawuId, handle: r.handle },
+    requestedAt: r.requestedAt,
+  }));
+}
+
+// SEAM: replace with POST /api/hub/communities/:id/requests/:userWawuId/approve
+export async function approveMockJoinRequest(communityId: string, userWawuId: string): Promise<void> {
+  await delay(280);
+  MOCK_JOIN_REQUESTS[communityId] = (MOCK_JOIN_REQUESTS[communityId] ?? []).filter(
+    (r) => r.wawuId !== userWawuId,
+  );
+  const community = MOCK_COMMUNITIES.find((c) => c.id === communityId);
+  if (community) community.memberCount += 1;
+  // Approving your own pending request is how the dev-mode requester gets in.
+  if (userWawuId === "wawu-me") {
+    MOCK_PENDING.delete(communityId);
+    MOCK_JOINED.add(communityId);
+  }
+}
+
+/**
+ * Declining DELETES the request, exactly as the server does — there is no
+ * "declined" state to store, and the person may ask again. See
+ * declineJoinRequest in ../communities.ts.
+ */
+// SEAM: replace with DELETE /api/hub/communities/:id/requests/:userWawuId
+export async function declineMockJoinRequest(communityId: string, userWawuId: string): Promise<void> {
+  await delay(280);
+  MOCK_JOIN_REQUESTS[communityId] = (MOCK_JOIN_REQUESTS[communityId] ?? []).filter(
+    (r) => r.wawuId !== userWawuId,
+  );
+  if (userWawuId === "wawu-me") MOCK_PENDING.delete(communityId);
+}
+
+// SEAM: replace with DELETE /api/hub/communities/:id/members/:userWawuId
+export async function removeMockCommunityMember(communityId: string, userWawuId: string): Promise<void> {
+  await delay(280);
+  const community = MOCK_COMMUNITIES.find((c) => c.id === communityId);
+  if (community && community.memberCount > 0) community.memberCount -= 1;
+  if (userWawuId === "wawu-me") {
+    MOCK_JOINED.delete(communityId);
+    MOCK_PENDING.delete(communityId);
+  }
 }
 
 /**
@@ -183,6 +312,7 @@ export async function createMockCommunity(input: {
   name: string;
   description: string;
   kind: "open" | "private";
+  imageUrl?: string | null;
   host: { wawuId: string; name: string };
 }): Promise<Community> {
   await delay(420);
@@ -195,6 +325,7 @@ export async function createMockCommunity(input: {
     messagesToday: 0,
     kind: input.kind,
     joined: true,
+    imageUrl: input.imageUrl ?? null,
   };
   MOCK_COMMUNITIES.push(community);
   MOCK_JOINED.add(community.id);

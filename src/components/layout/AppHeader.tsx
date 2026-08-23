@@ -33,6 +33,17 @@ const OWN_HEADER_ROUTES = [
   "/settings",
   "/marketplace",
   "/creator",
+  // These three render their own FlowHeader and were NOT listed, so at desktop
+  // width they got DesktopHeader (68px) stacked on top of it (63px) — two
+  // header bars, measured, one above the other, on /earnings and /kyc.
+  "/earnings",
+  "/kyc",
+  "/onboarding",
+  // Both render a ScreenHeader (now FlowHeader) and were stacking under the
+  // global mobile header. NOT "/explore" itself — that is a nav destination
+  // and keeps the global header.
+  "/explore/categories",
+  "/explore/creators",
 ];
 
 /** Exported so DesktopHeader can hide on the same routes at xl width. */
@@ -83,12 +94,22 @@ export function AppHeader() {
       style={{ backdropFilter: "var(--blur-chrome)" }}
     >
       <img src="/wawu-icon-white.png" alt="WAWU" className="h-[26px] w-[26px] object-contain" />
+      {/*
+        `min-w-0` + `truncate` are load-bearing, not decoration. This pill is a
+        flex child sharing a 390px row with a logo, a bell, an avatar and (for
+        creators) a browse chip, which leaves it about 180px. Without min-w-0 a
+        flex item refuses to shrink below its content, and the label wrapped to
+        a second line inside a fixed 36px pill — the reported "search bar text
+        breaks into two lines on mobile", measured at 180x36 with two line
+        boxes and a 37px scrollHeight. The label is also the same short one the
+        /search screen itself uses, so the two agree and it fits.
+      */}
       <Link
         href="/search"
-        className="flex h-[36px] flex-1 items-center gap-2 rounded-full border border-hairline bg-input px-3 text-[13.5px] text-text-muted hover:border-strong hover:bg-surface-hover active:bg-surface-press"
+        className="flex h-[36px] min-w-0 flex-1 items-center gap-2 rounded-full border border-hairline bg-input px-3 text-[13.5px] text-text-muted hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
         <Icon name="Search" size={15} color="var(--text-muted)" />
-        Search creators and content
+        <span className="min-w-0 flex-1 truncate whitespace-nowrap">Search WAWU</span>
       </Link>
       <Link
         href="/notifications"

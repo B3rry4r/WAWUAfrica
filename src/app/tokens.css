@@ -93,6 +93,10 @@ button, input, textarea, select { font-family: inherit; }
   --surface-input: #17161B;
   --surface-tag: #201F27;
   --surface-scrim: rgba(0, 0, 0, 0.72);
+  /* Sticky bar over scrolling content — pairs with --blur-chrome. Was written
+     out as a literal rgba(19,19,22,0.86) in 16 files, which meant every new
+     header re-typed a hex the theme had no say over. */
+  --surface-chrome: rgba(19, 19, 22, 0.86);
 
   /* ---------- Borders ---------- */
   --border-hairline: rgba(255, 255, 255, 0.08);
@@ -212,6 +216,7 @@ button, input, textarea, select { font-family: inherit; }
   --surface-input: #F5F6F6;
   --surface-tag: #ECECEC;
   --surface-scrim: rgba(11, 10, 13, 0.45);
+  --surface-chrome: rgba(250, 250, 251, 0.86);
 
   --border-hairline: rgba(11, 10, 13, 0.09);
   --border-strong: rgba(11, 10, 13, 0.18);

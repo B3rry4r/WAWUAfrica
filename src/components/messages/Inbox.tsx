@@ -12,6 +12,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { formatNaira } from "@/lib/format";
+import { FlowHeader } from "@/components/layout/FlowHeader";
 
 /** "4:12 pm today" / "9:40 am tomorrow" / "14 Aug, 4:12 pm" from a real ISO deadline. */
 function formatDeadline(iso: string): string {
@@ -79,15 +80,17 @@ export function Inbox() {
 
   return (
     <div>
-      <header
-        className="flex items-center gap-[12px] pt-[16px] px-[18px] pb-[14px] border-b border-b-[var(--border-hairline)]"
-      >
-        <span className="flex-1 text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
-          Inbox
-        </span>
+      {/* Shared bar. This was its own header at 61px with the title flush at
+          18px, against 63px/63px everywhere else — the inbox was the one
+          screen whose title did not line up with the rest of the app. Inbox is
+          a nav destination, so it keeps no back control. */}
+      <FlowHeader
+        title="Inbox"
+        back={false}
+        right={
         <Link
           href="/messages/settings"
-          className={`inline-flex items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] border text-[11.5px] font-bold no-underline [font-feature-settings:var(--font-feature-tabular)] hover:border-strong hover:bg-surface-hover active:bg-surface-press ${
+          className={`inline-flex shrink-0 items-center gap-[6px] h-[26px] py-0 px-[10px] rounded-[999px] border text-[11.5px] font-bold no-underline [font-feature-settings:var(--font-feature-tabular)] hover:border-strong hover:bg-surface-hover active:bg-surface-press ${
             priceSet
               ? "bg-[var(--surface-tag)] border-[var(--border-hairline)] text-[var(--text-secondary)]"
               : "bg-[var(--accent-tint)] border-[var(--border-accent)] text-[var(--accent)]"
@@ -95,7 +98,8 @@ export function Inbox() {
         >
           {priceSet ? `${formatNaira(price)} each` : "Set your price"}
         </Link>
-      </header>
+        }
+      />
 
       <div className="py-[14px] px-[16px] flex flex-col gap-[12px]">
         {state.penalty !== "none" ? (

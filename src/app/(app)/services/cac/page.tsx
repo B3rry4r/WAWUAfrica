@@ -5,6 +5,7 @@ import { getCacTimeline, getService } from "@/lib/api/services";
 import type { PartnerService, ServiceApplicationTimeline } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ErrorState, Icon, StatusPill } from "@/components/ui";
+import { PageColumn } from "@/components/layout/PageColumn";
 import type { IconName } from "@/components/ui/Icon";
 
 export default function CacServicePage() {
@@ -49,7 +50,7 @@ export default function CacServicePage() {
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+    <PageColumn>
       <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
@@ -109,9 +110,11 @@ export default function CacServicePage() {
         </div>
       </section>
 
-      <Button full size="lg" href="/services/cac/apply">
+      {/* Natural width once there is a column to sit in — a 1000px-wide
+          primary button is the "stretched mobile view" report, not a CTA. */}
+      <Button full size="lg" href="/services/cac/apply" className="xl:w-auto xl:self-start">
         Apply now
       </Button>
-    </div>
+    </PageColumn>
   );
 }

@@ -11,7 +11,9 @@ import { PLANS } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
+import { CommunityImage } from "@/components/ui/CommunityImage";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FilePicker } from "@/components/ui/FilePicker";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -52,6 +54,10 @@ export function CreateCommunity() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [kind, setKind] = useState<Kind>("open");
+  // The room's picture, already uploaded to storage by FilePicker — this is
+  // the returned URL, not the file. Optional: a room without one is normal
+  // and shows the placeholder tile everywhere instead.
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,6 +121,7 @@ export function CreateCommunity() {
         name: trimmedName,
         description: trimmedDescription,
         kind,
+        imageUrl,
       });
       // Straight into the room they just made — a create flow that lands you
       // back on a list is how you end up unsure whether it worked.
@@ -136,7 +143,7 @@ export function CreateCommunity() {
             A room of your own
           </h2>
           <p className="m-0 text-[13.5px] leading-[1.5] text-text-secondary">
-            Reading is free for everyone. Sending costs one credit, and you keep{" "}
+            Reading costs nothing. Sending costs one credit, and you keep{" "}
             <span className="font-semibold text-text-primary">90%</span> of every credit spent in here — the same on
             both tiers.
           </p>
@@ -169,6 +176,34 @@ export function CreateCommunity() {
           <span className="text-[12px] text-text-muted">
             {trimmedDescription.length}/{DESCRIPTION_MAX} · people decide from this whether to join
           </span>
+        </div>
+
+        <div className="flex flex-col gap-[10px]">
+          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">A picture for it</span>
+          {/* Shown at the size the room's own header uses, so what you pick
+              here is what you will see there — and the placeholder below is
+              exactly what a room without a picture gets, not a broken frame. */}
+          <div className="flex items-center gap-[12px]">
+            <CommunityImage
+              src={imageUrl}
+              icon={kind === "private" ? "Lock" : "Users"}
+              iconSize={24}
+              className="h-[64px] w-[64px] rounded-card border border-hairline bg-tag"
+            />
+            <span className="flex-1 text-[12.5px] leading-[1.5] text-text-secondary">
+              {imageUrl
+                ? "This is how the room will show up in every list."
+                : "Optional. Without one the room shows a plain tile in every list."}
+            </span>
+          </div>
+          <FilePicker
+            folder="community/image"
+            accept="image/png,image/jpeg,image/webp"
+            label={imageUrl ? "Choose a different picture" : "Add a picture"}
+            hint="PNG, JPG or WebP. A square one crops best."
+            onUploaded={(file) => setImageUrl(file.fileUrl)}
+            onCleared={() => setImageUrl(null)}
+          />
         </div>
 
         <div className="flex flex-col gap-[10px]">

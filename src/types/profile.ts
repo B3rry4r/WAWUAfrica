@@ -30,6 +30,8 @@ export interface CreatorCommunity {
   memberCount: number;
   kind: "open" | "private";
   joined: boolean;
+  /** The room's picture. Null/absent keeps the striped placeholder tile. */
+  imageUrl?: string | null;
 }
 
 export interface StoreProduct {

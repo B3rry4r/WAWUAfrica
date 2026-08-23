@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Community } from "@/types/credits";
+import { CommunityImage } from "@/components/ui/CommunityImage";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 
@@ -73,9 +74,11 @@ export function RoomsDesktopList({
               active ? "bg-selected-tint" : "hover:bg-state-hover"
             }`}
           >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border border-hairline bg-elevated">
-              <Icon name="Users" size={18} color="var(--accent)" strokeWidth={2} />
-            </span>
+            <CommunityImage
+              src={c.imageUrl}
+              iconSize={18}
+              className="h-11 w-11 rounded-[14px] border border-hairline bg-elevated"
+            />
             <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
               <span className="truncate text-[14px] font-semibold text-text-primary">{c.name}</span>
               <span className="truncate text-[12.5px] text-text-secondary">

@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { creatorGates } from "@/lib/auth/gates";
-import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { Icon } from "@/components/ui/Icon";
-import { Skeleton } from "@/components/ui/Skeleton";
 import type { IconName } from "@/components/ui/Icon";
 
 interface NavItem {
@@ -15,26 +12,22 @@ interface NavItem {
 }
 
 /**
- * Locked 5-slot bottom bar (CLAUDE.md). Slot 3 swaps by account type:
- * user → Explore, creator → Create. Destinations owned by Dev B/C are wired
- * but not built here.
+ * The 5-slot bottom bar. Every slot is the SAME for everyone.
+ *
+ * Slot 3 used to swap by account type — Explore for users, Create for
+ * creators. On the product owner's instruction Explore now stays for everyone
+ * and Create moved to a floating action button (see CreateFab), so a creator
+ * no longer loses their way into Explore to gain a Create tab. That also
+ * removes the skeleton this slot used to hold while creator state resolved:
+ * nothing here depends on the answer any more, so nothing has to wait for it.
  */
 export function BottomNav() {
-  // Live creator state, not the session's sign-in-time accountType — that is
-  // written once and never revisited, so a creator who subscribed later got a
-  // bar that sent them to Explore instead of Create for the rest of the
-  // session. Slot 3 holds a skeleton until the answer lands rather than
-  // guessing "user" and swapping the tab out from under a tapping thumb.
-  const { creator, resolved } = useCreatorState();
-  const isCreator = creatorGates({ creator }).isCreator;
   const pathname = usePathname();
 
   const items: NavItem[] = [
     { href: "/home", label: "Home", icon: "Home" },
     { href: "/communities", label: "Communities", icon: "Users" },
-    isCreator
-      ? { href: "/create", label: "Create", icon: "PlusCircle" }
-      : { href: "/explore", label: "Explore", icon: "Compass" },
+    { href: "/explore", label: "Explore", icon: "Compass" },
     { href: "/messages", label: "Messages", icon: "MessageCircle" },
     // Slot 5 was Profile. Profile now lives inside Settings and on the
     // header avatar; Settings is the destination people actually navigate to.
@@ -45,15 +38,7 @@ export function BottomNav() {
     <nav
       className="fixed inset-x-0 bottom-0 z-40 mx-auto flex h-[78px] w-full max-w-[430px] items-center border-t border-hairline bg-[rgba(19,19,22,0.86)] pb-[12px] [backdrop-filter:var(--blur-chrome)]"
     >
-      {items.map((item, slot) => {
-        if (slot === 2 && !resolved) {
-          return (
-            <div key="slot-3" className="flex flex-1 flex-col items-center gap-[5px]" aria-hidden="true">
-              <Skeleton variant="circle" className="h-[22px] w-[22px]" />
-              <Skeleton className="h-[10.5px] w-[46px] rounded" />
-            </div>
-          );
-        }
+      {items.map((item) => {
         // Exact match alone unlit the tab as soon as you opened anything
         // inside it, e.g. /settings/notifications. Home stays exact so it does
         // not swallow every route.

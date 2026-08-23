@@ -39,10 +39,13 @@ export default function MentorsPage() {
   }
 
   if (!allMentors || !mentors) {
+    // Mirrors the loaded layout at both widths: a stack on a phone, the same
+    // auto-fill card grid at desktop. Stacked full-bleed bars here meant the
+    // first paint was three 1000px-wide rectangles.
     return (
-      <div className="flex flex-col gap-[10px] p-[14px_16px_96px]">
+      <div className="flex flex-col gap-[10px] p-[14px_16px_96px] xl:grid xl:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] xl:gap-[18px] xl:p-[26px]">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-[86px] rounded-[var(--radius-card)] bg-[var(--surface-tag)]" />
+          <div key={i} className="h-[86px] rounded-[var(--radius-card)] bg-[var(--surface-tag)] xl:h-[228px]" />
         ))}
       </div>
     );

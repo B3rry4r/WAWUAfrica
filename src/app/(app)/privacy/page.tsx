@@ -6,6 +6,8 @@ import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Icon } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
+import { Callout } from "@/components/ui/Callout";
+import { PageColumn } from "@/components/layout/PageColumn";
 import { ErrorState } from "@/components/ui/ErrorState";
 import type { PrivacySettings } from "@/lib/api/settings";
 import { getBlockedAccounts, getPrivacySettings, requestDataExport, savePrivacySettings } from "@/lib/api/settings";
@@ -79,7 +81,7 @@ export default function PrivacyPage() {
 
   if (!settings) {
     return (
-      <div className="flex flex-col gap-[14px] p-[14px_16px_96px]">
+      <PageColumn gap="gap-[14px]">
         <div className="flex items-center gap-[10px]">
           <ProfileBackButton compact />
           <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Privacy</span>
@@ -89,12 +91,12 @@ export default function PrivacyPage() {
             <div key={i} className="h-[58px] rounded-[var(--radius-input)] bg-[var(--surface-tag)]" />
           ))}
         </div>
-      </div>
+      </PageColumn>
     );
   }
 
   return (
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px]">
+    <PageColumn>
       <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Privacy</span>
@@ -152,14 +154,10 @@ export default function PrivacyPage() {
         </div>
       </div>
 
-      <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
-        <Icon name="ShieldCheck" size={15} color="var(--text-muted)" className="mt-[1px]" />
-        <span className="flex-1 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
-          Your BVN and NIN are never shown on your profile and never given to another member. They&apos;re used only
-          by our manual review team to verify your identity, there&apos;s no automated liveness or face-matching
-          step.
-        </span>
-      </div>
+      <Callout icon="ShieldCheck">
+        Your BVN and NIN are never shown on your profile and never given to another member. They&apos;re used only by
+        our manual review team to verify your identity, there&apos;s no automated liveness or face-matching step.
+      </Callout>
 
       {exportState !== "idle" ? (
         <Sheet
@@ -210,7 +208,7 @@ export default function PrivacyPage() {
           )}
         </Sheet>
       ) : null}
-    </div>
+    </PageColumn>
   );
 }
 

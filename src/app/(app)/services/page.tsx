@@ -7,6 +7,7 @@ import type { PartnerService, ServiceApplication } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TierBadge } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
+import { FlowHeader } from "@/components/layout/FlowHeader";
 
 const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]";
 
@@ -192,16 +193,17 @@ export default function ServicesPage() {
 
       {/* D13 frame 1 — live and coming-soon sit as equals in one grid; the applications tracker moves alongside instead of onto its own screen. */}
       <div className="hidden xl:flex xl:h-full xl:min-h-0 xl:flex-1 xl:flex-col">
-        <div
-          className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
-          style={{ backdropFilter: "var(--blur-chrome)" }}
-        >
-          <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Services</span>
-          <span className="flex-1" />
-          <span className="text-[13.5px] text-[var(--text-muted)]">
-            {live.length} open{coming.length ? ` · ${coming.length} coming` : ""}
-          </span>
-        </div>
+        {/* Shared bar — see FlowHeader. */}
+        <FlowHeader
+          title="Services"
+          back={false}
+          sticky
+          right={
+            <span className="text-[13.5px] text-text-muted">
+              {live.length} open{coming.length ? ` · ${coming.length} coming` : ""}
+            </span>
+          }
+        />
 
         {/*
           A flat two-column dump of every service read as one long wall. The

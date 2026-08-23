@@ -2,7 +2,13 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getCommunities, getCreditsState, getHostedCommunities, joinCommunity } from "@/lib/api/communities";
+import {
+  getCommunities,
+  getCreditsState,
+  getHostedCommunities,
+  getPendingRequestCounts,
+  joinCommunity,
+} from "@/lib/api/communities";
 import type { Community, CreditsState } from "@/types/credits";
 import { creatorGates } from "@/lib/auth/gates";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
@@ -42,6 +48,9 @@ function CommunitiesPageContent() {
   const [joined, setJoined] = useState<Community[]>([]);
   const [discover, setDiscover] = useState<Community[]>([]);
   const [hosting, setHosting] = useState<Community[]>([]);
+  // Pending join requests per hosted private community — the badge on the
+  // Hosting tab's link into the approval queue.
+  const [requestCounts, setRequestCounts] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
 
   // Hosting is a creator surface behind the same subscription gate as
@@ -83,7 +92,15 @@ function CommunitiesPageContent() {
     }
     let active = true;
     getHostedCommunities(user.wawuId)
-      .then((rows) => active && setHosting(rows))
+      .then((rows) => {
+        if (!active) return;
+        setHosting(rows);
+        // Counts are a badge, never a gate: a failure leaves the link
+        // reading "Join requests" rather than taking the page down.
+        getPendingRequestCounts(rows)
+          .then((counts) => active && setRequestCounts(counts))
+          .catch(() => {});
+      })
       .catch(() => active && setHosting([]));
     return () => {
       active = false;
@@ -98,9 +115,18 @@ function CommunitiesPageContent() {
     async (id: string) => {
       const community = discover.find((c) => c.id === id);
       if (!community) return;
-      await joinCommunity(id);
+      const status = await joinCommunity(id);
+      // A private community answers "pending": the request is filed and the
+      // host has to approve it before anyone can read or post. Moving that
+      // row into "Yours" — which is what happened before — promised access
+      // the server would then refuse. It stays in Discover, marked
+      // Requested, until the host says yes.
+      if (status === "pending") {
+        setDiscover((l) => l.map((c) => (c.id === id ? { ...c, pending: true } : c)));
+        return;
+      }
       setDiscover((l) => l.filter((c) => c.id !== id));
-      setJoined((l) => [...l, { ...community, joined: true }]);
+      setJoined((l) => [...l, { ...community, joined: true, pending: false }]);
     },
     [discover],
   );
@@ -127,7 +153,14 @@ function CommunitiesPageContent() {
           view below replaces it at xl and up (design D14). */}
       <div className="flex flex-col gap-4 px-4 pb-24 pt-[14px] xl:hidden">
         <CreditsCard initialBalance={credits.creditBalance} defaultOpen={topupRequested} />
-        <CommunityTabs joined={joined} discover={discover} hosting={hosting} canHost={canHost} onJoin={doJoin} />
+        <CommunityTabs
+          joined={joined}
+          discover={discover}
+          hosting={hosting}
+          requestCounts={requestCounts}
+          canHost={canHost}
+          onJoin={doJoin}
+        />
       </div>
 
       {/* Sheet-only instance for xl: — the mobile CreditsCard above is

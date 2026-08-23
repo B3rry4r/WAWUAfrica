@@ -41,7 +41,15 @@ export function useServiceLive(slug: string): boolean | null {
 const shell =
   "mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]";
 
-/** Shown in place of a service tool that the catalogue says is not open yet. */
+/**
+ * Shown in place of a service tool that the catalogue says is not open yet.
+ *
+ * The panel is CAPPED and centred at desktop width. It used to be the shell's
+ * full 844px with a heading and one sentence in it, which on a laptop is a
+ * near-empty rectangle running the width of the screen with an otherwise
+ * blank page under it — reported repeatedly as "a bloody long card". The
+ * content did not change; only the measure it is allowed to occupy.
+ */
 export function ServiceComingSoon({
   name,
   icon,
@@ -54,14 +62,12 @@ export function ServiceComingSoon({
   return (
     <div className={shell}>
       <BackLink />
-      <div className="flex flex-col items-start gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
-        <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-elevated)]">
+      <div className="flex flex-col items-start gap-[12px] rounded-card border border-hairline bg-card p-[22px] xl:mx-auto xl:max-w-[440px] xl:items-center xl:p-[28px] xl:text-center">
+        <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-hairline bg-elevated">
           <Icon name={icon} size={22} color="var(--text-secondary)" strokeWidth={2} />
         </span>
-        <span className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
-          {name} is coming soon
-        </span>
-        <p className="m-0 text-[14px] leading-[1.55] text-[var(--text-secondary)]">
+        <span className="text-[20px] font-bold tracking-[-0.02em] text-text-primary">{name} is coming soon</span>
+        <p className="m-0 max-w-[46ch] text-[14px] leading-[1.55] text-text-secondary">
           {note ?? "We are finishing the partner rollout. It opens here first, and nothing is charged until it does."}
         </p>
       </div>
@@ -73,7 +79,9 @@ export function ServiceComingSoon({
 export function ServiceGateLoading() {
   return (
     <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px]">
-      <Skeleton variant="card" />
+      {/* Matches ServiceComingSoon's capped panel so the page does not jump
+          from a full-bleed skeleton to a centred card when the status lands. */}
+      <Skeleton variant="card" className="xl:mx-auto xl:max-w-[440px]" />
     </div>
   );
 }

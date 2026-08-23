@@ -8,6 +8,7 @@ import type { CreatorProfile, ProfileTab } from "@/types/profile";
 import { getCreatorProfile, isFollowing, toggleFollowProfile } from "@/lib/api/profile";
 import { ProfileHeader } from "@/components/ui/ProfileHeader";
 import { Avatar } from "@/components/ui/Avatar";
+import { CommunityImage } from "@/components/ui/CommunityImage";
 import { PriceChip } from "@/components/ui/PriceChip";
 import { HandoffPill } from "@/components/ui/HandoffPill";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -367,16 +368,19 @@ function CommunityRow({ profile, community }: { profile: CreatorProfile; communi
         privateC ? "border-[var(--border-decor)]" : "border-hairline",
       ].join(" ")}
     >
-      <span
+      {/* The room's picture where there is one; the striped tile stays as
+          the fallback for the many rooms that have none. */}
+      <CommunityImage
+        src={community.imageUrl}
+        icon={privateC ? "Lock" : "Users"}
+        iconSize={19}
         className={[
-          "grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border",
+          "h-[46px] w-[46px] rounded-[14px] border",
           privateC
             ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
             : "border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]",
         ].join(" ")}
-      >
-        <Icon name={privateC ? "Lock" : "Users"} size={19} color={privateC ? "var(--accent)" : "var(--text-secondary)"} strokeWidth={privateC ? 2 : 1.5} />
-      </span>
+      />
       <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
         <span className="text-[15px] font-semibold text-text-primary">{community.name}</span>
         <span className="text-[12.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">

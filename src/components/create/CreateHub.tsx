@@ -44,7 +44,7 @@ const eyebrow = "text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--t
  *
  * 2. Below `dt` it was a fixed two-column grid and above `dt` it was the SAME
  *    fixed two-column grid — i.e. a stretched mobile column, with 500px-wide
- *    type cards and a full-bleed CTA on any laptop. The grid is now auto-fit
+ *    type cards and a full-bleed CTA on any laptop. The grid is now auto-fill
  *    with a minimum column width so it reflows at 1024, 1280, 1440 and up,
  *    and at `dt` the page becomes a real two-column layout with the slot
  *    state and the CTA in a rail rather than a stretched footer bar.
@@ -180,9 +180,15 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
           {groups.map((g) => (
             <div key={g.label} className="flex flex-col gap-[10px]">
               <span className={`${eyebrow} px-[2px]`}>{g.label}</span>
-              {/* auto-fit, not a fixed column count: two columns on a phone,
-                  three or four on a laptop, without assuming a screen size. */}
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(148px,1fr))] gap-[12px]">
+              {/* auto-FILL, not auto-fit. Both size columns to the space, but
+                  auto-fit collapses the tracks it did not fill and hands the
+                  slack to the items that exist — so this group's 2 cards came
+                  out 313px wide while the next group's 3 came out 207px, two
+                  fat mismatched rectangles above three normal ones. auto-fill
+                  keeps the empty track, so every card in every group is the
+                  same width and the columns line up. Same bug, same fix, as
+                  the services grid. */}
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-[12px]">
                 {g.types.map((type) => {
                   const active = selected === type;
                   return (

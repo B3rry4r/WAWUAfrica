@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { SessionProvider } from "@/lib/auth/session-provider";
 import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
+import { CreateFab } from "./CreateFab";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
@@ -79,6 +80,9 @@ export function AppShell({ children, header = true }: AppShellProps) {
         </div>
       </div>
       <div className="xl:hidden">
+        {/* Create is a floating action button, not a nav slot — it hides itself
+            for non-creators and on screens that already own the bottom edge. */}
+        <CreateFab />
         <BottomNav />
       </div>
     </SessionProvider>

@@ -79,7 +79,11 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 px-4 pb-24 pt-4">
+    // The cap lives on the OUTER column, not on one branch. It used to sit on
+    // the loading skeleton only, so the skeleton was 760px and the real form
+    // that replaced it ran the full 994px of the desktop column — inputs and a
+    // primary button a thousand pixels wide.
+    <div className="flex flex-col gap-5 px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:pt-[26px]">
       <div className="flex items-center gap-[10px]">
         <ProfileBackButton compact />
         <span className="text-[18px] font-semibold tracking-[-0.02em] text-text-primary">
@@ -88,7 +92,7 @@ export default function EditProfilePage() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col gap-[18px] xl:mx-auto xl:w-full xl:max-w-[760px]">
+        <div className="flex flex-col gap-[18px]">
           <Skeleton className="h-[120px] w-full rounded-[var(--radius-card)]" />
           <Skeleton className="h-12 w-full rounded-[var(--radius-input)]" />
           <Skeleton className="h-12 w-full rounded-[var(--radius-input)]" />
@@ -226,7 +230,12 @@ export default function EditProfilePage() {
             </span>
           ) : null}
 
-          <Button full disabled={saving || !draft.name.trim() || !draft.handle.trim()} onClick={submit}>
+          <Button
+            full
+            disabled={saving || !draft.name.trim() || !draft.handle.trim()}
+            onClick={submit}
+            className="xl:w-auto xl:self-start"
+          >
             {saving ? "Saving…" : "Save changes"}
           </Button>
         </>

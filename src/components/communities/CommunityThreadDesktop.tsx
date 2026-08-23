@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { useCommunityThread } from "@/hooks/useCommunityThread";
 import { useSession } from "@/lib/auth/session-provider";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
-import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatCredits } from "@/lib/format";
+import { CommunityComposer } from "./CommunityComposer";
+import { CommunityJoinGate } from "./CommunityJoinGate";
+import { CommunityRoomImage } from "./CommunityRoomImage";
 
 /**
  * Desktop three-pane thread pane for a single room (design D14). Drives its
@@ -23,13 +24,15 @@ import { formatCredits } from "@/lib/format";
 export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?: () => void }) {
   const router = useRouter();
   const { user } = useSession();
-  const [text, setText] = useState("");
-  const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError } =
+  const [imageError, setImageError] = useState<string | null>(null);
+  const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError, applyImage } =
     useCommunityThread(id);
 
+  // "pending" is not a join: a private community files a request the host
+  // must approve, and the rooms list must not gain a thread this account
+  // still cannot read.
   const handleJoin = async () => {
-    const ok = await doJoin();
-    if (ok) onJoined?.();
+    if ((await doJoin()) === "joined") onJoined?.();
   };
 
   if (errorKind === "not-found") {
@@ -63,18 +66,24 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
     );
   }
 
-  const handleSend = async () => {
-    if (!text.trim()) return;
-    const ok = await send(text);
-    if (ok) setText("");
-  };
+  // Only the host may change the room's picture — the server enforces it
+  // (PATCH /communities/:id is host-only); this just avoids drawing a control
+  // that would always be refused.
+  const isHost = Boolean(user?.wawuId && community.host.wawuId === user.wawuId);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-[68px] shrink-0 items-center gap-3 border-b border-hairline px-[26px]">
-        <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-xl border border-hairline bg-elevated">
-          <Icon name="Users" size={17} color="var(--accent)" strokeWidth={2} />
-        </span>
+        <CommunityRoomImage
+          communityId={community.id}
+          src={community.imageUrl}
+          icon={community.kind === "private" ? "Lock" : "Users"}
+          iconSize={17}
+          className="h-[38px] w-[38px] rounded-xl border border-hairline bg-elevated"
+          canEdit={isHost}
+          onChanged={applyImage}
+          onError={setImageError}
+        />
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-[15px] font-semibold text-text-primary">{community.name}</span>
           <span className="truncate text-[12.5px] text-text-muted">
@@ -84,24 +93,13 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
         {community.kind === "private" && <StatusPill kind="neutral">Private</StatusPill>}
       </div>
 
+      {imageError ? <p className="m-0 px-[26px] pt-[10px] text-[12.5px] text-[var(--danger)]">{imageError}</p> : null}
+
       {!community.joined ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-7 text-center">
-          <span className="mb-2 grid h-16 w-16 place-items-center rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)]">
-            <Icon name={community.kind === "private" ? "Lock" : "Users"} size={26} color="var(--accent)" strokeWidth={1.9} />
-          </span>
-          <span className="text-[18px] font-bold text-text-primary">
-            {community.kind === "private" ? "Private community" : "Join to read and post"}
-          </span>
-          <p className="m-0 max-w-[340px] text-[14px] leading-[1.5] text-text-secondary">
-            {community.kind === "private"
-              ? `${community.name} is a closed circle. Join to read and post. Reading is free, sending costs one credit.`
-              : `${community.name} is open to everyone. Join to read and post. Reading is free, sending costs one credit.`}
-          </p>
-          <Button onClick={handleJoin} className="mt-3.5">
-            Join community
-          </Button>
-          {joinError && <p className="m-0 text-[13px] text-[var(--danger)]">{joinError}</p>}
-        </div>
+        // Same gate component as the mobile room screen — including the
+        // "waiting for the host" state a private community's requester sits
+        // in, which neither surface had a way to show.
+        <CommunityJoinGate community={community} onJoin={handleJoin} joinError={joinError} />
       ) : (
         <>
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-[26px]">
@@ -124,13 +122,22 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
                       </span>
                     )}
                     <div
-                      className={`max-w-[62%] rounded-[20px] border px-4 py-[14px] text-[14px] leading-[1.5] ${
+                      className={`flex max-w-[62%] flex-col gap-[10px] rounded-[20px] border px-4 py-[14px] text-[14px] leading-[1.5] ${
                         mine
                           ? "rounded-br-[6px] border-transparent bg-accent text-[var(--text-on-accent)]"
                           : "rounded-bl-[6px] border-hairline bg-card text-text-primary"
                       }`}
                     >
-                      {m.text}
+                      {/* A photo IS the message when there is no text — the
+                          bubble renders whichever halves this message has. */}
+                      {m.imageUrl ? (
+                        <img
+                          src={m.imageUrl}
+                          alt=""
+                          className="max-h-[320px] w-full rounded-[var(--radius-media)] object-cover"
+                        />
+                      ) : null}
+                      {m.text ? <span className="whitespace-pre-wrap">{m.text}</span> : null}
                     </div>
                   </div>
                 );
@@ -138,32 +145,15 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
             )}
           </div>
 
-          <div className="mt-auto shrink-0 p-[18px]">
-            {sendError && <p className="m-0 mb-2 text-[12.5px] text-[var(--danger)]">{sendError}</p>}
-            {balance < 1 ? (
-              <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>
-                Top up credits to send a message
-              </Button>
-            ) : (
-              <div className="flex items-center gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-3">
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSend();
-                  }}
-                  placeholder="Write a message · costs 1 credit"
-                  className="h-10 flex-1 bg-transparent px-2 text-[14px] text-text-primary outline-none placeholder:text-text-muted"
-                />
-                <span className="shrink-0 text-[12.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
-                  {formatCredits(balance)} left
-                </span>
-                <Button size="sm" iconRight="Send" onClick={handleSend} loading={sending} disabled={!text.trim()}>
-                  Send
-                </Button>
-              </div>
-            )}
-          </div>
+          <CommunityComposer
+            variant="desktop"
+            communityName={community.name}
+            balance={balance}
+            sending={sending}
+            sendError={sendError}
+            onSend={send}
+            onTopUp={() => router.push("/communities?topup=1")}
+          />
         </>
       )}
     </div>

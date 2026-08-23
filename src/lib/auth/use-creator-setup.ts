@@ -230,7 +230,7 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "community",
         title: "Start your first community",
-        body: "A room your people talk in. Reading is free, sending costs one credit, and you keep 90% of every credit spent — the best split on the platform.",
+        body: "A room your people talk in. Reading costs nothing, sending costs one credit, and you keep 90% of every credit spent — the best split on the platform.",
         detail:
           hosted === 0
             ? "You are not hosting one yet"

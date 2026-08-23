@@ -19,6 +19,7 @@ import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
 import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
+import { Callout } from "@/components/ui/Callout";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -197,16 +198,10 @@ export default function PayPage() {
       {error ? <ErrorState title="Something went wrong" body={error} /> : null}
 
       {unavailable ? (
-        <div className="flex items-start gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]">
-          <Icon name="Info" size={18} color="var(--text-muted)" className="mt-[1px] shrink-0" />
-          <span className="flex flex-col gap-[3px]">
-            <span className="text-[14px] font-semibold text-[var(--text-primary)]">Bill payments are not switched on yet</span>
-            <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
-              Our payment provider has not enabled this account for bills. Nothing you do here would go through, so we
-              have turned the form off until it is live.
-            </span>
-          </span>
-        </div>
+        <Callout title="Bill payments are not switched on yet">
+          Our payment provider has not enabled this account for bills. Nothing you do here would go through, so we
+          have turned the form off until it is live.
+        </Callout>
       ) : null}
 
       {unavailable ? null : !categories ? (

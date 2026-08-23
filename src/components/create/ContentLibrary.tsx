@@ -33,7 +33,8 @@ const emptyDescriptions: Record<Filter, string> = {
  * Desktop was a stretched mobile view: one column of full-bleed rows, so a
  * card that is 340px wide on a phone became ~1000px wide on a laptop with the
  * same 56px thumbnail glued to the left of it. It is now a width-capped page
- * with an auto-fit card grid and the slot meter promoted out of the header
+ * with an auto-FILL card grid (auto-fit would stretch a single remaining
+ * card across the whole column) and the slot meter promoted out of the header
  * micro-text, so it reflows sensibly at 1024, 1280, 1440 and wider.
  */
 export function ContentLibrary() {
@@ -149,7 +150,7 @@ export function ContentLibrary() {
           {error ? (
             <ErrorState onRetry={load} />
           ) : !items ? (
-            <div className="grid gap-[12px] dt:grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
+            <div className="grid gap-[12px] dt:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
               {[0, 1, 2, 3].map((i) => (
                 <Skeleton key={i} variant="row" className="h-[100px] rounded-card" />
               ))}
@@ -166,7 +167,7 @@ export function ContentLibrary() {
                 : { action: "Show all", onAction: () => setFilter("all") })}
             />
           ) : (
-            <div className="grid gap-[12px] dt:grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
+            <div className="grid gap-[12px] dt:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
               {filtered.map((item) => {
                 // Rejected items are the only ones with somewhere to go right
                 // now: back into the wizard to fix and resubmit. Live and

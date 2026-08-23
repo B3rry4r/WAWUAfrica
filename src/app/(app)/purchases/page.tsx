@@ -1,6 +1,7 @@
 "use client";
 
 import { BackLink } from "@/components/ui";
+import { FlowHeader } from "@/components/layout/FlowHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
@@ -57,17 +58,21 @@ export default function MyPurchasesPage() {
 
   return (
     <>
-      {/* D5 desktop-only sticky header + category tabs — suppresses the global DesktopHeader (see hasOwnHeader) so this route shows exactly one header at xl. */}
-      <div
-        className="sticky top-0 z-20 hidden h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur xl:flex"
-        style={{ backdropFilter: "var(--blur-chrome)" }}
-      >
-        <span className="text-[19px] font-semibold tracking-[-0.02em] text-text-primary">My purchases</span>
-        <span className="flex-1" />
-        <span className="text-[13.5px] text-text-muted">
-          {items ? `${items.length} ${items.length === 1 ? "item" : "items"} · yours permanently` : ""}
-        </span>
-      </div>
+      {/* D5 desktop-only header — suppresses the global DesktopHeader (see
+          hasOwnHeader) so this route shows exactly one header at xl. It is the
+          SHARED bar now: the back control used to be a pill floating in the
+          body 148px below the title it belongs to, which is the reported
+          back-button/title misalignment. Back and title share this one row. */}
+      <FlowHeader
+        title="My purchases"
+        sticky
+        className="hidden dt:flex"
+        right={
+          <span className="text-[13.5px] text-text-muted">
+            {items ? `${items.length} ${items.length === 1 ? "item" : "items"} · yours permanently` : ""}
+          </span>
+        }
+      />
       {/* D5's tab row, driven by the same `filter` state as the mobile chips —
           the tabs carry this screen's real taxonomy rather than a decorative
           one nothing on the page can filter by. */}
@@ -88,7 +93,7 @@ export default function MyPurchasesPage() {
       </div>
 
     <div className="flex flex-col gap-4 px-4 pb-8 pt-2 xl:px-[26px] xl:pb-[26px] xl:pt-[22px]">
-      <BackLink />
+      <BackLink className="dt:hidden" />
       <div className="flex flex-col gap-1 xl:hidden">
         <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em]">My purchases</h1>
         <p className="m-0 text-[13px] text-text-muted">

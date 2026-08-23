@@ -139,7 +139,7 @@ export default function LearnPage() {
 
 function LandingSkeleton() {
   return (
-    <div className="flex flex-col gap-5 p-[16px_16px_96px]">
+    <div className="flex flex-col gap-5 p-[16px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[1120px] xl:p-[26px]">
       <Skeleton variant="row" className="h-[64px]" />
       <div className="flex flex-col gap-2.5">
         <Skeleton className="h-3 w-24 rounded" />

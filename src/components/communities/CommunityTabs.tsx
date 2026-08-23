@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Community } from "@/types/credits";
 import { Icon } from "@/components/ui/Icon";
+import { CommunityImage } from "@/components/ui/CommunityImage";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -31,6 +32,7 @@ export function CommunityTabs({
   joined,
   discover,
   hosting,
+  requestCounts,
   canHost = false,
   onJoin,
 }: {
@@ -38,6 +40,12 @@ export function CommunityTabs({
   discover: Community[];
   /** Communities this account hosts. Omit for accounts that cannot host. */
   hosting?: Community[];
+  /**
+   * Pending join requests per hosted community id. Only private communities
+   * can have any — an open room admits instantly — so an absent or zero
+   * entry simply means there is nothing waiting.
+   */
+  requestCounts?: Record<string, number>;
   /** Creator with an active subscription — enables the Hosting tab and the create CTA. */
   canHost?: boolean;
   onJoin: (id: string) => Promise<void>;
@@ -127,14 +135,31 @@ export function CommunityTabs({
             // session has recorded a join for it — offering yourself a "Join"
             // button on your own room is the bug that would otherwise show up
             // on every reload (see communities.ts's sessionJoinedIds note).
-            c.joined || tab === "hosting" ? (
-              <Link
-                key={c.id}
-                href={`/communities/${c.id}`}
-                className="flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] p-3 no-underline transition-colors hover:bg-state-hover active:bg-state-press"
-              >
-                <CommunityRow c={c} hosted={tab === "hosting"} />
-              </Link>
+            // `c.pending` opens the room too — not to read it, but to reach
+            // the "waiting for the host" screen. Re-firing a join for someone
+            // who has already asked is the dead end, not a retry.
+            c.joined || c.pending || tab === "hosting" ? (
+              <div key={c.id} className="flex flex-col">
+                <Link
+                  href={`/communities/${c.id}`}
+                  className="flex cursor-pointer items-center gap-[13px] rounded-[var(--radius-input)] p-3 no-underline transition-colors hover:bg-state-hover active:bg-state-press"
+                >
+                  <CommunityRow c={c} hosted={tab === "hosting"} />
+                </Link>
+                {/* The way into the approval queue. Sits OUTSIDE the row link
+                    (nesting one link inside another is invalid) and only on a
+                    private room you host, because an open one admits people
+                    instantly and has nothing to approve. */}
+                {tab === "hosting" && c.kind === "private" ? (
+                  <Link
+                    href={`/communities/${c.id}/requests`}
+                    className="mx-3 mb-1 flex items-center gap-[7px] rounded-[var(--radius-input)] px-[9px] py-[7px] text-[12.5px] font-semibold text-accent no-underline transition-colors hover:bg-state-hover active:bg-state-press"
+                  >
+                    <Icon name="UserPlus" size={14} strokeWidth={2.2} color="var(--accent)" />
+                    {pendingLabel(requestCounts?.[c.id])}
+                  </Link>
+                ) : null}
+              </div>
             ) : (
               <button
                 key={c.id}
@@ -155,9 +180,11 @@ export function CommunityTabs({
 function CommunityRow({ c, hosted = false }: { c: Community; hosted?: boolean }) {
   return (
     <>
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-input)] border border-hairline bg-tag">
-        <Icon name={hosted ? "Crown" : "Users"} size={19} color="var(--accent)" strokeWidth={2} />
-      </span>
+      <CommunityImage
+        src={c.imageUrl}
+        icon={hosted ? "Crown" : "Users"}
+        className="h-11 w-11 rounded-[var(--radius-input)] border border-hairline bg-tag"
+      />
       <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
         <span className="flex items-center gap-[7px] text-[15px] font-semibold tracking-[-0.01em] text-text-primary">
           {c.name}
@@ -170,9 +197,20 @@ function CommunityRow({ c, hosted = false }: { c: Community; hosted?: boolean })
       {c.kind === "private" && <StatusPill kind="neutral">Private</StatusPill>}
       {hosted ? (
         <span className="text-[12.5px] font-bold text-text-muted">You host</span>
+      ) : c.pending ? (
+        // Asked, not answered. The row used to keep offering "Join" to
+        // someone who had already pressed it, so asking looked like nothing
+        // happening — see CommunityJoinGate.
+        <span className="text-[12.5px] font-bold text-text-muted">Requested</span>
       ) : !c.joined ? (
-        <span className="text-[13px] font-bold text-accent">Join</span>
+        <span className="text-[13px] font-bold text-accent">{c.kind === "private" ? "Ask" : "Join"}</span>
       ) : null}
     </>
   );
+}
+
+/** "3 waiting" / "1 waiting", or the plain label when nothing is queued. */
+function pendingLabel(count?: number): string {
+  if (!count) return "Join requests";
+  return `${count} ${count === 1 ? "person is" : "people are"} waiting`;
 }

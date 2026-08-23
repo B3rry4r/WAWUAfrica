@@ -25,10 +25,10 @@ import { StatBlock } from "@/components/ui/StatBlock";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ListRow } from "@/components/ui/ListRow";
-import { Avatar, BackLink } from "@/components/ui";
+import { Avatar } from "@/components/ui";
 import { CreatorSetupCard } from "@/components/onboarding/CreatorSetupChecklist";
 import { HostedCommunitiesPanel } from "@/components/communities/HostedCommunitiesPanel";
-import { getHostedCommunities } from "@/lib/api/communities";
+import { getHostedCommunities, getPendingRequestCounts } from "@/lib/api/communities";
 import type { Community } from "@/types/credits";
 import { HeldPayoutNote, VerificationBanner } from "./VerificationAsk";
 
@@ -66,6 +66,8 @@ export function CreatorDashboard() {
   // pricing cards and had no surface on this dashboard at all — no list, no
   // create button, nothing. Null until the real read lands; never a fixture.
   const [hosted, setHosted] = useState<Community[] | null>(null);
+  /** Pending join requests per hosted private community — see HostedCommunitiesPanel. */
+  const [requestCounts, setRequestCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!gates.isCreator) return;
@@ -104,7 +106,13 @@ export function CreatorDashboard() {
     if (user?.wawuId) {
       getHostedCommunities(user.wawuId)
         .then((rows) => {
-          if (!cancelled) setHosted(rows);
+          if (cancelled) return;
+          setHosted(rows);
+          // How many people are waiting to get into each private room. A
+          // badge, never a gate — a failure just leaves the link unbadged.
+          getPendingRequestCounts(rows)
+            .then((counts) => !cancelled && setRequestCounts(counts))
+            .catch(() => {});
         })
         .catch(() => {
           // An empty list, not an error state — hosting nothing is the normal
@@ -203,20 +211,24 @@ export function CreatorDashboard() {
 
       {/* D6 desktop-only sticky page header — suppresses the global DesktopHeader
           (see hasOwnHeader) so this route shows exactly one header at xl. */}
-      <div
-        className="sticky top-0 z-20 hidden h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur xl:flex"
-        style={{ backdropFilter: "var(--blur-chrome)" }}
-      >
-        {/* Desktop has no bottom bar, so without this the dashboard is a dead
-            end unless you use the browser's own back button. */}
-        <BackLink label="" className="!h-9 !w-9 !justify-center !px-0" />
-        <span className="text-[19px] font-semibold tracking-[-0.02em] text-text-primary">Dashboard</span>
-        <span className="flex-1" />
-        <span className="text-[13.5px] text-text-muted">{monthLabel}</span>
-        <Button size="sm" variant="secondary" icon="Download" onClick={handleDownloadStatement}>
-          Statement
-        </Button>
-      </div>
+      {/* Shared bar. Its back control used to be a BackLink pill beaten into a
+          round icon with four `!` overrides — which is exactly FlowHeader's
+          back button, at exactly the geometry every other screen uses.
+          Desktop has no bottom bar, so without a back control the dashboard is
+          a dead end unless you use the browser's own button. */}
+      <FlowHeader
+        title="Dashboard"
+        sticky
+        className="hidden dt:flex"
+        right={
+          <span className="flex shrink-0 items-center gap-4">
+            <span className="text-[13.5px] text-text-muted">{monthLabel}</span>
+            <Button size="sm" variant="secondary" icon="Download" onClick={handleDownloadStatement}>
+              Statement
+            </Button>
+          </span>
+        }
+      />
 
       {/* ONE ask, outside both breakpoint containers. It used to be rendered
           twice — once inside `xl:hidden`, once inside `hidden xl:block` — which
@@ -305,7 +317,7 @@ export function CreatorDashboard() {
           </Link>
         ) : null}
 
-        <HostedCommunitiesPanel communities={hosted} />
+        <HostedCommunitiesPanel communities={hosted} requestCounts={requestCounts} />
 
         <div className="flex flex-col gap-[10px]">
           {approved ? (
@@ -379,7 +391,7 @@ export function CreatorDashboard() {
               </div>
             </div>
 
-            <HostedCommunitiesPanel communities={hosted} />
+            <HostedCommunitiesPanel communities={hosted} requestCounts={requestCounts} />
 
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">

@@ -102,9 +102,18 @@ function OverviewView({ playbook, onRead }: { playbook: Playbook; onRead: () => 
         </span>
       </div>
 
-      <div className="flex gap-2.5">
-        <DownloadButton title={playbook.title} />
-        <Button size="lg" variant="secondary" icon="BookOpen" className="flex-1" onClick={onRead}>
+      {/* On a phone these split the row. On desktop they take their own
+          width: `full` on the download button was winning the whole 547px and
+          squeezing "Read here" into a two-line 108px stub beside it. */}
+      <div className="flex gap-2.5 dt:justify-start">
+        <DownloadButton title={playbook.title} className="dt:w-auto" />
+        <Button
+          size="lg"
+          variant="secondary"
+          icon="BookOpen"
+          className="flex-1 whitespace-nowrap dt:flex-none"
+          onClick={onRead}
+        >
           Read here
         </Button>
       </div>

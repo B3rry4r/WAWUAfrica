@@ -313,7 +313,10 @@ export default function SearchPage() {
 }
 
 function CommunityRow({ community }: { community: SearchCommunityResult }) {
-  const [joined, setJoined] = useState(false);
+  // The server's own answer, not a boolean: a private community records a
+  // request the host must approve ("pending"), and saying "Joined" to
+  // someone who is still waiting is a promise the room then refuses to keep.
+  const [status, setStatus] = useState<"joined" | "pending" | null>(null);
   const [joining, setJoining] = useState(false);
 
   return (
@@ -329,16 +332,16 @@ function CommunityRow({ community }: { community: SearchCommunityResult }) {
       </Link>
       <button
         type="button"
-        disabled={joined || joining}
+        disabled={status !== null || joining}
         onClick={() => {
           setJoining(true);
           joinCommunity(community.id)
-            .then(() => setJoined(true))
+            .then(setStatus)
             .finally(() => setJoining(false));
         }}
         className="shrink-0 rounded-button border border-hairline bg-tag px-3.5 py-2 text-[12.5px] font-semibold enabled:hover:bg-surface-hover enabled:active:bg-surface-press disabled:opacity-60"
       >
-        {joined ? "Joined" : "Join"}
+        {status === "joined" ? "Joined" : status === "pending" ? "Requested" : "Join"}
       </button>
     </div>
   );

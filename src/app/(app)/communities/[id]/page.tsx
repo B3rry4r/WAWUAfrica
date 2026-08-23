@@ -10,12 +10,14 @@ import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
 import { RoomsListHeader, RoomsDesktopList } from "@/components/communities/RoomsDesktopList";
+import { CommunityComposer } from "@/components/communities/CommunityComposer";
+import { CommunityJoinGate } from "@/components/communities/CommunityJoinGate";
+import { CommunityRoomImage } from "@/components/communities/CommunityRoomImage";
 import { CommunityThreadDesktop } from "@/components/communities/CommunityThreadDesktop";
 
 const bubbleClass = {
@@ -33,9 +35,9 @@ export default function CommunityDetailPage() {
   // control is behind the same subscription gate as /communities/new itself.
   const { creator, resolved } = useCreatorState();
   const canHost = resolved && creatorGates({ creator }).canUpload;
-  const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError } =
+  const { community, messages, balance, errorKind, load, doJoin, joinError, send, sending, sendError, applyImage } =
     useCommunityThread(id);
-  const [text, setText] = useState("");
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // Rooms list for the xl: three-pane view (design D14) — only needed above
   // the xl breakpoint, but fetched unconditionally like Inbox/QuestionsDesktop
@@ -52,19 +54,16 @@ export default function CommunityDetailPage() {
   }, []);
   useEffect(() => refreshJoinedRooms(), [refreshJoinedRooms]);
 
-  const handleSend = async () => {
-    if (!text.trim()) return;
-    const ok = await send(text);
-    if (ok) setText("");
-  };
-
   // Refresh the sidebar's real joined-communities list after a real join —
   // toCommunity() derives `joined` from session-tracked ids (see
   // lib/api/communities.ts), so a successful join here needs a refetch to
   // show up in the Rooms list, mobile Join button included.
+  //
+  // ...but only for a real "joined". A private community answers with
+  // "pending" — a request the host still has to approve — and listing that
+  // room as one of yours would put a thread you cannot read into the list.
   const handleJoin = async () => {
-    const ok = await doJoin();
-    if (ok) refreshJoinedRooms();
+    if ((await doJoin()) === "joined") refreshJoinedRooms();
   };
 
   if (errorKind === "not-found") {
@@ -130,12 +129,25 @@ export default function CommunityDetailPage() {
   }
 
   const joined = community.joined;
+  // The server enforces host-only editing (PATCH /communities/:id); this only
+  // decides whether the control is worth drawing.
+  const isHost = Boolean(user?.wawuId && community.host.wawuId === user.wawuId);
 
   return (
     <>
     <div className="flex min-h-dvh flex-col xl:hidden">
       <header className="sticky top-0 z-40 flex items-center gap-[11px] border-b border-hairline bg-elevated px-4 pb-[10px] pt-3">
         <ProfileBackButton compact />
+        <CommunityRoomImage
+          communityId={community.id}
+          src={community.imageUrl}
+          icon={community.kind === "private" ? "Lock" : "Users"}
+          iconSize={17}
+          className="h-[38px] w-[38px] rounded-xl border border-hairline bg-tag"
+          canEdit={isHost}
+          onChanged={applyImage}
+          onError={setImageError}
+        />
         <div className="flex min-w-0 flex-1 flex-col gap-[1px]">
           <span className="truncate text-[15.5px] font-bold tracking-[-0.01em] text-text-primary">
             {community.name}
@@ -147,24 +159,14 @@ export default function CommunityDetailPage() {
         {community.kind === "private" && <StatusPill kind="neutral">Private</StatusPill>}
       </header>
 
+      {imageError ? <p className="m-0 px-4 pt-[10px] text-[12.5px] text-[var(--danger)]">{imageError}</p> : null}
+
       {!joined ? (
-        <div className="flex flex-1 flex-col items-center gap-2 px-7 pb-[60px] pt-[60px] text-center">
-          <span className="mb-2 grid h-16 w-16 place-items-center rounded-full border border-[var(--border-decor)] bg-[var(--decor-tint)]">
-            <Icon name={community.kind === "private" ? "Lock" : "Users"} size={26} color="var(--accent)" strokeWidth={1.9} />
-          </span>
-          <span className="text-[18px] font-bold text-text-primary">
-            {community.kind === "private" ? "Private community" : "Join to read and post"}
-          </span>
-          <p className="m-0 max-w-[300px] text-[14px] leading-[1.5] text-text-secondary">
-            {community.kind === "private"
-              ? `${community.name} is a closed circle. Join to read and post. Reading costs nothing, sending costs one credit.`
-              : `${community.name} is open to everyone. Join to read and post. Reading costs nothing, sending costs one credit.`}
-          </p>
-          <Button onClick={handleJoin} className="mt-3.5">
-            Join community
-          </Button>
-          {joinError && <p className="m-0 text-[13px] text-[var(--danger)]">{joinError}</p>}
-        </div>
+        // Three states, one component (shared with the desktop thread): join,
+        // ask-to-join, and — the one that was missing — "you asked, the host
+        // hasn't answered". A private community's join is a REQUEST; showing
+        // its requester the same button again was the whole dead end.
+        <CommunityJoinGate community={community} onJoin={handleJoin} joinError={joinError} />
       ) : (
         <>
           <div className="flex items-center gap-[9px] border-b border-hairline bg-card px-4 py-[10px]">
@@ -192,9 +194,20 @@ export default function CommunityDetailPage() {
                         {m.sender.name}
                       </span>
                     )}
-                    <span className={`text-[14px] leading-[1.45] ${mine ? "text-[var(--text-on-accent)]" : "text-text-primary"} whitespace-pre-wrap`}>
-                      {m.text}
-                    </span>
+                    {/* A photo IS the message when there is no text — the
+                        bubble renders whichever halves this message has. */}
+                    {m.imageUrl ? (
+                      <img
+                        src={m.imageUrl}
+                        alt=""
+                        className="max-h-[280px] w-full rounded-[var(--radius-media)] object-cover"
+                      />
+                    ) : null}
+                    {m.text ? (
+                      <span className={`text-[14px] leading-[1.45] ${mine ? "text-[var(--text-on-accent)]" : "text-text-primary"} whitespace-pre-wrap`}>
+                        {m.text}
+                      </span>
+                    ) : null}
                     <span className={`self-end text-[10.5px] ${mine ? "text-white/70" : "text-text-muted"}`}>
                       {m.sentAt}
                     </span>
@@ -204,45 +217,15 @@ export default function CommunityDetailPage() {
             })}
           </div>
 
-          <footer className="sticky bottom-0 border-t border-hairline bg-elevated px-4 pb-[calc(22px_+_env(safe-area-inset-bottom))] pt-3">
-            {sendError && <p className="m-0 mb-2 text-[12.5px] text-[var(--danger)]">{sendError}</p>}
-            {balance < 1 ? (
-              <Button full icon="Ticket" onClick={() => router.push("/communities?topup=1")}>
-                Top up credits
-              </Button>
-            ) : (
-              <div className="flex items-end gap-2">
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSend();
-                  }}
-                  placeholder={`Message ${community.name} (1 credit)`}
-                  className="h-[46px] flex-1 rounded-[var(--radius-chip)] border border-hairline bg-input px-4 text-[14.5px] text-text-primary outline-none"
-                />
-                <button
-                  type="button"
-                  aria-label="Send"
-                  onClick={handleSend}
-                  disabled={!text.trim() || sending}
-                  className={[
-                    "grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full border-none",
-                    text.trim() && !sending
-                      ? "cursor-pointer bg-accent text-[var(--text-on-accent)] hover:bg-accent-hover active:bg-accent-press"
-                      : "cursor-default bg-tag text-[var(--text-disabled)]",
-                  ].join(" ")}
-                >
-                  <Icon
-                    name={sending ? "Loader2" : "Send"}
-                    size={17}
-                    strokeWidth={2.2}
-                    className={sending ? "[animation:wawuSpin_900ms_linear_infinite]" : ""}
-                  />
-                </button>
-              </div>
-            )}
-          </footer>
+          <CommunityComposer
+            variant="mobile"
+            communityName={community.name}
+            balance={balance}
+            sending={sending}
+            sendError={sendError}
+            onSend={send}
+            onTopUp={() => router.push("/communities?topup=1")}
+          />
         </>
       )}
     </div>
