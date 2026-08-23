@@ -13,6 +13,16 @@ import { ExploreEvents } from "./_components/ExploreEvents";
 const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]" as const;
 const seeAll = "text-[12.5px] font-semibold text-[var(--accent)] hover:text-text-primary" as const;
 
+/**
+ * Read live data, so it is rendered per request rather than prerendered.
+ *
+ * Without this Next tries to fetch the Hub API during `next build`, which
+ * fails the build outright wherever the API is not already running — and
+ * where it IS running, it bakes that moment's catalogue into the bundle and
+ * serves it until the next deploy. Neither is what these screens are for.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function ExplorePage() {
   const [categories, learnCourses, learnGuides, creators] = await Promise.all([
     getCategories(),

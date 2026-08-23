@@ -22,12 +22,15 @@ interface NavItem {
 }
 
 /**
- * The same 5 slots as BottomNav (mobile), same order. Unlike mobile, slot 3
- * ("Explore") does NOT swap for creators on desktop — design D1 · Shell draws
- * an identical 5-row base for both account types. Creators get an ADDITIONAL
- * Create button + Dashboard row below a divider instead (see below). Do not
- * reintroduce the mobile swap here — that's a different, and wrong, pattern
- * for this screen.
+ * The same 5 slots as BottomNav, same order, same for every account type —
+ * design D1 · Shell draws an identical 5-row base for both. Creators get an
+ * ADDITIONAL Create button + Dashboard row below a divider (see below).
+ *
+ * Mobile used to differ, swapping slot 3 from Explore to Create for creators,
+ * which cost a creator their way into Explore entirely. That is gone: mobile
+ * now keeps Explore for everyone too and floats Create as a FAB, so the two
+ * shells finally agree. Do not reintroduce a per-account-type slot swap in
+ * either place.
  */
 const BASE_ITEMS: NavItem[] = [
   { href: "/home", label: "Home", icon: "House" },
@@ -110,6 +113,8 @@ export function Sidebar() {
 
   const servicesActive = pathname.startsWith('/services');
 
+  const eventsActive = pathname.startsWith('/events');
+
   return (
     <aside className="hidden w-[244px] shrink-0 flex-col gap-[6px] overflow-y-auto border-r border-hairline bg-page px-[14px] py-[22px] xl:flex xl:h-screen">
       <img src="/wawu-logo-white.png" alt="WAWU" className="mx-[10px] mb-5 mt-[2px] h-6 w-auto object-contain" />
@@ -149,6 +154,21 @@ export function Sidebar() {
           strokeWidth={servicesActive ? 2.4 : 2}
         />
         Services
+      </Link>
+
+      {/*
+        Same reasoning as Services: not a bottom-bar slot, so mobile reaches
+        events through Explore. The rail has the room, and a host who is about
+        to publish an event should not have to go via Explore to find theirs.
+      */}
+      <Link href="/events" className={navRowClass(eventsActive)}>
+        <Icon
+          name="CalendarDays"
+          size={20}
+          color={eventsActive ? "var(--accent)" : "var(--text-secondary)"}
+          strokeWidth={eventsActive ? 2.4 : 2}
+        />
+        Events
       </Link>
 
       {!resolved ? (

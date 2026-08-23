@@ -7,6 +7,16 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { formatNaira } from "@/lib/format";
 
+/**
+ * Read live data, so it is rendered per request rather than prerendered.
+ *
+ * Without this Next tries to fetch the Hub API during `next build`, which
+ * fails the build outright wherever the API is not already running — and
+ * where it IS running, it bakes that moment's catalogue into the bundle and
+ * serves it until the next deploy. Neither is what these screens are for.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function MarketplaceSearchPage({
   searchParams,
 }: {

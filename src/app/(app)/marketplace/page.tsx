@@ -5,6 +5,18 @@ import { Icon } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { BackLink } from "@/components/ui/BackLink";
 import { HandoffPill } from "@/components/ui/HandoffPill";
+import { Callout } from "@/components/ui/Callout";
+import { FlowHeader } from "@/components/layout/FlowHeader";
+
+/**
+ * Read live data, so it is rendered per request rather than prerendered.
+ *
+ * Without this Next tries to fetch the Hub API during `next build`, which
+ * fails the build outright wherever the API is not already running — and
+ * where it IS running, it bakes that moment's catalogue into the bundle and
+ * serves it until the next deploy. Neither is what these screens are for.
+ */
+export const dynamic = "force-dynamic";
 
 export default async function MarketplacePage() {
   let shops: Shop[];
@@ -62,24 +74,20 @@ export default async function MarketplacePage() {
           ))}
         </div>
 
-        <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
-          <Icon name="Info" size={15} color="var(--text-muted)" className="mt-[1px]" />
-          <span className="flex-1 text-[12px] leading-[1.5] text-[var(--text-muted)]">
-            Basket and Beauty are separate WAWU apps. Paying and delivery happen there.
-          </span>
-        </div>
+        <Callout>Basket and Beauty are separate WAWU apps. Paying and delivery happen there.</Callout>
       </div>
 
       {/* D10 pattern: satellite shops sit side by side, each a card carrying its own handoff pill. */}
       <div className="hidden xl:flex xl:h-full xl:min-h-0 xl:flex-1 xl:flex-col">
-        <div
-          className="sticky top-0 z-20 flex h-[68px] shrink-0 items-center gap-4 border-b border-hairline bg-[rgba(19,19,22,0.86)] px-[26px] backdrop-blur"
-          style={{ backdropFilter: "var(--blur-chrome)" }}
-        >
-          <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Marketplace</span>
-          <span className="flex-1" />
-          <span className="text-[13.5px] text-[var(--text-muted)]">Everything here carries a handoff pill</span>
-        </div>
+        {/* The shared bar. This was a hand-written copy of it — one of four,
+            each re-typing the same 68px/26px geometry and the same literal
+            rgba chrome colour, which is why title left edges drifted apart. */}
+        <FlowHeader
+          title="Marketplace"
+          back={false}
+          sticky
+          right={<span className="text-[13.5px] text-text-muted">Everything here carries a handoff pill</span>}
+        />
 
         <div className="flex flex-col gap-[22px] p-[26px]">
           <div className="grid grid-cols-2 gap-[20px]">
@@ -110,12 +118,7 @@ export default async function MarketplacePage() {
             ))}
           </div>
 
-          <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
-            <Icon name="Info" size={15} color="var(--text-muted)" className="mt-[1px]" />
-            <span className="flex-1 text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
-              Basket and Beauty are separate WAWU apps. Paying and delivery happen there.
-            </span>
-          </div>
+          <Callout>Basket and Beauty are separate WAWU apps. Paying and delivery happen there.</Callout>
         </div>
       </div>
     </>

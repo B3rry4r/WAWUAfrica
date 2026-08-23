@@ -12,6 +12,16 @@ import { CategoryFilterAside } from "../_components/CategoryFilterAside";
 import { CreatorGridCard } from "../_components/CreatorGridCard";
 
 
+/**
+ * Read live data, so it is rendered per request rather than prerendered.
+ *
+ * Without this Next tries to fetch the Hub API during `next build`, which
+ * fails the build outright wherever the API is not already running — and
+ * where it IS running, it bakes that moment's catalogue into the bundle and
+ * serves it until the next deploy. Neither is what these screens are for.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function CreatorsPage({ searchParams }: { searchParams: { category?: string } }) {
   // No (or unrecognised) category means genuinely unfiltered browsing —
   // getCreators() takes an optional category, so `undefined` returns every

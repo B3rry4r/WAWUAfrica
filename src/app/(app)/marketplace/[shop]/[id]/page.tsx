@@ -4,7 +4,7 @@ import { getProduct, getShop, shopHandoffUrl } from "@/lib/api/marketplace";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ShopComingSoon, SHOP_PREVIEW } from "@/components/marketplace/ShopComingSoon";
 import { Icon } from "@/components/ui/Icon";
 import { HandoffPill } from "@/components/ui/HandoffPill";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
@@ -12,6 +12,16 @@ import { formatNaira } from "@/lib/format";
 import { ProductActionsRow } from "./_components/ProductActionsRow";
 
 const SHOP_IDS: ShopId[] = ["basket", "beauty"];
+
+/**
+ * Read live data, so it is rendered per request rather than prerendered.
+ *
+ * Without this Next tries to fetch the Hub API during `next build`, which
+ * fails the build outright wherever the API is not already running — and
+ * where it IS running, it bakes that moment's catalogue into the bundle and
+ * serves it until the next deploy. Neither is what these screens are for.
+ */
+export const dynamic = "force-dynamic";
 
 export default async function ProductPage({
   params,
@@ -28,9 +38,10 @@ export default async function ProductPage({
     const [p, shop] = await Promise.all([getProduct(shopId, id), getShop(shopId)]);
     product = p;
     shopName = shop.name;
-  } catch (e) {
-    const message = e instanceof Error ? e.message : undefined;
-    return <ErrorState title={message ?? "We couldn't load this product."} />;
+  } catch {
+    // Same as the shop page: the sibling app is not deployed, so this is a
+    // storefront that has not opened, not a product that failed to load.
+    return <ShopComingSoon {...SHOP_PREVIEW[shopId]} />;
   }
 
   if (!product) notFound();
