@@ -13,8 +13,18 @@ import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { CATEGORIES } from "@/lib/categories";
 
-const DEFAULT_INTERESTS = ["Agriculture", "Business", "Trade", "Tech", "Crafts", "Beauty", "Music", "Education"];
+/**
+ * The chips a person picks here are what Explore filters creators by, so they
+ * have to be the SAME taxonomy Explore browses — the platform's 25 categories.
+ *
+ * They used to be eight hardcoded words ("Agriculture", "Tech", "Crafts") that
+ * matched no category id anywhere, which meant a creator could fill this in
+ * carefully and still appear under nothing. The value stored is the category
+ * id, and the label shown is its real name.
+ */
+const INTEREST_OPTIONS = CATEGORIES.map((c) => ({ value: c.id, label: c.name }));
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -133,14 +143,17 @@ export default function EditProfilePage() {
 
             <section className="flex flex-col gap-[10px]">
               <span className="text-[13px] font-semibold text-text-secondary">Interests</span>
+              <span className="text-[12px] leading-[1.45] text-text-muted">
+                These decide where you show up when someone browses Explore.
+              </span>
               <div className="flex flex-wrap gap-2">
-                {DEFAULT_INTERESTS.map((tag) => {
-                  const active = draft.interests.includes(tag);
+                {INTEREST_OPTIONS.map(({ value, label }) => {
+                  const active = draft.interests.includes(value);
                   return (
                     <button
-                      key={tag}
+                      key={value}
                       type="button"
-                      onClick={() => toggleInterest(tag)}
+                      onClick={() => toggleInterest(value)}
                       className={[
                         "inline-flex h-8 cursor-pointer items-center gap-[6px] rounded-full border px-[13px] text-[12.5px]",
                         active
@@ -148,7 +161,7 @@ export default function EditProfilePage() {
                           : "border-hairline bg-tag font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
                       ].join(" ")}
                     >
-                      {tag}
+                      {label}
                       {active && <Icon name="X" size={12} color="var(--accent)" strokeWidth={2.4} />}
                     </button>
                   );
