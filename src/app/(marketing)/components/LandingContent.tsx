@@ -83,24 +83,6 @@ const QUICK_SERVICES: {
   tint?: string;
 }[] = [
   {
-    brand: "WAWUBasket",
-    label: "Market and groceries",
-    blurb: "Fresh market, groceries and restaurants, delivered.",
-    icon: "ShoppingBasket",
-    mark: "/wawubasket-icon.png",
-    tint: "var(--brand-basket)",
-    href: "/marketplace/basket",
-  },
-  {
-    brand: "WAWUBeauty",
-    label: "Beauty and textiles",
-    blurb: "Beauty products and services, textiles, shoes and art.",
-    icon: "Sparkles",
-    mark: "/wawubeauty-icon.png",
-    tint: "var(--brand-beauty)",
-    href: "/marketplace/beauty",
-  },
-  {
     brand: "Bills Payment",
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
@@ -122,6 +104,13 @@ const QUICK_SERVICES: {
     href: "/services/loans/apply",
   },
   {
+    brand: "Telemedicine",
+    label: "Health cover",
+    blurb: "See a doctor and get covered.",
+    icon: "Stethoscope",
+    soon: true,
+  },
+  {
     brand: "Pensions",
     label: "Retirement",
     blurb: "Save for later on irregular income.",
@@ -129,21 +118,26 @@ const QUICK_SERVICES: {
     href: "/services/pension/apply",
   },
   {
-    brand: "Telemedicine",
-    label: "Health cover",
-    blurb: "See a doctor and get covered.",
-    icon: "Stethoscope",
-    soon: true,
+    brand: "WAWUBasket",
+    label: "Market and groceries",
+    blurb: "Fresh market, groceries and restaurants, delivered.",
+    icon: "ShoppingBasket",
+    mark: "/wawubasket-icon.png",
+    tint: "var(--brand-basket)",
+    href: "/marketplace/basket",
+  },
+  {
+    brand: "WAWUBeauty",
+    label: "Beauty and textiles",
+    blurb: "Beauty products and services, textiles, shoes and art.",
+    icon: "Sparkles",
+    mark: "/wawubeauty-icon.png",
+    tint: "var(--brand-beauty)",
+    href: "/marketplace/beauty",
   },
 ];
 
 /**
- * ORDER MATTERS HERE and is not alphabetical or historical. WAWUBasket and
- * WAWUBeauty lead because they are the two storefronts somebody can actually
- * buy from today, and Telemedicine is last because it is the one that is not
- * open yet — a dimmed card sitting third in a row of seven reads as something
- * broken rather than something coming.
- *
  * The two storefronts, as ordinary entries in the services directory.
  *
  * They used to get their own oversized row below — a gradient card each,
@@ -337,15 +331,7 @@ export async function LandingContent() {
           */}
           <div className="mx-auto mt-10 flex max-w-[1240px] flex-col gap-4 dt:mt-12 dt:flex-row dt:items-stretch dt:gap-4">
             {/*
-              The product video, shot 9:16, in a deliberately narrow column.
-
-              A 9:16 frame gets tall fast: at 280px it stood 498px, well past
-              what the three bands beside it need, and the stack had to either
-              stretch a band into a void or spread its gaps into one. At 220px
-              it is 391px, which is close enough to the stack's natural height
-              that the spacing beside it reads as spacing.
-
-              `aspect-[9/16]` keeps its real
+              The product video, shot 9:16. `aspect-[9/16]` keeps its real
               shape — `object-cover` in a landscape box would have cropped
               the middle out of a portrait shot. The width is fixed and the
               height follows from the ratio; the stack beside it is designed
@@ -355,7 +341,7 @@ export async function LandingContent() {
               Muted and inline because a hero video that makes noise, or
               takes over the screen on iOS, is a hero video people close.
             */}
-            <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:mx-0 dt:w-[220px] dt:max-w-none dt:shrink-0 2xl:w-[240px]">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:mx-0 dt:w-[280px] dt:max-w-none dt:shrink-0 2xl:w-[300px]">
               <video
                 className="h-full w-full object-cover"
                 src="/landing-video.mp4"
@@ -368,86 +354,32 @@ export async function LandingContent() {
               />
             </div>
 
-            {/*
-              `justify-between` rather than a stretching band. Letting the
-              services absorb the video's extra height made each tile about
-              190px tall with the label stranded at the top and a void under
-              it. Spare height is spacing between the three bands now; every
-              band keeps its natural height and the stack still closes on the
-              video's bottom edge.
-            */}
-            <div className="flex min-w-0 flex-col gap-4 dt:flex-1 dt:justify-between">
+            <div className="flex min-w-0 flex-col gap-4 dt:flex-1">
               {/*
-                The services lead the stack, and they are the loudest thing in
-                it. They are what somebody can actually DO here — pay a bill,
-                shop, see a lawyer — and they were sitting underneath four
-                paragraphs of positioning copy. Bigger tiles, a lifted surface
-                and a hover the WOW cards below do not have.
-
-                Seven equal tiles on one row, chip over name. On mobile the
-                same items render as full-width rows, chip beside name,
-                because seven 50px columns at 390px is not a tap target.
+                The WOW cards, compact: the icon sits in the title row rather
+                than above it, which is what took each card from a tall box
+                of air around three stacked lines to a title and a sentence.
+                `dt:flex-1` on the band (and `grid-rows-2` inside it) is the
+                one place the stack absorbs the video's extra height, spread
+                evenly across both rows with the content kept centred.
               */}
-              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-7 dt:gap-2.5">
-                {QUICK_SERVICES.map((service) => {
-                  // A storefront's chip carries its own mark and its own
-                  // colour; everything else is the shared lilac. That is the
-                  // whole of the brand presence here — no wordmark, no tint
-                  // on the card, no tags.
-                  const chipStyle = service.tint
-                    ? {
-                        borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
-                        backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
-                      }
-                    : undefined;
-                  const inner = (
-                    <>
-                      <span
-                        className={
-                          service.tint
-                            ? "grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border"
-                            : "grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
-                        }
-                        style={chipStyle}
-                      >
-                        {service.mark ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={service.mark}
-                            alt=""
-                            aria-hidden="true"
-                            className="h-[17px] w-[17px] object-contain"
-                          />
-                        ) : (
-                          <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
-                        )}
+              <div className="grid gap-3 sm:grid-cols-2 dt:flex-1 dt:grid-rows-2 dt:gap-4">
+                {WOW_CARDS.map((v) => (
+                  <div
+                    key={v.label}
+                    className="flex flex-col justify-center gap-2.5 rounded-card border border-hairline bg-card p-4 transition-colors duration-200 hover:border-strong dt:px-5"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] border ${v.tile}`}>
+                        <Icon name={v.icon} size={16} color={v.hue} strokeWidth={2} />
                       </span>
-                      <span className="min-w-0 text-[14.5px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[12.5px] dt:leading-[1.25]">
-                        {service.brand}
-                      </span>
-                    </>
-                  );
-                  // Deliberately the heaviest surface in this stack: a
-                  // lifted background and a real hover, neither of which the
-                  // WOW cards below have. These are the things somebody can
-                  // act on.
-                  const shell =
-                    "flex items-center gap-3 rounded-[14px] border border-hairline bg-elevated px-3.5 py-3 dt:flex-col dt:justify-center dt:gap-2 dt:px-2 dt:py-4 dt:text-center";
-                  return service.href ? (
-                    <Link
-                      key={service.brand}
-                      href={service.href}
-                      className={`${shell} no-underline transition-colors duration-200 hover:border-strong hover:bg-surface-hover active:bg-surface-press`}
-                    >
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div key={service.brand} className={`${shell} opacity-60`}>
-                      {inner}
-                    </div>
-                  );
-                })}
+                      <span className="text-[13px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
+                    </span>
+                    <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
+                  </div>
+                ))}
               </div>
+
               {/*
                 The two headline figures on one slim row. Side by side they
                 pick up the WOW columns' edges above them; the figure is the
@@ -476,34 +408,68 @@ export async function LandingContent() {
               </div>
 
               {/*
-                The WOW cards, under the services and quieter than them.
-
-                Four across rather than two. At two-up each card ran the full
-                half-width of a 900px column for one short sentence, which is
-                the "too wide, too much spacing" — a line of text with a great
-                deal of nothing either side of it. Four narrow columns give
-                each sentence a sane measure and drop the band's height, which
-                is what lets the services above it be the loud thing.
-
-                No hover and no flex-1 here: both belong to the services now.
+                The services directory as one shelf: seven equal tiles on one
+                row, chip over name, closing the stack flush on the video's
+                bottom edge. On mobile the same items render as full-width
+                rows, chip beside name, because seven 50px columns at 390px
+                is not a tap target.
               */}
-              <div className="grid grid-cols-2 gap-2.5 dt:grid-cols-4">
-                {WOW_CARDS.map((v) => (
-                  <div
-                    key={v.label}
-                    className="flex flex-col gap-2 rounded-card border border-hairline bg-card p-3.5"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className={`grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[8px] border ${v.tile}`}>
-                        <Icon name={v.icon} size={13} color={v.hue} strokeWidth={2} />
+              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-7 dt:gap-2.5">
+                {QUICK_SERVICES.map((service) => {
+                  // A storefront's chip carries its own mark and its own
+                  // colour; everything else is the shared lilac. That is the
+                  // whole of the brand presence here — no wordmark, no tint
+                  // on the card, no tags.
+                  const chipStyle = service.tint
+                    ? {
+                        borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
+                        backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
+                      }
+                    : undefined;
+                  const inner = (
+                    <>
+                      <span
+                        className={
+                          service.tint
+                            ? "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border"
+                            : "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
+                        }
+                        style={chipStyle}
+                      >
+                        {service.mark ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={service.mark}
+                            alt=""
+                            aria-hidden="true"
+                            className="h-[17px] w-[17px] object-contain"
+                          />
+                        ) : (
+                          <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                        )}
                       </span>
-                      <span className="text-[11px] font-bold uppercase tracking-[0.07em] text-text-primary">{v.label}</span>
-                    </span>
-                    <p className="m-0 text-[12.5px] leading-[1.45] text-text-secondary">{v.body}</p>
-                  </div>
-                ))}
+                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[11.5px] dt:leading-[1.25]">
+                        {service.brand}
+                      </span>
+                    </>
+                  );
+                  const shell =
+                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-card px-3 py-2 dt:flex-col dt:justify-center dt:gap-1.5 dt:px-1.5 dt:py-2.5 dt:text-center";
+                  return service.href ? (
+                    <Link
+                      key={service.brand}
+                      href={service.href}
+                      className={`${shell} no-underline transition-colors duration-200 hover:border-strong`}
+                    >
+                      {inner}
+                    </Link>
+                  ) : (
+                    <div key={service.brand} className={`${shell} opacity-60`}>
+                      {inner}
+                    </div>
+                  );
+                })}
               </div>
-
             </div>
           </div>
         </section>
