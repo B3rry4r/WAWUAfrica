@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
@@ -48,7 +50,9 @@ export function AuthBrandPanel() {
 
   return (
     <div className="hidden xl:flex xl:w-[520px] xl:shrink-0 xl:flex-col xl:gap-[26px] xl:border-r xl:border-hairline xl:p-12 xl:bg-[linear-gradient(160deg,_var(--accent-deep)_0%,_var(--surface-page)_100%)]">
-      <img src="/wawu-logo-white.png" alt="WAWU" className="h-7 w-auto object-contain" />
+      <Link href="/" aria-label="WAWUAfrica home" className="self-start">
+        <img src="/wawu-logo-white.png" alt="WAWU" className="h-7 w-auto object-contain" />
+      </Link>
 
       {content.kind === "marketing" ? (
         <div className="mt-auto flex flex-col gap-[22px]">

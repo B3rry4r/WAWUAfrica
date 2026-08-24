@@ -162,7 +162,9 @@ export function SignUpFlow() {
     return (
       <div className="flex min-h-screen flex-col xl:min-h-0">
         <div className="flex flex-1 flex-col gap-5 px-5 pb-5 pt-[34px] xl:flex-none xl:px-0 xl:pb-0 xl:pt-0">
-          <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto self-start object-contain xl:hidden" />
+          <Link href="/" aria-label="WAWUAfrica home" className="self-start xl:hidden">
+            <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto object-contain" />
+          </Link>
           <div className="flex flex-col gap-2">
             <h2 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">What brings you to WAWU?</h2>
             <p className="m-0 text-[14.5px] leading-normal text-text-secondary">You can switch to a creator account later, nothing here is permanent.</p>
