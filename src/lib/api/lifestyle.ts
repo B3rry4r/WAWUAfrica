@@ -172,6 +172,12 @@ export interface LegalServiceItem {
   blurb: string;
   priceNaira: number | null;
   requiresDocuments?: boolean;
+  /**
+   * A purpose-built apply flow that already exists for this service, e.g.
+   * CAC registration. When present the legal page sends the client there
+   * instead of opening its own generic document step.
+   */
+  applyHref?: string;
 }
 
 export interface ConsultationOption {
