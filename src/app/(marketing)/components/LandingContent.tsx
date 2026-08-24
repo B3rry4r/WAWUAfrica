@@ -73,6 +73,13 @@ const QUICK_SERVICES: {
   icon: IconName;
   href?: string;
   soon?: boolean;
+  /**
+   * A storefront with its own mark. When present the chip shows this image
+   * instead of a lucide glyph, and `tint` colours the chip — the one place
+   * another brand's colour is allowed on this page.
+   */
+  mark?: string;
+  tint?: string;
 }[] = [
   {
     brand: "Bills Payment",
@@ -109,42 +116,40 @@ const QUICK_SERVICES: {
     icon: "PiggyBank",
     href: "/services/pension/apply",
   },
-];
-
-/**
- * The two storefronts. Separate products with their own marks, so they get
- * their own row and their logo at a readable size rather than being squeezed
- * into a 44px icon chip alongside the utilities.
- */
-const APPS: {
-  name: string;
-  logo: string;
-  icon: string;
-  tint: string;
-  blurb: string;
-  categories: string[];
-  href: string;
-}[] = [
   {
-    name: "WAWUBasket",
-    logo: "/wawubasket-logo.png",
-    icon: "/wawubasket-icon.png",
-    tint: "var(--brand-basket)",
+    brand: "WAWUBasket",
+    label: "Market and groceries",
     blurb: "Fresh market, groceries and restaurants, delivered.",
-    categories: ["Fresh Market", "Groceries", "Restaurants"],
+    icon: "ShoppingBasket",
+    mark: "/wawubasket-icon.png",
+    tint: "var(--brand-basket)",
     href: "/marketplace/basket",
   },
   {
-    name: "WAWUBeauty",
-    logo: "/wawubeauty-logo.png",
-    icon: "/wawubeauty-icon.png",
-    tint: "var(--brand-beauty)",
+    brand: "WAWUBeauty",
+    label: "Beauty and textiles",
     blurb: "Beauty products and services, textiles, shoes and art.",
-    categories: ["Beauty Products", "Beauty Services", "Textiles"],
+    icon: "Sparkles",
+    mark: "/wawubeauty-icon.png",
+    tint: "var(--brand-beauty)",
     href: "/marketplace/beauty",
   },
 ];
 
+/**
+ * The two storefronts, as ordinary entries in the services directory.
+ *
+ * They used to get their own oversized row below — a gradient card each,
+ * tinted in their brand colour, carrying a wordmark and a strip of category
+ * tags. That made two of WAWU's smaller surfaces the loudest thing in the
+ * hero, and it left the services grid above them sitting with empty cells.
+ *
+ * They are the same shape as everything else now: a chip, a name, one row.
+ * The ONLY thing that stays branded is the mark inside the chip — Basket's
+ * green and Beauty's pink are how somebody recognises them at a glance, and
+ * they are the icon alone, not the logo lockup, because a wordmark cannot be
+ * read at 22px and a second name beside the label is a stutter.
+ */
 const STREAMS: { icon: IconName; title: string; blurb: string }[] = [
   { icon: "Palette", title: "Creative Works", blurb: "Sell what you make" },
   { icon: "ShoppingBag", title: "Basket, Beauty & Commerce", blurb: "Products, right from your profile" },
@@ -294,12 +299,45 @@ export async function LandingContent() {
                 whole hero. They sit in the hero now, deliberately small: this
                 is a directory of what the app can do, not a feature pitch.
               */}
-              <div className="grid flex-1 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
+              {/*
+                Flex-wrap rather than a grid, so the last row absorbs the space
+                left over. An auto-fit grid holds its column width, and seven
+                entries in four columns left a ragged hole on the second row
+                that read as a missing card.
+              */}
+              <div className="flex flex-1 flex-wrap gap-2.5">
                 {QUICK_SERVICES.map((service) => {
+                  // A storefront's chip carries its own mark and its own
+                  // colour; everything else is the shared lilac. That is the
+                  // whole of the brand presence here — no wordmark, no tint on
+                  // the card, no tags.
+                  const chipStyle = service.tint
+                    ? {
+                        borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
+                        backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
+                      }
+                    : undefined;
                   const inner = (
                     <>
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
-                        <Icon name={service.icon} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                      <span
+                        className={
+                          service.tint
+                            ? "grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border"
+                            : "grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
+                        }
+                        style={chipStyle}
+                      >
+                        {service.mark ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={service.mark}
+                            alt=""
+                            aria-hidden="true"
+                            className="h-[22px] w-[22px] object-contain"
+                          />
+                        ) : (
+                          <Icon name={service.icon} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                        )}
                       </span>
                       {/*
                         Name only. The second line repeated what the name
@@ -313,7 +351,7 @@ export async function LandingContent() {
                     </>
                   );
                   const shell =
-                    "flex items-center gap-3 rounded-[14px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3.5 py-3 backdrop-blur";
+                    "flex min-w-[200px] flex-1 items-center gap-3 rounded-[14px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3.5 py-3 backdrop-blur";
                   return service.href ? (
                     <Link
                       key={service.brand}
@@ -330,58 +368,6 @@ export async function LandingContent() {
                 })}
               </div>
 
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3">
-                {APPS.map((app) => (
-                  <Link
-                    key={app.name}
-                    href={app.href}
-                    className="group relative isolate flex min-h-[168px] flex-col overflow-hidden rounded-card border p-4 no-underline transition-transform duration-300 hover:-translate-y-0.5"
-                    style={{
-                      borderColor: `color-mix(in srgb, ${app.tint} 38%, transparent)`,
-                      backgroundImage: `linear-gradient(155deg, color-mix(in srgb, ${app.tint} 16%, var(--surface-card)), var(--surface-card) 70%)`,
-                    }}
-                  >
-                    {/* The mark, oversized and bled off the corner, as artwork
-                        rather than decoration sitting in a box. */}
-                    <img
-                      src={app.icon}
-                      alt=""
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -bottom-6 -right-5 -z-10 h-[112px] w-auto opacity-[0.16] transition-transform duration-500 group-hover:scale-110"
-                    />
-
-                    <img src={app.logo} alt={app.name} className="h-[24px] w-auto self-start object-contain dt:h-[27px]" />
-
-                    <span className="mt-2.5 text-[12.5px] leading-[1.45] text-text-secondary">{app.blurb}</span>
-
-                    <span className="mt-3 flex flex-wrap gap-1.5">
-                      {app.categories.map((c) => (
-                        <span
-                          key={c}
-                          className="inline-flex h-[22px] items-center rounded-full border px-2 text-[10.5px] font-medium text-text-secondary"
-                          style={{ borderColor: `color-mix(in srgb, ${app.tint} 30%, transparent)` }}
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </span>
-
-                    <span
-                      className="mt-auto inline-flex items-center gap-1.5 pt-3 text-[12.5px] font-semibold"
-                      style={{ color: app.tint }}
-                    >
-                      Open store
-                      <Icon
-                        name="ArrowRight"
-                        size={14}
-                        color={app.tint}
-                        strokeWidth={2.4}
-                        className="transition-transform duration-300 group-hover:translate-x-0.5"
-                      />
-                    </span>
-                  </Link>
-                ))}
-              </div>
             </div>
 
               <div className="flex flex-col gap-3">
@@ -852,11 +838,11 @@ export async function LandingContent() {
             <div className="flex flex-col items-center text-center">
               <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">WOW Comparison</span>
               <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-text-primary dt:text-[52px]">
-                Choosing between <span className="text-accent-hover">WAWU</span>,
-                <br className="hidden dt:block" /> Selar, Mainstack &amp; GROWL
+                Choosing between <span className="text-accent-hover">WAWU</span>
+                <br className="hidden dt:block" /> and the neighborhood
               </h2>
               <p className="m-0 mt-4 max-w-[560px] text-[15px] leading-relaxed text-text-secondary">
-                See how WAWU stacks up against the neighborhood and find out why creators are switching.
+                See how WAWU stacks up, and find out why creators are switching.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3.5">
                 <WhitePill href="/sign-up?type=creator">Get access</WhitePill>
@@ -904,11 +890,11 @@ export async function LandingContent() {
                 <div className="mt-4 flex flex-col gap-3.5">
                   <span className="flex flex-col">
                     <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
-                    <span className="text-[12.5px] text-text-muted">Active users and members across the ecosystem</span>
+                    <span className="text-[12.5px] text-text-muted">Active users</span>
                   </span>
                   <span className="flex flex-col">
-                    <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M</span>
-                    <span className="text-[12.5px] text-text-muted">Nigerians targeted by our training programs</span>
+                    <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">109M+</span>
+                    <span className="text-[12.5px] text-text-muted">Reach across Africa</span>
                   </span>
                 </div>
               </div>

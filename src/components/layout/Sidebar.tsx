@@ -119,7 +119,11 @@ export function Sidebar() {
 
   return (
     <aside className="hidden w-[244px] shrink-0 flex-col gap-[6px] overflow-y-auto border-r border-hairline bg-page px-[14px] py-[22px] xl:flex xl:h-screen">
-      <img src="/wawu-logo-white.png" alt="WAWU" className="mx-[10px] mb-5 mt-[2px] h-6 w-auto object-contain" />
+      {/* The mark is the way back to the public site, which is what people
+          expect a logo to do everywhere else on the web. It was inert here. */}
+      <Link href="/" aria-label="WAWUAfrica home" className="mx-[10px] mb-5 mt-[2px] self-start">
+        <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto object-contain" />
+      </Link>
 
       {BASE_ITEMS.map((item) => {
         const active =

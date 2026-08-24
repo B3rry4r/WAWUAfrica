@@ -87,7 +87,9 @@ export function SignInForm() {
     return (
       <div className="flex min-h-screen flex-col px-5 pt-11 xl:min-h-0 xl:px-0 xl:pt-0">
         <div className="flex flex-1 flex-col gap-6 xl:flex-none">
-          <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto self-start object-contain xl:hidden" />
+          <Link href="/" aria-label="WAWUAfrica home" className="self-start xl:hidden">
+            <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto object-contain" />
+          </Link>
 
           <div className="flex flex-col gap-2">
             <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Verify your email</h1>
@@ -143,7 +145,9 @@ export function SignInForm() {
   return (
     <div className="flex min-h-screen flex-col px-5 pt-11 xl:min-h-0 xl:px-0 xl:pt-0">
       <div className="flex flex-1 flex-col gap-6 xl:flex-none">
-        <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto self-start object-contain xl:hidden" />
+        <Link href="/" aria-label="WAWUAfrica home" className="self-start xl:hidden">
+            <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto object-contain" />
+          </Link>
 
         <div className="flex flex-col gap-2">
           <h1 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">Welcome back</h1>
