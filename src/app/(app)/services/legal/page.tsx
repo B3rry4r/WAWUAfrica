@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   getLegalCatalogue,
   getLegalAvailability,
@@ -38,6 +39,7 @@ import { formatNaira } from "@/lib/format";
  * what gets stored as the signature.
  */
 export default function LegalPage() {
+  const router = useRouter();
   const { user } = useSession();
   // Catalogue status. This tool lives at a static route, which Next resolves
   // ahead of /services/[id], so a service the catalogue has closed would still
@@ -48,7 +50,6 @@ export default function LegalPage() {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [active, setActive] = useState<LegalRequest | null>(null);
-  const [intake, setIntake] = useState<LegalServiceItem | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -66,13 +67,31 @@ export default function LegalPage() {
   );
 
   /**
-   * Services that need documents get an intake step first. Creating the
-   * request immediately would fail server-side for those, since the API
-   * refuses a document-backed service with nothing attached.
+   * Where a service actually starts.
+   *
+   * Three destinations, and the old single one was the problem. Anything
+   * flagged `requiresDocuments` used to open a bare file picker captioned
+   * "upload what we need" — which never said WHICH documents, and for CAC
+   * could not produce a filing at all, because a CAC registration needs three
+   * proposed names and the nature of the business before any document
+   * matters.
+   *
+   *  - `applyHref`  a purpose-built flow already exists (CAC). Go there; it
+   *                 names every document and collects the fields the filing
+   *                 needs.
+   *  - documents    no dedicated flow, so go through profiling. The
+   *                 matter-specific questions establish what the filing
+   *                 actually requires, and the consultant asks for exactly
+   *                 those in the chat rather than the client guessing.
+   *  - otherwise    nothing to collect; open the request.
    */
   function startRequest(service: LegalServiceItem) {
+    if (service.applyHref) {
+      router.push(service.applyHref);
+      return;
+    }
     if (service.requiresDocuments) {
-      setIntake(service);
+      router.push("/services/legal/intake");
       return;
     }
     void submitRequest(service, []);
@@ -82,7 +101,6 @@ export default function LegalPage() {
     setBusy(true); setError(null);
     try {
       const created = await createLegalRequest({ serviceCode: service.code, documents });
-      setIntake(null);
       setActive(created);
       setRequests((r) => [created, ...r]);
     } catch (e) {
@@ -98,18 +116,6 @@ export default function LegalPage() {
 
   if (live === null) {
     return <ServiceGateLoading />;
-  }
-
-  if (intake) {
-    return (
-      <IntakeStep
-        service={intake}
-        busy={busy}
-        error={error}
-        onCancel={() => { setIntake(null); setError(null); }}
-        onSubmit={(docs) => submitRequest(intake, docs)}
-      />
-    );
   }
 
   if (active) {
@@ -522,68 +528,6 @@ function RequestFlow({
   );
 }
 
-/**
- * Document intake for the simple services that need paperwork (CAC, tax
- * registration, NDPR filing). Uploads go straight to storage and the request
- * is created with the resulting URLs, so the API never sees a document-backed
- * service submitted empty.
- */
-function IntakeStep({
-  service,
-  busy,
-  error,
-  onCancel,
-  onSubmit,
-}: {
-  service: LegalServiceItem;
-  busy: boolean;
-  error: string | null;
-  onCancel: () => void;
-  onSubmit: (documents: string[]) => void;
-}) {
-  const [documents, setDocuments] = useState<{ url: string; name: string }[]>([]);
-
-  return (
-    <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
-      <button type="button" onClick={onCancel} className="flex items-center gap-1.5 self-start text-[13.5px] text-[var(--text-secondary)] hover:text-[var(--accent-hover)]">
-        <Icon name="ChevronLeft" size={16} color="var(--text-secondary)" /> Back
-      </button>
-
-      <div className="flex flex-col gap-[6px]">
-        <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{service.name}</h1>
-        <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-          Upload what we need and submit. No lawyer call required.{" "}
-          {service.priceNaira
-            ? `The fee is ${formatNaira(service.priceNaira)}.`
-            : "We will review it and send you a price here before anything is charged."}
-        </p>
-      </div>
-
-      {error ? <ErrorState title="Something went wrong" body={error} /> : null}
-
-      <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
-        {documents.map((d) => (
-          <span key={d.url} className="flex items-center gap-2 text-[13.5px] text-[var(--text-secondary)]">
-            <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
-            {d.name}
-          </span>
-        ))}
-        <FilePicker
-          folder="service-application/document"
-          accept="image/*,application/pdf"
-          label={documents.length ? "Add another document" : "Upload a document"}
-          hint="Photos or PDFs. Add as many as the filing needs."
-          onUploaded={(f) => setDocuments((list) => [...list, { url: f.fileUrl, name: f.name }])}
-          disabled={busy}
-        />
-      </div>
-
-      <Button full onClick={() => onSubmit(documents.map((d) => d.url))} disabled={busy || !documents.length}>
-        {busy ? "Submitting…" : "Submit this request"}
-      </Button>
-    </div>
-  );
-}
 
 /** "Thu 20 Aug, 9:00am" in Lagos time, which is where the practice sits. */
 function formatSlot(iso: string): string {
