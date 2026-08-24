@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   getLegalCatalogue,
   getLegalAvailability,
@@ -134,11 +135,41 @@ export default function LegalPage() {
         <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Legal</span>
         <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Legal, without the runaround</h1>
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
-          Register a business or file a return with no lawyer needed. For everything else, book a consultation.
+          Register a business or file a return with no lawyer needed. For everything else, tell us what you need and a consultant will pick it up.
         </p>
       </div>
 
       {error ? <ErrorState title="Something went wrong" body={error} /> : null}
+
+      {/*
+        The way in, above the price list on purpose.
+
+        This page used to open on a catalogue with a consultation fee against
+        each line, so the first thing WAWU said to somebody with a legal
+        problem was a number — before anyone had heard what the problem was.
+        Profiling comes first now: a couple of minutes of questions, a
+        consultant who has read the answers, and a price only once somebody
+        understands what is being priced. The catalogue stays below for people
+        who already know exactly which filing they want.
+      */}
+      <Link
+        href="/services/legal/intake"
+        className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-selected)] bg-[var(--selected-tint)] p-[16px] no-underline text-inherit transition-colors hover:border-strong"
+      >
+        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] border border-[var(--border-selected)] bg-[var(--surface-card)]">
+          <Icon name="MessagesSquare" size={20} color="var(--accent)" strokeWidth={2} />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+          <span className="text-[15.5px] font-bold text-[var(--text-primary)]">
+            Not sure what you need?
+          </span>
+          <span className="text-[13px] leading-[1.45] text-[var(--text-secondary)]">
+            Answer a few questions — about two minutes. Nothing is charged,
+            and no price is quoted until a consultant has read them.
+          </span>
+        </span>
+        <Icon name="ChevronRight" size={18} color="var(--text-muted)" strokeWidth={2} />
+      </Link>
 
       {requests.length ? (
         <div className="flex flex-col gap-[8px]">
