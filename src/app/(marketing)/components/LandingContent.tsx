@@ -329,7 +329,14 @@ export async function LandingContent() {
             Mobile stacks the same content in the same order: video, WOW
             cards, figures, services.
           */}
-          <div className="mx-auto mt-10 flex max-w-[1240px] flex-col gap-4 dt:mt-12 dt:flex-row dt:items-stretch dt:gap-4">
+          {/*
+            Narrower than the sections below it, and still centred — `mx-auto`
+            with a smaller ceiling, not a shift. At 1240 this block ran the
+            full page width for a video and a few short cards, which is what
+            made the cards stretch to fill it. Pulling the ceiling in sizes
+            the cards by sizing their container.
+          */}
+          <div className="mx-auto mt-10 flex max-w-[1000px] flex-col gap-4 dt:mt-12 dt:flex-row dt:items-stretch dt:gap-4">
             {/*
               The product video, shot 9:16. `aspect-[9/16]` keeps its real
               shape — `object-cover` in a landscape box would have cropped
@@ -363,19 +370,19 @@ export async function LandingContent() {
                 one place the stack absorbs the video's extra height, spread
                 evenly across both rows with the content kept centred.
               */}
-              <div className="grid gap-3 sm:grid-cols-2 dt:flex-1 dt:grid-rows-2 dt:gap-4">
+              <div className="grid gap-2.5 sm:grid-cols-2 dt:flex-1 dt:grid-rows-2 dt:gap-3">
                 {WOW_CARDS.map((v) => (
                   <div
                     key={v.label}
-                    className="flex flex-col justify-center gap-2.5 rounded-card border border-hairline bg-card p-4 transition-colors duration-200 hover:border-strong dt:px-5"
+                    className="flex flex-col justify-center gap-2 rounded-card border border-hairline bg-card p-3.5 transition-colors duration-200 hover:border-strong"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] border ${v.tile}`}>
-                        <Icon name={v.icon} size={16} color={v.hue} strokeWidth={2} />
+                    <span className="flex items-center gap-2.5">
+                      <span className={`grid h-[28px] w-[28px] shrink-0 place-items-center rounded-[9px] border ${v.tile}`}>
+                        <Icon name={v.icon} size={14} color={v.hue} strokeWidth={2} />
                       </span>
-                      <span className="text-[13px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
+                      <span className="text-[11.5px] font-bold uppercase tracking-[0.07em] text-text-primary">{v.label}</span>
                     </span>
-                    <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
+                    <p className="m-0 text-[12.5px] leading-[1.45] text-text-secondary">{v.body}</p>
                   </div>
                 ))}
               </div>
@@ -408,13 +415,20 @@ export async function LandingContent() {
               </div>
 
               {/*
-                The services directory as one shelf: seven equal tiles on one
-                row, chip over name, closing the stack flush on the video's
-                bottom edge. On mobile the same items render as full-width
-                rows, chip beside name, because seven 50px columns at 390px
-                is not a tap target.
+                The services across two rows of four rather than one row of
+                seven. In a narrower container seven columns leave each tile
+                about 100px wide, which is not enough for "Loans/EasyBuy"
+                without it wrapping to three lines. Four columns give each
+                name room, and the last row's three tiles sit under the first
+                four rather than orphaned — there is no eighth service to add
+                and a gap at the end of a two-row grid reads as spacing, not
+                as a missing card.
+
+                On mobile the same items render as full-width rows, chip
+                beside name, because four columns at 390px is not a tap
+                target.
               */}
-              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-7 dt:gap-2.5">
+              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-4 dt:gap-2.5">
                 {QUICK_SERVICES.map((service) => {
                   // A storefront's chip carries its own mark and its own
                   // colour; everything else is the shared lilac. That is the
