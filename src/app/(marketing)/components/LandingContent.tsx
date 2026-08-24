@@ -11,8 +11,9 @@ import { HeroRotatingWord } from "./HeroRotatingWord";
 import { SmartScheduler } from "./SmartScheduler";
 
 /**
- * What the ecosystem gives access to. Rendered in the hero's "Access to" card
- * and again as the journey strip further down.
+ * What the ecosystem gives access to. Rendered as the journey strip further
+ * down, and again under Strategic Ally. The hero card that used to carry it
+ * is gone — the hero rail is the two headline numbers and the services now.
  *
  * Two items from the requested list are held back deliberately, because
  * docs/01_SPEC.md forbids both by name and that doc is the tiebreaker:
@@ -150,6 +151,47 @@ const QUICK_SERVICES: {
  * they are the icon alone, not the logo lockup, because a wordmark cannot be
  * read at 22px and a second name beside the label is a stutter.
  */
+/**
+ * The four WOW cards. They were their own full-width section further down the
+ * page; they sit under the video in the hero now, which is where somebody
+ * deciding whether this is for them actually looks.
+ *
+ * One hue each, straight off the WAWU COLORS brand sheet and its stated
+ * meanings — discovery, energy, growth, connection. Four identical purple
+ * tiles was the thing that made the page read as a single-colour app.
+ */
+const WOW_CARDS: { label: string; icon: IconName; hue: string; tile: string; body: string }[] = [
+  { label: "FIND WOW", icon: "Compass", hue: "var(--wawu-lemon)", tile: "bg-[color-mix(in_srgb,var(--wawu-lemon)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-lemon)_32%,transparent)]", body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
+  { label: "GET WOW", icon: "Sparkles", hue: "var(--wawu-pink)", tile: "bg-[color-mix(in_srgb,var(--wawu-pink)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-pink)_32%,transparent)]", body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
+  { label: "MAKE WOW", icon: "Rocket", hue: "var(--wawu-green)", tile: "bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-green)_32%,transparent)]", body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
+  { label: "FOR EVERYONE", icon: "Users", hue: "var(--wawu-sky)", tile: "bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-sky)_32%,transparent)]", body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
+];
+
+/**
+ * The mark, set between sections as a watermark.
+ *
+ * A quiet divider rather than decoration: it gives each section a beginning
+ * without another rule across the page, and it is the icon alone — no
+ * wordmark, because the name is already in the nav, the hero and the footer,
+ * and a fourth reading of it is noise.
+ *
+ * `aria-hidden` and no alt text: it separates, it does not say anything, and
+ * a screen reader announcing "WAWU" eight times between sections is worse
+ * than silence.
+ */
+function SectionMark() {
+  return (
+    <div className="flex justify-center py-2 dt:py-4" aria-hidden="true">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/wawu-icon-white.svg"
+        alt=""
+        className="h-7 w-auto opacity-[0.14] dt:h-9"
+      />
+    </div>
+  );
+}
+
 const STREAMS: { icon: IconName; title: string; blurb: string }[] = [
   { icon: "Palette", title: "Creative Works", blurb: "Sell what you make" },
   { icon: "ShoppingBag", title: "Basket, Beauty & Commerce", blurb: "Products, right from your profile" },
@@ -304,18 +346,64 @@ export async function LandingContent() {
               </div>
 
               {/*
-                The services used to be their own full section further down the
-                page, which meant nobody saw them without scrolling past the
-                whole hero. They sit in the hero now, deliberately small: this
-                is a directory of what the app can do, not a feature pitch.
+                The WOW cards, directly under the video. This is the first
+                thing somebody reads after watching it, so it is where "what is
+                this and is it for me" belongs — they used to be a full-width
+                section far enough down the page that you had to go looking.
               */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {WOW_CARDS.map((v) => (
+                  <div
+                    key={v.label}
+                    className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5 transition-colors duration-200 hover:border-strong"
+                  >
+                    <span className={`grid h-[42px] w-[42px] place-items-center rounded-[13px] border ${v.tile}`}>
+                      <Icon name={v.icon} size={19} color={v.hue} strokeWidth={2} />
+                    </span>
+                    <span className="text-[13px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
+                    <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/*
+              The right rail: the two headline numbers, then the services.
+              The numbers are smaller than they were — three tall cards next to
+              a 533px video made the rail the loudest column in the hero, and
+              the figure is the point, not the box around it.
+            */}
+            <div className="flex flex-col gap-3">
+              {[
+                { icon: "Users" as IconName, hue: "var(--wawu-sky)", figure: "10M+", label: "Active users" },
+                { icon: "Globe" as IconName, hue: "var(--wawu-green)", figure: "109M+", label: "Reach across Africa" },
+              ].map((stat) => (
+                <div
+                  key={stat.figure}
+                  className="flex items-center gap-3 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-3.5 backdrop-blur"
+                >
+                  <span
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px]"
+                    style={{ backgroundColor: `color-mix(in srgb, ${stat.hue} 13%, transparent)` }}
+                  >
+                    <Icon name={stat.icon} size={16} color={stat.hue} strokeWidth={2.1} />
+                  </span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
+                      {stat.figure}
+                    </span>
+                    <span className="mt-1 text-[12px] leading-snug text-text-secondary">{stat.label}</span>
+                  </span>
+                </div>
+              ))}
+
               {/*
-                Flex-wrap rather than a grid, so the last row absorbs the space
-                left over. An auto-fit grid holds its column width, and seven
-                entries in four columns left a ragged hole on the second row
-                that read as a missing card.
+                The services directory, moved out of the wide left column and
+                into this rail. One per row here, which suits a list of names
+                better than a grid did — and it leaves the left column to the
+                video and the four WOW cards.
               */}
-              <div className="flex flex-1 flex-wrap gap-2.5">
+              <div className="flex flex-col gap-2">
                 {QUICK_SERVICES.map((service) => {
                   // A storefront's chip carries its own mark and its own
                   // colour; everything else is the shared lilac. That is the
@@ -332,8 +420,8 @@ export async function LandingContent() {
                       <span
                         className={
                           service.tint
-                            ? "grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border"
-                            : "grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
+                            ? "grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border"
+                            : "grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
                         }
                         style={chipStyle}
                       >
@@ -343,25 +431,19 @@ export async function LandingContent() {
                             src={service.mark}
                             alt=""
                             aria-hidden="true"
-                            className="h-[22px] w-[22px] object-contain"
+                            className="h-[19px] w-[19px] object-contain"
                           />
                         ) : (
-                          <Icon name={service.icon} size={22} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                          <Icon name={service.icon} size={19} color="var(--wawu-lilac)" strokeWidth={2.2} />
                         )}
                       </span>
-                      {/*
-                        Name only. The second line repeated what the name
-                        already said ("Pensions / Retirement") and turned a
-                        clean directory into noise. Anything not open yet is
-                        dimmed instead of captioned.
-                      */}
-                      <span className="min-w-0 text-[15px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[16px]">
+                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary">
                         {service.brand}
                       </span>
                     </>
                   );
                   const shell =
-                    "flex min-w-[200px] flex-1 items-center gap-3 rounded-[14px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3.5 py-3 backdrop-blur";
+                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3 py-2.5 backdrop-blur";
                   return service.href ? (
                     <Link
                       key={service.brand}
@@ -377,65 +459,11 @@ export async function LandingContent() {
                   );
                 })}
               </div>
-
-            </div>
-
-              <div className="flex flex-col gap-3">
-                <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
-                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)]">
-                    <Icon name="Users" size={16} color="var(--wawu-sky)" strokeWidth={2.1} />
-                  </span>
-                  <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
-                  <span className="text-[12px] leading-snug text-text-secondary">Professionals, Entrepreneurs, Artisans on WAWUAfrica</span>
-                </div>
-                <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
-                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[color-mix(in_srgb,var(--wawu-lilac)_13%,transparent)]">
-                    <Icon name="Route" size={16} color="var(--wawu-lilac)" strokeWidth={2.1} />
-                  </span>
-                  {/* White and bold like the figures beside it, not a small
-                      purple caption, but not headline-sized either. */}
-                  <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary">Access to</span>
-                  <span className="mt-1 block text-[13px] leading-relaxed text-text-secondary">
-                    {PIPELINE.join(" → ")}
-                  </span>
-                </div>
-                <div className="rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-4 backdrop-blur">
-                  <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)]">
-                    <Icon name="Globe" size={16} color="var(--wawu-green)" strokeWidth={2.1} />
-                  </span>
-                  <span className="mt-2 block text-[20px] font-bold tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">1.5M+</span>
-                  <span className="text-[12px] leading-snug text-text-secondary">Fans, plus access to Pan-African ecosystems, communities, governments and institutions</span>
-                </div>
               </div>
             </div>
         </section>
 
-        {/* ============ VALUE PROPOSITION (4-column) ============ */}
-        <section className="px-5 py-14 dt:py-20">
-          <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
-            {[
-              // One hue each, straight off the WAWU COLORS brand sheet and its
-              // stated meanings — discovery, energy, growth, connection. Four
-              // identical purple tiles was the thing that made the page read
-              // as a single-colour app.
-              { label: "FIND WOW", icon: "Compass" as IconName, hue: "var(--wawu-lemon)", tile: "bg-[color-mix(in_srgb,var(--wawu-lemon)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-lemon)_32%,transparent)]", body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
-              { label: "GET WOW", icon: "Sparkles" as IconName, hue: "var(--wawu-pink)", tile: "bg-[color-mix(in_srgb,var(--wawu-pink)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-pink)_32%,transparent)]", body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
-              { label: "MAKE WOW", icon: "Rocket" as IconName, hue: "var(--wawu-green)", tile: "bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-green)_32%,transparent)]", body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
-              { label: "FOR EVERYONE", icon: "Users" as IconName, hue: "var(--wawu-sky)", tile: "bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-sky)_32%,transparent)]", body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
-            ].map((v) => (
-              <div
-                key={v.label}
-                className="group flex flex-col gap-3 rounded-card border border-hairline bg-card p-6 transition-colors duration-200 hover:border-strong"
-              >
-                <span className={`grid h-[46px] w-[46px] place-items-center rounded-[14px] border ${v.tile}`}>
-                  <Icon name={v.icon} size={20} color={v.hue} strokeWidth={2} />
-                </span>
-                <span className="text-[13.5px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
-                <p className="m-0 text-[14px] leading-normal text-text-secondary">{v.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <SectionMark />
 
         {/* ============ ONE PROFILE MARQUEE ============ */}
         <section className="py-14 dt:py-20">
@@ -471,6 +499,8 @@ export async function LandingContent() {
             ))}
           </div>
         </section>
+
+        <SectionMark />
 
         {/* ============ WOW EXPERIENCE BENTO (dashboard) ============ */}
         <section className="px-5 py-14 dt:py-24">
@@ -570,6 +600,8 @@ export async function LandingContent() {
           </div>
         </section>
 
+        <SectionMark />
+
         {/* ============ WOW REVENUE STREAMS ============ */}
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto max-w-[1240px]">
@@ -636,6 +668,8 @@ export async function LandingContent() {
           </div>
         </section>
 
+        <SectionMark />
+
         {/* ============ EARNING POTENTIAL ============ */}
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 rounded-[28px] border border-hairline bg-[linear-gradient(150deg,var(--surface-card),rgba(71,20,113,0.28))] p-6 dt:grid-cols-2 dt:gap-14 dt:p-12">
@@ -668,6 +702,8 @@ export async function LandingContent() {
             <EarningsCalculator />
           </div>
         </section>
+
+        <SectionMark />
 
         {/* ============ CREATOR TIERS ============ */}
         <section id="pricing" className="relative px-5 py-14 dt:py-20">
@@ -752,6 +788,8 @@ export async function LandingContent() {
           </div>
         </section>
 
+        <SectionMark />
+
         {/* ============ WOW FRAMEWORK: insights + chart ============ */}
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 dt:grid-cols-[1fr_1.1fr] dt:gap-16">
@@ -824,6 +862,8 @@ export async function LandingContent() {
           </div>
         </section>
 
+        <SectionMark />
+
         {/* ============ COMPARE BANNER ============ */}
         <section className="px-5 py-10 dt:py-14">
           <div className="mx-auto flex max-w-[1240px] flex-col items-start gap-6 rounded-[28px] bg-[linear-gradient(120deg,var(--accent-deep),var(--accent))] p-8 dt:flex-row dt:items-center dt:justify-between dt:p-12">
@@ -841,6 +881,8 @@ export async function LandingContent() {
             </a>
           </div>
         </section>
+
+        <SectionMark />
 
         {/* ============ WOW COMPARISON ============ */}
         <section id="comparison" className="px-5 py-14 dt:py-24">
@@ -900,7 +942,7 @@ export async function LandingContent() {
                 <div className="mt-4 flex flex-col gap-3.5">
                   <span className="flex flex-col">
                     <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
-                    <span className="text-[12.5px] text-text-muted">Active users</span>
+                    <span className="text-[12.5px] text-text-muted">Active users and members across the ecosystem</span>
                   </span>
                   <span className="flex flex-col">
                     <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">109M+</span>
@@ -941,6 +983,8 @@ export async function LandingContent() {
           </div>
         </section>
 
+        <SectionMark />
+
         {/* ============ MAKE THE SWITCH ============ */}
         <section className="px-5 py-14 dt:py-20">
           <div className="relative mx-auto max-w-[1240px] overflow-hidden rounded-[28px] border border-hairline bg-card px-6 py-14 text-center dt:py-20">
@@ -968,6 +1012,8 @@ export async function LandingContent() {
             </div>
           </div>
         </section>
+
+        <SectionMark />
 
         {/* ============ THE COMMUNITY ============ */}
         <section className="px-5 py-14 dt:py-24">
@@ -1004,6 +1050,8 @@ export async function LandingContent() {
             </div>
           </div>
         </section>
+
+        <SectionMark />
 
         {/* ============ STRATEGIC ALLY ============ */}
         <section className="px-5 py-14 dt:py-24">
@@ -1049,6 +1097,8 @@ export async function LandingContent() {
           </div>
         </section>
 
+        <SectionMark />
+
         {/* ============ FAQ ============ */}
         <section className="px-5 py-14 dt:py-24">
           <div className="mx-auto max-w-[820px]">
@@ -1066,6 +1116,8 @@ export async function LandingContent() {
             </div>
           </div>
         </section>
+
+        <SectionMark />
 
         {/* ============ FINAL CTA ============ */}
         <section className="px-5 pb-20 pt-10 dt:pb-28">
