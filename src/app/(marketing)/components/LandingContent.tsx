@@ -313,115 +313,113 @@ export async function LandingContent() {
           </div>
 
           {/*
-            Three columns on desktop, and the VIDEO sets the row height.
+            The hero collage: the product video beside one composed stack.
 
-            A portrait video is a tall narrow thing, and the previous layout
-            put it in a wide column, which left it floating as a 300px strip
-            in a sea of nothing with the cards stretched flat beneath it. So it
-            gets a column exactly its own width, and because a grid row is as
-            tall as its tallest cell, the two columns beside it stretch to
-            match: the WOW cards fill the middle as a 2x2, the figures and the
-            services fill the right rail top to bottom. Everything shares one
-            top edge and one bottom edge.
+            A portrait video is a tall, narrow thing. Giving it a wide column
+            marooned it in dead space; giving every neighbouring column its
+            full height blew the WOW cards up into empty slabs and let the
+            services rail run past the bottom edge. So the video keeps a
+            column exactly its own width, and everything else is ONE stack
+            beside it, three bands sharing the same left and right edges:
+            the four WOW cards as a compact 2x2, the two figures on one slim
+            row, the seven services on one shelf. Only the WOW band flexes,
+            so the stack always closes exactly on the video's bottom edge
+            and no band gaps open to fill the difference.
 
-            The video column is 360px (380 at 2xl) for a reason: a grid row is
-            as tall as its TALLEST cell, and at 320px the rail — two figures
-            and seven services — came out taller than the 9:16 box, so the
-            rail set the height and the video sat short with a gap beneath it.
-            At 360px the video is 640px tall and nothing else comes close, so
-            it governs and the other two columns stretch to it.
-
-            Mobile stacks the same three in order — video, cards, rail.
+            Mobile stacks the same content in the same order: video, WOW
+            cards, figures, services.
           */}
-          <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[360px_minmax(0,1fr)_280px] dt:gap-5 2xl:grid-cols-[380px_minmax(0,1fr)_300px]">
-              {/*
-                The product video, shot 9:16. `aspect-[9/16]` keeps its real
-                shape — `object-cover` in a landscape box would have cropped
-                the middle out of a portrait shot. It fills its column, and
-                its height is the row's height.
-
-                Muted and inline because a hero video that makes noise, or
-                takes over the screen on iOS, is a hero video people close.
-              */}
-              <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:mx-0 dt:max-w-none">
-                <video
-                  className="h-full w-full object-cover"
-                  src="/landing-video.mp4"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  aria-label="A look at WAWUAfrica"
-                />
-              </div>
-
+          <div className="mx-auto mt-10 flex max-w-[1240px] flex-col gap-4 dt:mt-12 dt:flex-row dt:items-stretch dt:gap-4">
             {/*
-              The WOW cards as a 2x2 that fills the video's height. `h-full`
-              plus two equal rows is what makes them match it instead of
-              sitting as four flat slabs of whatever height the text happened
-              to need.
+              The product video, shot 9:16. `aspect-[9/16]` keeps its real
+              shape — `object-cover` in a landscape box would have cropped
+              the middle out of a portrait shot. The width is fixed and the
+              height follows from the ratio; the stack beside it is designed
+              to land just under that height and stretch the last few pixels
+              to meet it.
+
+              Muted and inline because a hero video that makes noise, or
+              takes over the screen on iOS, is a hero video people close.
             */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 dt:h-full dt:grid-rows-2">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:mx-0 dt:w-[280px] dt:max-w-none dt:shrink-0 2xl:w-[300px]">
+              <video
+                className="h-full w-full object-cover"
+                src="/landing-video.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="A look at WAWUAfrica"
+              />
+            </div>
+
+            <div className="flex min-w-0 flex-col gap-4 dt:flex-1">
+              {/*
+                The WOW cards, compact: the icon sits in the title row rather
+                than above it, which is what took each card from a tall box
+                of air around three stacked lines to a title and a sentence.
+                `dt:flex-1` on the band (and `grid-rows-2` inside it) is the
+                one place the stack absorbs the video's extra height, spread
+                evenly across both rows with the content kept centred.
+              */}
+              <div className="grid gap-3 sm:grid-cols-2 dt:flex-1 dt:grid-rows-2 dt:gap-4">
                 {WOW_CARDS.map((v) => (
                   <div
                     key={v.label}
-                    className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5 transition-colors duration-200 hover:border-strong dt:justify-center"
+                    className="flex flex-col justify-center gap-2.5 rounded-card border border-hairline bg-card p-4 transition-colors duration-200 hover:border-strong dt:px-5"
                   >
-                    <span className={`grid h-[42px] w-[42px] place-items-center rounded-[13px] border ${v.tile}`}>
-                      <Icon name={v.icon} size={19} color={v.hue} strokeWidth={2} />
+                    <span className="flex items-center gap-3">
+                      <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] border ${v.tile}`}>
+                        <Icon name={v.icon} size={16} color={v.hue} strokeWidth={2} />
+                      </span>
+                      <span className="text-[13px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
                     </span>
-                    <span className="text-[13px] font-bold uppercase tracking-[0.08em] text-text-primary">{v.label}</span>
                     <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
                   </div>
                 ))}
-            </div>
-
-            {/*
-              The right rail: the two headline numbers, then the services.
-              The numbers are smaller than they were — three tall cards next to
-              a 533px video made the rail the loudest column in the hero, and
-              the figure is the point, not the box around it.
-            */}
-            <div className="flex flex-col gap-3 dt:h-full">
-              {[
-                { icon: "Users" as IconName, hue: "var(--wawu-sky)", figure: "10M+", label: "Active users" },
-                { icon: "Globe" as IconName, hue: "var(--wawu-green)", figure: "109M+", label: "Reach across Africa" },
-              ].map((stat) => (
-                <div
-                  key={stat.figure}
-                  className="flex items-center gap-3 rounded-card border border-hairline bg-[rgba(19,19,22,0.8)] p-3.5 backdrop-blur"
-                >
-                  <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px]"
-                    style={{ backgroundColor: `color-mix(in srgb, ${stat.hue} 13%, transparent)` }}
-                  >
-                    <Icon name={stat.icon} size={16} color={stat.hue} strokeWidth={2.1} />
-                  </span>
-                  <span className="flex min-w-0 flex-col">
-                    <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
-                      {stat.figure}
-                    </span>
-                    <span className="mt-1 text-[12px] leading-snug text-text-secondary">{stat.label}</span>
-                  </span>
-                </div>
-              ))}
+              </div>
 
               {/*
-                The services directory, moved out of the wide left column and
-                into this rail. One per row here, which suits a list of names
-                better than a grid did — and it leaves the left column to the
-                video and the four WOW cards.
+                The two headline figures on one slim row. Side by side they
+                pick up the WOW columns' edges above them; the figure is the
+                point, not the box around it, so the tiles stay shallow.
               */}
-              {/* `justify-between` spreads the seven rows down to the video's
-                  bottom edge instead of bunching them at the top with a gap
-                  under them. */}
-              <div className="flex flex-col gap-2 dt:flex-1 dt:justify-between">
+              <div className="grid grid-cols-2 gap-3 dt:gap-4">
+                {[
+                  { icon: "Users" as IconName, hue: "var(--wawu-sky)", tile: "bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-sky)_32%,transparent)]", figure: "10M+", label: "Active users" },
+                  { icon: "Globe" as IconName, hue: "var(--wawu-green)", tile: "bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-green)_32%,transparent)]", figure: "109M+", label: "Reach across Africa" },
+                ].map((stat) => (
+                  <div
+                    key={stat.figure}
+                    className="flex items-center gap-3 rounded-card border border-hairline bg-card p-3 dt:px-4"
+                  >
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border ${stat.tile}`}>
+                      <Icon name={stat.icon} size={16} color={stat.hue} strokeWidth={2.1} />
+                    </span>
+                    <span className="flex min-w-0 flex-col">
+                      <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
+                        {stat.figure}
+                      </span>
+                      <span className="mt-1 text-[12px] leading-snug text-text-secondary">{stat.label}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/*
+                The services directory as one shelf: seven equal tiles on one
+                row, chip over name, closing the stack flush on the video's
+                bottom edge. On mobile the same items render as full-width
+                rows, chip beside name, because seven 50px columns at 390px
+                is not a tap target.
+              */}
+              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-7 dt:gap-2.5">
                 {QUICK_SERVICES.map((service) => {
                   // A storefront's chip carries its own mark and its own
                   // colour; everything else is the shared lilac. That is the
-                  // whole of the brand presence here — no wordmark, no tint on
-                  // the card, no tags.
+                  // whole of the brand presence here — no wordmark, no tint
+                  // on the card, no tags.
                   const chipStyle = service.tint
                     ? {
                         borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
@@ -450,13 +448,13 @@ export async function LandingContent() {
                           <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
                         )}
                       </span>
-                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary">
+                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[11.5px] dt:leading-[1.25]">
                         {service.brand}
                       </span>
                     </>
                   );
                   const shell =
-                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3 py-2 backdrop-blur";
+                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-card px-3 py-2 dt:flex-col dt:justify-center dt:gap-1.5 dt:px-1.5 dt:py-2.5 dt:text-center";
                   return service.href ? (
                     <Link
                       key={service.brand}
@@ -472,8 +470,8 @@ export async function LandingContent() {
                   );
                 })}
               </div>
-              </div>
             </div>
+          </div>
         </section>
 
         <SectionMark />
