@@ -312,27 +312,38 @@ export async function LandingContent() {
             </div>
           </div>
 
-          {/* Social proof: collage + stat cards (showcase images stand in until real content exists) */}
-          <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[minmax(0,1fr)_300px] dt:gap-5 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-6">
-            {/*
-              The video sits ABOVE the services rather than beside them.
-              Beside them it took 260px out of the row, which dropped the
-              services from four columns to three — and seven entries in three
-              columns leaves a single card on the last row stretched across the
-              full width, which reads as a broken banner. Stacked, the services
-              keep 4 + 3 and end flush.
-            */}
-            <div className="flex flex-col gap-4 dt:gap-5">
+          {/*
+            Three columns on desktop, and the VIDEO sets the row height.
+
+            A portrait video is a tall narrow thing, and the previous layout
+            put it in a wide column, which left it floating as a 300px strip
+            in a sea of nothing with the cards stretched flat beneath it. So it
+            gets a column exactly its own width, and because a grid row is as
+            tall as its tallest cell, the two columns beside it stretch to
+            match: the WOW cards fill the middle as a 2x2, the figures and the
+            services fill the right rail top to bottom. Everything shares one
+            top edge and one bottom edge.
+
+            The video column is 360px (380 at 2xl) for a reason: a grid row is
+            as tall as its TALLEST cell, and at 320px the rail — two figures
+            and seven services — came out taller than the 9:16 box, so the
+            rail set the height and the video sat short with a gap beneath it.
+            At 360px the video is 640px tall and nothing else comes close, so
+            it governs and the other two columns stretch to it.
+
+            Mobile stacks the same three in order — video, cards, rail.
+          */}
+          <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[360px_minmax(0,1fr)_280px] dt:gap-5 2xl:grid-cols-[380px_minmax(0,1fr)_300px]">
               {/*
                 The product video, shot 9:16. `aspect-[9/16]` keeps its real
-                shape rather than letterboxing it into the 16:9 frame that used
-                to sit here — `object-cover` in a landscape box would have
-                cropped the middle out of a portrait shot.
+                shape — `object-cover` in a landscape box would have cropped
+                the middle out of a portrait shot. It fills its column, and
+                its height is the row's height.
 
                 Muted and inline because a hero video that makes noise, or
                 takes over the screen on iOS, is a hero video people close.
               */}
-              <div className="relative mx-auto aspect-[9/16] w-full max-w-[260px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:max-w-[300px]">
+              <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:mx-0 dt:max-w-none">
                 <video
                   className="h-full w-full object-cover"
                   src="/landing-video.mp4"
@@ -345,17 +356,17 @@ export async function LandingContent() {
                 />
               </div>
 
-              {/*
-                The WOW cards, directly under the video. This is the first
-                thing somebody reads after watching it, so it is where "what is
-                this and is it for me" belongs — they used to be a full-width
-                section far enough down the page that you had to go looking.
-              */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/*
+              The WOW cards as a 2x2 that fills the video's height. `h-full`
+              plus two equal rows is what makes them match it instead of
+              sitting as four flat slabs of whatever height the text happened
+              to need.
+            */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 dt:h-full dt:grid-rows-2">
                 {WOW_CARDS.map((v) => (
                   <div
                     key={v.label}
-                    className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5 transition-colors duration-200 hover:border-strong"
+                    className="flex flex-col gap-2.5 rounded-card border border-hairline bg-card p-5 transition-colors duration-200 hover:border-strong dt:justify-center"
                   >
                     <span className={`grid h-[42px] w-[42px] place-items-center rounded-[13px] border ${v.tile}`}>
                       <Icon name={v.icon} size={19} color={v.hue} strokeWidth={2} />
@@ -364,7 +375,6 @@ export async function LandingContent() {
                     <p className="m-0 text-[13.5px] leading-normal text-text-secondary">{v.body}</p>
                   </div>
                 ))}
-              </div>
             </div>
 
             {/*
@@ -373,7 +383,7 @@ export async function LandingContent() {
               a 533px video made the rail the loudest column in the hero, and
               the figure is the point, not the box around it.
             */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 dt:h-full">
               {[
                 { icon: "Users" as IconName, hue: "var(--wawu-sky)", figure: "10M+", label: "Active users" },
                 { icon: "Globe" as IconName, hue: "var(--wawu-green)", figure: "109M+", label: "Reach across Africa" },
@@ -403,7 +413,10 @@ export async function LandingContent() {
                 better than a grid did — and it leaves the left column to the
                 video and the four WOW cards.
               */}
-              <div className="flex flex-col gap-2">
+              {/* `justify-between` spreads the seven rows down to the video's
+                  bottom edge instead of bunching them at the top with a gap
+                  under them. */}
+              <div className="flex flex-col gap-2 dt:flex-1 dt:justify-between">
                 {QUICK_SERVICES.map((service) => {
                   // A storefront's chip carries its own mark and its own
                   // colour; everything else is the shared lilac. That is the
@@ -420,8 +433,8 @@ export async function LandingContent() {
                       <span
                         className={
                           service.tint
-                            ? "grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border"
-                            : "grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
+                            ? "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border"
+                            : "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
                         }
                         style={chipStyle}
                       >
@@ -431,10 +444,10 @@ export async function LandingContent() {
                             src={service.mark}
                             alt=""
                             aria-hidden="true"
-                            className="h-[19px] w-[19px] object-contain"
+                            className="h-[17px] w-[17px] object-contain"
                           />
                         ) : (
-                          <Icon name={service.icon} size={19} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                          <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
                         )}
                       </span>
                       <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary">
@@ -443,7 +456,7 @@ export async function LandingContent() {
                     </>
                   );
                   const shell =
-                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3 py-2.5 backdrop-blur";
+                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-[rgba(19,19,22,0.8)] px-3 py-2 backdrop-blur";
                   return service.href ? (
                     <Link
                       key={service.brand}
