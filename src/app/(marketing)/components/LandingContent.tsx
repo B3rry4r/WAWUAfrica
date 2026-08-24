@@ -272,25 +272,35 @@ export async function LandingContent() {
 
           {/* Social proof: collage + stat cards (showcase images stand in until real content exists) */}
           <div className="mx-auto mt-10 grid max-w-[1240px] grid-cols-1 gap-4 dt:mt-12 dt:grid-cols-[minmax(0,1fr)_300px] dt:gap-5 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-6">
+            {/*
+              The video sits ABOVE the services rather than beside them.
+              Beside them it took 260px out of the row, which dropped the
+              services from four columns to three — and seven entries in three
+              columns leaves a single card on the last row stretched across the
+              full width, which reads as a broken banner. Stacked, the services
+              keep 4 + 3 and end flush.
+            */}
             <div className="flex flex-col gap-4 dt:gap-5">
               {/*
-                A 16:9 slot for the product video. It replaces two sample
-                content cards that were standing in for a database with nothing
-                in it yet — placeholder content pretending to be real content.
-                An empty frame that says what it is beats fake data.
+                The product video, shot 9:16. `aspect-[9/16]` keeps its real
+                shape rather than letterboxing it into the 16:9 frame that used
+                to sit here — `object-cover` in a landscape box would have
+                cropped the middle out of a portrait shot.
+
+                Muted and inline because a hero video that makes noise, or
+                takes over the screen on iOS, is a hero video people close.
               */}
-              <div className="relative aspect-video w-full overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))]">
-                <span className="absolute inset-0 grid place-items-center">
-                  <span className="grid h-[68px] w-[68px] place-items-center rounded-full border border-[rgba(255,255,255,0.35)] bg-[rgba(11,10,13,0.4)] backdrop-blur transition-transform duration-300 hover:scale-105 dt:h-[84px] dt:w-[84px]">
-                    <Icon
-                      name="Play"
-                      size={30}
-                      color="var(--text-on-accent)"
-                      strokeWidth={1.8}
-                      className="translate-x-0.5 drop-shadow-[0_0_20px_rgba(255,255,255,0.45)]"
-                    />
-                  </span>
-                </span>
+              <div className="relative mx-auto aspect-[9/16] w-full max-w-[260px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:max-w-[300px]">
+                <video
+                  className="h-full w-full object-cover"
+                  src="/landing-video.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label="A look at WAWUAfrica"
+                />
               </div>
 
               {/*
