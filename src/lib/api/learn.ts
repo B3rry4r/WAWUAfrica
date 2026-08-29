@@ -6,7 +6,7 @@ import { getMockGuides, getMockPlaybook } from "./mocks/learn";
 
 /** Wire shape of GET /learn/entitlement and the entitlement half of POST /learn/courses/:id/enrol. */
 interface LearnEntitlementWire {
-  tier: "basic" | "pro";
+  tier: "basic" | "pro" | "pro_max";
   freeCoursesTotal: number;
   freeCoursesUsed: number;
   enrolledCourseIds: string[];

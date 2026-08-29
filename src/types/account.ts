@@ -2,7 +2,12 @@
 export type AccountType = "user" | "creator";
 
 /** Paid yearly. Unlocks uploading and creator tools. */
-export type CreatorTier = "basic" | "pro";
+/**
+ * Three plans. `pro_max` matches the Prisma enum value exactly — the wire
+ * carries the enum, and prettifying it here would mean mapping in both
+ * directions forever.
+ */
+export type CreatorTier = "basic" | "pro" | "pro_max";
 
 /** Manual review. Unlocks receiving earnings — independent of subscription. */
 export type KycStatus = "not_started" | "pending" | "approved" | "rejected";

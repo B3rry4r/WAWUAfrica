@@ -196,7 +196,7 @@ async function getCreatorSummary(creatorWawuId: string): Promise<{ isPro: boolea
     // /users/:wawuId/public-profile route, so this also works for
     // getFeaturedContent()'s anonymous landing-page callers, who have no
     // session token to send at all.
-    const profile = await apiFetch<{ tier: "basic" | "pro"; handle: string | null }>(
+    const profile = await apiFetch<{ tier: "basic" | "pro" | "pro_max"; handle: string | null }>(
       `/api/hub/users/public/${creatorWawuId}`,
     );
     return { isPro: profile.tier === "pro", handle: profile.handle };

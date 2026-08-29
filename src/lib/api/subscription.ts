@@ -6,9 +6,11 @@ import { openFlutterwaveCheckout, checkoutCustomerFromSession } from "@/lib/flut
 import { sessionStorage } from "@/lib/auth/session-storage";
 import { kycApi } from "./kyc";
 
-/** Basic ₦5,999/yr, Pro ₦18,999/yr. Yearly, paid up front. */
+/** Yearly, paid up front. Prices live in PLANS — this reuses one rather than
+ *  restating it, which is how it came to claim ₦18,999 after Pro dropped to
+ *  ₦14,999. */
 export const currentSubscription: Subscription = {
-  plan: { tier: "pro", price: 18999, slots: 15, freeSlots: 2, split: 90, features: [] },
+  plan: PLANS.pro,
   state: "active",
   renewsAt: "2027-08-14T00:00:00.000Z",
   cardLast4: "4412",
