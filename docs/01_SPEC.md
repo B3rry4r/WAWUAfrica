@@ -27,7 +27,25 @@ Every number below is current. Do not substitute numbers from any other document
 | 7 | **Creator Subscription — Basic**, ₦5,999/year | Creator pays WAWU for tier access | WAWU 100% / creator 0% on the tier fee itself | See Section 4 for perks and dependency flags |
 | 8 | **Creator Subscription — Pro**, ₦18,999/year | Creator pays WAWU for tier access | WAWU 100% / creator 0% on the tier fee; **but Pro-tier creators get 90/10 instead of 85/15 on streams 1, 2, 3, 5, 6 above** | The upgraded split is the actual incentive to pay for Pro. See Section 4. |
 
-**Cut entirely: Event Tickets.** Was proposed as stream 7 in an earlier draft. Removed — not building event/ticketing infrastructure.
+**Event tickets: BUILT** (product-owner decision, 29 Aug 2026). This line
+previously read "cut entirely — not building event/ticketing infrastructure",
+which was true from the original scoping call until that reversal.
+
+Organisers set ticket tiers (Regular, VIP, VVIP, Early Bird, Group, Free) with
+a price, a quantity and a sales window; buyers pay through the same
+Flutterwave charge-then-verify path as every other paid surface and receive a
+QR ticket; the organiser scans at the door and sees live sold / checked-in /
+remaining counts. Any subscriber can sell.
+
+WAWU's cut is the platform's existing split — 15% standard, 10% on a paid
+tier — snapshotted per order. No new rate was invented for events.
+
+Cancelling refunds every buyer through Flutterwave. That is a real refund
+call, not a status change; see the paid-DM refund work for why that
+distinction is written down rather than assumed.
+
+Still not built, and deliberately: there is no wallet. Organiser payouts work
+like creator earnings, because a cashable balance is a CBN licensing trigger.
 
 ---
 
