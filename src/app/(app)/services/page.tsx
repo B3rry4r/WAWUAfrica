@@ -20,9 +20,11 @@ const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text
  * For a directory of eight things that is a lot of furniture around very
  * little information, and it read differently at every breakpoint.
  *
- * A row carries the same facts in reading order and is the same shape on a
- * phone as on a desktop. The whole row is the target rather than a button
- * inside it, which is a larger tap area and one obvious thing to press.
+ * A row carries the same facts in reading order, and on desktop the rows sit
+ * in TWO COLUMNS — one column of eight would be a long ribbon down the left
+ * of a wide screen with the right half empty. The whole row is the target
+ * rather than a button inside it: a larger tap area and one obvious thing to
+ * press.
  */
 function ServiceRow({ s }: { s: PartnerService }) {
   const live = s.status === "live";
@@ -32,7 +34,7 @@ function ServiceRow({ s }: { s: PartnerService }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-[13px] px-[16px] py-[13px] no-underline text-inherit transition-colors hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
+      className="flex items-center gap-[13px] border-b border-[var(--border-hairline)] px-[16px] py-[13px] no-underline text-inherit transition-colors last:border-b-0 hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] xl:[&:nth-last-child(2):nth-child(odd)]:border-b-0 xl:odd:border-r"
     >
       <span
         className={`grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border ${
@@ -216,7 +218,7 @@ export default function ServicesPage() {
 
           <div className="flex flex-col gap-[14px]">
             <span className={eyebrow}>Open now</span>
-            <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
+            <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] xl:grid-cols-2">
               {live.map((s) => (
                 <ServiceRow key={s.id} s={s} />
               ))}
@@ -226,7 +228,7 @@ export default function ServicesPage() {
           {coming.length ? (
             <div className="flex flex-col gap-[14px]">
               <span className={eyebrow}>Coming soon</span>
-              <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
+              <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] xl:grid-cols-2">
                 {coming.map((s) => (
                   <ServiceRow key={s.id} s={s} />
                 ))}

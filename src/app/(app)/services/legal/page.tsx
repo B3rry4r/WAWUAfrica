@@ -219,27 +219,30 @@ export default function LegalPage() {
           </div>
 
           {/*
-            A LIST, not a grid of cards.
+            Rows, in TWO COLUMNS on desktop.
 
-            Each service was a bordered box with a name, a pill, a blurb, a
-            price and its own full-width button — five elements per service,
-            reflowed into two or three columns on a wide screen. For a
-            catalogue of twenty-seven legal services that is a wall, and it
-            made scanning for the one you need harder than reading a list of
-            names would have been.
+            Each service used to be a bordered card with a name, a pill, a
+            blurb, a price and its own button. For twenty-seven legal services
+            that is a wall of boxes, and finding the one you need was harder
+            than reading a list of names.
 
-            The whole row is the target now, so there is one obvious thing to
-            press and a much larger tap area than a small button inside a
-            card. Same shape on a phone as on a desktop.
+            But one column of twenty-seven rows is its own problem: on a wide
+            screen it is a very long ribbon down the left with the right half
+            empty, and it pushes everything below it off the fold. Two columns
+            halve the height and use the width that is actually there. Mobile
+            stays one column, where a second would leave nothing room to read.
+
+            The whole row is the target, so there is one obvious thing to
+            press and a far larger tap area than a small button in a card.
           */}
-          <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
+          <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] xl:grid-cols-2">
             {services.map((s) => (
               <button
                 key={s.code}
                 type="button"
                 onClick={() => startRequest(s)}
                 disabled={busy}
-                className="flex items-center gap-[13px] px-[16px] py-[13px] text-left transition-colors hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] disabled:opacity-60"
+                className="flex items-center gap-[13px] border-b border-[var(--border-hairline)] px-[16px] py-[13px] text-left transition-colors last:border-b-0 hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] disabled:opacity-60 xl:[&:nth-last-child(2):nth-child(odd)]:border-b-0 xl:odd:border-r"
               >
                 <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
                   <span className="flex items-center gap-[8px]">
