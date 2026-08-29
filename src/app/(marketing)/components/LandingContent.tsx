@@ -383,41 +383,30 @@ export async function LandingContent() {
                 beside name, because four columns at 390px is not a tap
                 target.
               */}
-              <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-card border border-hairline bg-card">
+              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-3 dt:gap-2.5">
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
-                        <Icon name={service.icon} size={18} color="var(--wawu-lilac)" strokeWidth={2.2} />
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
+                        <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
                       </span>
-                      <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                        <span className="text-[14.5px] font-semibold leading-[1.25] text-text-primary">
-                          {service.brand}
-                        </span>
-                        <span className="truncate text-[12.5px] leading-[1.35] text-text-secondary">
-                          {service.blurb}
-                        </span>
+                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[12.5px] dt:leading-[1.25]">
+                        {service.brand}
                       </span>
-                      {service.href ? (
-                        <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
-                      ) : (
-                        <span className="shrink-0 rounded-full border border-hairline px-2 py-[3px] text-[10.5px] font-semibold uppercase tracking-[0.06em] text-text-muted">
-                          Soon
-                        </span>
-                      )}
                     </>
                   );
-                  const row = "flex items-center gap-3 px-4 py-3";
+                  const shell =
+                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-card px-3 py-2 dt:flex-col dt:justify-center dt:gap-1.5 dt:px-1.5 dt:py-3 dt:text-center";
                   return service.href ? (
                     <Link
                       key={service.brand}
                       href={service.href}
-                      className={`${row} no-underline transition-colors duration-200 hover:bg-surface-hover active:bg-surface-press`}
+                      className={`${shell} no-underline transition-colors duration-200 hover:border-strong`}
                     >
                       {inner}
                     </Link>
                   ) : (
-                    <div key={service.brand} className={`${row} opacity-60`}>
+                    <div key={service.brand} className={`${shell} opacity-60`}>
                       {inner}
                     </div>
                   );
