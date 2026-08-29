@@ -27,7 +27,7 @@ interface RealPublicCreatorProfile {
   facebookUrl: string | null;
   linkedinUrl: string | null;
   websiteUrl: string | null;
-  tier: "basic" | "pro";
+  tier: "basic" | "pro" | "pro_max";
   dmEnabled: boolean;
   dmPrice: number | null;
   dmResponseHours?: number;

@@ -20,7 +20,7 @@ const typeIcons: Record<ContentType, IconName> = {
 export interface CreateHubProps {
   slotsUsed: number;
   slotsTotal: number;
-  tier: "basic" | "pro";
+  tier: "basic" | "pro" | "pro_max";
   proPrice: number;
   proSlots: number;
 }

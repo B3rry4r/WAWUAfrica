@@ -4,19 +4,40 @@ interface TierBadgeProps {
   tier: CreatorTier;
 }
 
-/** Basic = purple badge, Pro = gold badge (docs/01_SPEC.md §4). */
+/**
+ * Basic = purple, Pro = gold, Pro Max = accent-deep.
+ *
+ * Pro Max needs its own treatment rather than sharing Pro's gold: the two
+ * are adjacent plans at very different prices, and a badge that cannot tell
+ * them apart is worse than no badge on a screen where somebody is deciding
+ * between them.
+ */
+const TIER_STYLE: Record<CreatorTier, { label: string; className: string }> = {
+  basic: {
+    label: "Basic",
+    className: "border border-accent bg-accent-tint text-accent-hover",
+  },
+  pro: {
+    label: "Pro",
+    className: "border border-warning bg-warning-tint text-brand-yellow",
+  },
+  pro_max: {
+    label: "Pro Max",
+    className:
+      "border border-[var(--accent-deep)] bg-[var(--accent-tint-strong)] text-text-primary",
+  },
+};
+
 export function TierBadge({ tier }: TierBadgeProps) {
-  const isPro = tier === "pro";
+  const style = TIER_STYLE[tier] ?? TIER_STYLE.basic;
   return (
     <span
       className={[
         "inline-flex h-[26px] items-center gap-1.5 rounded-full px-[11px] text-[11.5px] font-bold uppercase tracking-[0.04em]",
-        isPro
-          ? "border border-warning bg-warning-tint text-brand-yellow"
-          : "border border-accent bg-accent-tint text-accent-hover",
+        style.className,
       ].join(" ")}
     >
-      {isPro ? "Pro" : "Basic"}
+      {style.label}
     </span>
   );
 }

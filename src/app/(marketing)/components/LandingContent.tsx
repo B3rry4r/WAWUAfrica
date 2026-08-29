@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
+import { PLANS, PLAN_ORDER } from "@/types/subscription";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { formatNaira } from "@/lib/format";
 import { EarningsCalculator } from "./EarningsCalculator";
@@ -671,7 +672,15 @@ export async function LandingContent() {
                 Go further, <span className="text-accent-hover">keep more</span>
               </h2>
             </div>
-            <div className="mt-10 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
+            {/*
+              Driven by PLANS, not retyped.
+
+              These cards were hand-written and had already drifted: the Pro
+              card advertised ₦18,999 and fifteen uploads after the plan
+              itself moved to ₦14,999 and twelve. A pricing page that restates
+              its own prices will always eventually lie about one.
+            */}
+            <div className="mt-10 grid grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
               <div className="hidden flex-col gap-4 rounded-card border border-hairline bg-card p-6 dt:flex">
                 <span className="text-[16px] font-semibold text-text-primary">Starter</span>
                 <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(0)}</span>
@@ -680,7 +689,6 @@ export async function LandingContent() {
                     "Browse and unlock content",
                     "Message creators",
                     "Join open communities",
-                    "Shop the marketplace",
                     "Learn with our guides",
                   ].map((perk) => (
                     <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
@@ -691,56 +699,67 @@ export async function LandingContent() {
                 </div>
                 <Button full variant="secondary" size="sm" href="/sign-up" className="mt-auto">Join now</Button>
               </div>
-              <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-6">
-                <span className="self-start"><TierBadge tier="basic" /></span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(5999)}</span>
-                  <span className="text-[14px] text-text-muted">a year</span>
-                </div>
-                <div className="flex flex-col gap-2.5">
-                  {[
-                    "6 uploads, 1 included and 5 paid",
-                    "Unlimited messages",
-                    "Join and host open communities",
-                    "1 course of your choice, included",
-                    "Business playbook included",
-                    "Personal pension registration",
-                  ].map((perk) => (
-                    <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
-                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
-                      {perk}
+
+              {PLAN_ORDER.map((tier) => {
+                const plan = PLANS[tier];
+                // Pro is the one carrying the emphasis: it is the plan most
+                // people should be on, and giving all three a glow would mean
+                // none of them had one.
+                const featured = tier === "pro";
+                return (
+                  <div
+                    key={tier}
+                    className={`flex flex-col gap-4 rounded-card border p-6 ${
+                      featured
+                        ? "border-accent bg-elevated shadow-[0_0_60px_var(--accent-tint)]"
+                        : "border-hairline bg-card"
+                    }`}
+                  >
+                    <span className="self-start"><TierBadge tier={tier} /></span>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[30px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
+                          {formatNaira(plan.price)}
+                        </span>
+                        <span className="text-[14px] text-text-muted">a year</span>
+                      </div>
+                      <span className="text-[13px] font-semibold text-text-primary">{plan.headline}</span>
+                    </div>
+
+                    {/* Ditto is why Pro Max exists, so it gets its own titled
+                        block instead of being the ninth bullet in a list. */}
+                    {plan.highlight ? (
+                      <div className="flex flex-col gap-1.5 rounded-[var(--radius-input)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-3">
+                        <span className="text-[12.5px] font-bold text-text-primary">{plan.highlight.title}</span>
+                        <span className="text-[11.5px] text-text-muted">{plan.highlight.note}</span>
+                      </div>
+                    ) : null}
+
+                    <div className="flex flex-col gap-2.5">
+                      <span className="text-[12px] font-semibold text-text-muted">{plan.featuresLabel}</span>
+                      {plan.features.slice(0, 6).map((perk) => (
+                        <span key={perk} className="flex items-start gap-2.5 text-[13.5px] leading-[1.4] text-text-secondary">
+                          <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
+                          {perk}
+                        </span>
+                      ))}
+                    </div>
+
+                    <span className="text-[12.5px] font-semibold text-text-primary">
+                      Keep up to {plan.split}% of your earnings
                     </span>
-                  ))}
-                </div>
-                <Button full variant="secondary" href="/sign-up?type=creator" className="mt-auto">Choose Basic</Button>
-              </div>
-              <div className="flex flex-col gap-4 rounded-card border border-accent bg-elevated p-6 shadow-[0_0_60px_var(--accent-tint)]">
-                <span className="self-start"><TierBadge tier="pro" /></span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(18999)}</span>
-                  <span className="text-[14px] text-text-muted">a year</span>
-                </div>
-                <div className="flex flex-col gap-2.5">
-                  {[
-                    "Keep 90% instead of 85%",
-                    "15 uploads, 2 included and 13 paid",
-                    "Unlimited messages",
-                    "Open and private communities",
-                    "Up to 3 courses of your choice, included",
-                    "Business playbook included",
-                    "Priority support",
-                    "1 month of health insurance included",
-                    "Personal pension registration",
-                    "Recommended deals",
-                  ].map((perk, i) => (
-                    <span key={perk} className={`flex items-center gap-2.5 text-[14px] ${i === 0 ? "font-semibold text-text-primary" : "text-text-secondary"}`}>
-                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
-                      {perk}
-                    </span>
-                  ))}
-                </div>
-                <Button full href="/sign-up?type=creator" className="mt-auto">Go Pro</Button>
-              </div>
+
+                    <Button
+                      full
+                      variant={featured ? "primary" : "secondary"}
+                      href="/sign-up?type=creator"
+                      className="mt-auto"
+                    >
+                      {plan.cta}
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

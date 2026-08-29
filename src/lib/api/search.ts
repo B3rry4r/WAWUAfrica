@@ -47,7 +47,7 @@ interface WireCreatorProfile {
   instagramHandle: string | null;
   whatsappHandle: string | null;
   websiteUrl: string | null;
-  tier: "basic" | "pro";
+  tier: "basic" | "pro" | "pro_max";
   evgScore: number;
   contentCount: number;
   followerCount: number;
