@@ -2,17 +2,22 @@
  * Events — the user-submitted, admin-moderated calendar.
  *
  * Reinstated 22 Aug 2026 by product-owner decision (CLAUDE.md § Non-negotiable
- * product rules). What the spec cut was event TICKETS, and that stays cut.
+ * product rules).
  *
- * ── WHAT IS DELIBERATELY ABSENT ──────────────────────────────────────────────
- * There is no price, amount, currency, ticket, order, purchase or credit field
- * on any shape in this file, and there must never be one. The backend's
- * `event-view.type.ts` draws exactly the same line, and its DTOs run under
- * `forbidNonWhitelisted`, so a body carrying `price` is a 400 before the
- * service is reached. `goingCount` is a count of interested people, never a
- * count of sales. An organiser who charges for entry does it on their own page
- * behind `externalUrl`. Anything that would put a naira figure on an event is a
- * conflict with docs/01_SPEC.md — stop and flag it rather than building it.
+ * ── TICKETS EXIST NOW, AND THEY ARE NOT IN THIS FILE ─────────────────────────
+ * This file said "event TICKETS stay cut" and that there must never be a price
+ * near an event. That was true when it was written and stopped being true on
+ * 29 Aug 2026, when the product owner asked for ticketing: WAWU takes its
+ * standard cut, an organiser who cancels refunds every buyer, and any
+ * subscriber may sell. See ./event-tickets.ts.
+ *
+ * The separation is deliberate rather than historical. An event still stands
+ * on its own with nothing on sale, which is the common case — a meetup with a
+ * date and a venue. `goingCount` is still an interest signal and NEVER a count
+ * of sales; the two are different numbers and a screen that conflates them
+ * tells an organiser they sold forty tickets when forty people clicked Going.
+ * So no price, amount, order or ticket field belongs on `WawuEvent`: money
+ * lives on the ticket types hanging off the event, where it can be absent.
  *
  * Every shape below is declared against the real backend contract at
  * WAWU-Hub-API `src/event/` (event-view.type.ts + dto/), not hand-guessed.
@@ -29,7 +34,38 @@ export type EventType = "workshop" | "summit" | "webinar" | "meetup" | "competit
  * Mirrors the Prisma `EventStatus` enum. Only `published` is ever visible on
  * the public calendar; a host sees their own at every status via /events/mine.
  */
-export type EventStatus = "pending" | "published" | "rejected" | "removed";
+export type EventStatus = "pending" | "published" | "rejected" | "removed" | "cancelled";
+
+/**
+ * Mirrors the Prisma `EventCategory` enum. A closed set rather than free text
+ * so a browse-by-category filter cannot be defeated by a typo.
+ */
+export type EventCategory =
+  | "music"
+  | "business"
+  | "training"
+  | "conference"
+  | "church"
+  | "entertainment"
+  | "fashion"
+  | "community"
+  | "lifestyle"
+  | "other";
+
+export const EVENT_CATEGORY_LABEL: Record<EventCategory, string> = {
+  music: "Music",
+  business: "Business",
+  training: "Training",
+  conference: "Conference",
+  church: "Church",
+  entertainment: "Entertainment",
+  fashion: "Fashion",
+  community: "Community",
+  lifestyle: "Lifestyle",
+  other: "Other",
+};
+
+export const EVENT_CATEGORIES = Object.keys(EVENT_CATEGORY_LABEL) as EventCategory[];
 
 /** One speaker. `initials` is derived server-side from `name`, never stored. */
 export interface EventSpeaker {
@@ -67,8 +103,24 @@ export interface WawuEvent {
   recapUrl: string | null;
   recapText: string | null;
 
+  /** Header image. Optional — an event with no banner still renders. */
+  bannerUrl: string | null;
+  /** What kind of thing it is, for discovery. Defaults to `other` server-side. */
+  category: EventCategory;
+  /** How to reach the organiser. Shown on the public page when given. */
+  contactEmail: string | null;
+  contactPhone: string | null;
+
   featured: boolean;
   status: EventStatus;
+
+  /**
+   * Set when the organiser calls the event off. Non-null means every ticket
+   * is void and every buyer has been refunded — so any screen showing tickets
+   * has to check this BEFORE showing a QR somebody would queue with.
+   */
+  cancelledAt: string | null;
+  cancelReason: string | null;
 
   /** How many people signalled interest. Never a ticket count, never money. */
   goingCount: number;
@@ -116,6 +168,10 @@ export interface EventDraft {
   location: string;
   address?: string;
   externalUrl?: string;
+  bannerUrl?: string;
+  category?: EventCategory;
+  contactEmail?: string;
+  contactPhone?: string;
   speakers?: EventSpeakerDraft[];
 }
 
@@ -139,6 +195,7 @@ export interface ListEventsParams {
   view?: EventView;
   format?: EventFormat;
   type?: EventType;
+  category?: EventCategory;
   featured?: boolean;
   page?: number;
   perPage?: number;

@@ -7,10 +7,13 @@ import { describeError } from "@/lib/api/errors";
 import { useSession } from "@/lib/auth/session-provider";
 import { fromLocalInputValue, toLocalInputValue } from "@/lib/event-date";
 import {
+  EVENT_CATEGORIES,
+  EVENT_CATEGORY_LABEL,
   EVENT_FORMAT_LABEL,
   EVENT_FORMATS,
   EVENT_TYPE_LABEL,
   EVENT_TYPES,
+  type EventCategory,
   type EventDraft,
   type EventFormat,
   type EventSpeakerDraft,
@@ -28,12 +31,13 @@ import { Button, Icon, Input } from "@/components/ui";
  * paid subscription to unlock — the moderation queue is the gate. Do not wrap
  * this in `creatorGates()`.
  *
- * ── NO MONEY FIELDS ──────────────────────────────────────────────────────────
- * There is no price, ticket, amount or currency input below, and adding one
- * would be refused by the backend anyway: its DTOs run under
- * `forbidNonWhitelisted`, so an undeclared field is a 400 before the service
- * is reached. If the organiser charges for entry, that lives on their own page
- * behind the organiser link.
+ * ── STILL NO MONEY FIELDS, FOR A DIFFERENT REASON NOW ────────────────────────
+ * Tickets exist (29 Aug 2026), but they are NOT set up here. This form runs
+ * before an admin has approved anything, and a price on an event nobody can
+ * attend yet is a price on nothing. Ticket tiers are set at
+ * /events/[id]/tickets, after approval, where the organiser can also see what
+ * has already sold — which is the thing that decides whether a tier may still
+ * be edited.
  *
  * ── REVIEW IS SAID OUT LOUD ──────────────────────────────────────────────────
  * Every submission lands `pending`, and every edit to an already-approved
@@ -51,6 +55,9 @@ const LIMITS = {
   location: 160,
   address: 300,
   externalUrl: 500,
+  bannerUrl: 500,
+  contactEmail: 200,
+  contactPhone: 40,
   speakerName: 120,
   speakerTitle: 160,
   speakers: 20,
@@ -76,6 +83,10 @@ interface FormState {
   location: string;
   address: string;
   externalUrl: string;
+  bannerUrl: string;
+  category: EventCategory;
+  contactEmail: string;
+  contactPhone: string;
   speakers: EventSpeakerDraft[];
 }
 
@@ -96,6 +107,12 @@ function initialState(event?: WawuEvent): FormState {
     location: event?.location ?? "",
     address: event?.address ?? "",
     externalUrl: event?.externalUrl ?? "",
+    bannerUrl: event?.bannerUrl ?? "",
+    // `other` rather than the first category: guessing a category for someone
+    // puts wrong events in front of people browsing by it.
+    category: event?.category ?? "other",
+    contactEmail: event?.contactEmail ?? "",
+    contactPhone: event?.contactPhone ?? "",
     speakers: (event?.speakers ?? []).map((s) => ({ name: s.name, title: s.title ?? "" })),
   };
 }
@@ -116,6 +133,12 @@ function validate(form: FormState): Partial<Record<keyof FormState, string>> {
   }
   if (form.externalUrl.trim() && !/^https?:\/\/\S+$/i.test(form.externalUrl.trim())) {
     errors.externalUrl = "Include the full address, starting with https://";
+  }
+  if (form.bannerUrl.trim() && !/^https?:\/\/\S+$/i.test(form.bannerUrl.trim())) {
+    errors.bannerUrl = "Include the full address, starting with https://";
+  }
+  if (form.contactEmail.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.contactEmail.trim())) {
+    errors.contactEmail = "That does not look like an email address.";
   }
   if (form.speakers.some((s) => !s.name.trim())) errors.speakers = "Every speaker needs a name, or remove the row.";
   return errors;
@@ -144,6 +167,10 @@ function toDraft(form: FormState): EventDraft {
     location: form.location.trim(),
     ...(form.address.trim() ? { address: form.address.trim() } : {}),
     ...(form.externalUrl.trim() ? { externalUrl: form.externalUrl.trim() } : {}),
+    ...(form.bannerUrl.trim() ? { bannerUrl: form.bannerUrl.trim() } : {}),
+    category: form.category,
+    ...(form.contactEmail.trim() ? { contactEmail: form.contactEmail.trim() } : {}),
+    ...(form.contactPhone.trim() ? { contactPhone: form.contactPhone.trim() } : {}),
     speakers,
   };
 }
@@ -278,6 +305,32 @@ export function EventForm({ mode, event }: EventFormProps) {
         </div>
       </Field>
 
+      <Field
+        label="Category"
+        hint="What people browsing by category will find this under. Leave it on Other if none of them fit."
+      >
+        <div className="relative">
+          <select
+            value={form.category}
+            onChange={(e) => set("category", e.target.value as EventCategory)}
+            className="flex h-[52px] w-full cursor-pointer appearance-none items-center rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] text-[15px] text-[var(--text-primary)]"
+          >
+            {EVENT_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {EVENT_CATEGORY_LABEL[c]}
+              </option>
+            ))}
+          </select>
+          <Icon
+            name="ChevronDown"
+            size={16}
+            strokeWidth={2.2}
+            color="var(--text-muted)"
+            className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2"
+          />
+        </div>
+      </Field>
+
       <Field label="Kind of event">
         <div className="relative">
           <select
@@ -367,6 +420,52 @@ export function EventForm({ mode, event }: EventFormProps) {
           />
         </Field>
       ) : null}
+
+      <Field
+        label="Banner image"
+        hint="Optional. A link to the flyer or header image. It sits at the top of the event page."
+        error={errors.bannerUrl}
+      >
+        <Input
+          value={form.bannerUrl}
+          onChange={(e) => set("bannerUrl", e.target.value.slice(0, LIMITS.bannerUrl))}
+          placeholder="https://"
+          inputMode="url"
+        />
+      </Field>
+
+      {/*
+        Contact details are shown ON the public event page. That is the point
+        of them — somebody deciding whether to buy needs a way to ask. They are
+        optional because an organiser who would rather not publish a phone
+        number should not be forced to, not because they are unimportant.
+      */}
+      <div className="flex flex-col gap-[18px] xl:flex-row xl:gap-[16px]">
+        <div className="flex-1">
+          <Field
+            label="Contact email"
+            hint="Optional, and shown publicly on the event page."
+            error={errors.contactEmail}
+          >
+            <Input
+              value={form.contactEmail}
+              onChange={(e) => set("contactEmail", e.target.value.slice(0, LIMITS.contactEmail))}
+              placeholder="hello@example.com"
+              inputMode="email"
+            />
+          </Field>
+        </div>
+        <div className="flex-1">
+          <Field label="Contact phone" hint="Optional, and shown publicly on the event page.">
+            <Input
+              value={form.contactPhone}
+              onChange={(e) => set("contactPhone", e.target.value.slice(0, LIMITS.contactPhone))}
+              placeholder="+234"
+              inputMode="tel"
+            />
+          </Field>
+        </div>
+      </div>
 
       <Field
         label="Organiser's page"
