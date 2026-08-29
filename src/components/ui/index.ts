@@ -26,6 +26,7 @@ export { ListRow } from "./ListRow";
 export { NairaInput } from "./NairaInput";
 export { PhoneInput, fullPhoneNumber, DIAL_CODES, DEFAULT_DIAL_CODE } from "./PhoneInput";
 export { PriceChip } from "./PriceChip";
+export { QrCode } from "./QrCode";
 export { ProfileHeader } from "./ProfileHeader";
 export type { ProfileStat } from "./ProfileHeader";
 export { SectionHeader } from "./SectionHeader";

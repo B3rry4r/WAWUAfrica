@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { getEvent, listEvents } from "@/lib/api/events";
 import { useSession } from "@/lib/auth/session-provider";
 import { eventDateParts, eventTimeLine, hasEnded, isThisWeek } from "@/lib/event-date";
 import type { WawuEvent } from "@/types/events";
-import { Avatar, Button, EmptyState, ErrorState, Icon, Skeleton, Toast } from "@/components/ui";
+import { EVENT_CATEGORY_LABEL } from "@/types/events";
+import { Avatar, Button, Callout, EmptyState, ErrorState, Icon, Skeleton, StatusPill, Toast } from "@/components/ui";
 import { EventCard } from "./EventCard";
 import {
   EventDateBlock,
@@ -17,6 +19,8 @@ import {
   ThisWeekPill,
 } from "./EventPrimitives";
 import { GoingButton } from "./GoingButton";
+import { ShareEventButton } from "./ShareEventButton";
+import { TicketPurchasePanel } from "./TicketPurchasePanel";
 
 /**
  * One event, in full.
@@ -33,9 +37,16 @@ import { GoingButton } from "./GoingButton";
  *     and the old backend always sent an empty array for it, so it only ever
  *     rendered fabricated initials.
  *
- * What is NOT here, and must not arrive: a price, a ticket, an amount, a
- * checkout. The organiser's own page behind `externalUrl` is where any
- * registration lives, paid or otherwise.
+ * TICKETS ARRIVED (29 Aug 2026). This comment used to say a price must never
+ * appear here. That is now wrong, and the ticket panel below sells them —
+ * but it renders NOTHING when the event has no tiers, which is still the
+ * common case. `externalUrl` remains the route for an organiser running
+ * registration on their own site.
+ *
+ * Going and buying are separate and both are shown. Clicking Going is an
+ * interest signal and buys nothing; buying a ticket does not imply Going. An
+ * organiser reads `goingCount` as a room-size guess and `ticketsSold` as
+ * money, and merging them would corrupt both.
  */
 
 /** Renders a link only for a URL we would actually be willing to open. */
@@ -58,6 +69,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function EventDetailView({ id }: { id: string }) {
   const { user } = useSession();
   const viewerWawuId = user?.wawuId ?? "";
+  // From a shared link. It attributes the sale to whoever posted it and does
+  // nothing else — it is not a discount and must never read as one.
+  const referralCode = useSearchParams().get("ref") ?? undefined;
 
   const [event, setEvent] = useState<WawuEvent | null>(null);
   const [missing, setMissing] = useState(false);
@@ -160,6 +174,7 @@ export function EventDetailView({ id }: { id: string }) {
             onChange={applyGoing}
             onError={() => setGoingError("We couldn't save that. Try again in a moment.")}
           />
+          <ShareEventButton eventId={event.id} eventName={event.name} referralCode={referralCode} size="md" />
           <p className="m-0 text-[12px] leading-[1.5] text-[var(--text-muted)]">{GOING_EXPLAINER}</p>
         </>
       )}
@@ -227,6 +242,23 @@ export function EventDetailView({ id }: { id: string }) {
                 Edit
               </Button>
             </div>
+            {/*
+              The organiser's two ticketing entry points. Shown at every status
+              so an event can have its tiers ready before an admin approves it
+              — the alternative is setting prices in a rush the moment it goes
+              live.
+            */}
+            <div className="flex flex-wrap items-center gap-[10px]">
+              <Button href={`/events/${event.id}/tickets`} variant="secondary" size="sm" icon="Ticket">
+                Set up tickets
+              </Button>
+              <Button href={`/events/${event.id}/manage`} variant="secondary" size="sm" icon="ChartNoAxesColumn">
+                Sales
+              </Button>
+              <Button href={`/events/${event.id}/scan`} variant="secondary" size="sm" icon="ScanLine">
+                Check people in
+              </Button>
+            </div>
             {event.lastDecisionReason ? (
               <p className="m-0 rounded-input border border-danger bg-[var(--danger-tint)] px-[12px] py-[10px] text-[12.5px] leading-[1.55] text-[var(--text-primary)]">
                 <span className="font-semibold">Reviewer&apos;s note: </span>
@@ -240,6 +272,28 @@ export function EventDetailView({ id }: { id: string }) {
           {/* Main column. Capped by the aside beside it at xl, so the
               description never runs the full 1036px the shell leaves. */}
           <div className="flex min-w-0 flex-1 flex-col gap-[20px]">
+            {/*
+              The banner, when the organiser gave one. A plain <img> rather
+              than next/image: the URL is organiser-supplied and arbitrary, and
+              next/image would need every possible host allow-listed in the
+              config to render it at all.
+            */}
+            {event.bannerUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={event.bannerUrl}
+                alt=""
+                className="aspect-[16/7] w-full rounded-[var(--radius-card)] border border-[var(--border-hairline)] object-cover"
+              />
+            ) : null}
+
+            {event.cancelledAt ? (
+              <Callout tone="danger" title="This event was called off" full>
+                {event.cancelReason ?? "The organiser cancelled it."} Every ticket has been voided and every buyer
+                refunded.
+              </Callout>
+            ) : null}
+
             <div className="flex items-center gap-[16px]">
               <EventDateBlock startsAt={event.startsAt} size="lg" dim={past} />
               <div className="flex min-w-0 flex-col gap-[3px]">
@@ -250,6 +304,11 @@ export function EventDetailView({ id }: { id: string }) {
                 <div className="mt-[6px] flex flex-wrap items-center gap-[6px]">
                   <EventFormatPill format={event.format} />
                   <EventTypePill type={event.type} />
+                  {event.category !== "other" ? (
+                    <StatusPill kind="neutral" size="sm">
+                      {EVENT_CATEGORY_LABEL[event.category]}
+                    </StatusPill>
+                  ) : null}
                   {!past && isThisWeek(event) ? <ThisWeekPill /> : null}
                 </div>
               </div>
@@ -278,6 +337,32 @@ export function EventDetailView({ id }: { id: string }) {
                 </div>
               </div>
             </div>
+
+            {event.contactEmail || event.contactPhone ? (
+              <div className="flex flex-col gap-[8px]">
+                <SectionLabel>Ask the organiser</SectionLabel>
+                <div className="flex flex-col gap-[8px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px]">
+                  {event.contactEmail ? (
+                    <a
+                      href={`mailto:${event.contactEmail}`}
+                      className="inline-flex items-center gap-[8px] text-[13.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+                    >
+                      <Icon name="Mail" size={16} color="currentColor" />
+                      {event.contactEmail}
+                    </a>
+                  ) : null}
+                  {event.contactPhone ? (
+                    <a
+                      href={`tel:${event.contactPhone}`}
+                      className="inline-flex items-center gap-[8px] text-[13.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+                    >
+                      <Icon name="Phone" size={16} color="currentColor" />
+                      {event.contactPhone}
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
 
             <div className="flex flex-col gap-[8px]">
               <SectionLabel>About this event</SectionLabel>
@@ -333,7 +418,13 @@ export function EventDetailView({ id }: { id: string }) {
           {/* Desktop aside. On a phone these two blocks simply follow the
               content; at xl they sit beside it and stay put while the
               description scrolls. */}
+          {/*
+            Tickets sit ABOVE Going in the rail. Somebody who has decided to
+            come needs the thing that costs money and secures a seat; Going is
+            the lighter signal and reads fine underneath it.
+          */}
           <aside className="flex w-full shrink-0 flex-col gap-[14px] xl:sticky xl:top-[24px] xl:w-[320px]">
+            <TicketPurchasePanel event={event} referralCode={referralCode} />
             {goingBlock}
             {organiserBlock}
           </aside>

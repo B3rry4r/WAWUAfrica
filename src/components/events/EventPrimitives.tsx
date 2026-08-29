@@ -77,6 +77,9 @@ const STATUS_COPY: Record<EventStatus, { kind: "neutral" | "success" | "danger" 
   published: { kind: "success", label: "On the calendar" },
   rejected: { kind: "danger", label: "Not approved" },
   removed: { kind: "neutral", label: "Taken down" },
+  // Danger, not neutral: a cancelled event has void tickets and refunded
+  // buyers behind it. It is the loudest thing on a host's list for a reason.
+  cancelled: { kind: "danger", label: "Cancelled" },
 };
 
 export function EventStatusPill({ status }: { status: EventStatus }) {

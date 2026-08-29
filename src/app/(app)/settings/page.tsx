@@ -104,6 +104,10 @@ export default function SettingsPage() {
             { title: "Notifications", icon: "Bell", href: "/settings/notifications" },
             { title: "Privacy", icon: "Lock", href: "/privacy" },
             { title: "Saved", subtitle: "Your saved content", icon: "Bookmark", href: "/saved" },
+            // In the App group, not Creator: anybody can buy a ticket. Gating
+            // this behind a creator account would hide a stranger's ticket
+            // from them while they stand at the door.
+            { title: "My tickets", subtitle: "Event tickets and their QR codes", icon: "Ticket", href: "/tickets" },
           ],
         },
         {

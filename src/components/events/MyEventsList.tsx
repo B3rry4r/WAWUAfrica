@@ -27,6 +27,7 @@ const STATUS_LINE: Record<WawuEvent["status"], string> = {
   published: "Live on the calendar.",
   rejected: "Not approved. Fix what the reviewer flagged and save to send it back.",
   removed: "Taken down by an admin and no longer on the calendar.",
+  cancelled: "You called this off. Every ticket is void and every buyer has been refunded.",
 };
 
 export function MyEventsList() {

@@ -27,13 +27,13 @@ import {
  * `apiFetchPaginated`; the single-event and going endpoints return the plain
  * envelope and go through `apiFetch`.
  *
- * ── NO TICKETING PASSES THROUGH THIS MODULE ──────────────────────────────────
- * No price, amount, currency, ticket, checkout, payment or credit field is
- * sent or read anywhere below, and none may be added. `goingCount` is an
- * interest signal — people, not sales. Paid registration, if an organiser runs
- * one, lives behind `externalUrl` on their own site. The backend enforces the
- * same line first: its DTOs run under `forbidNonWhitelisted`, so a body
- * carrying `price` is a 400 before the service is reached.
+ * ── TICKETING IS A SEPARATE MODULE, ON PURPOSE ───────────────────────────────
+ * Tickets exist (29 Aug 2026) and live in ./event-tickets.ts. Nothing below
+ * sends or reads a price, and nothing should: an event stands on its own with
+ * nothing on sale, which is still the common case. `goingCount` here is an
+ * interest signal — people, not sales — and the two numbers must not be
+ * merged. The backend keeps the same split, with ticketing on its own
+ * controller.
  *
  * ── FAILURE DISCIPLINE ───────────────────────────────────────────────────────
  * Mock fallback is gated on `isMockModeError` in every function. A real
@@ -48,6 +48,7 @@ function listQuery(params: ListEventsParams): string {
   query.set("view", params.view ?? "upcoming");
   if (params.format) query.set("format", params.format);
   if (params.type) query.set("type", params.type);
+  if (params.category) query.set("category", params.category);
   if (params.featured !== undefined) query.set("featured", String(params.featured));
   if (params.page !== undefined) query.set("page", String(params.page));
   if (params.perPage !== undefined) query.set("perPage", String(params.perPage));

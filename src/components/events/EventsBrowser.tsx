@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { getFeaturedEvent, listEvents } from "@/lib/api/events";
-import { EVENT_FILTERS, type EventView, type WawuEvent } from "@/types/events";
+import {
+  EVENT_CATEGORIES,
+  EVENT_CATEGORY_LABEL,
+  EVENT_FILTERS,
+  type EventCategory,
+  type EventView,
+  type WawuEvent,
+} from "@/types/events";
 import { Button, EmptyState, ErrorState, Icon, Skeleton, Toast } from "@/components/ui";
 import { EventCard } from "./EventCard";
 import { EventFilterChips } from "./EventFilterChips";
@@ -29,6 +36,10 @@ import { EventFilterChips } from "./EventFilterChips";
 export function EventsBrowser() {
   const [view, setView] = useState<EventView>("upcoming");
   const [filterId, setFilterId] = useState<string>("all");
+  // Category is a SEPARATE axis from the format/type chips above it: "Music"
+  // and "Webinar" are both true of the same event, and folding them into one
+  // row would make choosing either silently cancel the other.
+  const [category, setCategory] = useState<EventCategory | "">("");
   const [featured, setFeatured] = useState<WawuEvent | null>(null);
   const [events, setEvents] = useState<WawuEvent[] | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -42,7 +53,7 @@ export function EventsBrowser() {
     setEvents(null);
     setFeatured(null);
     setError(null);
-    const params = { view, format: chip.format, type: chip.type };
+    const params = { view, format: chip.format, type: chip.type, ...(category ? { category } : {}) };
     Promise.all([
       listEvents({ ...params, perPage: 50 }),
       // A pinned event only makes sense at the top of the upcoming calendar;
@@ -60,7 +71,7 @@ export function EventsBrowser() {
     return () => {
       active = false;
     };
-  }, [view, chip.format, chip.type, reloadKey]);
+  }, [view, chip.format, chip.type, category, reloadKey]);
 
   /** The server's own count after a Going write — never a locally guessed number. */
   const applyGoing = useCallback((id: string, next: { userGoing: boolean; goingCount: number }) => {
@@ -132,6 +143,13 @@ export function EventsBrowser() {
             </p>
           </div>
           <Link
+            href="/tickets"
+            className="hidden shrink-0 items-center gap-[7px] text-[13.5px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary xl:inline-flex"
+          >
+            <Icon name="Ticket" size={16} color="currentColor" />
+            My tickets
+          </Link>
+          <Link
             href="/events/mine"
             className="hidden shrink-0 items-center gap-[7px] text-[13.5px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary xl:inline-flex"
           >
@@ -152,13 +170,22 @@ export function EventsBrowser() {
           </Link>
         </div>
 
-        <Link
-          href="/events/mine"
-          className="inline-flex items-center gap-[7px] self-start text-[13px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary xl:hidden"
-        >
-          <Icon name="ClipboardList" size={15} color="currentColor" />
-          My submissions
-        </Link>
+        <div className="flex flex-wrap items-center gap-[16px] xl:hidden">
+          <Link
+            href="/tickets"
+            className="inline-flex items-center gap-[7px] text-[13px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+          >
+            <Icon name="Ticket" size={15} color="currentColor" />
+            My tickets
+          </Link>
+          <Link
+            href="/events/mine"
+            className="inline-flex items-center gap-[7px] text-[13px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+          >
+            <Icon name="ClipboardList" size={15} color="currentColor" />
+            My submissions
+          </Link>
+        </div>
 
         <div className="flex flex-col gap-[12px]">
           <div className="inline-flex self-start gap-[4px] rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[4px]">
@@ -182,6 +209,30 @@ export function EventsBrowser() {
           {/* Chips filter the upcoming calendar, exactly as they did before.
               A past-events archive is browsed by date, not by shape. */}
           {view === "upcoming" ? <EventFilterChips selected={filterId} onSelect={setFilterId} /> : null}
+
+          {/* Browse by category. Scrolls on a phone rather than wrapping to
+              three rows and pushing the calendar off the first screen. */}
+          {view === "upcoming" ? (
+            <div className="-mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:overflow-visible xl:px-0">
+              <div className="flex w-max gap-[7px] xl:w-full xl:flex-wrap">
+                {([""] as Array<EventCategory | "">).concat(EVENT_CATEGORIES).map((c) => (
+                  <button
+                    key={c || "all"}
+                    type="button"
+                    onClick={() => setCategory(c)}
+                    aria-pressed={category === c}
+                    className={`h-[32px] shrink-0 rounded-full border px-[13px] text-[12.5px] font-semibold transition-colors ${
+                      category === c
+                        ? "border-[var(--accent)] bg-[var(--accent-tint)] text-[var(--accent)]"
+                        : "border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:border-[var(--accent)]"
+                    }`}
+                  >
+                    {c === "" ? "Every category" : EVENT_CATEGORY_LABEL[c]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {body}
