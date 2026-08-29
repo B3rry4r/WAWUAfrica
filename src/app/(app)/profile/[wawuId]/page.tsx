@@ -10,7 +10,6 @@ import { ProfileHeader } from "@/components/ui/ProfileHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { CommunityImage } from "@/components/ui/CommunityImage";
 import { PriceChip } from "@/components/ui/PriceChip";
-import { HandoffPill } from "@/components/ui/HandoffPill";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { TierBadge } from "@/components/ui/TierBadge";
@@ -31,7 +30,7 @@ import { CommunityJoinButton } from "@/components/profile/CommunityJoinButton";
 import { ShareButton } from "@/components/profile/ShareButton";
 import { formatNaira } from "@/lib/format";
 
-const VALID_TABS: ProfileTab[] = ["content", "community", "shop", "about"];
+const VALID_TABS: ProfileTab[] = ["content", "community", "about"];
 
 /**
  * Server Component here always 401'd (no session token exists during SSR)
@@ -110,7 +109,7 @@ function FanProfilePageContent() {
     return <ProfileSkeleton />;
   }
 
-  const isDeepTab = tab === "shop" || tab === "about";
+  const isDeepTab = tab === "about";
 
   return (
     <div className="flex min-h-dvh flex-col xl:min-h-0 xl:flex-1 xl:overflow-hidden">
@@ -239,7 +238,7 @@ function FullHeader({ profile, following, onToggleFollow }: { profile: CreatorPr
   );
 }
 
-/** Collapsed sticky bar — Shop and About tabs keep Follow, Message, Tip reachable. */
+/** Collapsed sticky bar — the About tab keeps Follow, Message, Tip reachable. */
 function CompactHeader({ profile, following, onToggleFollow }: { profile: CreatorProfile; following: boolean; onToggleFollow: () => void }) {
   return (
     <div
@@ -268,8 +267,6 @@ function TabBody({ profile, tab, following }: { profile: CreatorProfile; tab: Pr
   switch (tab) {
     case "community":
       return <CommunityTab profile={profile} />;
-    case "shop":
-      return <ShopTab profile={profile} />;
     case "about":
       return <AboutTab profile={profile} />;
     default:
@@ -392,45 +389,6 @@ function CommunityRow({ profile, community }: { profile: CreatorProfile; communi
   );
 }
 
-/* ---------------- Shop ---------------- */
-
-function ShopTab({ profile }: { profile: CreatorProfile }) {
-  return (
-    <div className="flex flex-col gap-[14px]">
-      <div className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-hairline bg-card px-[14px] py-3">
-        <Icon name="Info" size={15} color="var(--text-muted)" strokeWidth={2} />
-        <span className="flex-1 text-[12.5px] leading-[1.45] text-text-secondary">
-          Buying happens in Basket or Beauty, not here.
-        </span>
-      </div>
-      {profile.products.length === 0 ? (
-        <EmptyState icon="ShoppingBag" title="No shop yet" caption="This creator has not linked any products." />
-      ) : (
-        <div className="grid grid-cols-2 content-start items-start gap-x-3 gap-y-[18px] xl:grid-cols-3 xl:gap-x-[18px]">
-          {profile.products.map((p) => (
-            <Link key={p.id} href={`/marketplace/${p.platform}/${p.id}`} className="group flex flex-col gap-[9px] no-underline">
-              {/* The tile is art, not a surface: the hover reads as a veil laid
-                  over it, the way ContentCard does it. */}
-              <div className="relative aspect-square overflow-hidden rounded-[var(--radius-media)] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] group-hover:border-strong">
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-transparent transition-colors group-hover:bg-state-press"
-                />
-              </div>
-              <span className="text-[14px] font-semibold leading-[1.3] text-text-primary">{p.name}</span>
-              <div className="flex">
-                <HandoffPill app={p.platform === "beauty" ? "WAWUBeauty" : "WAWUBasket"} />
-              </div>
-              <span className="text-[15px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
-                {formatNaira(p.price)}
-              </span>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ---------------- About ---------------- */
 

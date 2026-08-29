@@ -31,7 +31,6 @@ const OWN_HEADER_ROUTES = [
   "/communities/new",
   "/messages",
   "/settings",
-  "/marketplace",
   "/creator",
   // These three render their own FlowHeader and were NOT listed, so at desktop
   // width they got DesktopHeader (68px) stacked on top of it (63px) — two

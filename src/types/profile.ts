@@ -1,6 +1,11 @@
 import type { CreatorTier, VerificationLevel } from "./account";
 
-export type ProfileTab = "content" | "community" | "shop" | "about";
+/**
+ * No "shop" tab. Buying happened in WAWUBasket and WAWUBeauty, which are no
+ * longer surfaced anywhere in this app, so a tab whose only content was
+ * links into them has nothing left to show.
+ */
+export type ProfileTab = "content" | "community" | "about";
 
 export interface ProfileStats {
   followers: string;

@@ -218,25 +218,49 @@ export default function LegalPage() {
             ))}
           </div>
 
-          <div className="flex flex-col gap-[10px] xl:grid xl:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] xl:gap-[14px]">
+          {/*
+            A LIST, not a grid of cards.
+
+            Each service was a bordered box with a name, a pill, a blurb, a
+            price and its own full-width button — five elements per service,
+            reflowed into two or three columns on a wide screen. For a
+            catalogue of twenty-seven legal services that is a wall, and it
+            made scanning for the one you need harder than reading a list of
+            names would have been.
+
+            The whole row is the target now, so there is one obvious thing to
+            press and a much larger tap area than a small button inside a
+            card. Same shape on a phone as on a desktop.
+          */}
+          <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
             {services.map((s) => (
-              <div key={s.code} className="flex h-full flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
-                <span className="flex items-start justify-between gap-3">
-                  <span className="text-[15px] font-semibold text-[var(--text-primary)]">{s.name}</span>
-                  <StatusPill kind={s.path === "simple" ? "success" : "info"}>
-                    {s.path === "simple" ? "No lawyer needed" : "Consultation"}
-                  </StatusPill>
+              <button
+                key={s.code}
+                type="button"
+                onClick={() => startRequest(s)}
+                disabled={busy}
+                className="flex items-center gap-[13px] px-[16px] py-[13px] text-left transition-colors hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] disabled:opacity-60"
+              >
+                <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <span className="flex items-center gap-[8px]">
+                    <span className="truncate text-[15px] font-semibold leading-[1.25] text-[var(--text-primary)]">
+                      {s.name}
+                    </span>
+                    <StatusPill kind={s.path === "simple" ? "success" : "info"}>
+                      {s.path === "simple" ? "No lawyer needed" : "Consultation"}
+                    </StatusPill>
+                  </span>
+                  <span className="truncate text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
+                    {s.blurb}
+                  </span>
+                  {/* The price stays on the row: it is the thing somebody is
+                      comparing across twenty-seven lines. */}
+                  <span className="text-[12px] font-medium text-[var(--text-muted)]">
+                    {s.priceNaira ? formatNaira(s.priceNaira) : "Priced after we review it"}
+                  </span>
                 </span>
-                <span className="text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">{s.blurb}</span>
-                <span className="text-[13px] font-semibold text-[var(--text-primary)]">
-                  {s.priceNaira ? formatNaira(s.priceNaira) : "Price agreed after we review it"}
-                </span>
-                <div className="mt-auto pt-[2px]">
-                  <Button full variant="secondary" size="sm" onClick={() => startRequest(s)} disabled={busy}>
-                    Start this
-                  </Button>
-                </div>
-              </div>
+                <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
+              </button>
             ))}
           </div>
         </>

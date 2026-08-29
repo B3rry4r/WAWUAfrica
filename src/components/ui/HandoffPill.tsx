@@ -2,14 +2,18 @@ import { Icon } from "./Icon";
 import { cn } from "@/lib/cn";
 
 /**
- * Marketplace is handoff only — WAWUBasket and WAWUBeauty are external apps.
- * Never rebuild their commerce engine; this pill signals the user is leaving.
+ * Signals that a tap leaves WAWU for another product.
+ *
+ * `app` has no default any more. It defaulted to "WAWUBasket", which is no
+ * longer surfaced anywhere — a default that names a product the app does not
+ * show is a caption waiting to appear somewhere wrong. Callers name their
+ * destination.
  */
 export function HandoffPill({
-  app = "WAWUBasket",
+  app,
   className,
 }: {
-  app?: string;
+  app: string;
   className?: string;
 }) {
   return (
