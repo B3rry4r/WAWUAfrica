@@ -74,13 +74,6 @@ const QUICK_SERVICES: {
   icon: IconName;
   href?: string;
   soon?: boolean;
-  /**
-   * A storefront with its own mark. When present the chip shows this image
-   * instead of a lucide glyph, and `tint` colours the chip — the one place
-   * another brand's colour is allowed on this page.
-   */
-  mark?: string;
-  tint?: string;
 }[] = [
   {
     brand: "Bills Payment",
@@ -104,13 +97,6 @@ const QUICK_SERVICES: {
     href: "/services/loans/apply",
   },
   {
-    brand: "Telemedicine",
-    label: "Health cover",
-    blurb: "See a doctor and get covered.",
-    icon: "Stethoscope",
-    soon: true,
-  },
-  {
     brand: "Pensions",
     label: "Retirement",
     blurb: "Save for later on irregular income.",
@@ -118,23 +104,20 @@ const QUICK_SERVICES: {
     href: "/services/pension/apply",
   },
   {
-    brand: "WAWUBasket",
-    label: "Market and groceries",
-    blurb: "Fresh market, groceries and restaurants, delivered.",
-    icon: "ShoppingBasket",
-    mark: "/wawubasket-icon.png",
-    tint: "var(--brand-basket)",
-    href: "/marketplace/basket",
+    brand: "Events",
+    label: "What's on",
+    blurb: "Find what is happening, or list your own.",
+    icon: "CalendarDays",
+    href: "/events",
   },
   {
-    brand: "WAWUBeauty",
-    label: "Beauty and textiles",
-    blurb: "Beauty products and services, textiles, shoes and art.",
-    icon: "Sparkles",
-    mark: "/wawubeauty-icon.png",
-    tint: "var(--brand-beauty)",
-    href: "/marketplace/beauty",
+    brand: "Telemedicine",
+    label: "Health cover",
+    blurb: "See a doctor and get covered.",
+    icon: "Stethoscope",
+    soon: true,
   },
+
 ];
 
 /**
@@ -151,21 +134,6 @@ const QUICK_SERVICES: {
  * they are the icon alone, not the logo lockup, because a wordmark cannot be
  * read at 22px and a second name beside the label is a stutter.
  */
-/**
- * The four WOW cards. They were their own full-width section further down the
- * page; they sit under the video in the hero now, which is where somebody
- * deciding whether this is for them actually looks.
- *
- * One hue each, straight off the WAWU COLORS brand sheet and its stated
- * meanings — discovery, energy, growth, connection. Four identical purple
- * tiles was the thing that made the page read as a single-colour app.
- */
-const WOW_CARDS: { label: string; icon: IconName; hue: string; tile: string; body: string }[] = [
-  { label: "FIND WOW", icon: "Compass", hue: "var(--wawu-lemon)", tile: "bg-[color-mix(in_srgb,var(--wawu-lemon)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-lemon)_32%,transparent)]", body: "Discover Africa's best entrepreneurs, professionals, and creators. Your front row seat to opportunity." },
-  { label: "GET WOW", icon: "Sparkles", hue: "var(--wawu-pink)", tile: "bg-[color-mix(in_srgb,var(--wawu-pink)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-pink)_32%,transparent)]", body: "Unlock premium content, exclusive products, and personalized experiences from top creators." },
-  { label: "MAKE WOW", icon: "Rocket", hue: "var(--wawu-green)", tile: "bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-green)_32%,transparent)]", body: "Turn your expertise, skills, and products into income. Build your business with tools designed for you." },
-  { label: "FOR EVERYONE", icon: "Users", hue: "var(--wawu-sky)", tile: "bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-sky)_32%,transparent)]", body: "To turn expertise into income. Build. Earn. Grow. Thrive." },
-];
 
 /**
  * The mark, set between sections as a watermark.
@@ -218,7 +186,6 @@ const COMPARE_ROWS: CompareRow[] = [
   { feature: "Lifetime Memberships", wawu: true, others: [true, false, false] },
   { feature: "Membership Trials & Promo Codes", wawu: true, others: [true, false, false] },
   { feature: "Paid DMs", wawu: true, others: [true, false, true] },
-  { feature: "Marketplace", wawu: "WAWUBasket & Beauty", others: [true, false, false] },
   { feature: "1-on-1 Calls", wawu: true, others: [true, false, false] },
   { feature: "Group Chats", wawu: true, others: [true, false, false] },
   { feature: "Analytics per post & message", wawu: true, others: [true, false, false] },
@@ -361,32 +328,13 @@ export async function LandingContent() {
               />
             </div>
 
-            <div className="flex min-w-0 flex-col gap-4 dt:flex-1">
-              {/*
-                The WOW cards, compact: the icon sits in the title row rather
-                than above it, which is what took each card from a tall box
-                of air around three stacked lines to a title and a sentence.
-                `dt:flex-1` on the band (and `grid-rows-2` inside it) is the
-                one place the stack absorbs the video's extra height, spread
-                evenly across both rows with the content kept centred.
-              */}
-              <div className="grid gap-2.5 sm:grid-cols-2 dt:flex-1 dt:grid-rows-2 dt:gap-3">
-                {WOW_CARDS.map((v) => (
-                  <div
-                    key={v.label}
-                    className="flex flex-col justify-center gap-2 rounded-card border border-hairline bg-card p-3.5 transition-colors duration-200 hover:border-strong"
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <span className={`grid h-[28px] w-[28px] shrink-0 place-items-center rounded-[9px] border ${v.tile}`}>
-                        <Icon name={v.icon} size={14} color={v.hue} strokeWidth={2} />
-                      </span>
-                      <span className="text-[11.5px] font-bold uppercase tracking-[0.07em] text-text-primary">{v.label}</span>
-                    </span>
-                    <p className="m-0 text-[12.5px] leading-[1.45] text-text-secondary">{v.body}</p>
-                  </div>
-                ))}
-              </div>
-
+            {/*
+              `justify-between` now that the WOW cards are gone: they were the
+              band that absorbed the video's extra height, so without them the
+              two remaining bands spread their spacing instead of one of them
+              stretching into a void.
+            */}
+            <div className="flex min-w-0 flex-col gap-4 dt:flex-1 dt:justify-between">
               {/*
                 The two headline figures on one slim row. Side by side they
                 pick up the WOW columns' edges above them; the figure is the
@@ -394,15 +342,15 @@ export async function LandingContent() {
               */}
               <div className="grid grid-cols-2 gap-3 dt:gap-4">
                 {[
-                  { icon: "Users" as IconName, hue: "var(--wawu-sky)", tile: "bg-[color-mix(in_srgb,var(--wawu-sky)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-sky)_32%,transparent)]", figure: "10M+", label: "Active users" },
-                  { icon: "Globe" as IconName, hue: "var(--wawu-green)", tile: "bg-[color-mix(in_srgb,var(--wawu-green)_13%,transparent)] border-[color-mix(in_srgb,var(--wawu-green)_32%,transparent)]", figure: "109M+", label: "Reach across Africa" },
+                  { icon: "Users" as IconName, figure: "10M+", label: "Active users" },
+                  { icon: "Globe" as IconName, figure: "109M+", label: "Reach across Africa" },
                 ].map((stat) => (
                   <div
                     key={stat.figure}
                     className="flex items-center gap-3 rounded-card border border-hairline bg-card p-3 dt:px-4"
                   >
-                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border ${stat.tile}`}>
-                      <Icon name={stat.icon} size={16} color={stat.hue} strokeWidth={2.1} />
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-[color-mix(in_srgb,var(--accent)_32%,transparent)] bg-[color-mix(in_srgb,var(--accent)_13%,transparent)]">
+                      <Icon name={stat.icon} size={16} color="var(--accent)" strokeWidth={2.1} />
                     </span>
                     <span className="flex min-w-0 flex-col">
                       <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
@@ -428,57 +376,41 @@ export async function LandingContent() {
                 beside name, because four columns at 390px is not a tap
                 target.
               */}
-              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-4 dt:gap-2.5">
+              <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-card border border-hairline bg-card">
                 {QUICK_SERVICES.map((service) => {
-                  // A storefront's chip carries its own mark and its own
-                  // colour; everything else is the shared lilac. That is the
-                  // whole of the brand presence here — no wordmark, no tint
-                  // on the card, no tags.
-                  const chipStyle = service.tint
-                    ? {
-                        borderColor: `color-mix(in srgb, ${service.tint} 45%, transparent)`,
-                        backgroundColor: `color-mix(in srgb, ${service.tint} 16%, transparent)`,
-                      }
-                    : undefined;
                   const inner = (
                     <>
-                      <span
-                        className={
-                          service.tint
-                            ? "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border"
-                            : "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]"
-                        }
-                        style={chipStyle}
-                      >
-                        {service.mark ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={service.mark}
-                            alt=""
-                            aria-hidden="true"
-                            className="h-[17px] w-[17px] object-contain"
-                          />
-                        ) : (
-                          <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
-                        )}
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
+                        <Icon name={service.icon} size={18} color="var(--wawu-lilac)" strokeWidth={2.2} />
                       </span>
-                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[11.5px] dt:leading-[1.25]">
-                        {service.brand}
+                      <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+                        <span className="text-[14.5px] font-semibold leading-[1.25] text-text-primary">
+                          {service.brand}
+                        </span>
+                        <span className="truncate text-[12.5px] leading-[1.35] text-text-secondary">
+                          {service.blurb}
+                        </span>
                       </span>
+                      {service.href ? (
+                        <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
+                      ) : (
+                        <span className="shrink-0 rounded-full border border-hairline px-2 py-[3px] text-[10.5px] font-semibold uppercase tracking-[0.06em] text-text-muted">
+                          Soon
+                        </span>
+                      )}
                     </>
                   );
-                  const shell =
-                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-card px-3 py-2 dt:flex-col dt:justify-center dt:gap-1.5 dt:px-1.5 dt:py-2.5 dt:text-center";
+                  const row = "flex items-center gap-3 px-4 py-3";
                   return service.href ? (
                     <Link
                       key={service.brand}
                       href={service.href}
-                      className={`${shell} no-underline transition-colors duration-200 hover:border-strong`}
+                      className={`${row} no-underline transition-colors duration-200 hover:bg-surface-hover active:bg-surface-press`}
                     >
                       {inner}
                     </Link>
                   ) : (
-                    <div key={service.brand} className={`${shell} opacity-60`}>
+                    <div key={service.brand} className={`${row} opacity-60`}>
                       {inner}
                     </div>
                   );
@@ -555,7 +487,7 @@ export async function LandingContent() {
               </div>
 
               {/* Real-Time Earnings panel with animated notifications */}
-              <div className="flex flex-col gap-5 overflow-hidden rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--wawu-green)_38%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:flex-row dt:items-center dt:p-8">
+              <div className="flex flex-col gap-5 overflow-hidden rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent)_38%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:flex-row dt:items-center dt:p-8">
                 <div className="dt:flex-1">
                   <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-[rgba(255,255,255,0.14)]">
                     <Icon name="Zap" size={19} color="var(--text-on-accent)" strokeWidth={2} />
@@ -591,7 +523,7 @@ export async function LandingContent() {
               </div>
 
               {/* WOW Vault panel */}
-              <div className="flex flex-col rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--wawu-pink)_48%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:col-span-1 dt:p-7">
+              <div className="flex flex-col rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent)_38%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:col-span-1 dt:p-7">
                 <span className="flex items-center gap-2.5 text-[19px] font-bold text-white">
                   <Icon name="Vault" size={19} color="var(--text-on-accent)" strokeWidth={2} />
                   WOW Vault
@@ -618,7 +550,7 @@ export async function LandingContent() {
               </div>
 
               {/* Smart Scheduler panel: the real, interactive widget */}
-              <div className="rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--wawu-sky)_42%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:p-7">
+              <div className="rounded-card border border-[rgba(255,255,255,0.12)] bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent)_38%,var(--wawu-ink)),var(--wawu-ink))] p-6 dt:p-7">
                 <SmartScheduler />
               </div>
             </div>
@@ -895,7 +827,7 @@ export async function LandingContent() {
             <div>
               <h2 className="m-0 text-[28px] font-bold tracking-[-0.02em] text-white dt:text-[34px]">See How We WOW You</h2>
               <p className="m-0 mt-2 max-w-[560px] text-[14.5px] leading-normal text-[rgba(255,255,255,0.82)]">
-                FIND WOW. GET WOW. MAKE WOW. See why as a creator switching to WAWU makes absolute sense.
+                See why switching to WAWU makes absolute sense for a creator.
               </p>
             </div>
             <a
@@ -1086,7 +1018,12 @@ export async function LandingContent() {
                 <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted">Feature</span>
                 <span className="text-center text-[11px] font-bold uppercase tracking-[0.08em] text-accent">WAWU</span>
                 <span className="text-center text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted">Others</span>
-                {["FIND WOW", "GET WOW", "MAKE WOW", "EVERYONE WOW"].map((f) => (
+                {[
+                  "Discover creators",
+                  "Unlock premium content",
+                  "Earn from your work",
+                  "Open to everyone",
+                ].map((f) => (
                   <div key={f} className="contents">
                     <span className="border-t border-hairline pt-4 text-[14px] font-semibold text-text-primary">{f}</span>
                     <span className="grid place-items-center border-t border-hairline pt-4">

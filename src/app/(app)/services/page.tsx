@@ -11,70 +11,63 @@ import { FlowHeader } from "@/components/layout/FlowHeader";
 
 const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]";
 
-/** D13 desktop card: live and coming-soon services rendered as equal-status cards, honest about which is which via border/badge rather than a separate section. */
 /**
- * One service, on desktop.
+ * One service, as a ROW.
  *
- * The previous card put the name, the turnaround and the price all on one
- * header row with the price pushed right. With real copy in it ("Grants and
- * funding", "Consultations from NGN 25,000") that row wrapped in three
- * different places depending on the service, so no two cards lined up.
+ * These were cards in an auto-fill grid: a bordered box each, an icon in its
+ * own tile, a name, a tagline, a blurb and a full-width button — six elements
+ * per service, reflowing into two or three columns depending on the width.
+ * For a directory of eight things that is a lot of furniture around very
+ * little information, and it read differently at every breakpoint.
  *
- * Everything is stacked in a fixed order now, the meta line is one row of
- * small text, and the button is pinned to the bottom with `mt-auto` so the
- * action sits on the same line across the whole grid regardless of how long
- * a blurb runs.
+ * A row carries the same facts in reading order and is the same shape on a
+ * phone as on a desktop. The whole row is the target rather than a button
+ * inside it, which is a larger tap area and one obvious thing to press.
  */
-function DesktopServiceCard({ s }: { s: PartnerService }) {
+function ServiceRow({ s }: { s: PartnerService }) {
   const live = s.status === "live";
   const meta = [s.priceFrom, s.turnaround].filter(Boolean).join(" · ");
+  const href = live ? (s.cta?.href ?? `/services/${s.slug ?? s.id}`) : `/services/${s.slug ?? s.id}`;
+
   return (
-    <div
-      className={`flex h-full flex-col rounded-[var(--radius-card)] border bg-[var(--surface-card)] p-[20px] ${
-        live ? "border-[var(--border-accent)]" : "border-[var(--border-hairline)]"
-      }`}
+    <Link
+      href={href}
+      className="flex items-center gap-[13px] px-[16px] py-[13px] no-underline text-inherit transition-colors hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
     >
-      <div className="flex items-center gap-[10px]">
-        <span
-          className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] border ${
-            live
-              ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
-              : "border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
-          }`}
-        >
-          <Icon
-            name={s.icon as IconName}
-            size={18}
-            color={live ? "var(--accent)" : "var(--text-secondary)"}
-            strokeWidth={live ? 2.2 : 2}
-          />
-        </span>
-        {!live && <ComingSoonPill>Coming soon</ComingSoonPill>}
-      </div>
-
-      <span className="mt-[13px] text-[16.5px] font-semibold leading-tight tracking-[-0.01em] text-[var(--text-primary)]">
-        {s.name}
+      <span
+        className={`grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border ${
+          live
+            ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
+            : "border-[var(--border-hairline)] bg-[var(--surface-tag)]"
+        }`}
+      >
+        <Icon
+          name={s.icon as IconName}
+          size={19}
+          color={live ? "var(--accent)" : "var(--text-secondary)"}
+          strokeWidth={live ? 2.2 : 2}
+        />
       </span>
-      <span className="mt-[3px] text-[12.5px] leading-snug text-[var(--text-muted)]">{s.tagline}</span>
 
-      <span className="mt-[10px] text-[13px] leading-[1.5] text-[var(--text-secondary)]">{s.blurb}</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+        <span className="flex items-center gap-[8px]">
+          <span className="truncate text-[15px] font-semibold leading-[1.25] text-[var(--text-primary)]">
+            {s.name}
+          </span>
+          {!live ? <ComingSoonPill>Soon</ComingSoonPill> : null}
+        </span>
+        <span className="truncate text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
+          {s.tagline}
+        </span>
+        {/* The price and turnaround are the two facts somebody is comparing,
+            so they stay on the row rather than behind a tap. */}
+        {live && meta ? (
+          <span className="text-[11.5px] font-medium text-[var(--text-muted)]">{meta}</span>
+        ) : null}
+      </span>
 
-      {live && meta ? (
-        <span className="mt-[12px] text-[12px] font-medium text-[var(--text-muted)]">{meta}</span>
-      ) : null}
-
-      <div className="mt-auto pt-[16px]">
-        {live ? (
-          <Button full size="sm" iconRight="ArrowRight" href={s.cta?.href ?? `/services/${s.slug ?? s.id}`}>
-            {s.cta?.label ?? "Open"}
-          </Button>
-        ) : (
-          <Button full size="sm" variant="secondary" icon="Bell" href={`/services/${s.slug ?? s.id}`}>
-            Notify me
-          </Button>
-        )}
-      </div>
-    </div>
+      <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
+    </Link>
   );
 }
 
@@ -223,9 +216,9 @@ export default function ServicesPage() {
 
           <div className="flex flex-col gap-[14px]">
             <span className={eyebrow}>Open now</span>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-[18px]">
+            <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
               {live.map((s) => (
-                <DesktopServiceCard key={s.id} s={s} />
+                <ServiceRow key={s.id} s={s} />
               ))}
             </div>
           </div>
@@ -233,9 +226,9 @@ export default function ServicesPage() {
           {coming.length ? (
             <div className="flex flex-col gap-[14px]">
               <span className={eyebrow}>Coming soon</span>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(255px,1fr))] gap-[18px]">
+              <div className="flex flex-col divide-y divide-[var(--border-hairline)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
                 {coming.map((s) => (
-                  <DesktopServiceCard key={s.id} s={s} />
+                  <ServiceRow key={s.id} s={s} />
                 ))}
               </div>
             </div>

@@ -2,8 +2,6 @@ import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { formatNaira } from "@/lib/format";
 
 const PARTNERS = [
-  { name: "WAWUBasket", role: "Your storefront for physical goods, shop straight from creators." },
-  { name: "WAWUBeauty", role: "Beauty services and bookings in your city." },
   { name: "CAC registration", role: `Business registration handled by our CAC agent, from ${formatNaira(25000)}.` },
   { name: "NEPC export desks", role: "Matchmaking for creators who want to sell beyond Nigeria." },
 ];

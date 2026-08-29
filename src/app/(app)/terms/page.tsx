@@ -42,10 +42,6 @@ export default function TermsPage() {
         body="Creators who want to earn go through manual identity review. In Nigeria this uses BVN and NIN; elsewhere, an equivalent national ID. A human reviews every submission, and there's no automated liveness or face-matching step in this process."
       />
       <Section
-        title="WAWUBasket and WAWUBeauty"
-        body="Goods and services purchases hand off to WAWUBasket and WAWUBeauty, our sister apps. WAWU doesn't process or guarantee those transactions directly."
-      />
-      <Section
         title="Acceptable use"
         body="No content that infringes someone else's rights, misrepresents who you are, or violates Nigerian law. We can remove content or suspend accounts that break these terms."
       />

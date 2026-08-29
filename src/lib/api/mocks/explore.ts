@@ -1,12 +1,8 @@
-import type { ExploreCategoryId, Shop } from "@/types/explore";
+import type { ExploreCategoryId } from "@/types/explore";
 import { EXPLORE_CATEGORIES } from "@/types/explore";
 import { delay } from "../client";
 import { MOCK_PROFILE_FOLLOWING, toggleMockProfileFollow } from "./profile";
 
-export const MOCK_SHOPS: Shop[] = [
-  { id: "basket", name: "WAWUBasket", tagline: "Fashion, food, art", stat: "4,120 items", icon: "ShoppingBag" },
-  { id: "beauty", name: "WAWUBeauty", tagline: "Hair, nails, skin", stat: "890 services", icon: "Scissors" },
-];
 
 const creators = [
   {

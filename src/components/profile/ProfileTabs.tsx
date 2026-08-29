@@ -3,7 +3,6 @@ import type { ProfileTab } from "@/types/profile";
 
 const TABS: { id: ProfileTab; label: string }[] = [
   { id: "content", label: "Content" },
-  { id: "shop", label: "Shop" },
   { id: "community", label: "Community" },
   { id: "about", label: "About" },
 ];
