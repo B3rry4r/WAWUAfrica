@@ -144,6 +144,12 @@ const QUICK_SERVICES: {
  * wordmark, because the name is already in the nav, the hero and the footer,
  * and a fourth reading of it is noise.
  *
+ * Bigger and fainter on desktop: 80px at 6% rather than 36px at 14%. The two
+ * move together on purpose — a watermark reads as a watermark through scale
+ * and near-absence, and a small mark at 14% is just a small logo. Mobile
+ * keeps 28px at 14%, because 80px on a 390px screen is not a watermark, it is
+ * a section of its own.
+ *
  * `aria-hidden` and no alt text: it separates, it does not say anything, and
  * a screen reader announcing "WAWU" eight times between sections is worse
  * than silence.
@@ -155,7 +161,7 @@ function SectionMark() {
       <img
         src="/wawu-icon-white.svg"
         alt=""
-        className="h-7 w-auto opacity-[0.14] dt:h-9"
+        className="h-7 w-auto opacity-[0.14] dt:h-20 dt:opacity-[0.06]"
       />
     </div>
   );
@@ -426,7 +432,7 @@ export async function LandingContent() {
         {/* ============ ONE PROFILE MARQUEE ============ */}
         <section className="py-14 dt:py-20">
           <div className="mx-auto max-w-[1240px] px-5 text-center">
-            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">Find WOW. Get WOW. Make WOW.</span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">One profile, every industry</span>
             <h2 className="m-0 mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[64px]">
               Every Industry.
               <br />
@@ -1107,7 +1113,7 @@ export async function LandingContent() {
             <div className="relative mx-auto flex max-w-[760px] flex-col items-center">
               <CaptionPill>Make the Move</CaptionPill>
               <span className="mt-6 text-[13px] font-bold uppercase tracking-[0.2em] text-accent-hover dt:text-[15px]">
-                Find WOW. Get WOW. Make WOW.
+                Build. Earn. Grow. Thrive.
               </span>
               <h2 className="m-0 mt-3 text-[44px] font-bold leading-[1.02] tracking-[-0.035em] text-text-primary dt:text-[76px]">
                 Own Your WOW
