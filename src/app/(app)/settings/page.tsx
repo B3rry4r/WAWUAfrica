@@ -108,6 +108,7 @@ export default function SettingsPage() {
             // this behind a creator account would hide a stranger's ticket
             // from them while they stand at the door.
             { title: "My tickets", subtitle: "Event tickets and their QR codes", icon: "Ticket", href: "/tickets" },
+            { title: "Shop orders", subtitle: "Equipment you bought, and delivery", icon: "Package", href: "/shop/orders" },
           ],
         },
         {
