@@ -102,7 +102,7 @@ export function CategoryBrowser({ category }: { category: ProductCategory | null
       </div>
 
       <div className="flex flex-wrap items-center gap-[10px]">
-        <div className="flex min-w-[220px] flex-1 gap-[8px]">
+        <div className="flex min-w-[220px] flex-1 gap-[8px] xl:max-w-[420px]">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -157,8 +157,8 @@ export function CategoryBrowser({ category }: { category: ProductCategory | null
           onRetry={() => setReloadKey((k) => k + 1)}
         />
       ) : products === null ? (
-        <div className="grid grid-cols-2 gap-[12px] xl:grid-cols-4">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div className="grid grid-cols-2 gap-[12px] sm:grid-cols-3 xl:grid-cols-5">
+          {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-[300px] rounded-card" />
           ))}
         </div>
@@ -186,7 +186,14 @@ export function CategoryBrowser({ category }: { category: ProductCategory | null
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-[12px] xl:grid-cols-4">
+        /*
+          Five columns at desktop, not four. On a 1180px content column four
+          columns make each cell ~370px wide, so an aisle holding one product
+          rendered a single 460px-tall slab that read as a broken page. Five
+          gives an ordinary product-grid density and keeps a sparse aisle
+          looking sparse rather than wrong.
+        */
+        <div className="grid grid-cols-2 gap-[12px] sm:grid-cols-3 xl:grid-cols-5">
           {products.map((p) => (
             <ProductCard
               key={p.id}

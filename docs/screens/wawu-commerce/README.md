@@ -34,6 +34,14 @@ cart contents were added through the real cart API.
 | 08 | My orders | What was bought, and where it has got to |
 | 09 | Explore | The mobile entry point |
 
+## A note on the imagery
+
+The products carry placeholder swatches from placehold.co, because no real
+product photography exists yet. The layout is built for photographs — a 4:5
+image is the largest element on every card — so these screens will change
+character completely once real shots go in. Judge the structure here, not the
+pictures.
+
 ## Decisions worth knowing about
 
 **No star rating anywhere.** The brief's product card shows "⭐ 4.8". There is

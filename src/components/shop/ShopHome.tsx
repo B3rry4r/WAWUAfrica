@@ -4,14 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listProducts } from "@/lib/api/shop";
 import { describeError } from "@/lib/api/errors";
-import {
-  BUDGET_BANDS,
-  PRODUCT_CATEGORIES,
-  PRODUCT_CATEGORY_EMOJI,
-  PRODUCT_CATEGORY_LABEL,
-  type Product,
-} from "@/types/shop";
-import { Callout, Icon, Skeleton } from "@/components/ui";
+import { BUDGET_BANDS, PRODUCT_CATEGORIES, type Product } from "@/types/shop";
+import { Callout, Skeleton } from "@/components/ui";
+import { CategoryTile } from "./CategoryTile";
 import { ProductCard } from "./ProductCard";
 import { ShopHeader } from "./ShopHeader";
 import { useWowCart } from "./WowCartProvider";
@@ -37,7 +32,7 @@ export function ShopHome() {
 
   useEffect(() => {
     let active = true;
-    listProducts({ wawuPick: true, perPage: 8 })
+    listProducts({ wawuPick: true, perPage: 10 })
       .then((page) => active && setPicks(page.products))
       .catch((e) => active && setError(describeError(e).body));
     return () => {
@@ -54,35 +49,32 @@ export function ShopHome() {
         <ShopHeader />
       </div>
 
-      {/* ---- the hero question ---- */}
-      <section className="flex flex-col gap-[16px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--accent-tint)] p-[20px] xl:p-[30px]">
-        <div className="flex flex-col gap-[6px]">
-          <h2 className="m-0 text-[24px] font-bold leading-[1.15] tracking-[-0.03em] text-[var(--text-primary)] xl:text-[38px]">
+      {/*
+        The hero question, unboxed.
+        It used to sit inside a bordered violet panel with the tiles crammed
+        in beside it, which made the biggest thing on the page look like a
+        notice. The question is now type on the page, and the tiles are the
+        visual — which is the way round the brief asks for.
+      */}
+      <section className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-[8px]">
+          <h2 className="m-0 max-w-[16ch] text-[30px] font-bold leading-[1.08] tracking-[-0.035em] text-[var(--text-primary)] xl:text-[46px]">
             What are you creating?
           </h2>
-          <p className="m-0 max-w-[54ch] text-[13.5px] leading-[1.55] text-[var(--text-secondary)] xl:text-[15px]">
-            Pick what you make, and we will show you the kit for it — starter to pro.
+          <p className="m-0 max-w-[52ch] text-[14px] leading-[1.55] text-[var(--text-secondary)] xl:text-[16px]">
+            Pick what you make. We will show you the kit for it — starter to pro.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-[11px] sm:grid-cols-3 xl:grid-cols-4">
+          {/*
+            One size, deliberately. Making the first two taller looked good in
+            isolation and wrong in the grid: a CSS grid row is as tall as its
+            tallest cell, so the short tiles beside them sat top-aligned with
+            dead space underneath and the first row read as broken.
+          */}
           {PRODUCT_CATEGORIES.map((category) => (
-            <Link
-              key={category}
-              href={`/shop/browse/${category}`}
-              className="flex items-center gap-[10px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px] no-underline transition-all hover:-translate-y-[2px] hover:border-[var(--accent)]"
-            >
-              {/*
-                Decorative. Every card carries its name in text beside this, so
-                a screen reader is not read a picture of a camera.
-              */}
-              <span aria-hidden className="text-[22px] leading-none">
-                {PRODUCT_CATEGORY_EMOJI[category]}
-              </span>
-              <span className="min-w-0 text-[13px] font-semibold leading-[1.3] text-[var(--text-primary)]">
-                {PRODUCT_CATEGORY_LABEL[category]}
-              </span>
-            </Link>
+            <CategoryTile key={category} category={category} />
           ))}
         </div>
       </section>
@@ -99,9 +91,8 @@ export function ShopHome() {
               <Link
                 key={band.maxPriceNaira}
                 href={`/shop/browse/all?max=${band.maxPriceNaira}`}
-                className="flex h-[46px] shrink-0 items-center gap-[8px] rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[18px] text-[13.5px] font-bold text-[var(--text-primary)] no-underline transition-colors hover:border-[var(--accent)] xl:flex-1 xl:justify-center"
+                className="flex h-[44px] shrink-0 items-center rounded-full border border-[var(--border-strong)] bg-transparent px-[20px] text-[13.5px] font-bold text-[var(--text-primary)] no-underline transition-all hover:border-[var(--accent)] hover:bg-[var(--accent-tint)] xl:flex-1 xl:justify-center"
               >
-                <Icon name="Wallet2" size={16} color="var(--accent)" />
                 {band.label}
               </Link>
             ))}
@@ -121,8 +112,8 @@ export function ShopHome() {
             {error}
           </Callout>
         ) : picks === null ? (
-          <div className="grid grid-cols-2 gap-[12px] xl:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => (
+          <div className="grid grid-cols-2 gap-[12px] sm:grid-cols-3 xl:grid-cols-5">
+            {[0, 1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-[300px] rounded-card" />
             ))}
           </div>
@@ -131,13 +122,14 @@ export function ShopHome() {
             Nothing is picked out just yet. Browse the aisles above.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-[12px] xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-[12px] sm:grid-cols-3 xl:grid-cols-5">
             {picks.map((p) => (
               <ProductCard
                 key={p.id}
                 product={p}
                 onAdd={(product) => void add(product)}
                 busy={addingId === p.id}
+                hidePickBadge
               />
             ))}
           </div>

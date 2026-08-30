@@ -53,6 +53,39 @@ export const PRODUCT_CATEGORY_LABEL: Record<ProductCategory, string> = {
   power_accessories: "Power & Accessories",
 };
 
+/**
+ * A brand hue per aisle, as a TAILWIND CLASS rather than a raw value.
+ *
+ * These are the token file's own "Secondary brand hues (category &
+ * illustration only)" plus the brand-sheet colours — the sanctioned use for
+ * exactly this.
+ *
+ * Class strings, not `style={{ background: hue }}`, because CLAUDE.md is
+ * explicit: Tailwind classes, never inline styles, tokens read through
+ * Tailwind. Tailwind scans `./src/**` so these literals are compiled; a value
+ * interpolated at runtime would not be, and would also route around the
+ * theme.
+ *
+ * The hue is used as a GLOW behind a dark tile, never as the tile's fill.
+ * Several of these (lemon, lime, yellow) are bright enough that white label
+ * text on them fails contrast, and a per-category text colour is a rule every
+ * future call site has to remember and one of them will not. White on dark,
+ * always, with the colour carried by the glow and the emoji disc.
+ */
+export const PRODUCT_CATEGORY_HUE: Record<ProductCategory, string> = {
+  audio_music: "bg-[var(--wawu-pink)]",
+  video_film: "bg-[var(--wawu-sky)]",
+  lighting_studio: "bg-[var(--brand-yellow)]",
+  photography: "bg-[var(--brand-coral)]",
+  computing: "bg-[var(--accent-soft)]",
+  art_design: "bg-[var(--wawu-lemon)]",
+  gaming_streaming: "bg-[var(--accent)]",
+  content_creation: "bg-[var(--brand-aqua)]",
+  live_events: "bg-[var(--wawu-green)]",
+  professional: "bg-[var(--brand-lime)]",
+  power_accessories: "bg-[var(--wawu-lilac)]",
+};
+
 export const PRODUCT_CATEGORY_EMOJI: Record<ProductCategory, string> = {
   audio_music: "🎵",
   video_film: "🎥",
