@@ -100,6 +100,22 @@ export default async function ExplorePage() {
           </div>
         </section>
 
+        {/*
+          Shop lives here for the same reason Events and Services do: the
+          bottom bar is locked at five slots and this is not one of them, so
+          Explore is its mobile home. The desktop rail links it directly.
+        */}
+        <section className="flex flex-col gap-[11px]">
+          <div className="flex items-center gap-[10px] px-[2px]">
+            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Shop</span>
+            <Link href="/shop" className={seeAll}>See all</Link>
+          </div>
+          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+            <ListRow title="Gear for what you make" subtitle="Cameras, mics, lights, laptops — checked before we stock them" icon="ShoppingBag" href="/shop" />
+            <ListRow title="My orders" subtitle="What you bought, and where it has got to" icon="Package" href="/shop/orders" />
+          </div>
+        </section>
+
         <section className="flex flex-col gap-[11px]">
           <div className="flex items-center gap-[10px] px-[2px]">
             <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Professionals</span>

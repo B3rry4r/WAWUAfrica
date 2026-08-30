@@ -111,6 +111,7 @@ export function Sidebar() {
 
   const dashboardActive = pathname === "/creator";
 
+  const shopActive = pathname.startsWith('/shop');
   const servicesActive = pathname.startsWith('/services');
 
   const eventsActive = pathname.startsWith('/events');
@@ -152,6 +153,22 @@ export function Sidebar() {
         the services buried one level inside Explore was the
         reason nobody could find them.
       */}
+      {/*
+        Shop is not one of the five locked bottom-bar slots either, so mobile
+        reaches it through Explore. It sits ABOVE Services here because it is
+        the one people arrive intending to use — somebody shopping for a
+        microphone knows that before they open the app.
+      */}
+      <Link href="/shop" className={navRowClass(shopActive)}>
+        <Icon
+          name="ShoppingBag"
+          size={20}
+          color={shopActive ? "var(--accent)" : "var(--text-secondary)"}
+          strokeWidth={shopActive ? 2.4 : 2}
+        />
+        Shop
+      </Link>
+
       <Link href="/services" className={navRowClass(servicesActive)}>
         <Icon
           name="Briefcase"
