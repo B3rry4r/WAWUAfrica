@@ -1,0 +1,537 @@
+{
+  "failures": [
+    {
+      "gate": "deferrals",
+      "message": "scope declaration left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/auth.ts",
+      "line": 123,
+      "evidence": " * REQUIREMENTS) \u2014 out of scope for this pass. Folding 'official' onto the",
+      "severity": "fail",
+      "key": "78a61967499a77df"
+    },
+    {
+      "gate": "deferrals",
+      "message": "deferred wiring left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/communities.ts",
+      "line": 210,
+      "evidence": "// SEAM: replace with GET /api/hub/communities?host=:wawuId once the backend has one",
+      "severity": "fail",
+      "key": "c70359ff699ffcdf"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/dm.ts",
+      "line": 56,
+      "evidence": " * doc comment) \u2014 placeholder until a real name/handle source is wired in.",
+      "severity": "fail",
+      "key": "c71cc9aacc1e4c97"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/errors.ts",
+      "line": 55,
+      "evidence": " * placeholder ApiError synthesizes when the body carried no message.",
+      "severity": "fail",
+      "key": "644362a8ae3cf86f"
+    },
+    {
+      "gate": "deferrals",
+      "message": "deferred wiring left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/lifestyle.ts",
+      "line": 13,
+      "evidence": " * SEAM: replace with GET/POST /api/hub/{bills,care,legal}/... once the",
+      "severity": "fail",
+      "key": "28928114bda12961"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/messaging.ts",
+      "line": 167,
+      "evidence": " * comment) \u2014 placeholder until a real name source is wired in.",
+      "severity": "fail",
+      "key": "6cad02939517315c"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/services.ts",
+      "line": 272,
+      "evidence": " * it by hand for the same reason. Stays mock-only until that's modeled.",
+      "severity": "fail",
+      "key": "aabd563a34ff95b5"
+    },
+    {
+      "gate": "deferrals",
+      "message": "scope declaration left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/subscription.ts",
+      "line": 272,
+      "evidence": "  // Out of scope for this resource: KYC review status lives on CreatorState",
+      "severity": "fail",
+      "key": "5de972aa5b715368"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/lib/api/subscription.ts",
+      "line": 277,
+      "evidence": "   * The earnings gate. This previously returned a hardcoded `mockRequest(\"pending\")`",
+      "severity": "fail",
+      "key": "f580fdfdd57c53ba"
+    },
+    {
+      "gate": "deferrals",
+      "message": "temporary implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/types/kyc.ts",
+      "line": 8,
+      "evidence": " * submits against this shape and the mock is the source of truth for now.",
+      "severity": "fail",
+      "key": "4bb8e24f518029be"
+    },
+    {
+      "gate": "deferrals",
+      "message": "ownership deferral left as prose - resolve it or baseline it with a reason",
+      "path": "src/types/learn.ts",
+      "line": 83,
+      "evidence": "  /** False for a plain user account \u2014 the perk belongs to the creator subscription. */",
+      "severity": "fail",
+      "key": "96bac0edbabe8869"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/types/shop.ts",
+      "line": 129,
+      "evidence": "  /** Null until reviews exist. Never render a placeholder here. */",
+      "severity": "fail",
+      "key": "ce185231207ba2d4"
+    },
+    {
+      "gate": "deferrals",
+      "message": "ownership deferral left as prose - resolve it or baseline it with a reason",
+      "path": "src/app/(app)/explore/_components/CreatorGridCard.tsx",
+      "line": 20,
+      "evidence": "    // The hover belongs to the whole card, but it is driven by the identity",
+      "severity": "fail",
+      "key": "cc62a328e8f94ad4"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/components/communities/CommunityRoomImage.tsx",
+      "line": 16,
+      "evidence": "  /** Placeholder glyph when the room has no picture yet. */",
+      "severity": "fail",
+      "key": "829dce1a95c517c4"
+    },
+    {
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/components/kyc/KycFlow.tsx",
+      "line": 121,
+      "evidence": "        // assigned. Hardcoding \"pending\" here would have shown \"in review\"",
+      "severity": "fail",
+      "key": "7fcd9399b74abd28"
+    },
+    {
+      "gate": "deferrals",
+      "message": "unbuilt feature left as prose - resolve it or baseline it with a reason",
+      "path": "src/components/services/ServiceGate.tsx",
+      "line": 14,
+      "evidence": " * /services/[id] detail page, so a card marked \"coming soon\" \u2014 whose button",
+      "severity": "fail",
+      "key": "01c1d3ac66398768"
+    },
+    {
+      "gate": "deferrals",
+      "message": "temporary implementation left as prose - resolve it or baseline it with a reason",
+      "path": "src/components/shared/HomeRightRail.tsx",
+      "line": 36,
+      "evidence": "  // actually answered; showing the fan rail \"for now\" IS the reported bug.",
+      "severity": "fail",
+      "key": "f74929ced57e0a0f"
+    },
+    {
+      "gate": "deferrals",
+      "message": "ownership deferral left as prose - resolve it or baseline it with a reason",
+      "path": "src/components/shop/CategoryTile.tsx",
+      "line": 18,
+      "evidence": " * of text, and a colour that belongs to the aisle.",
+      "severity": "fail",
+      "key": "933e1d5a3839a8e1"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "path": "src/lib/api/client.ts",
+      "line": 75,
+      "evidence": "class MockModeError extends Error {",
+      "severity": "fail",
+      "key": "8566314fde8d6849"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "path": "src/lib/api/client.ts",
+      "line": 78,
+      "evidence": "    this.name = \"MockModeError\";",
+      "severity": "fail",
+      "key": "49115fdcf71a6a9e"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "path": "src/lib/api/client.ts",
+      "line": 93,
+      "evidence": "  return e instanceof MockModeError;",
+      "severity": "fail",
+      "key": "71e718b6d4046eea"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "path": "src/lib/api/client.ts",
+      "line": 237,
+      "evidence": "  if (USE_MOCKS) throw new MockModeError();",
+      "severity": "fail",
+      "key": "fec2028b380a7a7a"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/communities.ts",
+      "line": 27,
+      "evidence": "} from \"./mocks/communities\";",
+      "severity": "fail",
+      "key": "47bde5c4c99ac88d"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/content.ts",
+      "line": 2,
+      "evidence": "import { mockContent, mockContentById, mockPurchasedIds } from \"./mocks/mockContent\";",
+      "severity": "fail",
+      "key": "da56c91e412b5b24"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/dm.ts",
+      "line": 5,
+      "evidence": "import { getMockDmThread, getMockDmThreads, sendMockPaidDm, type DmSendResult } from \"./mocks/dm\";",
+      "severity": "fail",
+      "key": "9a3066e024313cbf"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/event-tickets.ts",
+      "line": 23,
+      "evidence": "} from \"./mocks/event-tickets\";",
+      "severity": "fail",
+      "key": "2845c6eb2f49d8fd"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/events.ts",
+      "line": 17,
+      "evidence": "} from \"./mocks/events\";",
+      "severity": "fail",
+      "key": "557e080f03eb76f3"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/explore.ts",
+      "line": 5,
+      "evidence": "import { getMockCategories, getMockCreators, toggleMockFollow } from \"./mocks/explore\";",
+      "severity": "fail",
+      "key": "61ed1bc9a5872ce3"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/kyc.ts",
+      "line": 2,
+      "evidence": "import { kycSubmission } from \"./mocks/kyc\";",
+      "severity": "fail",
+      "key": "c66a6334d498e00a"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/learn.ts",
+      "line": 5,
+      "evidence": "import { getMockGuides, getMockPlaybook } from \"./mocks/learn\";",
+      "severity": "fail",
+      "key": "118e8be288d1ae02"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/mentors.ts",
+      "line": 3,
+      "evidence": "import { getMockMentor, getMockMentors, requestMockMentor } from \"./mocks/mentors\";",
+      "severity": "fail",
+      "key": "0a2a9d3e4171d6fb"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/notifications.ts",
+      "line": 2,
+      "evidence": "import { mockNotifications } from \"./mocks/mockNotifications\";",
+      "severity": "fail",
+      "key": "22ff1568edc08c9b"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/profile.ts",
+      "line": 9,
+      "evidence": "} from \"./mocks/profile\";",
+      "severity": "fail",
+      "key": "25c7fdc8e217048f"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/services.ts",
+      "line": 17,
+      "evidence": "} from \"./mocks/services\";",
+      "severity": "fail",
+      "key": "bf5c990b48bfddf4"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/services.ts",
+      "line": 23,
+      "evidence": "} from \"./mocks/services\";",
+      "severity": "fail",
+      "key": "bf5c990b48bfddf4"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/settings.ts",
+      "line": 3,
+      "evidence": "import type { PrivacySettings, BlockedAccount } from \"./mocks/settings\";",
+      "severity": "fail",
+      "key": "cad547999303df44"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/settings.ts",
+      "line": 17,
+      "evidence": "} from \"./mocks/settings\";",
+      "severity": "fail",
+      "key": "b0a203524796b2be"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/settings.ts",
+      "line": 18,
+      "evidence": "export type { PrivacySettings, BlockedAccount } from \"./mocks/settings\";",
+      "severity": "fail",
+      "key": "8194687589c047e8"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/shop.ts",
+      "line": 24,
+      "evidence": "} from \"./mocks/shop\";",
+      "severity": "fail",
+      "key": "197c672b60884bfb"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/tips.ts",
+      "line": 4,
+      "evidence": "import type { TipResult } from \"./mocks/tips\";",
+      "severity": "fail",
+      "key": "b56ac2638bf9a3df"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/tips.ts",
+      "line": 5,
+      "evidence": "import { sendMockTip, TIP_PRESETS } from \"./mocks/tips\";",
+      "severity": "fail",
+      "key": "937f8f5ed733780e"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/lib/api/verification.ts",
+      "line": 11,
+      "evidence": "import { getMockOwnProfile, saveMockOwnProfile } from \"./mocks/verification\";",
+      "severity": "fail",
+      "key": "58a6d1cf551a4f50"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/app/(app)/content/[id]/page.tsx",
+      "line": 28,
+      "evidence": "import type { MockComment } from \"@/lib/api/mocks/mockComments\";",
+      "severity": "fail",
+      "key": "3a26c59463b1f4eb"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockComment'",
+      "path": "src/app/(app)/content/[id]/page.tsx",
+      "line": 76,
+      "evidence": "  const [comments, setComments] = useState<MockComment[]>([]);",
+      "severity": "fail",
+      "key": "72d8143aa54121af"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockComment'",
+      "path": "src/app/(app)/content/[id]/page.tsx",
+      "line": 705,
+      "evidence": "  comments: MockComment[];",
+      "severity": "fail",
+      "key": "7a04d664ac92f088"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "path": "src/app/(app)/services/[id]/apply/page.tsx",
+      "line": 5,
+      "evidence": "import { MOCK_SERVICES } from \"@/lib/api/mocks/services\";",
+      "severity": "fail",
+      "key": "3110d82f082355b6"
+    },
+    {
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MOCK_SERVICES'",
+      "path": "src/app/(app)/services/[id]/apply/page.tsx",
+      "line": 28,
+      "evidence": "  const service = MOCK_SERVICES.find((s) => s.id === kind);",
+      "severity": "fail",
+      "key": "4793607f14a25911"
+    },
+    {
+      "gate": "wire_types",
+      "message": "response shape 'FlutterwaveCallbackResponse' hand-declared outside the data layer",
+      "path": "src/lib/flutterwave.ts",
+      "line": 29,
+      "evidence": "interface FlutterwaveCallbackResponse {",
+      "severity": "fail",
+      "key": "390d011aba662bae"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'CreatorProfile' is declared in 2 files - one of them is a fork",
+      "path": "src/types/content.ts",
+      "line": 16,
+      "evidence": "src/types/content.ts:16, src/types/profile.ts:50",
+      "severity": "fail",
+      "key": "a015d9d89c242ec4"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'DocSlot' is declared in 2 files - one of them is a fork",
+      "path": "src/app/(app)/services/cac/apply/page.tsx",
+      "line": 38,
+      "evidence": "src/app/(app)/services/cac/apply/page.tsx:38, src/app/(app)/services/nepc/apply/page.tsx:35",
+      "severity": "fail",
+      "key": "aacbbb4400fb8105"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'FlutterwaveConfig' is declared in 3 files - one of them is a fork",
+      "path": "src/lib/api/communities.ts",
+      "line": 656,
+      "evidence": "src/lib/api/communities.ts:656, src/lib/api/lifestyle.ts:17, src/types/content.ts:100",
+      "severity": "fail",
+      "key": "6f630ee7865620a2"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'FlutterwaveConfigResponse' is declared in 2 files - one of them is a fork",
+      "path": "src/lib/api/subscription.ts",
+      "line": 22,
+      "evidence": "src/lib/api/subscription.ts:22, src/lib/api/tips.ts:9",
+      "severity": "fail",
+      "key": "26ea58a6abdd4e68"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'HubContentPieceResponse' is declared in 2 files - one of them is a fork",
+      "path": "src/lib/api/content.ts",
+      "line": 19,
+      "evidence": "src/lib/api/content.ts:19, src/lib/api/creator-content.ts:60",
+      "severity": "fail",
+      "key": "d45b7c22bd4e4587"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'HubMeResponse' is declared in 2 files - one of them is a fork",
+      "path": "src/lib/api/auth.ts",
+      "line": 78,
+      "evidence": "src/lib/api/auth.ts:78, src/lib/api/verification.ts:138",
+      "severity": "fail",
+      "key": "57010198fdf15255"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'NavItem' is declared in 2 files - one of them is a fork",
+      "path": "src/components/layout/BottomNav.tsx",
+      "line": 8,
+      "evidence": "src/components/layout/BottomNav.tsx:8, src/components/layout/Sidebar.tsx:18",
+      "severity": "fail",
+      "key": "51f68fa0b63eefe6"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'RawDirectMessage' is declared in 2 files - one of them is a fork",
+      "path": "src/lib/api/dm.ts",
+      "line": 19,
+      "evidence": "src/lib/api/dm.ts:19, src/lib/api/messaging.ts:125",
+      "severity": "fail",
+      "key": "ee04c016ca060e8d"
+    },
+    {
+      "gate": "forks",
+      "message": "interface 'SkeletonProps' is declared in 2 files - one of them is a fork",
+      "path": "src/components/ui/Feedback.tsx",
+      "line": 25,
+      "evidence": "src/components/ui/Feedback.tsx:25, src/components/ui/Skeleton.tsx:1",
+      "severity": "fail",
+      "key": "527ebb5c3eb11a2f"
+    },
+    {
+      "gate": "unbacked_promises",
+      "message": "copy promises 'We will email you' with nothing named to deliver it - say what implements it (// MECHANISM: ...) or cite a ruling, or do not promise it",
+      "path": "src/app/(app)/services/legal/page.tsx",
+      "line": 337,
+      "evidence": "We will email you to arrange the in-person consultation.",
+      "severity": "fail",
+      "key": "bf85b69d15adaf4d"
+    },
+    {
+      "gate": "unbacked_promises",
+      "message": "copy promises 'we will notify you' with nothing named to deliver it - say what implements it (// MECHANISM: ...) or cite a ruling, or do not promise it",
+      "path": "src/components/kyc/KycFlow.tsx",
+      "line": 709,
+      "evidence": "we will notify you",
+      "severity": "fail",
+      "key": "0b8e4fa34c183669"
+    }
+  ],
+  "warnings": [],
+  "accepted": []
+}

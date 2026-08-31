@@ -706,6 +706,9 @@ function PendingState({ submission }: { submission: KycSubmission | null }) {
         <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)] pt-[12px] border-t border-t-[var(--border-hairline)]">
           Start uploading now. Earnings from anything you sell are held and released once you are verified.
         </span>
+        {/* MECHANISM: KycSubmissionService.review() emits NotificationKind
+            'kyc_verified' to this creator on both approval and rejection. Backed by
+            a contract test that fails if the emit is removed. */}
         {/* Where to look afterwards. The old screen said "we will notify you"
             and nothing else, so a creator who closed it had no idea the status
             was readable anywhere — and the nearest thing they could find,

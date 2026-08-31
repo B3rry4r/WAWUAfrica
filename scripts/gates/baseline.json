@@ -1,0 +1,460 @@
+{
+  "accepted": {
+    "01c1d3ac66398768": {
+      "evidence": "* /services/[id] detail page, so a card marked \"coming soon\" \u2014 whose button",
+      "gate": "deferrals",
+      "message": "unbuilt feature left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/components/services/ServiceGate.tsx:14"
+    },
+    "0a2a9d3e4171d6fb": {
+      "evidence": "import { getMockMentor, getMockMentors, requestMockMentor } from \"./mocks/mentors\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/mentors.ts:3"
+    },
+    "118e8be288d1ae02": {
+      "evidence": "import { getMockGuides, getMockPlaybook } from \"./mocks/learn\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/learn.ts:5"
+    },
+    "197c672b60884bfb": {
+      "evidence": "} from \"./mocks/shop\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/shop.ts:24"
+    },
+    "22ff1568edc08c9b": {
+      "evidence": "import { mockNotifications } from \"./mocks/mockNotifications\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/notifications.ts:2"
+    },
+    "25c7fdc8e217048f": {
+      "evidence": "} from \"./mocks/profile\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/profile.ts:9"
+    },
+    "26ea58a6abdd4e68": {
+      "evidence": "src/lib/api/subscription.ts:22, src/lib/api/tips.ts:9",
+      "gate": "forks",
+      "message": "interface 'FlutterwaveConfigResponse' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/lib/api/subscription.ts:22"
+    },
+    "2845c6eb2f49d8fd": {
+      "evidence": "} from \"./mocks/event-tickets\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/event-tickets.ts:23"
+    },
+    "28928114bda12961": {
+      "evidence": "* SEAM: replace with GET/POST /api/hub/{bills,care,legal}/... once the",
+      "gate": "deferrals",
+      "message": "deferred wiring left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/lifestyle.ts:13"
+    },
+    "3110d82f082355b6": {
+      "evidence": "import { MOCK_SERVICES } from \"@/lib/api/mocks/services\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Fixture reference under review \u2014 see .legacy-repair/repair-order.md for its rank.",
+      "where": "src/app/(app)/services/[id]/apply/page.tsx:5"
+    },
+    "390d011aba662bae": {
+      "evidence": "interface FlutterwaveCallbackResponse {",
+      "gate": "wire_types",
+      "message": "response shape 'FlutterwaveCallbackResponse' hand-declared outside the data layer",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Third-party (Flutterwave/Gemini) response shape declared beside its adapter. The adapter IS the data layer boundary for an external API; hoisting it to common/types would put a vendor's schema in this platform's own type surface.",
+      "where": "src/lib/flutterwave.ts:29"
+    },
+    "3a26c59463b1f4eb": {
+      "evidence": "import type { MockComment } from \"@/lib/api/mocks/mockComments\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Fixture reference under review \u2014 see .legacy-repair/repair-order.md for its rank.",
+      "where": "src/app/(app)/content/[id]/page.tsx:28"
+    },
+    "4793607f14a25911": {
+      "evidence": "const service = MOCK_SERVICES.find((s) => s.id === kind);",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MOCK_SERVICES'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Fixture reference under review \u2014 see .legacy-repair/repair-order.md for its rank.",
+      "where": "src/app/(app)/services/[id]/apply/page.tsx:28"
+    },
+    "47bde5c4c99ac88d": {
+      "evidence": "} from \"./mocks/communities\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/communities.ts:27"
+    },
+    "49115fdcf71a6a9e": {
+      "evidence": "this.name = \"MockModeError\";",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/client.ts:78"
+    },
+    "4bb8e24f518029be": {
+      "evidence": "* submits against this shape and the mock is the source of truth for now.",
+      "gate": "deferrals",
+      "message": "temporary implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/types/kyc.ts:8"
+    },
+    "51f68fa0b63eefe6": {
+      "evidence": "src/components/layout/BottomNav.tsx:8, src/components/layout/Sidebar.tsx:18",
+      "gate": "forks",
+      "message": "interface 'NavItem' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/components/layout/BottomNav.tsx:8"
+    },
+    "527ebb5c3eb11a2f": {
+      "evidence": "src/components/ui/Feedback.tsx:25, src/components/ui/Skeleton.tsx:1",
+      "gate": "forks",
+      "message": "interface 'SkeletonProps' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/components/ui/Feedback.tsx:25"
+    },
+    "557e080f03eb76f3": {
+      "evidence": "} from \"./mocks/events\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/events.ts:17"
+    },
+    "57010198fdf15255": {
+      "evidence": "src/lib/api/auth.ts:78, src/lib/api/verification.ts:138",
+      "gate": "forks",
+      "message": "interface 'HubMeResponse' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/lib/api/auth.ts:78"
+    },
+    "58a6d1cf551a4f50": {
+      "evidence": "import { getMockOwnProfile, saveMockOwnProfile } from \"./mocks/verification\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/verification.ts:11"
+    },
+    "5de972aa5b715368": {
+      "evidence": "// Out of scope for this resource: KYC review status lives on CreatorState",
+      "gate": "deferrals",
+      "message": "scope declaration left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/subscription.ts:272"
+    },
+    "61ed1bc9a5872ce3": {
+      "evidence": "import { getMockCategories, getMockCreators, toggleMockFollow } from \"./mocks/explore\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/explore.ts:5"
+    },
+    "644362a8ae3cf86f": {
+      "evidence": "* placeholder ApiError synthesizes when the body carried no message.",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/errors.ts:55"
+    },
+    "6cad02939517315c": {
+      "evidence": "* comment) \u2014 placeholder until a real name source is wired in.",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/messaging.ts:167"
+    },
+    "6f630ee7865620a2": {
+      "evidence": "src/lib/api/communities.ts:656, src/lib/api/lifestyle.ts:17, src/types/content.ts:100",
+      "gate": "forks",
+      "message": "interface 'FlutterwaveConfig' is declared in 3 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/lib/api/communities.ts:656"
+    },
+    "71e718b6d4046eea": {
+      "evidence": "return e instanceof MockModeError;",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/client.ts:93"
+    },
+    "72d8143aa54121af": {
+      "evidence": "const [comments, setComments] = useState<MockComment[]>([]);",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockComment'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Fixture reference under review \u2014 see .legacy-repair/repair-order.md for its rank.",
+      "where": "src/app/(app)/content/[id]/page.tsx:76"
+    },
+    "78a61967499a77df": {
+      "evidence": "* REQUIREMENTS) \u2014 out of scope for this pass. Folding 'official' onto the",
+      "gate": "deferrals",
+      "message": "scope declaration left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/auth.ts:123"
+    },
+    "7a04d664ac92f088": {
+      "evidence": "comments: MockComment[];",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockComment'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Fixture reference under review \u2014 see .legacy-repair/repair-order.md for its rank.",
+      "where": "src/app/(app)/content/[id]/page.tsx:705"
+    },
+    "7fcd9399b74abd28": {
+      "evidence": "// assigned. Hardcoding \"pending\" here would have shown \"in review\"",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/components/kyc/KycFlow.tsx:121"
+    },
+    "8194687589c047e8": {
+      "evidence": "export type { PrivacySettings, BlockedAccount } from \"./mocks/settings\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/settings.ts:18"
+    },
+    "829dce1a95c517c4": {
+      "evidence": "/** Placeholder glyph when the room has no picture yet. */",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/components/communities/CommunityRoomImage.tsx:16"
+    },
+    "8566314fde8d6849": {
+      "evidence": "class MockModeError extends Error {",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/client.ts:75"
+    },
+    "933e1d5a3839a8e1": {
+      "evidence": "* of text, and a colour that belongs to the aisle.",
+      "gate": "deferrals",
+      "message": "ownership deferral left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/components/shop/CategoryTile.tsx:18"
+    },
+    "937f8f5ed733780e": {
+      "evidence": "import { sendMockTip, TIP_PRESETS } from \"./mocks/tips\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/tips.ts:5"
+    },
+    "96bac0edbabe8869": {
+      "evidence": "/** False for a plain user account \u2014 the perk belongs to the creator subscription. */",
+      "gate": "deferrals",
+      "message": "ownership deferral left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/types/learn.ts:83"
+    },
+    "9a3066e024313cbf": {
+      "evidence": "import { getMockDmThread, getMockDmThreads, sendMockPaidDm, type DmSendResult } from \"./mocks/dm\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/dm.ts:5"
+    },
+    "a015d9d89c242ec4": {
+      "evidence": "src/types/content.ts:16, src/types/profile.ts:50",
+      "gate": "forks",
+      "message": "interface 'CreatorProfile' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/types/content.ts:16"
+    },
+    "aabd563a34ff95b5": {
+      "evidence": "* it by hand for the same reason. Stays mock-only until that's modeled.",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/services.ts:272"
+    },
+    "aacbbb4400fb8105": {
+      "evidence": "src/app/(app)/services/cac/apply/page.tsx:38, src/app/(app)/services/nepc/apply/page.tsx:35",
+      "gate": "forks",
+      "message": "interface 'DocSlot' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/app/(app)/services/cac/apply/page.tsx:38"
+    },
+    "b0a203524796b2be": {
+      "evidence": "} from \"./mocks/settings\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/settings.ts:17"
+    },
+    "b56ac2638bf9a3df": {
+      "evidence": "import type { TipResult } from \"./mocks/tips\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/tips.ts:4"
+    },
+    "bf5c990b48bfddf4": {
+      "evidence": "} from \"./mocks/services\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/services.ts:17"
+    },
+    "bf85b69d15adaf4d": {
+      "evidence": "We will email you to arrange the in-person consultation.",
+      "gate": "unbacked_promises",
+      "message": "copy promises 'We will email you' with nothing named to deliver it - say what implements it (// MECHANISM: ...) or cite a ruling, or do not promise it",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "REAL DEFECT, ranked R4. The Hub API has NO mail transport at all \u2014 grep for resend/nodemailer/sendMail/MailService across src returns nothing. WAWU-ID has Resend; this service does not. Blocked until the Hub API can send mail, OR until the owner rules the copy should change. Do NOT drain by editing the sentence \u2014 that hides the gap rather than closing it. See .legacy-repair/stop-decisions.md.",
+      "where": "src/app/(app)/services/legal/page.tsx:337"
+    },
+    "c66a6334d498e00a": {
+      "evidence": "import { kycSubmission } from \"./mocks/kyc\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/kyc.ts:2"
+    },
+    "c70359ff699ffcdf": {
+      "evidence": "// SEAM: replace with GET /api/hub/communities?host=:wawuId once the backend has one",
+      "gate": "deferrals",
+      "message": "deferred wiring left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/communities.ts:210"
+    },
+    "c71cc9aacc1e4c97": {
+      "evidence": "* doc comment) \u2014 placeholder until a real name/handle source is wired in.",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/dm.ts:56"
+    },
+    "cad547999303df44": {
+      "evidence": "import type { PrivacySettings, BlockedAccount } from \"./mocks/settings\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/settings.ts:3"
+    },
+    "cc62a328e8f94ad4": {
+      "evidence": "// The hover belongs to the whole card, but it is driven by the identity",
+      "gate": "deferrals",
+      "message": "ownership deferral left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/app/(app)/explore/_components/CreatorGridCard.tsx:20"
+    },
+    "ce185231207ba2d4": {
+      "evidence": "/** Null until reviews exist. Never render a placeholder here. */",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/types/shop.ts:129"
+    },
+    "d45b7c22bd4e4587": {
+      "evidence": "src/lib/api/content.ts:19, src/lib/api/creator-content.ts:60",
+      "gate": "forks",
+      "message": "interface 'HubContentPieceResponse' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/lib/api/content.ts:19"
+    },
+    "da56c91e412b5b24": {
+      "evidence": "import { mockContent, mockContentById, mockPurchasedIds } from \"./mocks/mockContent\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/content.ts:2"
+    },
+    "ee04c016ca060e8d": {
+      "evidence": "src/lib/api/dm.ts:19, src/lib/api/messaging.ts:125",
+      "gate": "forks",
+      "message": "interface 'RawDirectMessage' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/lib/api/dm.ts:19"
+    },
+    "f580fdfdd57c53ba": {
+      "evidence": "* The earnings gate. This previously returned a hardcoded `mockRequest(\"pending\")`",
+      "gate": "deferrals",
+      "message": "placeholder implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/lib/api/subscription.ts:277"
+    },
+    "f74929ced57e0a0f": {
+      "evidence": "// actually answered; showing the fan rail \"for now\" IS the reported bug.",
+      "gate": "deferrals",
+      "message": "temporary implementation left as prose - resolve it or baseline it with a reason",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
+      "where": "src/components/shared/HomeRightRail.tsx:36"
+    },
+    "fec2028b380a7a7a": {
+      "evidence": "if (USE_MOCKS) throw new MockModeError();",
+      "gate": "fake_data",
+      "message": "production file references fixture identifier 'MockModeError'",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
+      "where": "src/lib/api/client.ts:237"
+    }
+  }
+}
