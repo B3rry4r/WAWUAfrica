@@ -38,6 +38,17 @@ import { formatNaira } from "@/lib/format";
  * text and has to type their own name, because that text and that name are
  * what gets stored as the signature.
  */
+/** Renders a link only for a URL we would actually be willing to open. */
+function safeHttpUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function LegalPage() {
   const router = useRouter();
   const { user } = useSession();
@@ -549,10 +560,49 @@ function RequestFlow({
       {request.servicePaidAt ? (
         <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-[16px]">
           <Icon name="Check" size={20} color="var(--accent)" strokeWidth={2.4} />
-          <span className="text-[13.5px] leading-[1.5] text-[var(--text-primary)]">
-            {request.deliveredAt
-              ? "Delivered. Check your email for the documents."
-              : "Paid. We are working on it and will email you when it is ready."}
+          {/*
+            NEITHER LINE PROMISES AN EMAIL ANY MORE.
+
+            This service has no mail transport — grep resend/nodemailer/
+            sendMail/MailService across WAWU-Hub-API/src returns nothing — so
+            both previous sentences pointed the customer at an inbox and were
+            guarantees nothing implements (LESSONS V.2). The phrasings are not
+            quoted here on purpose: the gate matches them literally, and a
+            comment explaining a removed promise should not read to the gate
+            as the promise still being made.
+
+            What actually happens is better than the promise was: an operator
+            marking the request delivered writes `deliverableUrl`, the API
+            returns it, and the web client already types it — and then rendered
+            it NOWHERE. The finished document was sitting on the response while
+            the screen sent the customer to an inbox that would never receive
+            anything. Written by one role, read by none (POST-MORTEM class B).
+          */}
+          <span className="flex min-w-0 flex-col gap-[6px] text-[13.5px] leading-[1.5] text-[var(--text-primary)]">
+            {request.deliveredAt ? (
+              <>
+                <span>Delivered.</span>
+                {safeHttpUrl(request.deliverableUrl) ? (
+                  <a
+                    href={safeHttpUrl(request.deliverableUrl) ?? undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-fit items-center gap-[6px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+                  >
+                    Open your documents
+                    <Icon name="ArrowUpRight" size={15} color="currentColor" />
+                  </a>
+                ) : (
+                  // Marked delivered with no URL attached. Say so rather than
+                  // pointing at an inbox nothing will arrive in.
+                  <span className="text-[var(--text-secondary)]">
+                    Your documents are being attached. Contact support if they do not appear.
+                  </span>
+                )}
+              </>
+            ) : (
+              <span>Paid. We are working on it — your documents appear here when they are ready.</span>
+            )}
           </span>
         </div>
       ) : null}
