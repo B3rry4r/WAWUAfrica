@@ -352,14 +352,6 @@
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/services.ts:17"
     },
-    "bf85b69d15adaf4d": {
-      "evidence": "We will email you to arrange the in-person consultation.",
-      "gate": "unbacked_promises",
-      "message": "copy promises 'We will email you' with nothing named to deliver it - say what implements it (// MECHANISM: ...) or cite a ruling, or do not promise it",
-      "owner": "legacy-app-repair 2026-08-31",
-      "reason": "REAL DEFECT, ranked R4. The Hub API has NO mail transport at all \u2014 grep for resend/nodemailer/sendMail/MailService across src returns nothing. WAWU-ID has Resend; this service does not. Blocked until the Hub API can send mail, OR until the owner rules the copy should change. Do NOT drain by editing the sentence \u2014 that hides the gap rather than closing it. See .legacy-repair/stop-decisions.md.",
-      "where": "src/app/(app)/services/legal/page.tsx:337"
-    },
     "c66a6334d498e00a": {
       "evidence": "import { kycSubmission } from \"./mocks/kyc\";",
       "gate": "fake_data",

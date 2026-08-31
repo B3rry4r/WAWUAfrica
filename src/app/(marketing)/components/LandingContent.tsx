@@ -311,7 +311,7 @@ export async function LandingContent() {
             seven tiles across four columns give "Loans/EasyBuy" room to sit
             on one line instead of wrapping to three inside a 100px column.
           */}
-          <div className="mx-auto mt-10 flex max-w-[1060px] flex-col items-center gap-7 dt:mt-12 dt:gap-9">
+          <div className="mx-auto mt-10 flex max-w-[1080px] flex-col items-center gap-7 dt:mt-12 dt:flex-row dt:items-stretch dt:gap-7">
             {/*
               The product video, shot 9:16. `aspect-[9/16]` keeps its real
               shape — `object-cover` in a landscape box would have cropped
@@ -323,7 +323,7 @@ export async function LandingContent() {
               Muted and inline because a hero video that makes noise, or
               takes over the screen on iOS, is a hero video people close.
             */}
-            <div className="relative aspect-[9/16] w-full max-w-[230px] shrink-0 overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:max-w-[250px]">
+            <div className="relative aspect-[9/16] w-full max-w-[250px] shrink-0 overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:aspect-auto dt:w-[270px] dt:max-w-none">
               <video
                 className="h-full w-full object-cover"
                 src="/landing-video.mp4"
@@ -342,7 +342,7 @@ export async function LandingContent() {
               two remaining bands spread their spacing instead of one of them
               stretching into a void.
             */}
-            <div className="flex w-full min-w-0 flex-col gap-4">
+            <div className="flex w-full min-w-0 flex-1 flex-col gap-4">
               {/*
                 The services across two rows of four rather than one row of
                 seven. In a narrower container seven columns leave each tile
@@ -357,20 +357,50 @@ export async function LandingContent() {
                 beside name, because four columns at 390px is not a tap
                 target.
               */}
-              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-4 dt:gap-3">
+              {/*
+                Two columns on desktop, and `auto-rows-fr` so the rows share
+                the video's height between them instead of sitting at their
+                natural height with a gap underneath. That gap is what made
+                the first attempt at this look broken; making the tiles taller
+                is what actually closes it.
+
+                Shop spans both columns as the lead tile. Seven items in two
+                columns would otherwise leave an orphan on the last row — and
+                Shop is the one worth leading with: it is the only service
+                here selling WAWU's own stock rather than handing off to a
+                partner.
+
+                Mobile keeps full-width rows; two columns at 390px is not a
+                tap target.
+              */}
+              <div className="flex flex-col gap-2 dt:grid dt:h-full dt:auto-rows-fr dt:grid-cols-2 dt:gap-2.5">
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
                         <Icon name={service.icon} size={17} color="var(--wawu-lilac)" strokeWidth={2.2} />
                       </span>
-                      <span className="min-w-0 text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[12.5px] dt:leading-[1.25]">
-                        {service.brand}
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-[14px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary dt:text-[12.5px] dt:leading-[1.25]">
+                          {service.brand}
+                        </span>
+                        {service.brand === "Shop" ? (
+                          <span className="hidden text-[11.5px] leading-[1.35] text-text-muted dt:block">
+                            {service.label}
+                          </span>
+                        ) : null}
                       </span>
                     </>
                   );
-                  const shell =
-                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-card px-3 py-2 dt:flex-col dt:justify-center dt:gap-1.5 dt:px-1.5 dt:py-3 dt:text-center";
+                  // Shop leads and spans both columns: seven tiles in two
+                  // columns would otherwise orphan one on the last row.
+                  const lead = service.brand === "Shop";
+                  const shell = [
+                    "flex items-center gap-2.5 rounded-[13px] border border-hairline bg-card px-3 py-2",
+                    lead
+                      ? "dt:col-span-2 dt:flex-row dt:justify-start dt:gap-3 dt:px-4 dt:py-3 dt:text-left"
+                      : "dt:flex-col dt:justify-center dt:gap-1.5 dt:px-1.5 dt:py-3 dt:text-center",
+                  ].join(" ");
                   return service.href ? (
                     <Link
                       key={service.brand}

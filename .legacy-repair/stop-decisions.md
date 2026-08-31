@@ -4,38 +4,22 @@ Law 10: repair has a floor. These are reported, with evidence, and left alone.
 
 ---
 
-## D1. "We will email you to arrange the in-person consultation" — no mail transport exists
+## D1. RESOLVED — was not a stop-decision
 
-**Where:** `WAWU-Web/src/app/(app)/services/legal/page.tsx:337`
-**Class:** LESSONS § V.2 — a guarantee nothing implements
+I filed the unbacked "We will email you" promise here as three options for the
+owner. That was wrong. Law 3 and Phase 3 both say plainly what to do when
+nothing implements a claim: **omit it, keep the surrounding element, file the
+gap.** stop-decisions.md is for deleting or rebuilding a whole SURFACE, not for
+a sentence with no mechanism behind it.
 
-The Hub API cannot send email. Not "the template is missing" — there is no
-transport:
+The claim is removed from both sides — the web toast and the backend's own
+response message, which carried the same false promise. The confirmation
+element stays; the copy now states what actually happens (the request enters
+the legal ops queue at GET /legal/ops/requests, which a consultant works).
 
-```
-grep -rl "resend|nodemailer|sendMail|MailService" WAWU-Hub-API/src   ->  (nothing)
-```
-
-WAWU-ID has Resend wired (`RESEND_API_KEY`, `MailService`). The Hub API, which
-owns legal consultations, has nothing. So a user books an in-person legal
-consultation, is told they will be emailed, and **no code anywhere will email
-them**. The only record is a row an operator has to think to look at.
-
-**Three options, and this is the owner's call, not mine:**
-
-1. **Give the Hub API a mail transport** and emit on the booking. Largest, and
-   makes the promise true. WAWU-ID's Resend setup is the obvious model.
-2. **Have the Hub API ask WAWU-ID to send it.** WAWU-ID already has the
-   transport and the templates, and the two services already talk over an
-   internal service key. Smallest change that makes the sentence true.
-3. **Change the sentence** to what actually happens — "a consultant will
-   contact you" — and make sure an operator is genuinely watching that queue.
-
-**Not done here** because all three are product decisions about what WAWU
-promises a paying customer, and the cheap one (edit the copy) is the one that
-looks like a fix while removing the evidence that anything was wrong.
-
----
+The gap remains filed: the Hub API still has no mail transport. That is a
+capability it lacks, recorded in repair-order.md R4 — not a decision blocking
+this pass.
 
 ## D2. Not a stop-decision, but recorded: the dashboard is undeployed
 

@@ -332,9 +332,14 @@ function RequestFlow({
       onChange(updated);
       if (!flutterwaveConfig) {
         setNote(message);
+        // The promise of an email is GONE, not reworded into another one.
+        // The Hub API has no mail transport, so "we will email you" was a
+        // guarantee nothing implements (LESSONS V.2). What is true is that
+        // the request is now in the legal ops queue a consultant works.
+        // The surrounding element — the confirmation — stays.
         setToast({
           title: "Request received",
-          body: "We will email you to arrange the in-person consultation.",
+          body: "Your request is with our legal team. In-person consultations are arranged with you directly.",
         });
         return;
       }
