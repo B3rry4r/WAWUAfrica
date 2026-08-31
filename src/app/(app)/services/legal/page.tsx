@@ -59,13 +59,12 @@ export default function LegalPage() {
   const [catalogue, setCatalogue] = useState<LegalCatalogue | null>(null);
   const [requests, setRequests] = useState<LegalRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [category, setCategory] = useState<string | null>(null);
   const [active, setActive] = useState<LegalRequest | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     getLegalCatalogue()
-      .then((c) => { setCatalogue(c); setCategory(c.categories[0] ?? null); })
+      .then((c) => setCatalogue(c))
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load legal services."));
     getMyLegalRequests()
       .then((rows) => setRequests(Array.isArray(rows) ? rows : []))
@@ -73,8 +72,13 @@ export default function LegalPage() {
   }, []);
 
   const services = useMemo(
-    () => (catalogue?.services ?? []).filter((s) => s.category === category),
-    [catalogue, category],
+    // EVERY service, one list. There used to be a row of category pills above
+    // this and the list showed one category at a time — so finding "Tax
+    // registration" meant guessing which of six pills it lived under and
+    // clicking between them. Twenty-seven rows in two columns is shorter than
+    // the clicking was.
+    () => catalogue?.services ?? [],
+    [catalogue],
   );
 
   /**
@@ -212,23 +216,6 @@ export default function LegalPage() {
         <Skeleton variant="card" />
       ) : (
         <>
-          <div className="flex gap-2 overflow-x-auto [scrollbar-width:none]">
-            {catalogue.categories.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(c)}
-                className={`inline-flex h-8 flex-shrink-0 items-center whitespace-nowrap rounded-[var(--radius-chip)] border px-[14px] text-[13px] ${
-                  category === c
-                    ? "border-transparent bg-[var(--accent)] font-semibold text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] active:bg-[var(--accent-press)]"
-                    : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-
           {/*
             Rows, in TWO COLUMNS on desktop.
 
@@ -256,13 +243,15 @@ export default function LegalPage() {
                 className="flex items-center gap-[13px] border-b border-[var(--border-hairline)] px-[16px] py-[13px] text-left transition-colors last:border-b-0 hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] disabled:opacity-60 xl:[&:nth-last-child(2):nth-child(odd)]:border-b-0 xl:odd:border-r"
               >
                 <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                  <span className="flex items-center gap-[8px]">
-                    <span className="truncate text-[15px] font-semibold leading-[1.25] text-[var(--text-primary)]">
-                      {s.name}
-                    </span>
-                    <StatusPill kind={s.path === "simple" ? "success" : "info"}>
-                      {s.path === "simple" ? "No lawyer needed" : "Consultation"}
-                    </StatusPill>
+                  {/*
+                    The path pill is gone. "No lawyer needed" vs "Consultation"
+                    described how WAWU fulfils the request internally, not
+                    anything the buyer is choosing between — and on a list of
+                    twenty-seven it was twenty-seven pills competing with the
+                    names people are actually scanning for.
+                  */}
+                  <span className="truncate text-[15px] font-semibold leading-[1.25] text-[var(--text-primary)]">
+                    {s.name}
                   </span>
                   <span className="truncate text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
                     {s.blurb}
