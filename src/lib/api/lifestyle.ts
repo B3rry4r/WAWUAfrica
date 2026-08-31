@@ -26,6 +26,18 @@ export interface FlutterwaveConfig {
 export interface BillCategory {
   id: number;
   name: string;
+  /**
+   * The provider's category CODE — AIRTIME, INTSERVICE, CABLEBILLS.
+   *
+   * This field was missing from the type while being present on the wire, so
+   * the only string available to send was `name`, and that is exactly what
+   * the billers call sent. The provider matches on the code, so every
+   * category whose display name is not its code came back "Invalid category
+   * code": Internet Service, Cable Bill Payment, Mobile Data Service and
+   * Utility Bills all failed. Airtime worked only because "Airtime" happens
+   * to equal AIRTIME.
+   */
+  code?: string;
   biller_code?: string;
   item_code?: string;
 }

@@ -62,7 +62,11 @@ interface WawuIdTokenResult {
 
 /** WAWU ID's RegisterDto — top-level fields, not nested (see auth.dto/register.dto.ts). */
 interface WawuIdRegisterBody {
+  /** Still sent: WAWU ID falls back to splitting it for callers with no parts. */
   fullName: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
   email: string;
   phone: string;
   dialCode?: string;
@@ -165,6 +169,11 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
   try {
     const body: WawuIdRegisterBody = {
       fullName: payload.fullName,
+      // The parts are what WAWU ID actually stores. fullName above is kept so
+      // the request stays valid for readers that still expect it.
+      firstName: payload.firstName,
+      middleName: payload.middleName || undefined,
+      lastName: payload.lastName,
       email: payload.email,
       phone: payload.phone,
       dialCode: payload.phoneCountryCode,

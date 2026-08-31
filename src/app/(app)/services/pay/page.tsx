@@ -73,7 +73,8 @@ export default function PayPage() {
     setValidated(null); setCustomerRef(""); setAmount("");
     setBillers(null);
     try {
-      setBillers(await getBillers(c.name));
+      // The CODE, never the display name — the provider matches on the code.
+      setBillers(await getBillers(c.code ?? c.name));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load billers.");
     }

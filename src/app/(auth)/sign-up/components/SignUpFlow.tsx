@@ -34,7 +34,22 @@ export function SignUpFlow() {
 
   const [step, setStep] = useState<Step>("type");
   const [accountType, setAccountType] = useState<AccountType>("user");
-  const [identity, setIdentity] = useState({ fullName: "", email: "", password: "", phone: "", phoneCountryCode: "+234" });
+  const [identity, setIdentity] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    phoneCountryCode: "+234",
+  });
+
+  // What everything downstream still wants as one string. Middle name is
+  // included so the display name matches the ID the KYC reviewer holds.
+  const fullName = [identity.firstName, identity.middleName, identity.lastName]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(" ");
   const [details, setDetails] = useState({ country: "Nigeria", region: "", occupation: "", gender: "female" as "female" | "male" | "unspecified" | null, acceptedTerms: false });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -80,7 +95,7 @@ export function SignUpFlow() {
   const hasRegion = regionOptions.length > 0;
 
   const onContinueIdentity = () => {
-    if (identityError || !identity.fullName || !identity.phone) return;
+    if (identityError || !identity.firstName.trim() || !identity.lastName.trim() || !identity.phone) return;
     setStep("details");
   };
 
@@ -91,10 +106,11 @@ export function SignUpFlow() {
     try {
       await signUp({
         ...identity,
+        fullName,
         ...details,
         accountType,
       });
-      setOtpState({ email: identity.email, phone: identity.phone, fullName: identity.fullName, accountType });
+      setOtpState({ email: identity.email, phone: identity.phone, fullName, accountType });
       setStep("otp");
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Could not create your account.");
@@ -235,12 +251,41 @@ export function SignUpFlow() {
               </button>
             </div>
           ) : null}
+          {/*
+            Three fields, not one "Full name" box.
+
+            The single box was split on the first space, so "Ada Chidinma
+            Okeke" was stored with a surname of "Chidinma Okeke". KYC here is
+            a manual review against a government ID, and that record does not
+            match the document a reviewer is holding — which is also why the
+            note below is a requirement rather than a nicety.
+          */}
           <Input
-            label="Full name"
-            value={identity.fullName}
-            onChange={(e) => setIdentity({ ...identity, fullName: e.target.value })}
-            placeholder="Ada Okeke"
+            label="First name"
+            value={identity.firstName}
+            onChange={(e) => setIdentity({ ...identity, firstName: e.target.value })}
+            placeholder="Ada"
           />
+          <Input
+            label="Middle name (optional)"
+            value={identity.middleName}
+            onChange={(e) => setIdentity({ ...identity, middleName: e.target.value })}
+            placeholder="Chidinma"
+          />
+          <Input
+            label="Last name"
+            value={identity.lastName}
+            onChange={(e) => setIdentity({ ...identity, lastName: e.target.value })}
+            placeholder="Okeke"
+          />
+          <div className="flex items-start gap-2.5 rounded-input border border-hairline bg-input px-3.5 py-[11px]">
+            <Icon name="IdCard" size={16} color="var(--text-muted)" strokeWidth={2.2} className="mt-0.5 shrink-0" />
+            <span className="flex-1 text-[12.5px] leading-[1.45] text-text-secondary">
+              Enter your name exactly as it appears on your government ID. Verification and
+              payouts are checked against that document, and a name that does not match will
+              hold them up.
+            </span>
+          </div>
           <Input
             label="Email"
             type="email"
@@ -276,7 +321,7 @@ export function SignUpFlow() {
           </div>
         </div>
         <Footer>
-          <Button full size="lg" iconRight="ArrowRight" onClick={onContinueIdentity} disabled={Boolean(identityError) || !identity.fullName || !identity.phone}>
+          <Button full size="lg" iconRight="ArrowRight" onClick={onContinueIdentity} disabled={Boolean(identityError) || !identity.firstName.trim() || !identity.lastName.trim() || !identity.phone}>
             Continue
           </Button>
           <SecuredByWawuId />

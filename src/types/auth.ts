@@ -1,6 +1,17 @@
 import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "./account";
 
 export interface SignUpIdentity {
+  /**
+   * The three parts, collected separately.
+   *
+   * A single "Full name" box was split on the first space, which stored "Ada
+   * Chidinma Okeke" with a surname of "Chidinma Okeke". KYC is a manual review
+   * against a government ID, so that record does not match the document.
+   */
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  /** The three joined, for everything that still renders one display name. */
   fullName: string;
   email: string;
   password: string;
