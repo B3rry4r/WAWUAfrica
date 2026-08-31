@@ -268,7 +268,7 @@ export async function LandingContent() {
 
       <main className="relative z-10">
         {/* ============ HERO ============ */}
-        <section className="relative px-5 pb-16 pt-[120px] dt:pb-24 dt:pt-[190px]">
+        <section className="relative px-5 pb-12 pt-[120px] dt:pb-14 dt:pt-[190px]">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_55%_45%_at_50%_18%,var(--accent-tint-strong),transparent_70%)]"
             aria-hidden="true"
@@ -293,30 +293,25 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The hero collage: the product video beside one composed stack.
+            The video and the services are NOT paired side by side any more.
 
-            A portrait video is a tall, narrow thing. Giving it a wide column
-            marooned it in dead space; giving every neighbouring column its
-            full height blew the WOW cards up into empty slabs and let the
-            services rail run past the bottom edge. So the video keeps a
-            column exactly its own width, and everything else is ONE stack
-            beside it, three bands sharing the same left and right edges:
-            the four WOW cards as a compact 2x2, the two figures on one slim
-            row, the seven services on one shelf. Only the WOW band flexes,
-            so the stack always closes exactly on the video's bottom edge
-            and no band gaps open to fill the difference.
+            A 9:16 portrait video at 280px wide is about 500px tall. The
+            services beside it are about 350px. Pairing them left a ~340px
+            void down the right of the video that no amount of
+            `justify-between` could fill — the stack had nothing left to
+            stretch once the WOW cards and the (fabricated) stat row were
+            removed from it. Every attempt to close that gap made something
+            else worse: stretching the tiles turned them into empty slabs,
+            and shrinking the video wasted the one piece of real product
+            footage on the page.
 
-            Mobile stacks the same content in the same order: video, WOW
-            cards, figures, services.
+            So they stop competing. The video is its own centred moment at a
+            size that suits a phone-shaped video, and the services get the
+            FULL width underneath — which is also what they wanted all along:
+            seven tiles across four columns give "Loans/EasyBuy" room to sit
+            on one line instead of wrapping to three inside a 100px column.
           */}
-          {/*
-            Narrower than the sections below it, and still centred — `mx-auto`
-            with a smaller ceiling, not a shift. At 1240 this block ran the
-            full page width for a video and a few short cards, which is what
-            made the cards stretch to fill it. Pulling the ceiling in sizes
-            the cards by sizing their container.
-          */}
-          <div className="mx-auto mt-10 flex max-w-[1000px] flex-col gap-4 dt:mt-12 dt:flex-row dt:items-stretch dt:gap-4">
+          <div className="mx-auto mt-10 flex max-w-[1060px] flex-col items-center gap-7 dt:mt-12 dt:gap-9">
             {/*
               The product video, shot 9:16. `aspect-[9/16]` keeps its real
               shape — `object-cover` in a landscape box would have cropped
@@ -328,7 +323,7 @@ export async function LandingContent() {
               Muted and inline because a hero video that makes noise, or
               takes over the screen on iOS, is a hero video people close.
             */}
-            <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:mx-0 dt:w-[280px] dt:max-w-none dt:shrink-0 2xl:w-[300px]">
+            <div className="relative aspect-[9/16] w-full max-w-[230px] shrink-0 overflow-hidden rounded-card border border-hairline bg-[linear-gradient(150deg,var(--accent-deep),var(--surface-card))] dt:max-w-[250px]">
               <video
                 className="h-full w-full object-cover"
                 src="/landing-video.mp4"
@@ -347,7 +342,7 @@ export async function LandingContent() {
               two remaining bands spread their spacing instead of one of them
               stretching into a void.
             */}
-            <div className="flex min-w-0 flex-col gap-4 dt:flex-1 dt:justify-between">
+            <div className="flex w-full min-w-0 flex-col gap-4">
               {/*
                 The services across two rows of four rather than one row of
                 seven. In a narrower container seven columns leave each tile
@@ -362,7 +357,7 @@ export async function LandingContent() {
                 beside name, because four columns at 390px is not a tap
                 target.
               */}
-              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-3 dt:gap-2.5">
+              <div className="flex flex-col gap-2 dt:grid dt:grid-cols-4 dt:gap-3">
                 {QUICK_SERVICES.map((service) => {
                   const inner = (
                     <>
