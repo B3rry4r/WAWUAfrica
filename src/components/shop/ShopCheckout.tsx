@@ -195,10 +195,7 @@ export function ShopCheckout() {
 
   return (
     <Shell>
-      <ShopHeader title="Back to your WOW" />
-      <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[30px]">
-        Checkout
-      </h1>
+      <ShopHeader title="Checkout" />
 
       <div className="flex flex-col gap-[22px] xl:flex-row xl:items-start xl:gap-[28px]">
         <div className="flex min-w-0 flex-1 flex-col gap-[16px]">

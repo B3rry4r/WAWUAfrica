@@ -42,12 +42,7 @@ export function ShopHome() {
 
   return (
     <div className="flex flex-col gap-[26px] p-[14px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[1180px] xl:p-[26px_28px_64px]">
-      <div className="flex items-center gap-[12px]">
-        <h1 className="m-0 flex-1 text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[26px]">
-          Shop
-        </h1>
-        <ShopHeader />
-      </div>
+      <ShopHeader title="Shop" />
 
       {/*
         The hero question, unboxed.

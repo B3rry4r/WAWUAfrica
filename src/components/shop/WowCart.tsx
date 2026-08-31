@@ -61,11 +61,7 @@ export function WowCart() {
 
   return (
     <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[1000px] xl:p-[26px_28px_64px]">
-      <ShopHeader title="Keep shopping" />
-
-      <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[30px]">
-        Your WOW
-      </h1>
+      <ShopHeader title="Your WOW" />
 
       {loading ? (
         <div className="flex flex-col gap-[12px]">

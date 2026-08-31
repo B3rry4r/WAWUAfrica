@@ -6,7 +6,6 @@ import { listProducts, listSubcategories } from "@/lib/api/shop";
 import { describeError } from "@/lib/api/errors";
 import {
   BUDGET_BANDS,
-  PRODUCT_CATEGORY_EMOJI,
   PRODUCT_CATEGORY_LABEL,
   type Product,
   type ProductCategory,
@@ -88,18 +87,7 @@ export function CategoryBrowser({ category }: { category: ProductCategory | null
 
   return (
     <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:mx-auto xl:w-full xl:max-w-[1180px] xl:p-[26px_28px_64px]">
-      <ShopHeader />
-
-      <div className="flex items-center gap-[12px]">
-        {category ? (
-          <span aria-hidden className="text-[28px] leading-none">
-            {PRODUCT_CATEGORY_EMOJI[category]}
-          </span>
-        ) : null}
-        <h1 className="m-0 text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[30px]">
-          {heading}
-        </h1>
-      </div>
+      <ShopHeader title={heading} />
 
       <div className="flex flex-wrap items-center gap-[10px]">
         <div className="flex min-w-[220px] flex-1 gap-[8px] xl:max-w-[420px]">
