@@ -1,4 +1,5 @@
 import { apiFetch, isMockModeError } from "./client";
+import { describeError } from "./errors";
 
 /**
  * File uploads.
@@ -119,7 +120,12 @@ export async function uploadFile(
         size: file.size,
       };
     }
-    throw e;
+    // A REFUSAL is re-thrown as an UploadError carrying the server's own
+    // sentence. Presign is where the storage quota is enforced, and its 413
+    // says exactly how much room is left — but FilePicker only renders
+    // UploadError messages, so without this the one useful thing the server
+    // said would be replaced by "that upload did not go through".
+    throw new UploadError(describeError(e).body);
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -143,4 +149,25 @@ export async function uploadFile(
 
   onProgress?.(100);
   return { fileUrl: presign.fileUrl, key: presign.key, name: file.name, size: file.size };
+}
+
+
+/**
+ * How much of their storage this account has used.
+ *
+ * Every field is measured server-side: `usedBytes` is a sum over recorded
+ * objects and `limitBytes` derives from the plan. Nothing here is estimated
+ * client-side, so the meter cannot disagree with the refusal.
+ */
+export interface StorageUsage {
+  usedBytes: number;
+  limitBytes: number;
+  remainingBytes: number;
+  /** Null for an account with no creator plan — it still has the 2GB floor. */
+  tier: string | null;
+}
+
+export async function getStorageUsage(): Promise<StorageUsage> {
+  // SEAM: replace with GET /api/hub/uploads/usage
+  return apiFetch<StorageUsage>("/api/hub/uploads/usage", { authed: true });
 }

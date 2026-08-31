@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatNaira } from "@/lib/format";
 import { PLANS } from "@/types/subscription";
+import { StorageMeter } from "@/components/ui";
+import { DittoDistributionCard } from "./DittoDistributionCard";
 import type { Subscription } from "@/types/subscription";
 import type { CreatorTier } from "@/types/account";
 import { subscriptionApi } from "@/lib/api/subscription";
@@ -235,7 +237,9 @@ export function SubscriptionManagement() {
 
   const tier = subscription?.plan.tier ?? gates.tier ?? "basic";
   const state = subscription?.state ?? "active";
-  const tierLabel = tier === "pro" ? "Pro" : "Basic";
+  // PLANS[tier].name, not a two-way ternary: the old one predated Pro Max
+  // and labelled every Pro Max subscriber "Basic".
+  const tierLabel = PLANS[tier].name;
   const title = screen === "upgrade" ? "Move to Pro" : screen === "resubscribe" ? "Choose a plan" : "Tier and billing";
 
   const onBack = () => {
@@ -468,7 +472,7 @@ export function SubscriptionManagement() {
             >
               <Icon name={paidSummary.tier === "pro" ? "Crown" : "Check"} size={30} strokeWidth={2.2} color={paidSummary.tier === "pro" ? "var(--brand-yellow)" : "var(--accent)"} />
             </span>
-            <span className="text-[20px] font-bold tracking-[-0.02em]">You are on {paidSummary.tier === "pro" ? "Pro" : "Basic"}</span>
+            <span className="text-[20px] font-bold tracking-[-0.02em]">You are on {PLANS[paidSummary.tier].name}</span>
             <span className="text-[14px] leading-[1.5] text-[var(--text-secondary)] max-w-[270px]">
               {paidSummary.tier === "pro"
                 ? "Fifteen slots, private communities, and 90% of every sale from now on."
@@ -626,7 +630,7 @@ function CurrentView({
             </div>
           </div>
           <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-            We will try twice more before {tier === "pro" ? "Pro" : "Basic"} lapses.
+            We will try twice more before {PLANS[tier].name} lapses.
           </p>
           <Button full size="lg" loading={retrying} onClick={onRetryPayment}>
             Pay {formatNaira(price)} now
@@ -638,7 +642,7 @@ function CurrentView({
         <div className="flex flex-col gap-[14px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-strong)]">
           <div className="flex items-center gap-[10px]">
             <StatusPill kind="neutral">Expired</StatusPill>
-            <span className="flex-1 text-[12.5px] text-[var(--text-muted)]">{tier === "pro" ? "Pro" : "Basic"} ended {formatDate(subscription.cancelsAt ?? subscription.renewsAt)}</span>
+            <span className="flex-1 text-[12.5px] text-[var(--text-muted)]">{PLANS[tier].name} ended {formatDate(subscription.cancelsAt ?? subscription.renewsAt)}</span>
           </div>
           <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
             You are back to a plain creator account. Nothing was deleted and nobody lost anything they bought.
@@ -693,9 +697,24 @@ function CurrentView({
           <div className="h-[6px] rounded-[999px] bg-[var(--surface-tag)] overflow-hidden">
             <div className="h-full rounded-[999px] bg-[var(--accent)]" style={{width: `${Math.min(100, slotsPct)}%`}} />
           </div>
-          <span className="text-[12.5px] text-[var(--text-muted)]">{PLANS[tier].freeSlots} at no charge and {PLANS[tier].slots - PLANS[tier].freeSlots} priced, included on {tier === "pro" ? "Pro" : "Basic"}.</span>
+          <span className="text-[12.5px] text-[var(--text-muted)]">{PLANS[tier].freeSlots} at no charge and {PLANS[tier].slots - PLANS[tier].freeSlots} priced, included on {PLANS[tier].name}.</span>
         </Card>
       ) : null}
+
+      {/*
+        Storage is a SECOND limit and used to be invisible. Slots cap how many
+        pieces exist; this caps how much space they take, and the two run out
+        independently — fifteen slots of 4K video is not fifteen PDFs. A
+        creator refused an upload with slots to spare had no way to see why.
+      */}
+      {active ? (
+        <Card>
+          <StorageMeter />
+        </Card>
+      ) : null}
+
+      {/* Pro Max only, and it renders nothing on other plans. */}
+      {active ? <DittoDistributionCard /> : null}
 
       {expired ? (
         <>
@@ -720,7 +739,7 @@ function CurrentView({
 
       {active ? (
         <Card>
-          <CardLabel>What {tier === "pro" ? "Pro" : "Basic"} gives you</CardLabel>
+          <CardLabel>What {PLANS[tier].name} gives you</CardLabel>
           {PLANS[tier].features.map((f) => (
             <CheckRow key={f} ok>{f}</CheckRow>
           ))}
@@ -899,7 +918,7 @@ function DesktopSubscriptionView({
             <div className="flex items-center gap-[12px]">
               <TierBadge tier={tier} />
               <span className="text-[21px] font-semibold tracking-[-0.02em]">
-                {tier === "pro" ? "Pro" : "Basic"} · {formatNaira(price)} a year
+                {PLANS[tier].name} · {formatNaira(price)} a year
               </span>
             </div>
             <div className="flex gap-[32px]">
@@ -930,7 +949,7 @@ function DesktopSubscriptionView({
               </div>
             </div>
             <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-              We will try twice more before {tier === "pro" ? "Pro" : "Basic"} lapses.
+              We will try twice more before {PLANS[tier].name} lapses.
             </p>
             <Button size="lg" loading={retrying} onClick={onRetryPayment}>
               Pay {formatNaira(price)} now
@@ -943,7 +962,7 @@ function DesktopSubscriptionView({
             <div className="flex items-center gap-[10px]">
               <StatusPill kind="neutral">Expired</StatusPill>
               <span className="flex-1 text-[12.5px] text-[var(--text-muted)]">
-                {tier === "pro" ? "Pro" : "Basic"} ended {formatDate(subscription.cancelsAt ?? subscription.renewsAt)}
+                {PLANS[tier].name} ended {formatDate(subscription.cancelsAt ?? subscription.renewsAt)}
               </span>
             </div>
             <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">

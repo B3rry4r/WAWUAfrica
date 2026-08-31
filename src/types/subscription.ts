@@ -57,6 +57,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
     featuresLabel: "Get:",
     features: [
       "6 uploads a year — 1 included and 5 paid",
+      "2GB of storage",
       "Monetise audio, video, PDFs, art and digital works",
       "Paid consultations for professionals",
       "Unlimited messaging",
@@ -83,6 +84,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
     featuresLabel: "Everything in Basic, plus:",
     features: [
       "12 uploads a year — 2 included and 10 paid",
+      "2GB of storage",
       "Enhanced creator and professional profile",
       "Priority discovery and opportunities",
       "Open and private communities",
@@ -97,7 +99,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
     name: "Pro Max",
     price: 29999,
     headline: "Build your career. Build your business.",
-    slots: 12,
+    slots: 15,
     freeSlots: 2,
     split: 90,
     cta: "Go Pro Max",
@@ -117,6 +119,14 @@ export const PLANS: Record<CreatorTier, Plan> = {
       ],
     },
     features: [
+      // Pro Max lists its own upload and storage lines rather than inheriting
+      // "everything in Pro": both numbers go UP here, so leaving them to the
+      // inherited list would have the plan silently advertising Pro's 12 and
+      // 2GB. These must match UPLOAD_ALLOWANCE_BY_TIER and
+      // STORAGE_ALLOWANCE_BY_TIER in the API — that is what actually refuses
+      // an upload.
+      "15 uploads a year — 2 included and 13 paid",
+      "5GB of storage",
       "Priority support",
       "Featured and recommended opportunities",
       "Advanced creator monetisation",

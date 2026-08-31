@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Icon } from "./Icon";
+import { StorageMeter } from "./StorageMeter";
 import { uploadFile, UploadError, type UploadFolder, type UploadedFile } from "@/lib/api/uploads";
 
 function humanSize(bytes: number): string {
@@ -10,6 +11,18 @@ function humanSize(bytes: number): string {
   if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${bytes} B`;
 }
+
+/**
+ * The destinations where a capacity bar is worth the space: the ones a
+ * creator returns to and genuinely fills. Compliance uploads are excluded —
+ * see `showStorage`.
+ */
+const DEFAULT_SHOWS_STORAGE = new Set<UploadFolder>([
+  "content/preview",
+  "content/full",
+  "community/image",
+  "community/message",
+]);
 
 export interface FilePickerProps {
   /** Where the object is stored. Must be one the backend allows. */
@@ -25,6 +38,16 @@ export interface FilePickerProps {
   /** Offers a camera capture on mobile (used by KYC ID capture). */
   capture?: boolean;
   disabled?: boolean;
+  /**
+   * Shows how much of the account's storage is left, under the picker.
+   *
+   * On by default for the destinations a creator fills up — content and
+   * community media. Off for one-off compliance documents (a KYC ID, a CAC
+   * certificate): those are a few hundred KB against a 2GB ceiling, and a
+   * capacity bar next to "photograph your ID" reads as an obstacle in a flow
+   * that already makes people nervous.
+   */
+  showStorage?: boolean;
 }
 
 /**
@@ -46,11 +69,17 @@ export function FilePicker({
   onCleared,
   capture = false,
   disabled = false,
+  showStorage,
 }: FilePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Bumped after every successful upload so the meter re-reads rather than
+  // showing a total that is one file out of date.
+  const [uploadCount, setUploadCount] = useState(0);
+
+  const withMeter = showStorage ?? DEFAULT_SHOWS_STORAGE.has(folder);
 
   const choose = () => {
     if (disabled || progress !== null) return;
@@ -68,6 +97,7 @@ export function FilePicker({
     try {
       const result = await uploadFile(file, folder, setProgress);
       setUploaded(result);
+      setUploadCount((n) => n + 1);
       onUploaded(result);
     } catch (err) {
       setError(err instanceof UploadError ? err.message : "That upload did not go through. Please try again.");
@@ -148,6 +178,8 @@ export function FilePicker({
           {error}
         </span>
       ) : null}
+
+      {withMeter ? <StorageMeter refreshKey={uploadCount} className="pt-[2px]" /> : null}
     </div>
   );
 }

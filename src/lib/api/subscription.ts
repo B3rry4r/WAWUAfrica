@@ -309,3 +309,35 @@ export const subscriptionApi: SubscriptionApi = {
     }
   },
 };
+
+/**
+ * Ditto Music distribution — the Pro Max opt-in.
+ *
+ * Separate from the subscription calls on purpose: the opt-in is a consent
+ * record, not a property of the plan, and `signupUrl` is only populated once
+ * the creator has actually opted in. The discount rides on that link, so the
+ * server withholds it until then rather than the client hiding it.
+ */
+export interface DittoState {
+  /** Whether this account's plan includes distribution at all. */
+  eligible: boolean;
+  optedIn: boolean;
+  optedInAt: string | null;
+  signupUrl: string | null;
+  discountPercent: number;
+  /** False when there was no address on file. The link is still shown here. */
+  emailed: boolean;
+}
+
+export const dittoApi = {
+  getState: () =>
+    // SEAM: replace with GET /api/hub/creator-subscription/ditto
+    apiFetch<DittoState>("/api/hub/creator-subscription/ditto", { authed: true }),
+
+  optIn: () =>
+    // SEAM: replace with POST /api/hub/creator-subscription/ditto/opt-in
+    apiFetch<DittoState>("/api/hub/creator-subscription/ditto/opt-in", {
+      method: "POST",
+      authed: true,
+    }),
+};
