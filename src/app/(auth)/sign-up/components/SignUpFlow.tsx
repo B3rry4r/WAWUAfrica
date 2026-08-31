@@ -12,12 +12,7 @@ import { useAuthBrand } from "../../components/AuthBrand";
 import { useSession } from "@/lib/auth/session-provider";
 import { resendEmailVerificationCode, signUp, verifyOtp } from "@/lib/api/auth";
 import type { AccountType } from "@/types/account";
-
-const COUNTRIES: Record<string, string[]> = {
-  Nigeria: ["Abia", "Anambra", "Enugu", "Kano", "Kaduna", "Lagos", "Rivers"],
-  Ghana: [],
-  Kenya: ["Mombasa", "Nairobi"],
-};
+import { COUNTRIES, subdivisionLabelFor, subdivisionsFor } from "@/lib/geo";
 
 const INTERESTS = ["Business", "Agriculture", "Finance", "Trade", "Entertainment", "Career", "Education", "Health", "Technology", "Creative Arts", "Culture"];
 
@@ -40,7 +35,7 @@ export function SignUpFlow() {
   const [step, setStep] = useState<Step>("type");
   const [accountType, setAccountType] = useState<AccountType>("user");
   const [identity, setIdentity] = useState({ fullName: "", email: "", password: "", phone: "", phoneCountryCode: "+234" });
-  const [details, setDetails] = useState({ country: "Nigeria", region: "Enugu", occupation: "", gender: "female" as "female" | "male" | "unspecified" | null, acceptedTerms: false });
+  const [details, setDetails] = useState({ country: "Nigeria", region: "", occupation: "", gender: "female" as "female" | "male" | "unspecified" | null, acceptedTerms: false });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
@@ -81,7 +76,7 @@ export function SignUpFlow() {
       : `${count} fields need attention before you can continue.`;
   }, [identity.email, identity.password]);
 
-  const regionOptions = COUNTRIES[details.country] ?? [];
+  const regionOptions = subdivisionsFor(details.country);
   const hasRegion = regionOptions.length > 0;
 
   const onContinueIdentity = () => {
@@ -305,12 +300,14 @@ export function SignUpFlow() {
                 value={details.country}
                 onChange={(e) => {
                   const country = e.target.value;
-                  const regions = COUNTRIES[country] ?? [];
-                  setDetails({ ...details, country, region: regions[0] ?? "" });
+                  // Clear the region on every country change. Leaving "Lagos"
+                  // selected after switching to Kenya submits a Nigerian state
+                  // against a Kenyan account.
+                  setDetails({ ...details, country, region: "" });
                 }}
                 className="h-full w-full appearance-none bg-transparent px-4 pr-10 text-[15px] text-text-primary outline-none"
               >
-                {Object.keys(COUNTRIES).map((country) => (
+                {COUNTRIES.map((country) => (
                   <option key={country} value={country}>
                     {country}
                   </option>
@@ -328,13 +325,23 @@ export function SignUpFlow() {
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="signup-region" className="text-[13px] font-semibold text-text-secondary">
-              {details.country === "Ghana" ? "Region" : "State"}
+              {subdivisionLabelFor(details.country)}
             </label>
+            {/*
+              A country with no enumerated subdivisions gets a TEXT INPUT, not
+              a disabled box. This used to render "No regions listed" with the
+              field switched off — so anyone outside the three hardcoded
+              countries could not state where they live at all, and Ghana in
+              particular was an empty list that stopped the form dead.
+            */}
             {regionEmpty ? (
-              <div className="flex h-[52px] items-center gap-2.5 rounded-input border border-dashed border-hairline bg-input px-4 opacity-70">
-                <span className="flex-1 text-[15px] text-text-disabled">No regions listed</span>
-                <Icon name="Minus" size={16} color="var(--text-disabled)" strokeWidth={2.2} />
-              </div>
+              <input
+                id="signup-region"
+                value={details.region}
+                onChange={(e) => setDetails({ ...details, region: e.target.value })}
+                placeholder={`Your ${subdivisionLabelFor(details.country).toLowerCase()}`}
+                className="h-[52px] w-full rounded-input border border-hairline bg-input px-4 text-[15px] text-text-primary outline-none placeholder:text-text-muted focus:border-strong"
+              />
             ) : (
               <div className="relative flex h-[52px] items-center rounded-input border border-hairline bg-input">
                 <select
@@ -358,7 +365,9 @@ export function SignUpFlow() {
                 />
               </div>
             )}
-            {regionEmpty ? <span className="text-[12px] text-text-muted">Ghana has no regions on file yet, skip this and continue.</span> : null}
+            {regionEmpty ? (
+              <span className="text-[12px] text-text-muted">Type where you live.</span>
+            ) : null}
           </div>
           <Input
             label="Occupation"

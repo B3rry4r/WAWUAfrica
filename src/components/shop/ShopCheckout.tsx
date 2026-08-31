@@ -11,7 +11,8 @@ import {
 } from "@/lib/flutterwave";
 import { sessionStorage } from "@/lib/auth/session-storage";
 import { formatNaira } from "@/lib/format";
-import { NIGERIAN_STATES, type DeliveryDetails } from "@/types/shop";
+import type { DeliveryDetails } from "@/types/shop";
+import { subdivisionsFor } from "@/lib/geo";
 import { Button, Callout, Icon, Input, Skeleton } from "@/components/ui";
 import { ShopHeader } from "./ShopHeader";
 import { useWowCart } from "./WowCartProvider";
@@ -257,7 +258,7 @@ export function ShopCheckout() {
                     onChange={(e) => set("deliveryState", e.target.value)}
                     className="flex h-[52px] w-full cursor-pointer appearance-none items-center rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] text-[15px] text-[var(--text-primary)]"
                   >
-                    {NIGERIAN_STATES.map((s) => (
+                    {subdivisionsFor("Nigeria").map((s) => (
                       <option key={s} value={s}>
                         {s}
                       </option>

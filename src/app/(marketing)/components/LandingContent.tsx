@@ -77,6 +77,13 @@ const QUICK_SERVICES: {
   soon?: boolean;
 }[] = [
   {
+    brand: "Shop",
+    label: "Creator equipment",
+    blurb: "Cameras, mics, lights and laptops, checked before we stock them.",
+    icon: "ShoppingBag",
+    href: "/shop",
+  },
+  {
     brand: "Bills Payment",
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
@@ -184,7 +191,6 @@ interface CompareRow {
 
 const COMPARE_ROWS: CompareRow[] = [
   { feature: "Platform Fees", wawu: "10-15% (85-90% keep)", others: ["10-20% + /txn", "20%", "20%"] },
-  { feature: "Ecosystem Reach", wawu: "10M+ users", others: ["1.5M+ fans", "2M+", "N/A"] },
   { feature: "Training & Upskilling", wawu: "Training included for members", others: [false, false, false] },
   { feature: "Government Partnerships", wawu: "Federal Government-approved", others: [false, false, false] },
   { feature: "Device & Equipment Financing", wawu: "Partnerships", others: [false, false, false] },
@@ -342,33 +348,6 @@ export async function LandingContent() {
               stretching into a void.
             */}
             <div className="flex min-w-0 flex-col gap-4 dt:flex-1 dt:justify-between">
-              {/*
-                The two headline figures on one slim row. Side by side they
-                pick up the WOW columns' edges above them; the figure is the
-                point, not the box around it, so the tiles stay shallow.
-              */}
-              <div className="grid grid-cols-2 gap-3 dt:gap-4">
-                {[
-                  { icon: "Users" as IconName, figure: "10M+", label: "Active users" },
-                  { icon: "Globe" as IconName, figure: "109M+", label: "Reach across Africa" },
-                ].map((stat) => (
-                  <div
-                    key={stat.figure}
-                    className="flex items-center gap-3 rounded-card border border-hairline bg-card p-3 dt:px-4"
-                  >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-[color-mix(in_srgb,var(--accent)_32%,transparent)] bg-[color-mix(in_srgb,var(--accent)_13%,transparent)]">
-                      <Icon name={stat.icon} size={16} color="var(--accent)" strokeWidth={2.1} />
-                    </span>
-                    <span className="flex min-w-0 flex-col">
-                      <span className="text-[19px] font-bold leading-none tracking-[-0.03em] text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
-                        {stat.figure}
-                      </span>
-                      <span className="mt-1 text-[12px] leading-snug text-text-secondary">{stat.label}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-
               {/*
                 The services across two rows of four rather than one row of
                 seven. In a narrower container seven columns leave each tile
@@ -907,20 +886,15 @@ export async function LandingContent() {
               </div>
             </div>
             {/* Ecosystem, partnerships, unique advantages */}
-            <div className="mt-8 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
-              <div className="rounded-card border border-hairline bg-card p-6">
-                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Ecosystem &amp; Reach</span>
-                <div className="mt-4 flex flex-col gap-3.5">
-                  <span className="flex flex-col">
-                    <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">10M+</span>
-                    <span className="text-[12.5px] text-text-muted">Active users and members across the ecosystem</span>
-                  </span>
-                  <span className="flex flex-col">
-                    <span className="text-[24px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">109M+</span>
-                    <span className="text-[12.5px] text-text-muted">Reach across Africa</span>
-                  </span>
-                </div>
-              </div>
+            {/*
+              Two cards, capped and centred rather than stretched across the
+              full comparison-table width. This row used to hold three; with
+              the fabricated reach figures gone it holds two, and letting them
+              fill a 1240px container gave each one ~600px of width for five
+              short lines — a lot of empty card. The cap keeps them the size
+              the content actually is.
+            */}
+            <div className="mx-auto mt-8 grid max-w-[820px] grid-cols-1 gap-4 dt:grid-cols-2 dt:gap-5">
               <div className="rounded-card border border-hairline bg-card p-6">
                 <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent">Partnerships &amp; Endorsements</span>
                 <div className="mt-4 flex flex-col gap-2.5">

@@ -257,11 +257,9 @@ export const BUDGET_BANDS: ReadonlyArray<{ label: string; maxPriceNaira: number 
   { label: "Under ₦1m", maxPriceNaira: 1_000_000 },
 ];
 
-/** Nigerian states, for the delivery address. */
-export const NIGERIAN_STATES = [
-  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
-  "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT",
-  "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi",
-  "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo",
-  "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara",
-] as const;
+/**
+ * Nigerian states live in src/lib/geo.ts, with every other country's
+ * subdivisions. There were three divergent copies of this list in the app —
+ * sign-up had 7 of Nigeria's 37 states and an EMPTY array for Ghana, which
+ * stopped that form dead. One list now.
+ */

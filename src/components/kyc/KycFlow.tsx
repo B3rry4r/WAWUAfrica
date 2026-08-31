@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { COUNTRIES } from "@/lib/geo";
 import { useRouter } from "next/navigation";
 import { kycApi } from "@/lib/api/kyc";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
@@ -30,11 +31,6 @@ type DocTypeValue = (typeof docTypes)[number]["value"];
  * there, then the rest alphabetically. "Other" keeps someone from being locked
  * out by a list that will always be incomplete.
  */
-const KYC_COUNTRIES = [
-  "Nigeria", "Benin", "Cameroon", "Côte d'Ivoire", "Egypt", "Ethiopia", "Ghana", "Kenya",
-  "Liberia", "Morocco", "Rwanda", "Senegal", "Sierra Leone", "South Africa", "Tanzania",
-  "Togo", "Uganda", "Zambia", "Zimbabwe", "United Kingdom", "United States", "Canada", "Other",
-] as const;
 
 /** Banks WAWU can pay out to. Chosen by the creator, never assumed. */
 const payoutBanks = [
@@ -367,7 +363,7 @@ function NationalIdStep({
             onChange={(e) => onCountryChange(e.target.value)}
             className="flex h-[52px] w-full appearance-none items-center rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] text-[15px] text-[var(--text-primary)]"
           >
-            {KYC_COUNTRIES.map((c) => (
+            {COUNTRIES.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
