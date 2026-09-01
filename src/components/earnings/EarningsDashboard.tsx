@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CreatorOnly } from "@/components/ui";
 import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
@@ -77,7 +78,16 @@ export function EarningsDashboard() {
     );
   }
 
-  if (!gates.isCreator) return null;
+  // A blank page is not a gate. Somebody arriving here from a stale link is
+  // told what this is and given the way in, the same way /subscription does.
+  if (!gates.isCreator) {
+    return (
+      <div>
+        <FlowHeader title="Earnings" />
+        <CreatorOnly />
+      </div>
+    );
+  }
 
   if (earningsError !== null) {
     return (
@@ -104,7 +114,7 @@ export function EarningsDashboard() {
   }
 
   const tier = gates.tier ?? "basic";
-  const tierLabel = tier === "pro" ? "Pro" : "Basic";
+  const tierLabel = PLANS[tier].name;
   const keep = PLANS[tier].split;
   const earned = approved ? earnings.payable + earnings.held : earnings.held;
 

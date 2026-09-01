@@ -1,4 +1,5 @@
 import type { LearnEntitlement } from "@/types/learn";
+import { PLANS } from "@/types/subscription";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { Icon } from "@/components/ui/Icon";
 
@@ -63,7 +64,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
         <span className="text-[14px] font-semibold text-[var(--text-primary)]">
           {freeCoursesRemaining} included course{freeCoursesRemaining === 1 ? "" : "s"} available
         </span>
-        <span className="text-[12.5px] text-[var(--text-secondary)]">Comes with your {tier === "pro" ? "Pro" : "Basic"} tier</span>
+        <span className="text-[12.5px] text-[var(--text-secondary)]">Comes with your {PLANS[tier].name} tier</span>
       </div>
       <TierBadge tier={tier} />
     </div>

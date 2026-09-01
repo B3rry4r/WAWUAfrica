@@ -122,6 +122,9 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
   const gates = creatorGates({ creator });
   const tier = gates.tier ?? "basic";
   const tierIsPro = tier === "pro";
+  // The plan's own name: `tierIsPro` is a boolean and there are three tiers,
+  // so it called every Pro Max creator "Basic".
+  const tierName = PLANS[tier].name;
   const keep = PLANS[tier].split;
   const youEarn = Math.round((price * keep) / 100);
   const wawuTakes = price - youEarn;
@@ -466,7 +469,7 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
                     />
                     <div className="flex flex-col gap-[9px] border-t border-hairline pt-[14px]">
                       <div className="flex justify-between text-[13.5px] text-text-secondary">
-                        <span>You keep {keep}% on {tierIsPro ? "Pro" : "Basic"}</span>
+                        <span>You keep {keep}% on {tierName}</span>
                         <span className="font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
                           {formatNaira(youEarn)}
                         </span>

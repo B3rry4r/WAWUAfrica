@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CreatorOnly } from "@/components/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
@@ -126,14 +127,23 @@ export function CreatorDashboard() {
   }, [gates.isCreator, user?.wawuId]);
 
   // Hold off until the live creator state has actually settled (`resolved`),
-  // rather than painting from the sign-in-time snapshot — see
-  // useCreatorState. `!creator` after that means a genuine non-creator.
-  if (!hydrated || !resolved || !creator) return null;
+  // rather than painting from the sign-in-time snapshot. See useCreatorState.
+  // Blank is right here, and only here: it lasts a beat.
+  if (!hydrated || !resolved) return null;
+
+  // A settled `!creator` is a genuine non-creator, and blank is the wrong
+  // answer for them: it lasts forever. They get told what this is and how to
+  // get in, the same as /subscription and /create already did.
+  if (!creator) {
+    return <CreatorOnly />;
+  }
 
   const tier = gates.tier ?? creator.tier;
   const approved = gates.canEarn;
   const keep = PLANS[tier].split;
-  const tierLabel = tier === "pro" ? "Pro" : "Basic";
+  // PLANS[tier].name, not a two-way ternary: the old one predated Pro Max
+  // and labelled every Pro Max creator "Basic".
+  const tierLabel = PLANS[tier].name;
   const slotsLeft = gates.slotsRemaining;
   const earned = earnings ? (approved ? earnings.payable + earnings.held : earnings.held) : null;
   // Real per-stream figures from the same response as the total above, so

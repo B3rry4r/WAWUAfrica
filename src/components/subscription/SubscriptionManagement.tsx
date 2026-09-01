@@ -400,7 +400,7 @@ export function SubscriptionManagement() {
                       <CheckRow key={f} ok>{f}</CheckRow>
                     ))}
                     <Button full loading={resubTier === t} onClick={() => startTier(t)}>
-                      Start {t === "pro" ? "Pro" : "Basic"}, {formatNaira(PLANS[t].price)}
+                      Start {PLANS[t].name}, {formatNaira(PLANS[t].price)}
                     </Button>
                   </Card>
                 ))}
@@ -1134,7 +1134,7 @@ function DesktopSubscriptionView({
                   <CheckRow key={f} ok>{f}</CheckRow>
                 ))}
                 <Button full loading={resubTier === t} onClick={() => onStartTier(t)}>
-                  Start {t === "pro" ? "Pro" : "Basic"}, {formatNaira(PLANS[t].price)}
+                  Start {PLANS[t].name}, {formatNaira(PLANS[t].price)}
                 </Button>
               </Card>
             ))}

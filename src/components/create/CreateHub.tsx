@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PLANS } from "@/types/subscription";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CONTENT_TYPE_META, PUBLISHABLE_CONTENT_TYPES, type ContentType } from "@/types/content";
@@ -108,7 +109,7 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
       <span className="text-[12.5px] leading-[1.45] text-text-muted">
         {slotsFull
           ? "Every slot is in use. Take something down, or move up a tier for more room."
-          : `${slotsLeft} still open on ${tier === "pro" ? "Pro" : "Basic"}. Taking a piece down returns its slot.`}
+          : `${slotsLeft} still open on ${PLANS[tier].name}. Taking a piece down returns its slot.`}
       </span>
       <Link
         href="/create/library"

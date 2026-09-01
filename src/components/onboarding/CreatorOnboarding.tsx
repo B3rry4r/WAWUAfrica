@@ -156,7 +156,7 @@ export function CreatorOnboarding() {
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">You are already a creator</h2>
         <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">
-          Your {creator.tier === "pro" ? "Pro" : "Basic"} subscription is active, so uploading and the creator tools are
+          Your {PLANS[creator.tier].name} subscription is active, so uploading and the creator tools are
           already on.
         </p>
         {alreadyCopy ? (
@@ -226,7 +226,7 @@ export function CreatorOnboarding() {
             <Icon name="Check" size={34} strokeWidth={2.6} color="var(--accent)" />
           </span>
           <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">
-            Payment confirmed. You are on {tier === "pro" ? "Pro" : "Basic"}.
+            Payment confirmed. You are on {PLANS[tier].name}.
           </h2>
 
           <div className="flex flex-col gap-[8px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
@@ -462,7 +462,7 @@ export function CreatorOnboarding() {
         {step === "tier" ? (
           <>
             <Button full size="lg" onClick={pay} disabled={paying}>
-              {paying ? "Opening checkout…" : `Pay ${formatNaira(price)} with ${tier === "pro" ? "Pro" : "Basic"}`}
+              {paying ? "Opening checkout…" : `Pay ${formatNaira(price)} with ${PLANS[tier].name}`}
             </Button>
             <span className="text-[12px] text-[var(--text-muted)] self-center">Renews yearly. Cancel before renewal.</span>
           </>

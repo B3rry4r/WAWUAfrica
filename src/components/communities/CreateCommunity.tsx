@@ -260,7 +260,7 @@ export function CreateCommunity() {
             <div className="flex flex-col gap-[10px] rounded-card border border-hairline bg-card p-[15px]">
               <span className="text-[13.5px] font-semibold text-text-primary">Private communities come with Pro</span>
               <span className="text-[12.5px] leading-[1.5] text-text-secondary">
-                Your {gates.tier === "pro" ? "Pro" : "Basic"} tier hosts open communities with unlimited messages. Pro
+                Your {PLANS[gates.tier ?? "basic"].name} tier hosts open communities with unlimited messages. Pro
                 adds private ones you approve people into, {PLANS.pro.slots} upload slots instead of {PLANS.basic.slots},
                 and a {PLANS.pro.split}/{100 - PLANS.pro.split} split.
               </span>

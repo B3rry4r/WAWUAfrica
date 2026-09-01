@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { PLANS } from "@/types/subscription";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -422,7 +423,7 @@ function AboutTab({ profile }: { profile: CreatorProfile }) {
         <SectionLabel>Verified as</SectionLabel>
         <div className="flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-hairline bg-card px-4 py-[15px]">
           <BadgeRow icon={<Icon name="Award" size={18} color="var(--accent)" strokeWidth={2.2} />} text={VERIFY_LABELS[profile.verification]} />
-          <BadgeRow icon={<Icon name="Crown" size={18} color="var(--brand-yellow)" strokeWidth={2.2} />} text={`${profile.plan === "pro" ? "Pro" : "Basic"} creator`} />
+          <BadgeRow icon={<Icon name="Crown" size={18} color="var(--brand-yellow)" strokeWidth={2.2} />} text={`${PLANS[profile.plan].name} creator`} />
         </div>
       </div>
 

@@ -128,7 +128,7 @@ export function PaidMessagesSettings() {
   }, [gates.isCreator]);
 
   const tier = gates.tier ?? "basic";
-  const tierLabel = tier === "pro" ? "Pro" : "Basic";
+  const tierLabel = PLANS[tier].name;
   const keep = PLANS[tier].split;
   /** Never set: nothing to price, nothing to earn, nothing to state. */
   const priceSet = price !== null && price > 0;
