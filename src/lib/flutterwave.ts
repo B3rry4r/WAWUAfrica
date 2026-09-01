@@ -245,12 +245,15 @@ export const pendingCharge = {
 export function shouldRedirectToCheckout(config: FlutterwaveChargeConfig): boolean {
   if (process.env.NEXT_PUBLIC_FLUTTERWAVE_MODE === "inline") return false;
   if (process.env.NEXT_PUBLIC_FLUTTERWAVE_MODE === "redirect") return true;
-  // DEFAULT: redirect. The inline path is the one with a known failure — this
-  // account's public key is rejected by Flutterwave, so the modal opens and
-  // then refuses. Hosted checkout has been confirmed working end to end on the
-  // same account. Defaulting to the path that works, and making the broken one
-  // opt-in, is the right way round until a valid public key exists.
-  return true;
+  // Inline whenever there is a usable public key, because paying without
+  // leaving the app is the better experience. Redirect is the FALLBACK, for
+  // an environment that has no key at all — which is exactly the state this
+  // product was in when the modal opened and then said "Invalid public key".
+  //
+  // So the choice is made by what is actually configured rather than by a
+  // flag somebody has to remember to set: a broken or missing key degrades to
+  // a checkout that works instead of one that cannot.
+  return !config.publicKey || /mock|placeholder|not-real/i.test(config.publicKey);
 }
 
 /**
