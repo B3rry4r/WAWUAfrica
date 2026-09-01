@@ -49,17 +49,49 @@ export function AuthBrandPanel() {
   const content = ctx?.content ?? DEFAULT_BRAND;
 
   return (
-    <div className="hidden xl:flex xl:w-[520px] xl:shrink-0 xl:flex-col xl:gap-[26px] xl:border-r xl:border-hairline xl:p-12 xl:bg-[linear-gradient(160deg,_var(--accent-deep)_0%,_var(--surface-page)_100%)]">
-      <Link href="/" aria-label="WAWUAfrica home" className="self-start">
+    <div className="relative hidden overflow-hidden xl:flex xl:w-[520px] xl:shrink-0 xl:flex-col xl:gap-[26px] xl:border-r xl:border-hairline xl:p-12 xl:bg-[linear-gradient(160deg,_var(--accent-deep)_0%,_var(--surface-page)_100%)]">
+      {/*
+        The portrait product video, behind the panel.
+        
+        It is the one that used to sit in the landing hero, where it was the
+        wrong shape — a 9:16 video beside a row of tiles left a tall void down
+        one side. This panel is exactly that shape, so it finally fits.
+
+        Only ever rendered at xl. The whole panel is `hidden xl:flex`, so a
+        phone never downloads the file — which matters, because it is a large
+        one and this is a sign-in screen, not a landing page.
+
+        The gradient over it is not decoration: white text on moving footage
+        is unreadable about a third of the time. The scrim keeps the copy at a
+        fixed contrast whatever frame is playing, and it is anchored to the
+        bottom where the copy actually sits.
+      */}
+      <video
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
+        src="/landing-video.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(11,10,13,0.68)_0%,rgba(11,10,13,0.42)_26%,rgba(11,10,13,0.82)_58%,rgba(11,10,13,0.95)_100%)]"
+        aria-hidden="true"
+      />
+
+      <Link href="/" aria-label="WAWUAfrica home" className="relative z-10 self-start">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-7 w-auto object-contain" />
       </Link>
 
       {content.kind === "marketing" ? (
-        <div className="mt-auto flex flex-col gap-[22px]">
+        <div className="relative z-10 mt-auto flex flex-col gap-[22px]">
           <span className="text-[34px] font-bold leading-[1.12] tracking-[-0.03em] text-text-primary">
             Creators earning from what they already know.
           </span>
-          <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-[rgba(11,10,13,0.55)] p-[22px]">
+          <div className="flex flex-col gap-3.5 rounded-card border border-hairline bg-[rgba(11,10,13,0.72)] p-[22px] backdrop-blur-sm">
             <p className="m-0 text-[14.5px] leading-[1.55] text-text-secondary">
               &ldquo;I registered my business and sold my first course in the same week.&rdquo;
             </p>
@@ -73,7 +105,7 @@ export function AuthBrandPanel() {
           </div>
         </div>
       ) : (
-        <div className="mt-auto flex flex-col gap-4">
+        <div className="relative z-10 mt-auto flex flex-col gap-4">
           {content.steps.map((label, i) => {
             const n = i + 1;
             const state = n < content.current ? "done" : n === content.current ? "active" : "upcoming";

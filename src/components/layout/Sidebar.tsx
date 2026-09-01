@@ -37,8 +37,19 @@ const BASE_ITEMS: NavItem[] = [
   { href: "/communities", label: "Communities", icon: "Users" },
   { href: "/explore", label: "Explore", icon: "Compass" },
   { href: "/messages", label: "Messages", icon: "MessageCircle" },
-  { href: "/settings", label: "Settings", icon: "Settings" },
 ];
+
+/**
+ * Settings, rendered LAST on the rail rather than fifth.
+ *
+ * On mobile it is slot 5 of a five-slot bar and stays there — that bar is
+ * frozen (CLAUDE.md) and BottomNav keeps its own list. But the rail carries
+ * four more destinations after those five, so fifth-of-nine put Settings in
+ * the middle of the navigation with Shop, Services, Events and Professionals
+ * below it. Settings is not a destination you browse to; it is where you go
+ * when you are done, so it sits at the end of the list.
+ */
+const SETTINGS_ITEM: NavItem = { href: "/settings", label: "Settings", icon: "Settings" };
 
 function navRowClass(active: boolean) {
   return [
@@ -207,6 +218,20 @@ export function Sidebar() {
           strokeWidth={professionalsActive ? 2.4 : 2}
         />
         Professionals
+      </Link>
+
+      {/* Last of the navigation rows — see SETTINGS_ITEM. */}
+      <Link
+        href={SETTINGS_ITEM.href}
+        className={navRowClass(pathname.startsWith(SETTINGS_ITEM.href))}
+      >
+        <Icon
+          name={SETTINGS_ITEM.icon}
+          size={20}
+          color={pathname.startsWith(SETTINGS_ITEM.href) ? "var(--accent)" : "var(--text-secondary)"}
+          strokeWidth={pathname.startsWith(SETTINGS_ITEM.href) ? 2.4 : 2}
+        />
+        {SETTINGS_ITEM.label}
       </Link>
 
       {!resolved ? (

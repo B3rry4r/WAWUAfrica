@@ -1,5 +1,6 @@
 import { getCategories } from "@/lib/api/explore";
 import { TileCard } from "@/components/ui";
+import type { IconName } from "@/components/ui/Icon";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 
 export default async function CategoriesPage() {
@@ -18,8 +19,8 @@ export default async function CategoriesPage() {
         does the separating now, and it is stable per position so a category
         keeps its identity between visits.
 
-        No icons: these have never had one, and a glyph invented per category
-        would be inventing meaning rather than adding it.
+        The icon comes from the shared taxonomy, which has always carried one
+        per category — it is not invented here.
       */}
       <div className="grid grid-cols-2 gap-[10px] p-[14px_16px_96px] sm:grid-cols-3 xl:grid-cols-4 xl:gap-3 xl:p-[26px]">
         {categories.map((category, i) => (
@@ -27,6 +28,9 @@ export default async function CategoriesPage() {
             key={category.id}
             index={i}
             title={category.name}
+            // The taxonomy has carried an icon per category all along — see
+            // CATEGORIES in src/lib/categories.ts. Nothing is invented here.
+            icon={category.icon as IconName}
             href={`/explore/creators?category=${category.id}`}
           />
         ))}
