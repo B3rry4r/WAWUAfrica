@@ -311,6 +311,11 @@ function RequestFlow({
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
         title: "Legal consultation",
         description: `${updated.serviceName} · ${kind}`,
+      }, {
+        verifyPath: `/api/hub/legal/requests/${request.id}/consultation/verify`,
+        verifyShape: "camel_id_only",
+        successPath: "/services/legal",
+        label: "Your consultation",
       });
       const confirmed = await verifyLegalConsultation(request.id, result.transaction_id);
       onChange(confirmed);
@@ -353,6 +358,11 @@ function RequestFlow({
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
         title: "Legal",
         description: request.serviceName,
+      }, {
+        verifyPath: `/api/hub/legal/requests/${request.id}/payment/verify`,
+        verifyShape: "camel_id_only",
+        successPath: "/services/legal",
+        label: "Your legal work",
       });
       onChange(await verifyLegalPayment(request.id, result.transaction_id));
     } catch (e) {

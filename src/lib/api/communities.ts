@@ -637,6 +637,10 @@ export async function topUpCredits(
     const charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
       title: "WAWU Credits",
       description: `Credit pack, ${pack}`,
+    }, {
+      verifyPath: "/api/hub/credits/purchase/verify",
+      successPath: "/communities",
+      label: "Your credits",
     });
 
     onCharged?.();

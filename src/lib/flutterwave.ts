@@ -165,6 +165,95 @@ export interface CheckoutResult {
 }
 
 /**
+ * What the caller wants done when the payer comes BACK from a hosted checkout.
+ *
+ * Only needed in redirect mode: an inline modal resolves in place, so the
+ * caller keeps its own promise. A redirect destroys the page, so the intent
+ * has to survive the round trip on its own.
+ */
+export interface CheckoutReturn {
+  /** The owning resource's verify endpoint. It re-checks the charge server-side. */
+  verifyPath: string;
+  /** Extra body fields the verify call needs beyond the transaction id. */
+  verifyBody?: Record<string, unknown>;
+  /**
+   * What the owning endpoint calls the transaction id, and whether it also
+   * takes tx_ref.
+   *
+   * These are NOT uniform across the product: most verify DTOs take
+   * `transaction_id` + `tx_ref` (echoing Flutterwave's own callback), while
+   * bills, care and legal take a camelCase `transactionId` alone. The global
+   * ValidationPipe runs with forbidNonWhitelisted, so sending the wrong shape
+   * is a 400, not a tolerated extra field.
+   */
+  verifyShape?: "snake_with_ref" | "camel_id_only";
+  /** Where to land once the charge is verified. */
+  successPath: string;
+  /** Where to land if they abandoned or it failed. Defaults to the page they left. */
+  cancelPath?: string;
+  /** Shown while the return page is verifying. */
+  label?: string;
+}
+
+const PENDING_KEY = "wawu.pendingCharge";
+
+export interface PendingCharge extends CheckoutReturn {
+  txRef: string;
+}
+
+/**
+ * The pending charge, parked across the redirect.
+ *
+ * sessionStorage rather than a URL parameter: the verify path and body are
+ * ours, not Flutterwave's, and round-tripping them through a third party's
+ * redirect would let anything come back claiming to be a verify target.
+ * Every access is guarded because sessionStorage throws outright in a private
+ * window, and a storage failure must not take payment down with it.
+ */
+export const pendingCharge = {
+  set(v: PendingCharge): void {
+    try {
+      window.sessionStorage.setItem(PENDING_KEY, JSON.stringify(v));
+    } catch {
+      // Non-fatal: the return page falls back to the home screen.
+    }
+  },
+  take(): PendingCharge | null {
+    try {
+      const raw = window.sessionStorage.getItem(PENDING_KEY);
+      if (!raw) return null;
+      window.sessionStorage.removeItem(PENDING_KEY);
+      return JSON.parse(raw) as PendingCharge;
+    } catch {
+      return null;
+    }
+  },
+};
+
+/**
+ * True when checkout should REDIRECT rather than open in place.
+ *
+ * The inline SDK authenticates with a public key. When that key is missing or
+ * rejected, inline cannot work at all, and a modal that opens and then says
+ * "Invalid public key" is worse than a redirect that completes. The hosted
+ * page needs only the secret key, which lives on the server.
+ *
+ * Explicitly forced with NEXT_PUBLIC_FLUTTERWAVE_MODE=redirect; otherwise it
+ * is inferred from the absence of a usable public key, so an environment that
+ * never had one does the right thing without extra configuration.
+ */
+export function shouldRedirectToCheckout(config: FlutterwaveChargeConfig): boolean {
+  if (process.env.NEXT_PUBLIC_FLUTTERWAVE_MODE === "inline") return false;
+  if (process.env.NEXT_PUBLIC_FLUTTERWAVE_MODE === "redirect") return true;
+  // DEFAULT: redirect. The inline path is the one with a known failure — this
+  // account's public key is rejected by Flutterwave, so the modal opens and
+  // then refuses. Hosted checkout has been confirmed working end to end on the
+  // same account. Defaulting to the path that works, and making the broken one
+  // opt-in, is the right way round until a valid public key exists.
+  return true;
+}
+
+/**
  * Opens Flutterwave's inline checkout and resolves with the REAL
  * transaction id once the payer completes the charge.
  *
@@ -180,12 +269,20 @@ export async function openFlutterwaveCheckout(
   config: FlutterwaveChargeConfig,
   customer: CheckoutCustomer,
   labels: { title: string; description: string },
+  onReturn?: CheckoutReturn,
 ): Promise<CheckoutResult> {
-  // A blank/placeholder key means the environment is not actually set up to
-  // take money. Fail loudly here rather than opening a checkout modal that
-  // cannot possibly complete.
-  if (!config.publicKey || /mock|placeholder|not-real/i.test(config.publicKey)) {
-    throw new Error("Payments are not configured on this environment yet.");
+  if (shouldRedirectToCheckout(config)) {
+    if (!onReturn) {
+      // A caller that has not said what happens after the round trip cannot
+      // be sent on one: the payer would come back to a page with no idea a
+      // charge had happened. Better to say so than to take their money and
+      // lose the thread.
+      throw new Error("Payments are not configured on this environment yet.");
+    }
+    // NEVER resolves: the line below navigates away and this page is gone.
+    // The return page picks the flow back up from the parked record.
+    await redirectToHostedCheckout(config, customer, labels, onReturn);
+    return new Promise<CheckoutResult>(() => {});
   }
 
   await loadCheckoutScript();
@@ -246,4 +343,41 @@ export async function openFlutterwaveCheckout(
 export function checkoutCustomerFromSession(user: { email?: string; fullName?: string } | null): CheckoutCustomer | null {
   if (!user?.email) return null;
   return { email: user.email, name: user.fullName };
+}
+
+/**
+ * Sends the payer to Flutterwave's own checkout page.
+ *
+ * The link is minted server-side, because it needs the SECRET key. The server
+ * also re-reads the amount from the charge it already recorded, so nothing
+ * here can name a price.
+ */
+async function redirectToHostedCheckout(
+  config: FlutterwaveChargeConfig,
+  customer: CheckoutCustomer,
+  labels: { title: string; description: string },
+  onReturn: CheckoutReturn,
+): Promise<void> {
+  const { apiFetch } = await import("./api/client");
+
+  pendingCharge.set({
+    ...onReturn,
+    txRef: config.txRef,
+    cancelPath: onReturn.cancelPath ?? window.location.pathname + window.location.search,
+  });
+
+  const { link } = await apiFetch<{ link: string }>("/api/hub/payments/hosted-link", {
+    method: "POST",
+    authed: true,
+    body: {
+      txRef: config.txRef,
+      currency: config.currency ?? "NGN",
+      title: labels.title,
+      description: labels.description,
+      customerEmail: config.customerEmail ?? customer.email,
+      redirectUrl: `${window.location.origin}/payment/return`,
+    },
+  });
+
+  window.location.assign(link);
 }

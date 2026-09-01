@@ -90,7 +90,11 @@ async function chargeAndVerify(
   const charge = await openFlutterwaveCheckout(config, customer, {
     title: `WAWU ${tierLabel}`,
     description: `Creator subscription, ${tierLabel}, billed yearly`,
-  });
+    }, {
+      verifyPath: "/api/hub/creator-subscription/verify",
+      successPath: "/creator",
+      label: "Your plan",
+    });
 
   onCharged?.();
 

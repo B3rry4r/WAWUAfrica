@@ -43,6 +43,10 @@ export async function sendTip(
     const charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
       title: `Tip ${creator.name}`,
       description: "Tip on WAWU",
+    }, {
+      verifyPath: "/api/hub/tips/verify",
+      successPath: "/home",
+      label: "Your tip",
     });
 
     // Past this line the money HAS moved. A failure now is not a decline —

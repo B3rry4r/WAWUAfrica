@@ -309,7 +309,11 @@ export async function payCacApplication(payload: CacApplicationPayload): Promise
   const charge = await openFlutterwaveCheckout(applied.flutterwaveConfig, customer, {
     title: "CAC registration",
     description: "Business name registration fee",
-  });
+    }, {
+      verifyPath: "/api/hub/services/cac/apply/verify",
+      successPath: "/services/applications",
+      label: "Your application",
+    });
 
   const verified = await apiFetch<RealServiceApplication>("/api/hub/services/cac/apply/verify", {
     method: "POST",

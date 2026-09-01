@@ -224,6 +224,10 @@ export default function ContentDetailPage() {
       charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
         title: content!.title,
         description: `Unlock on WAWU`,
+      }, {
+        verifyPath: `/api/hub/content/${content!.id}/unlock/verify`,
+        successPath: `/content/${content!.id}`,
+        label: "Your unlock",
       });
     } catch (e) {
       // Nothing has been charged at this point: either the init call was

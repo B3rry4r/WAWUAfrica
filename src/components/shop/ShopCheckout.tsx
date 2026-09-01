@@ -136,6 +136,10 @@ export function ShopCheckout() {
       charge = await openFlutterwaveCheckout(opened.flutterwaveConfig, customer, {
         title: "WAWU Shop",
         description: `${cart?.itemCount ?? 0} item${cart?.itemCount === 1 ? "" : "s"}`,
+      }, {
+        verifyPath: `/api/hub/shop/orders/${opened.orderId}/verify`,
+        successPath: "/shop/orders",
+        label: "Your order",
       });
     } catch (e) {
       // Closing the modal charges nothing. Do not accuse their bank.

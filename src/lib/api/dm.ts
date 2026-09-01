@@ -164,6 +164,10 @@ export async function sendPaidDm(
       const charge = await openFlutterwaveCheckout(init.flutterwaveConfig, customer, {
         title: `Message ${creator.name}`,
         description: "Paid direct message on WAWU",
+      }, {
+        verifyPath: `/api/hub/dm/${init.threadId}/send/verify`,
+        successPath: "/messages",
+        label: "Your message",
       });
       // The charge has completed by now; a verify failure must not invite a
       // retry that charges the sender a second time.

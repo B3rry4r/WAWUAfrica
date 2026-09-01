@@ -138,6 +138,11 @@ export default function PayPage() {
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
         title: biller.name,
         description: `${item.name} for ${customerRef.trim()}`,
+      }, {
+        verifyPath: `/api/hub/bills/${billPaymentId}/verify`,
+        verifyShape: "camel_id_only",
+        successPath: "/services/pay",
+        label: "Your bill",
       });
 
       const record = await verifyBillPayment(billPaymentId, result.transaction_id);

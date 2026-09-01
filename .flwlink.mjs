@@ -1,0 +1,10 @@
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ channel: 'chrome' });
+const p = await b.newPage({ viewport: { width: 1100, height: 900 }, deviceScaleFactor: 2 });
+await p.goto(process.argv[2], { waitUntil: 'networkidle', timeout: 90000 });
+await p.waitForTimeout(9000);
+const t = (await p.locator('body').innerText().catch(()=>'')).replace(/\s+/g,' ');
+console.log('page text:', t.slice(0, 300));
+console.log('invalid-key error present:', /invalid public key/i.test(t));
+await p.screenshot({ path: process.argv[3] });
+await b.close();

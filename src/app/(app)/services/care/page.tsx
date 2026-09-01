@@ -82,6 +82,11 @@ export default function CarePage() {
       const result = await openFlutterwaveCheckout(flutterwaveConfig, customer, {
         title: "Telemedicine",
         description: selected.planName,
+      }, {
+        verifyPath: `/api/hub/care/subscriptions/${subscriptionId}/verify`,
+        verifyShape: "camel_id_only",
+        successPath: "/services/care",
+        label: "Your cover",
       });
       const record = await verifyHealthSubscription(subscriptionId, result.transaction_id);
       setDone(record);

@@ -125,6 +125,10 @@ export function TicketPurchasePanel({ event, referralCode }: TicketPurchasePanel
       charge = await openFlutterwaveCheckout(opened.flutterwaveConfig, customer, {
         title: event.name,
         description: `${tier.name} · ${quantity} ticket${quantity === 1 ? "" : "s"}`,
+      }, {
+        verifyPath: `/api/hub/events/orders/${opened.orderId}/verify`,
+        successPath: "/tickets?just=1",
+        label: "Your tickets",
       });
     } catch (e) {
       // Closing the checkout charges nothing. Returning to idle rather than
