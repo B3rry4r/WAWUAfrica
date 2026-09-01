@@ -29,28 +29,21 @@ const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text
 /**
  * One service, as a card.
  *
- * This was a bordered row with a chevron, repeated down two columns — legible,
- * but the same shape a database table has. It carries the icon it already has,
- * unlike the legal and category lists, which have none and therefore get the
- * colour alone rather than an invented glyph.
+ * The NAME is the only text on it, on the product owner's instruction (1 Sep
+ * 2026). The tagline and the price/turnaround line were removed: on a grid of
+ * cards the names are what somebody scans, and three lines per card turned
+ * eight of them into a wall of prose. Price and turnaround still live on the
+ * service's own screen, where somebody is actually deciding.
+ *
+ * "Coming soon" is not written on the card either — the grid is already split
+ * under an "Open now" / "Coming soon" heading, so repeating it on every card
+ * says the same thing twice.
  */
 function ServiceCard({ s, index }: { s: PartnerService; index: number }) {
   const live = s.status === "live";
-  const meta = [s.priceFrom, s.turnaround].filter(Boolean).join(" · ");
   const href = live ? (s.cta?.href ?? `/services/${s.slug ?? s.id}`) : `/services/${s.slug ?? s.id}`;
 
-  return (
-    <TileCard
-      index={index}
-      title={s.name}
-      subtitle={live ? s.tagline : "Coming soon"}
-      // The price and turnaround are the two facts somebody compares, so they
-      // stay on the card rather than behind a tap.
-      meta={live && meta ? meta : undefined}
-      icon={s.icon as IconName}
-      href={href}
-    />
-  );
+  return <TileCard index={index} title={s.name} icon={s.icon as IconName} href={href} />;
 }
 
 const TIMELINE_DOT: Record<"done" | "current" | "upcoming", string> = {
@@ -221,7 +214,6 @@ export default function ServicesPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-[18px]">
             <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[22px]">
               <span className={eyebrow}>Included with any account</span>
-              <ListRow title="Mentors" subtitle="Book time with people who have done it · no charge" icon="UserRoundSearch" href="/services/mentors" />
               <ListRow title="Business playbook" subtitle="The full guide, yours to download" icon="BookOpen" href="/learn/playbook" />
             </div>
 

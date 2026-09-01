@@ -486,10 +486,6 @@ export default function NepcApplyPage() {
                 </button>
               );
             })}
-            <div className="mt-auto flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
-              <span className="text-[12.5px] font-semibold text-[var(--text-primary)]">Need help?</span>
-              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">A mentor can review your export plan before you submit, at no charge.</span>
-            </div>
           </div>
 
           <div className="flex min-h-0 flex-col gap-[16px] overflow-y-auto">

@@ -15,7 +15,7 @@ import { useCreatorState } from "@/lib/auth/use-creator-state";
  * Route prefixes that render their own local back/title header and must not
  * get the global one stacked on top. A route "owns" its header if it matches
  * exactly or falls under one of these prefixes (e.g. "/services" also covers
- * "/services/cac", "/services/mentors/[id]", etc). Add new screens here as
+ * "/services/cac", "/services/legal", etc). Add new screens here as
  * they grow their own header instead of hardcoding exact paths.
  */
 const OWN_HEADER_ROUTES = [

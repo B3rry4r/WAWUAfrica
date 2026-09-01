@@ -65,8 +65,18 @@ export default async function ProfessionalsPage({
           Still scrolls in its own container, so the page body never scrolls
           sideways.
         */}
-        <div className="-mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
-          <div className="flex w-max gap-[10px] pb-[4px]">
+        <div className="wawu-no-scrollbar -mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
+          {/*
+            Vertical padding, not decoration: the selected card is marked with
+            an `outline-offset-2`, and an outline drawn outside the element is
+            clipped by the scroll container unless there is room for it. Without
+            this the chosen field looked cut off along the top and bottom.
+
+            wawu-no-scrollbar for the same reason every other chip row in the
+            app uses it — a horizontal scrollbar under a single row of cards
+            reads as a rendering fault rather than an affordance.
+          */}
+          <div className="flex w-max gap-[10px] py-[6px]">
             <TileCard
               size="sm"
               index={0}

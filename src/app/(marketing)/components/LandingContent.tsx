@@ -95,7 +95,10 @@ const QUICK_SERVICES: {
     label: "Borrow",
     blurb: "Apply for credit against what you earn here.",
     icon: "Landmark",
-    href: "/services/loans/apply",
+    // Not open yet, same as BNPL. Both halves of the old "Loans/EasyBuy"
+    // entry are coming soon — splitting them was about naming two different
+    // products, not about opening one of them.
+    soon: true,
     bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]",
   },
   {
@@ -1049,7 +1052,7 @@ export async function LandingContent() {
         <div className="grid grid-cols-2 gap-x-5 gap-y-7 dt:grid-cols-4">
           {[
             { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Join the Movement", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
-            { label: "Resources", links: [["Explore", "/explore"], ["Learn", "/learn"], ["Services", "/services"], ["Mentors", "/services/mentors"]] },
+            { label: "Resources", links: [["Explore", "/explore"], ["Learn", "/learn"], ["Services", "/services"]] },
             { label: "Company", links: [["Terms", "/terms"], ["Privacy", "/privacy/policy"]] },
           ].map((col) => (
             <div key={col.label} className="flex flex-col gap-3">

@@ -135,7 +135,7 @@ export default async function ExplorePage() {
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
             <ListRow title="Bills Payment" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
             <ListRow title="Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
-            <ListRow title="CAC, NEPC, mentors and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
+            <ListRow title="CAC, NEPC, legal and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
           </div>
         </section>
       </div>
