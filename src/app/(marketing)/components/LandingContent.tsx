@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { TileCard } from "@/components/ui/TileCard";
 import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
 import { PLANS, PLAN_ORDER } from "@/types/subscription";
@@ -345,43 +346,22 @@ export async function LandingContent() {
             <div className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_5%,black_95%,transparent)]">
               <div className="flex w-max gap-4 pr-4 animate-[wawuMarquee_46s_linear_infinite] hover:[animation-play-state:paused]">
                 {[0, 1].map((copy) =>
-                  QUICK_SERVICES.map((service) => {
-                    const card = (
-                      <>
-                        <span className="absolute -bottom-4 -right-4 opacity-25">
-                          <Icon name={service.icon} size={110} color="var(--text-on-accent)" strokeWidth={1.2} />
-                        </span>
-                        <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.78),transparent)] px-4 pb-3 pt-8 text-left">
-                          <span className="block text-[15px] font-bold leading-tight text-white">{service.brand}</span>
-                          <span className="mt-0.5 block text-[11.5px] leading-tight text-[rgba(255,255,255,0.72)]">
-                            {service.soon ? "Coming soon" : service.label}
-                          </span>
-                        </span>
-                      </>
-                    );
-                    const shell = `relative block h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${service.bg} dt:h-[170px] dt:w-[270px]`;
-                    return service.href ? (
-                      <Link
-                        key={`${service.brand}-${copy}`}
-                        href={service.href}
-                        aria-hidden={copy === 1}
-                        tabIndex={copy === 1 ? -1 : undefined}
-                        className={`${shell} no-underline transition-transform duration-200 hover:scale-[1.03]`}
-                      >
-                        {card}
-                      </Link>
-                    ) : (
+                  QUICK_SERVICES.map((service) => (
+                    <TileCard
+                      key={`${service.brand}-${copy}`}
+                      size="lg"
+                      title={service.brand}
+                      subtitle={service.soon ? "Coming soon" : service.label}
+                      icon={service.icon}
+                      gradientClass={service.bg}
                       // Not yet openable, so deliberately not a link: a card
-                      // that navigates nowhere is worse than one that says so.
-                      <div
-                        key={`${service.brand}-${copy}`}
-                        aria-hidden={copy === 1}
-                        className={`${shell} opacity-45 grayscale`}
-                      >
-                        {card}
-                      </div>
-                    );
-                  }),
+                      // that navigates nowhere is worse than one saying so.
+                      {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
+                      // The duplicate half exists only so the -50% loop lines
+                      // up; a screen reader must not read the list twice.
+                      className={copy === 1 ? "[&]:pointer-events-none" : ""}
+                    />
+                  )),
                 )}
               </div>
             </div>

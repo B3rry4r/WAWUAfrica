@@ -7,7 +7,6 @@ import {
   getLegalCatalogue,
   getLegalAvailability,
   createLegalRequest,
-  getMyLegalRequests,
   bookLegalConsultation,
   verifyLegalConsultation,
   getLegalContract,
@@ -23,7 +22,7 @@ import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSe
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
-import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill, Toast } from "@/components/ui";
+import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill, TileCard, Toast } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -57,7 +56,6 @@ export default function LegalPage() {
   // open and take payment here unless the page refuses on its own.
   const live = useServiceLive("legal");
   const [catalogue, setCatalogue] = useState<LegalCatalogue | null>(null);
-  const [requests, setRequests] = useState<LegalRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<LegalRequest | null>(null);
   const [busy, setBusy] = useState(false);
@@ -66,9 +64,6 @@ export default function LegalPage() {
     getLegalCatalogue()
       .then((c) => setCatalogue(c))
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load legal services."));
-    getMyLegalRequests()
-      .then((rows) => setRequests(Array.isArray(rows) ? rows : []))
-      .catch(() => setRequests([]));
   }, []);
 
   const services = useMemo(
@@ -117,7 +112,6 @@ export default function LegalPage() {
     try {
       const created = await createLegalRequest({ serviceCode: service.code, documents });
       setActive(created);
-      setRequests((r) => [created, ...r]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start that request.");
     } finally {
@@ -139,10 +133,7 @@ export default function LegalPage() {
         request={active}
         consultationOptions={catalogue?.consultationOptions ?? []}
         onBack={() => setActive(null)}
-        onChange={(r) => {
-          setActive(r);
-          setRequests((list) => list.map((x) => (x.id === r.id ? r : x)));
-        }}
+        onChange={(r) => setActive(r)}
         email={user?.email}
         fullName={user?.fullName}
       />
@@ -192,25 +183,6 @@ export default function LegalPage() {
         <Icon name="ChevronRight" size={18} color="var(--text-muted)" strokeWidth={2} />
       </Link>
 
-      {requests.length ? (
-        <div className="flex flex-col gap-[8px]">
-          <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Your requests</span>
-          {requests.slice(0, 5).map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => setActive(r)}
-              className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] text-left hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)]"
-            >
-              <span className="flex flex-col">
-                <span className="text-[14px] font-semibold text-[var(--text-primary)]">{r.serviceName}</span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">{humanStatus(r.status)}</span>
-              </span>
-              <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {!catalogue ? (
         <Skeleton variant="card" />
@@ -233,37 +205,29 @@ export default function LegalPage() {
             The whole row is the target, so there is one obvious thing to
             press and a far larger tap area than a small button in a card.
           */}
-          <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] xl:grid-cols-2">
-            {services.map((s) => (
-              <button
+          {/*
+            Cards, not rows.
+
+            Twenty-seven identical bordered rows with a chevron read as a
+            database table — the name you are scanning for had nothing to
+            distinguish it from its twenty-six neighbours. These carry no icon
+            because legal services have never had one and inventing a glyph
+            per service would be inventing meaning; the colour does the
+            separating instead, and it is stable per service between visits.
+
+            The price stays on the card: it is the thing somebody is actually
+            comparing across the list.
+          */}
+          <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
+            {services.map((s, i) => (
+              <TileCard
                 key={s.code}
-                type="button"
+                index={i}
+                title={s.name}
+                subtitle={s.blurb}
+                meta={s.priceNaira ? formatNaira(s.priceNaira) : "Priced after review"}
                 onClick={() => startRequest(s)}
-                disabled={busy}
-                className="flex items-center gap-[13px] border-b border-[var(--border-hairline)] px-[16px] py-[13px] text-left transition-colors last:border-b-0 hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] disabled:opacity-60 xl:[&:nth-last-child(2):nth-child(odd)]:border-b-0 xl:odd:border-r"
-              >
-                <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                  {/*
-                    The path pill is gone. "No lawyer needed" vs "Consultation"
-                    described how WAWU fulfils the request internally, not
-                    anything the buyer is choosing between — and on a list of
-                    twenty-seven it was twenty-seven pills competing with the
-                    names people are actually scanning for.
-                  */}
-                  <span className="truncate text-[15px] font-semibold leading-[1.25] text-[var(--text-primary)]">
-                    {s.name}
-                  </span>
-                  <span className="truncate text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-                    {s.blurb}
-                  </span>
-                  {/* The price stays on the row: it is the thing somebody is
-                      comparing across twenty-seven lines. */}
-                  <span className="text-[12px] font-medium text-[var(--text-muted)]">
-                    {s.priceNaira ? formatNaira(s.priceNaira) : "Priced after we review it"}
-                  </span>
-                </span>
-                <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
-              </button>
+              />
             ))}
           </div>
         </>

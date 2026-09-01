@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getServices, getOtherApplications } from "@/lib/api/services";
 import type { PartnerService, ServiceApplication } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TierBadge } from "@/components/ui";
+import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TierBadge, TileCard } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
@@ -26,50 +26,30 @@ const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text
  * rather than a button inside it: a larger tap area and one obvious thing to
  * press.
  */
-function ServiceRow({ s }: { s: PartnerService }) {
+/**
+ * One service, as a card.
+ *
+ * This was a bordered row with a chevron, repeated down two columns — legible,
+ * but the same shape a database table has. It carries the icon it already has,
+ * unlike the legal and category lists, which have none and therefore get the
+ * colour alone rather than an invented glyph.
+ */
+function ServiceCard({ s, index }: { s: PartnerService; index: number }) {
   const live = s.status === "live";
   const meta = [s.priceFrom, s.turnaround].filter(Boolean).join(" · ");
   const href = live ? (s.cta?.href ?? `/services/${s.slug ?? s.id}`) : `/services/${s.slug ?? s.id}`;
 
   return (
-    <Link
+    <TileCard
+      index={index}
+      title={s.name}
+      subtitle={live ? s.tagline : "Coming soon"}
+      // The price and turnaround are the two facts somebody compares, so they
+      // stay on the card rather than behind a tap.
+      meta={live && meta ? meta : undefined}
+      icon={s.icon as IconName}
       href={href}
-      className="flex items-center gap-[13px] border-b border-[var(--border-hairline)] px-[16px] py-[13px] no-underline text-inherit transition-colors last:border-b-0 hover:bg-[var(--surface-hover)] active:bg-[var(--surface-press)] xl:[&:nth-last-child(2):nth-child(odd)]:border-b-0 xl:odd:border-r"
-    >
-      <span
-        className={`grid h-[40px] w-[40px] shrink-0 place-items-center rounded-[12px] border ${
-          live
-            ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
-            : "border-[var(--border-hairline)] bg-[var(--surface-tag)]"
-        }`}
-      >
-        <Icon
-          name={s.icon as IconName}
-          size={19}
-          color={live ? "var(--accent)" : "var(--text-secondary)"}
-          strokeWidth={live ? 2.2 : 2}
-        />
-      </span>
-
-      <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-        <span className="flex items-center gap-[8px]">
-          <span className="truncate text-[15px] font-semibold leading-[1.25] text-[var(--text-primary)]">
-            {s.name}
-          </span>
-          {!live ? <ComingSoonPill>Soon</ComingSoonPill> : null}
-        </span>
-        <span className="truncate text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-          {s.tagline}
-        </span>
-        {/* The price and turnaround are the two facts somebody is comparing,
-            so they stay on the row rather than behind a tap. */}
-        {live && meta ? (
-          <span className="text-[11.5px] font-medium text-[var(--text-muted)]">{meta}</span>
-        ) : null}
-      </span>
-
-      <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2} />
-    </Link>
+    />
   );
 }
 
@@ -218,9 +198,9 @@ export default function ServicesPage() {
 
           <div className="flex flex-col gap-[14px]">
             <span className={eyebrow}>Open now</span>
-            <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] xl:grid-cols-2">
-              {live.map((s) => (
-                <ServiceRow key={s.id} s={s} />
+            <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
+              {live.map((s, i) => (
+                <ServiceCard key={s.id} s={s} index={i} />
               ))}
             </div>
           </div>
@@ -228,9 +208,11 @@ export default function ServicesPage() {
           {coming.length ? (
             <div className="flex flex-col gap-[14px]">
               <span className={eyebrow}>Coming soon</span>
-              <div className="grid overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] xl:grid-cols-2">
-                {coming.map((s) => (
-                  <ServiceRow key={s.id} s={s} />
+              <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
+                {coming.map((s, i) => (
+                  // Offset so the "coming soon" block does not repeat the
+                  // exact colour sequence the block above it just used.
+                  <ServiceCard key={s.id} s={s} index={i + live.length} />
                 ))}
               </div>
             </div>

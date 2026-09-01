@@ -19,6 +19,7 @@ export { EngagementBar } from "./EngagementBar";
 export { ErrorState } from "./ErrorState";
 export { FilePicker } from "./FilePicker";
 export { StorageMeter } from "./StorageMeter";
+export { TileCard, TILE_GRADIENTS, tileGradient } from "./TileCard";
 export { HandoffPill } from "./HandoffPill";
 export { Icon } from "./Icon";
 export type { IconName } from "./Icon";

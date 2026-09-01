@@ -4,6 +4,7 @@ import { CATEGORIES, type CategoryId } from "@/lib/categories";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { TileCard } from "@/components/ui/TileCard";
 import { ProfessionalCard } from "@/components/professionals/ProfessionalCard";
 import type { ProfessionalListing } from "@/types/professional";
 
@@ -52,17 +53,36 @@ export default async function ProfessionalsPage({
           </p>
         </div>
 
-        {/* Horizontal filter. Scrolls in its own container so the page body
-            never scrolls sideways. */}
+        {/*
+          The field filter, as cards rather than a strip of grey pills.
+
+          Same treatment as the landing services and the legal list, at the
+          smaller size — a row of these has to stay a filter, not become a
+          second page of content. No icons: professional fields have never had
+          one, and the colour is what separates them. Selected state is an
+          OUTLINE, so picking one does not resize the card and shuffle the row.
+
+          Still scrolls in its own container, so the page body never scrolls
+          sideways.
+        */}
         <div className="-mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
-          <div className="flex w-max gap-[8px]">
-            <FilterChip href="/professionals" label="All" active={!active} />
-            {CATEGORIES.map((c) => (
-              <FilterChip
+          <div className="flex w-max gap-[10px] pb-[4px]">
+            <TileCard
+              size="sm"
+              index={0}
+              title="All"
+              href="/professionals"
+              selected={!active}
+            />
+            {CATEGORIES.map((c, i) => (
+              <TileCard
                 key={c.id}
+                size="sm"
+                // +1 so "All" and the first field do not share a colour.
+                index={i + 1}
+                title={c.name}
                 href={`/professionals?category=${c.id}`}
-                label={c.name}
-                active={active === c.id}
+                selected={active === c.id}
               />
             ))}
           </div>
@@ -97,18 +117,3 @@ export default async function ProfessionalsPage({
   );
 }
 
-function FilterChip({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={[
-        "whitespace-nowrap rounded-full border px-[13px] py-[7px] text-[12.5px] no-underline transition-colors",
-        active
-          ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-accent"
-          : "border-hairline bg-card font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
-      ].join(" ")}
-    >
-      {label}
-    </Link>
-  );
-}

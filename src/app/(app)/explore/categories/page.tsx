@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { getCategories } from "@/lib/api/explore";
-import type { ExploreCategoryId } from "@/types/explore";
+import { TileCard } from "@/components/ui";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 
 export default async function CategoriesPage() {
@@ -11,22 +10,27 @@ export default async function CategoriesPage() {
       <div className="xl:hidden">
         <ScreenHeader title="Categories" />
       </div>
-      <div className="flex flex-1 content-start flex-wrap gap-2 overflow-hidden p-[14px_16px_96px] xl:gap-3 xl:p-[26px]">
-        {categories.map((category) => (
-          <CategoryTile key={category.id} id={category.id} name={category.name} />
+      {/*
+        Cards, not a wrapped bag of grey pills.
+
+        Every category looked identical, so the whole screen was one texture
+        and picking a category meant reading every label in turn. The colour
+        does the separating now, and it is stable per position so a category
+        keeps its identity between visits.
+
+        No icons: these have never had one, and a glyph invented per category
+        would be inventing meaning rather than adding it.
+      */}
+      <div className="grid grid-cols-2 gap-[10px] p-[14px_16px_96px] sm:grid-cols-3 xl:grid-cols-4 xl:gap-3 xl:p-[26px]">
+        {categories.map((category, i) => (
+          <TileCard
+            key={category.id}
+            index={i}
+            title={category.name}
+            href={`/explore/creators?category=${category.id}`}
+          />
         ))}
       </div>
     </div>
-  );
-}
-
-function CategoryTile({ id, name }: { id: ExploreCategoryId; name: string }) {
-  return (
-    <Link
-      href={`/explore/creators?category=${id}`}
-      className="inline-flex h-8 items-center rounded-full border border-hairline bg-tag px-[13px] text-[12.5px] font-medium text-text-secondary no-underline hover:border-strong hover:bg-surface-hover active:bg-surface-press"
-    >
-      {name}
-    </Link>
   );
 }
