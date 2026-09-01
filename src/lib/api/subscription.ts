@@ -110,7 +110,11 @@ export interface BillingHistoryPage {
 export interface SubscriptionApi {
   getSubscription: () => Promise<Subscription>;
   /** First-time creator onboarding: pay for the chosen tier, Basic or Pro. */
-  subscribe: (tier: CreatorTier, onCharged?: () => void) => Promise<Subscription>;
+  /**
+   * `referralCode` is passed through untouched — the server looks up the
+   * percentage and recomputes the naira. The client never names a price.
+   */
+  subscribe: (tier: CreatorTier, onCharged?: () => void, referralCode?: string) => Promise<Subscription>;
   /** Returns the updated subscription plus the amount Flutterwave actually charged (the server prorates the remaining Basic term). */
   upgradeToPro: () => Promise<{ subscription: Subscription; amountCharged: number }>;
   /** Starts (or restarts, after expiry) the Basic tier at full price — no proration. */
@@ -144,12 +148,12 @@ export const subscriptionApi: SubscriptionApi = {
     }
   },
 
-  subscribe: async (tier, onCharged) => {
+  subscribe: async (tier, onCharged, referralCode) => {
     try {
       const init = await apiFetch<FlutterwaveConfigResponse>("/api/hub/creator-subscription", {
         method: "POST",
         authed: true,
-        body: { tier },
+        body: { tier, ...(referralCode ? { referralCode } : {}) },
       });
       const row = await chargeAndVerify(init.flutterwaveConfig, PLANS[tier].tier === "pro" ? "Pro" : "Basic", onCharged);
       return toSubscription(row);

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
 import { PLANS } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
+import { checkReferralCode, type ReferralCodeCheck } from "@/lib/api/referral";
+import { referralStorage } from "@/lib/auth/referral-storage";
 import { subscriptionApi } from "@/lib/api/subscription";
 import { isFlutterwaveCancelled } from "@/lib/flutterwave";
 import { useSession } from "@/lib/auth/session-provider";
@@ -40,7 +42,33 @@ export function CreatorOnboarding() {
   // real renewal date rather than a hardcoded one.
   const [renewsAt, setRenewsAt] = useState<string | null>(null);
 
-  const price = PLANS[tier].price;
+  /**
+   * The referral code they applied at sign-up, if any.
+   *
+   * Loaded once and re-checked against the server rather than trusted from
+   * storage: the price must come from the same place that will charge it, and
+   * a code can have been deactivated or used up since sign-up.
+   */
+  const [referral, setReferral] = useState<ReferralCodeCheck | null>(null);
+  useEffect(() => {
+    const stored = referralStorage.get();
+    if (!stored) return;
+    let active = true;
+    checkReferralCode(stored)
+      .then((check) => active && setReferral(check))
+      // A code that no longer validates simply does not apply. Blocking
+      // somebody from subscribing over it would be worse than the full price.
+      .catch(() => referralStorage.clear());
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const listPrice = PLANS[tier].price;
+  // A code is issued against ONE plan, so it only discounts that plan. Picking
+  // a different tier must not silently carry the discount across.
+  const discountApplies = referral !== null && referral.tier === tier && referral.discountPercent > 0;
+  const price = discountApplies ? referral.priceNaira : listPrice;
   // Yearly billing, so the term ends a year from today. Used before payment
   // (the confirm screen has no server date yet); the success screen prefers
   // the real `renewsAt` the subscription came back with.
@@ -63,10 +91,11 @@ export function CreatorOnboarding() {
     // flow feel broken. `onCharged` flips to it once the charge is real.
     setPaying(true);
     subscriptionApi
+      // The code goes to the server, not the price: it recomputes the naira.
       .subscribe(tier, () => {
         setPaying(false);
         setStep("processing");
-      })
+      }, referral?.tier === tier ? referral.code : undefined)
       .then((subscription) => {
         // Apply the tier the SERVER confirmed, not the one the user picked:
         // this is what flips canUpload on for the rest of the app, so it must
@@ -352,9 +381,24 @@ export function CreatorOnboarding() {
               <div className="flex">
                 <TierBadge tier={tier} />
               </div>
-              <div className="flex items-baseline gap-[7px]">
-                <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
-                <span className="text-[14px] text-[var(--text-muted)]">a year</span>
+              <div className="flex flex-col gap-[4px]">
+                <div className="flex items-baseline gap-[7px]">
+                  {discountApplies ? (
+                    <s className="text-[18px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+                      {formatNaira(listPrice)}
+                    </s>
+                  ) : null}
+                  <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
+                  <span className="text-[14px] text-[var(--text-muted)]">a year</span>
+                </div>
+                {discountApplies ? (
+                  <span className="flex items-center gap-[7px]">
+                    <span className="rounded-full bg-[var(--accent)] px-[8px] py-[2px] text-[11px] font-bold text-[var(--text-on-accent)]">
+                      {referral.discountPercent}% off
+                    </span>
+                    <span className="text-[12px] text-[var(--text-muted)]">code {referral.code}</span>
+                  </span>
+                ) : null}
               </div>
 
               <div
