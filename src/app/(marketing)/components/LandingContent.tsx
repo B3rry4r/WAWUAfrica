@@ -34,19 +34,6 @@ const PIPELINE = ["Training", "Payments", "Banking", "Healthcare", "Legal", "Tra
  * copy while the illustration stays until content carries its own preview.
  */
 
-const FIELDS: { name: string; icon: IconName; bg: string }[] = [
-  { name: "Business", icon: "Briefcase", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
-  { name: "Trade", icon: "Ship", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
-  { name: "Finance", icon: "Landmark", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]" },
-  { name: "Entertainment", icon: "Music", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
-  { name: "Career", icon: "Rocket", bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]" },
-  { name: "Education", icon: "GraduationCap", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
-  { name: "Agriculture", icon: "Sprout", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]" },
-  { name: "Health", icon: "HeartPulse", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]" },
-  { name: "Technology", icon: "Cpu", bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]" },
-  { name: "Creative Arts", icon: "Palette", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]" },
-  { name: "Culture", icon: "Globe", bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]" },
-];
 
 /**
  * Quick Services — the white-labelled utilities that sit alongside the
@@ -75,6 +62,8 @@ const QUICK_SERVICES: {
   icon: IconName;
   href?: string;
   soon?: boolean;
+  /** The card's own gradient, same treatment the industry cards used. */
+  bg: string;
 }[] = [
   {
     brand: "Shop",
@@ -82,6 +71,7 @@ const QUICK_SERVICES: {
     blurb: "Cameras, mics, lights and laptops, checked before we stock them.",
     icon: "ShoppingBag",
     href: "/shop",
+    bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]",
   },
   {
     brand: "Bills Payment",
@@ -89,6 +79,7 @@ const QUICK_SERVICES: {
     blurb: "Pay any bill in seconds.",
     icon: "CreditCard",
     href: "/services/pay",
+    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]",
   },
   {
     brand: "Legal",
@@ -96,20 +87,35 @@ const QUICK_SERVICES: {
     blurb: "CAC and tax filings, or book a lawyer.",
     icon: "Scale",
     href: "/services/legal",
+    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]",
   },
   {
-    brand: "Loans/EasyBuy",
-    label: "Instalments",
-    blurb: "Spread the cost over monthly payments.",
-    icon: "Smartphone",
+    brand: "Loans",
+    label: "Borrow",
+    blurb: "Apply for credit against what you earn here.",
+    icon: "Landmark",
     href: "/services/loans/apply",
+    bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]",
+  },
+  {
+    // Split out of "Loans/EasyBuy" on the product owner's instruction (1 Sep
+    // 2026) and renamed: BNPL and a loan are different products — one is
+    // instalments on a purchase, the other is credit — and one slash was
+    // making them read as a single service.
+    brand: "BNPL",
+    label: "Buy now, pay later",
+    blurb: "Spread the cost of a purchase over monthly payments.",
+    icon: "Smartphone",
+    soon: true,
+    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]",
   },
   {
     brand: "Pensions",
     label: "Retirement",
     blurb: "Save for later on irregular income.",
     icon: "PiggyBank",
-    href: "/services/pension/apply",
+    soon: true,
+    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]",
   },
   {
     brand: "Events",
@@ -117,6 +123,7 @@ const QUICK_SERVICES: {
     blurb: "Find what is happening, or list your own.",
     icon: "CalendarDays",
     href: "/events",
+    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]",
   },
   {
     brand: "Telemedicine",
@@ -124,6 +131,7 @@ const QUICK_SERVICES: {
     blurb: "See a doctor and get covered.",
     icon: "Stethoscope",
     soon: true,
+    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-aqua))]",
   },
 
 ];
@@ -293,81 +301,88 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The video and the services are NOT paired side by side any more.
+            The product video, then the services.
 
-            A 9:16 portrait video at 280px wide is about 500px tall. The
-            services beside it are about 350px. Pairing them left a ~340px
-            void down the right of the video that no amount of
-            `justify-between` could fill — the stack had nothing left to
-            stretch once the WOW cards and the (fabricated) stat row were
-            removed from it. Every attempt to close that gap made something
-            else worse: stretching the tiles turned them into empty slabs,
-            and shrinking the video wasted the one piece of real product
-            footage on the page.
+            Landscape 16:9, so it sits ABOVE the services at full width rather
+            than beside them. The previous portrait video was paired sideways
+            with the tiles and left a tall void down one side that no amount
+            of `justify-between` could close. Stacking is also the only thing
+            that works unchanged on a phone.
 
-            So they stop competing. The video is its own centred moment at a
-            size that suits a phone-shaped video, and the services get the
-            FULL width underneath — which is also what they wanted all along:
-            seven tiles across four columns give "Loans/EasyBuy" room to sit
-            on one line instead of wrapping to three inside a 100px column.
+            Muted + playsInline + autoplay is the only combination iOS Safari
+            will start on its own; without `playsinline` it takes the video
+            fullscreen the moment it plays.
           */}
-          <div className="mx-auto mt-10 flex w-full max-w-[1180px] flex-col gap-4 dt:mt-12">
-            <div className="flex w-full min-w-0 flex-col gap-4">
-              {/*
-                The services across two rows of four rather than one row of
-                seven. In a narrower container seven columns leave each tile
-                about 100px wide, which is not enough for "Loans/EasyBuy"
-                without it wrapping to three lines. Four columns give each
-                name room, and the last row's three tiles sit under the first
-                four rather than orphaned — there is no eighth service to add
-                and a gap at the end of a two-row grid reads as spacing, not
-                as a missing card.
+          <div className="mx-auto mt-12 w-full max-w-[1080px] px-0 dt:mt-14">
+            <video
+              className="aspect-video w-full rounded-card border border-hairline object-cover"
+              src="/wawu-services.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="What WAWUAfrica does"
+            />
+          </div>
 
-                On mobile the same items render as full-width rows, chip
-                beside name, because four columns at 390px is not a tap
-                target.
-              */}
-              {/*
-                One row of seven small cards. The video that used to sit
-                beside these is gone (owner's call), so there is no height to
-                match and no reason for the tiles to be tall — they are a
-                directory, and a directory row should be scannable in one
-                pass rather than filling a screen.
+          {/*
+            The services as a sliding rail of cards.
 
-                Seven columns at this width give each name about 150px, which
-                fits "Loans/EasyBuy" on one line. Two columns on a phone, four
-                on a tablet.
-              */}
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 dt:grid-cols-7 dt:gap-3">
-                {QUICK_SERVICES.map((service) => {
-                  const inner = (
-                    <>
-                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[9px] border border-[color-mix(in_srgb,var(--wawu-lilac)_45%,transparent)] bg-[color-mix(in_srgb,var(--wawu-lilac)_16%,transparent)]">
-                        <Icon name={service.icon} size={15} color="var(--wawu-lilac)" strokeWidth={2.2} />
-                      </span>
-                      <span className="min-w-0 text-[12px] font-bold leading-[1.2] tracking-[-0.01em] text-text-primary">
-                        {service.brand}
-                      </span>
-                    </>
-                  );
-                  // Uniform and small. No lead tile and no column span: with
-                  // seven across one row there is no orphan to absorb.
-                  const shell =
-                    "flex h-[74px] flex-col items-center justify-center gap-1.5 rounded-[13px] border border-hairline bg-card px-2 text-center";
-                  return service.href ? (
-                    <Link
-                      key={service.brand}
-                      href={service.href}
-                      className={`${shell} no-underline transition-colors duration-200 hover:border-strong`}
-                    >
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div key={service.brand} className={`${shell} opacity-60`}>
-                      {inner}
-                    </div>
-                  );
-                })}
+            Same treatment the industry marquee used, moved onto the thing it
+            was always more useful for: these are DESTINATIONS, and a card big
+            enough to carry a name and a watermark reads at a glance where a
+            74px tile did not. The row slides so all eight are seen without a
+            grid tall enough to push the fold.
+
+            The list is doubled so the loop is seamless — the animation
+            translates by exactly -50%, which only lines up if the second half
+            is an exact copy. The copy is aria-hidden so a screen reader is
+            not read every service twice, and the whole rail pauses on hover
+            so a card can actually be clicked.
+          */}
+          <div className="mt-9 flex flex-col gap-4 dt:mt-12">
+            <div className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_5%,black_95%,transparent)]">
+              <div className="flex w-max gap-4 pr-4 animate-[wawuMarquee_46s_linear_infinite] hover:[animation-play-state:paused]">
+                {[0, 1].map((copy) =>
+                  QUICK_SERVICES.map((service) => {
+                    const card = (
+                      <>
+                        <span className="absolute -bottom-4 -right-4 opacity-25">
+                          <Icon name={service.icon} size={110} color="var(--text-on-accent)" strokeWidth={1.2} />
+                        </span>
+                        <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.78),transparent)] px-4 pb-3 pt-8 text-left">
+                          <span className="block text-[15px] font-bold leading-tight text-white">{service.brand}</span>
+                          <span className="mt-0.5 block text-[11.5px] leading-tight text-[rgba(255,255,255,0.72)]">
+                            {service.soon ? "Coming soon" : service.label}
+                          </span>
+                        </span>
+                      </>
+                    );
+                    const shell = `relative block h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${service.bg} dt:h-[170px] dt:w-[270px]`;
+                    return service.href ? (
+                      <Link
+                        key={`${service.brand}-${copy}`}
+                        href={service.href}
+                        aria-hidden={copy === 1}
+                        tabIndex={copy === 1 ? -1 : undefined}
+                        className={`${shell} no-underline transition-transform duration-200 hover:scale-[1.03]`}
+                      >
+                        {card}
+                      </Link>
+                    ) : (
+                      // Not yet openable, so deliberately not a link: a card
+                      // that navigates nowhere is worse than one that says so.
+                      <div
+                        key={`${service.brand}-${copy}`}
+                        aria-hidden={copy === 1}
+                        className={`${shell} opacity-45 grayscale`}
+                      >
+                        {card}
+                      </div>
+                    );
+                  }),
+                )}
               </div>
             </div>
           </div>
@@ -375,42 +390,6 @@ export async function LandingContent() {
 
         <SectionMark />
 
-        {/* ============ ONE PROFILE MARQUEE ============ */}
-        <section className="py-14 dt:py-20">
-          <div className="mx-auto max-w-[1240px] px-5 text-center">
-            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">One profile, every industry</span>
-            <h2 className="m-0 mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[64px]">
-              Every Industry.
-              <br />
-              <span className="text-accent-hover">One Profile.</span>
-            </h2>
-          </div>
-          <div className="mt-10 flex flex-col gap-4 overflow-hidden dt:mt-14">
-            {[0, 1].map((row) => (
-              <div key={row} className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
-                <div
-                  className={`flex w-max gap-4 pr-4 ${row === 0 ? "animate-[wawuMarquee_42s_linear_infinite]" : "animate-[wawuMarqueeRev_48s_linear_infinite]"}`}
-                >
-                  {[...FIELDS, ...FIELDS].map((f, i) => (
-                    <div
-                      key={`${f.name}-${i}`}
-                      className={`relative h-[140px] w-[220px] shrink-0 overflow-hidden rounded-media ${f.bg} dt:h-[170px] dt:w-[270px]`}
-                    >
-                      <span className="absolute -bottom-4 -right-4 opacity-25">
-                        <Icon name={f.icon} size={110} color="var(--text-on-accent)" strokeWidth={1.2} />
-                      </span>
-                      <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.75),transparent)] px-4 pb-3 pt-8 text-[15px] font-bold text-white">
-                        {f.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <SectionMark />
 
         {/* ============ WOW EXPERIENCE BENTO (dashboard) ============ */}
         <section className="px-5 py-14 dt:py-24">
@@ -794,6 +773,22 @@ export async function LandingContent() {
 
         {/* ============ COMPARE BANNER ============ */}
         <section className="px-5 py-10 dt:py-14">
+          {/*
+            The "Every Industry. One Profile." line used to head a marquee of
+            eleven industry cards of its own. That marquee is gone — the card
+            treatment moved to the services, which are destinations rather
+            than decoration — but the CLAIM is still the argument this section
+            makes, so it introduces the comparison instead of sitting above a
+            wall of tiles that only restated it.
+          */}
+          <div className="mx-auto mb-8 max-w-[1240px] text-center dt:mb-10">
+            <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">One profile, every industry</span>
+            <h2 className="m-0 mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary dt:text-[64px]">
+              Every Industry.
+              <br />
+              <span className="text-accent-hover">One Profile.</span>
+            </h2>
+          </div>
           <div className="mx-auto flex max-w-[1240px] flex-col items-start gap-6 rounded-[28px] bg-[linear-gradient(120deg,var(--accent-deep),var(--accent))] p-8 dt:flex-row dt:items-center dt:justify-between dt:p-12">
             <div>
               <h2 className="m-0 text-[28px] font-bold tracking-[-0.02em] text-white dt:text-[34px]">See How We WOW You</h2>
