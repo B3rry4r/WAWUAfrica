@@ -62,7 +62,7 @@ export function CommunityJoinGate({
         {isPrivate
           ? // Says what actually happens next. "Join" on a private room does
             // not admit you — it files a request the host answers.
-            `${community.name} is a closed circle. Ask to join and the host decides — you'll get in once they approve. Reading costs nothing, sending costs one credit.`
+            `${community.name} is a closed circle. Ask to join and the host decides. You'll get in once they approve. Reading costs nothing, sending costs one credit.`
           : `${community.name} is open to everyone. Join to read and post. Reading costs nothing, sending costs one credit.`}
       </p>
       <Button onClick={onJoin} disabled={joining} className="mt-3.5">

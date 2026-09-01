@@ -270,7 +270,7 @@ export function CreatorOnboarding() {
               <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
                 <span className="text-[var(--text-primary)] font-semibold">Getting paid is not.</span> That takes
                 verification, which is a separate step and the only thing we have not asked you for yet. Until it clears,
-                what you earn is counted and held for you — nothing is lost.
+                what you earn is counted and held for you. Nothing is lost.
               </span>
             </div>
           </div>
@@ -288,7 +288,7 @@ export function CreatorOnboarding() {
             Skip for now
           </Button>
           <span className="text-[12px] leading-[1.45] text-[var(--text-muted)] self-center text-center">
-            Six steps, none of them urgent — verification is one of them. Skipping costs you nothing today; the
+            Six steps, none of them urgent. Verification is one of them. Skipping costs you nothing today; the
             checklist waits at the top of your dashboard whenever you want it.
           </span>
         </div>
@@ -341,7 +341,7 @@ export function CreatorOnboarding() {
                   </span>
                 </div>
               ))}
-              <span className="text-[12.5px] leading-[1.45] text-[var(--text-muted)] pl-[35px]">They are independent. You can upload and sell before verification, and before it clears — only the payout waits.</span>
+              <span className="text-[12.5px] leading-[1.45] text-[var(--text-muted)] pl-[35px]">They are independent. You can upload and sell before verification, and before it clears. Only the payout waits.</span>
             </div>
           </>
         ) : null}

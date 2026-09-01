@@ -56,7 +56,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
     cta: "Start earning",
     featuresLabel: "Get:",
     features: [
-      "6 uploads a year — 1 included and 5 paid",
+      "6 uploads a year - 1 included and 5 paid",
       "2GB of storage",
       "Monetise audio, video, PDFs, art and digital works",
       "Paid consultations for professionals",
@@ -83,7 +83,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
     cta: "Go Pro",
     featuresLabel: "Everything in Basic, plus:",
     features: [
-      "12 uploads a year — 2 included and 10 paid",
+      "12 uploads a year - 2 included and 10 paid",
       "2GB of storage",
       "Enhanced creator and professional profile",
       "Priority discovery and opportunities",
@@ -125,7 +125,7 @@ export const PLANS: Record<CreatorTier, Plan> = {
       // 2GB. These must match UPLOAD_ALLOWANCE_BY_TIER and
       // STORAGE_ALLOWANCE_BY_TIER in the API — that is what actually refuses
       // an upload.
-      "15 uploads a year — 2 included and 13 paid",
+      "15 uploads a year - 2 included and 13 paid",
       "5GB of storage",
       "Priority support",
       "Featured and recommended opportunities",

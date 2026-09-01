@@ -286,7 +286,7 @@ export function CreatorDashboard() {
             <StatBlock value={`${creator.slotsUsed} / ${creator.slotsTotal}`} label="Upload slots" align="start" size="md" />
           </div>
           <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-            <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG score" align="start" size="md" />
+            <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "-"} label="EVG score" align="start" size="md" />
           </div>
         </div>
 
@@ -361,7 +361,7 @@ export function CreatorDashboard() {
                 <StatBlock value={String(answeredCount)} label="Questions answered" align="start" size="md" />
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
-                <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG" align="start" size="md" />
+                <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "-"} label="EVG" align="start" size="md" />
               </div>
             </div>
 

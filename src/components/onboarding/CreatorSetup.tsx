@@ -98,7 +98,7 @@ export function CreatorSetup() {
             </span>
             <span className="flex-1 text-[13.5px] leading-[1.45] text-text-secondary">
               <span className="font-semibold text-text-primary">Getting paid is separate.</span> That is verification.
-              Until it clears, what you earn is counted and held for you — nothing is lost, and nothing else is affected.
+              Until it clears, what you earn is counted and held for you. Nothing is lost, and nothing else is affected.
             </span>
           </div>
         </div>

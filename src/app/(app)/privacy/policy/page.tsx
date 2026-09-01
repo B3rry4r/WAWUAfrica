@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
       />
       <Section
         title="Credits"
-        body="WAWU Credits are a count on your account used for messages, community posts and tips. They can't be withdrawn or turned into cash — spend them inside the app only."
+        body="WAWU Credits are a count on your account used for messages, community posts and tips. They can't be withdrawn or turned into cash. Spend them inside the app only."
       />
       <Section
         title="KYC documents"

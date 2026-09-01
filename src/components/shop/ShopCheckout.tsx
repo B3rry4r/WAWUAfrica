@@ -172,7 +172,7 @@ export function ShopCheckout() {
   if (phase === "unconfirmed") {
     return (
       <Shell>
-        <Callout tone="warning" title="Your payment went through — we are still confirming it">
+        <Callout tone="warning" title="Your payment went through. We are still confirming it">
           <p className="m-0">
             The money has left your account and your order is being finalised. This is safe to check
             again; it will not charge you twice.

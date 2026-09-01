@@ -41,14 +41,14 @@ const COPY: Record<Exclude<KycStatus, "approved">, VerificationCopy> = {
       "Your subscription unlocked uploading. Verification is a separate step, and it is the one that lets us pay you. Takes a few minutes, reviewed in 1 to 3 days.",
     cta: "Start verification",
     heldNote:
-      "You have not started verification yet — it is what releases this to your bank account. Nothing you earn is lost while it sits here.",
+      "You have not started verification yet. It is what releases this to your bank account. Nothing you earn is lost while it sits here.",
   },
   pending: {
     tone: "warning",
     icon: "Clock",
     headline: "Verification is in review",
     body:
-      "Usually 1 to 3 days. Keep uploading and selling — the only thing waiting is the payout, and everything you earn is held for you until it clears.",
+      "Usually 1 to 3 days. Keep uploading and selling. The only thing waiting is the payout, and everything you earn is held for you until it clears.",
     cta: "Check status",
     heldNote:
       "Your verification is in review, usually 1 to 3 days. This is released to your bank account as soon as it clears.",
@@ -58,10 +58,10 @@ const COPY: Record<Exclude<KycStatus, "approved">, VerificationCopy> = {
     icon: "TriangleAlert",
     headline: "Verification was not approved",
     body:
-      "You can still upload and sell. Nothing you have earned is lost — send your ID again and we will look at it.",
+      "You can still upload and sell. Nothing you have earned is lost. Send your ID again and we will look at it.",
     cta: "Resubmit verification",
     heldNote:
-      "Your verification was not approved, so this cannot be paid out yet. Nothing is lost — send your ID again and we will look at it.",
+      "Your verification was not approved, so this cannot be paid out yet. Nothing is lost. Send your ID again and we will look at it.",
   },
 };
 

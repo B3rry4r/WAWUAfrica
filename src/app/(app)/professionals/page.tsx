@@ -101,7 +101,7 @@ export default async function ProfessionalsPage({
         {failed ? (
           <ErrorState
             title="We could not load the directory"
-            body="This needs a live connection — we will not show you a list we cannot verify."
+            body="This needs a live connection. We will not show you a list we cannot verify."
           />
         ) : pros && pros.length > 0 ? (
           <div className="grid gap-[12px] xl:grid-cols-2 2xl:grid-cols-3">

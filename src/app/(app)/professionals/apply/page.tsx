@@ -183,7 +183,7 @@ export default function ApplyProfessionalPage() {
             >
               {alreadyIn.status === "rejected"
                 ? (alreadyIn.rejectionReason ??
-                  "Fix what was raised and send it again — this replaces the old one.")
+                  "Fix what was raised and send it again. This replaces the old one.")
                 : "Pick a different field, or manage this one from your applications."}
             </Callout>
           ) : null}

@@ -340,11 +340,11 @@ export default function NepcApplyPage() {
       {submitError && <ErrorState title="Couldn't submit" body={submitError} onRetry={submit} />}
       {!submitError && (
         <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
-          <ReviewRow label="Business" value={record ? `${record.businessName} · ${record.rcNumber}` : "—"} onEdit={() => setStep(1)} />
+          <ReviewRow label="Business" value={record ? `${record.businessName} · ${record.rcNumber}` : "-"} onEdit={() => setStep(1)} />
           <ReviewRow label="What you export" value={category} onEdit={() => setStep(1)} />
-          <ReviewRow label="Main product" value={mainProduct || "—"} onEdit={() => setStep(1)} />
-          <ReviewRow label="Target markets" value={markets.length ? markets.join(", ") : "—"} onEdit={() => setStep(1)} />
-          <ReviewRow label="Yearly volume" value={yearlyVolume || "—"} onEdit={() => setStep(1)} />
+          <ReviewRow label="Main product" value={mainProduct || "-"} onEdit={() => setStep(1)} />
+          <ReviewRow label="Target markets" value={markets.length ? markets.join(", ") : "-"} onEdit={() => setStep(1)} />
+          <ReviewRow label="Yearly volume" value={yearlyVolume || "-"} onEdit={() => setStep(1)} />
           <ReviewRow label="Documents" value={`${docsReadyCount} attached`} onEdit={() => setStep(2)} last />
         </div>
       )}
@@ -394,9 +394,9 @@ export default function NepcApplyPage() {
       <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Application summary</span>
       <SummaryRow label="Business" value={record ? `${record.businessName} · ${record.rcNumber}` : "Pending CAC"} />
       <SummaryRow label="Exports" value={category} />
-      <SummaryRow label="Main product" value={mainProduct || "—"} />
-      <SummaryRow label="Target markets" value={markets.length ? `${markets.length} selected` : "—"} />
-      <SummaryRow label="Yearly volume" value={yearlyVolume || "—"} />
+      <SummaryRow label="Main product" value={mainProduct || "-"} />
+      <SummaryRow label="Target markets" value={markets.length ? `${markets.length} selected` : "-"} />
+      <SummaryRow label="Yearly volume" value={yearlyVolume || "-"} />
       <SummaryRow label="Documents ready" value={`${docsReadyCount} of ${docs.length}`} />
       <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-[10px]">
         <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">Cost</span>

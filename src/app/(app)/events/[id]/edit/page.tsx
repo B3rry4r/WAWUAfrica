@@ -90,7 +90,7 @@ export default function EditEventPage() {
               Edit your event
             </h1>
             <p className="m-0 max-w-[62ch] text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
-              Saving sends this back for review. Every edit does — there is no small change that skips it.
+              Saving sends this back for review. Every edit does. There is no small change that skips it.
             </p>
           </div>
           <EventForm mode="edit" event={event} />

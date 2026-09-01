@@ -194,7 +194,7 @@ export function ContentLibrary() {
                 icon="Plus"
                 href={slotsUsed >= slotsTotal ? "/subscription" : "/create"}
               >
-                {slotsUsed >= slotsTotal ? "All slots in use — see plans" : "Upload something new"}
+                {slotsUsed >= slotsTotal ? "All slots in use. See plans" : "Upload something new"}
               </Button>
             </div>
           ) : null}

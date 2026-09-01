@@ -183,9 +183,9 @@ export function CreatorSetupChecklist({ variant = "page" }: { variant?: "page" |
         </div>
         <span className="text-[13px] leading-[1.5] text-text-secondary">
           {complete
-            ? "That is everything set up. Nothing below is blocking you — come back any time you want to change a price or start another room."
+            ? "That is everything set up. Nothing below is blocking you. Come back any time you want to change a price or start another room."
             : next
-              ? `Next: ${next.title.toLowerCase()}. Nothing here is a wall — you can publish and sell before any of it is finished.`
+              ? `Next: ${next.title.toLowerCase()}. Nothing here is a wall. You can publish and sell before any of it is finished.`
               : "Work through these in any order. None of them blocks the others."}
         </span>
         {error ? (

@@ -63,6 +63,12 @@ Two product-owner overrides are folded in here, both deliberate:
   reachable from the header avatar (21 Aug 2026).
 
 ## Code boundaries
+- **No em-dashes (—) in anything a user reads.** Not in copy, labels, hints,
+  empty states, error messages, notification text or seeded content. Write two
+  sentences, a comma, a colon, or brackets instead. A bare `—` used as an
+  "empty value" placeholder is a `-`. This is a product-owner instruction
+  (1 Sep 2026), not a style preference. Code comments are exempt: nobody using
+  the app reads them.
 - **Tailwind classes, never `style={{}}`.** Tokens are CSS variables — read them
   through Tailwind: `className="bg-[var(--surface-card)]"`. The design-system
   bundle uses inline styles; it is a compiled reference, not the house style.

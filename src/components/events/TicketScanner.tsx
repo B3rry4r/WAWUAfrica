@@ -200,7 +200,7 @@ function ScanOutcomeCard({ result, failure }: { result: ScanResult | null; failu
   if (failure) {
     return (
       <Callout tone="danger" title="The scan did not reach the server" full>
-        {failure} Nobody has been checked in — try the code again.
+        {failure} Nobody has been checked in. Try the code again.
       </Callout>
     );
   }

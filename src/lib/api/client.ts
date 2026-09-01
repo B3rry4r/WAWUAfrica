@@ -74,7 +74,7 @@ export function isNetworkError(e: unknown): e is NetworkError {
 /** Thrown by apiFetch in mock mode so the try/catch→mock pattern short-circuits. */
 class MockModeError extends Error {
   constructor() {
-    super("Running in mock mode — no backend configured");
+    super("Running in mock mode. No backend configured");
     this.name = "MockModeError";
   }
 }

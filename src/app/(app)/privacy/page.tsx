@@ -124,7 +124,7 @@ export default function PrivacyPage() {
               <Icon name="UserRoundX" size={18} strokeWidth={2} />
             </span>
             <span className="min-w-0 flex-1 text-[14.5px] font-semibold text-text-primary">Blocked accounts</span>
-            <span className="text-[13.5px] text-[var(--text-muted)]">{blockedCount ?? "—"}</span>
+            <span className="text-[13.5px] text-[var(--text-muted)]">{blockedCount ?? "-"}</span>
             <Icon name="ChevronRight" size={17} color="var(--text-muted)" />
           </Link>
           <button

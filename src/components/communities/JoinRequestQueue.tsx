@@ -97,7 +97,7 @@ export function JoinRequestQueue({
         caption={
           community.kind === "private"
             ? "Requests to join this room land here. You decide who gets in."
-            : "This room is open — anyone can join it instantly, so there is nothing to approve."
+            : "This room is open. Anyone can join it instantly, so there is nothing to approve."
         }
       />
     );
@@ -135,7 +135,7 @@ export function JoinRequestQueue({
         );
       })}
       <p className="m-0 px-[2px] text-[12px] leading-[1.5] text-text-muted">
-        Approving lets someone read and post here. Declining removes the request — it does not block them, so they can
+        Approving lets someone read and post here. Declining removes the request. It does not block them, so they can
         ask again.
       </p>
     </div>

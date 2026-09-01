@@ -132,12 +132,12 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
   const submit = async () => {
     if (publishing) return;
     if (!asset) {
-      setPublishError("Attach your file first — nothing can be published without it.");
+      setPublishError("Attach your file first. Nothing can be published without it.");
       return;
     }
     const isPaid = paid && !firstUpload;
     if (isPaid && !preview) {
-      setPublishError("Paid pieces need a preview — add a cover or short sample so buyers can see what they're paying for.");
+      setPublishError("Paid pieces need a preview. Add a cover or short sample so buyers can see what they're paying for.");
       return;
     }
     setPublishing(true);
@@ -493,7 +493,7 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
           <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
             <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview</span>
             <span className="text-[13.5px] leading-[1.5] text-text-secondary">
-              You choose the giveaway — the clip, cover or extract buyers get before they pay.
+              You choose the giveaway. The clip, cover or extract buyers get before they pay.
             </span>
             {/* The picker the desktop pane was missing: submit() requires a
                 separate preview for paid pieces, so without this control
@@ -539,7 +539,7 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
       open={discarding}
       onClose={() => setDiscarding(false)}
       title="Discard this upload?"
-      caption="Your file, price and details are not saved anywhere yet — closing now loses them."
+      caption="Your file, price and details are not saved anywhere yet. Closing now loses them."
     >
       <div className="flex flex-col gap-[10px]">
         <Button full size="lg" variant="danger" onClick={() => router.push("/create")}>
@@ -606,7 +606,7 @@ function PreviewStep({
         hint={
           isPaid
             ? "Required for paid pieces: a cover image or a short sample. Buyers see this before paying."
-            : "Optional at ₦0 — your file is already public."
+            : "Optional at ₦0. Your file is already public."
         }
         onUploaded={onPreview}
         onCleared={() => onPreview(null)}

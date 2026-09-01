@@ -229,7 +229,7 @@ function CreatorRail({ creator }: { creator: CreatorState | null }) {
           <StatBlock value="Soon" label="Sales" align="start" size="sm" />
           {/* Real EVG from GET /creators/:wawuId/evg. This was a hardcoded
               "1,240" sitting beside the genuinely live figures above. */}
-          <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG" align="start" size="sm" />
+          <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "-"} label="EVG" align="start" size="sm" />
         </div>
       </RailCard>
     </>

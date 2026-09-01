@@ -57,7 +57,7 @@ export function ShopHome() {
             What are you creating?
           </h2>
           <p className="m-0 max-w-[52ch] text-[14px] leading-[1.55] text-[var(--text-secondary)] xl:text-[16px]">
-            Pick what you make. We will show you the kit for it — starter to pro.
+            Pick what you make. We will show you the kit for it. Starter to pro.
           </p>
         </div>
 

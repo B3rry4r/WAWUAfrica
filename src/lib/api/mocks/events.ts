@@ -128,7 +128,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hostWawuId: "wawu-obinna",
     name: "Export paperwork clinic",
     description:
-      "Bring one shipment you are stuck on. We go through the documents line by line — NEPC registration, certificate of origin, phytosanitary, and the buyer contract clauses that decide who eats a delay.",
+      "Bring one shipment you are stuck on. We go through the documents line by line. NEPC registration, certificate of origin, phytosanitary, and the buyer contract clauses that decide who eats a delay.",
     hostOrg: "Eze Export Partners",
     hostOrgBio: null,
     format: "in_person",
@@ -245,7 +245,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: true,
     recapUrl: "https://wawuafrica.com/recaps/catalogue",
     recapText:
-      "Ninety-one people came. The question that took up half the session: what to do with a piece that sold well for a month and then stopped. Short answer from the room — re-list it against a different search term before you rewrite it.",
+      "Ninety-one people came. The question that took up half the session: what to do with a piece that sold well for a month and then stopped. Short answer from the room. Re-list it against a different search term before you rewrite it.",
     bannerUrl: null,
     category: "other",
     contactEmail: null,
@@ -359,7 +359,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     speakers: [],
     createdAt: inDays(-8),
     lastDecisionReason:
-      "The venue is only given as \"Abuja\" — we need a street address or a named venue before this can go on the calendar. Add one and resubmit.",
+      "The venue is only given as \"Abuja\". We need a street address or a named venue before this can go on the calendar. Add one and resubmit.",
   },
 ];
 

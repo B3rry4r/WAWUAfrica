@@ -79,7 +79,7 @@ export function KycStatusPanel({ className = "" }: { className?: string }) {
         </div>
         <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">
           Your ID and bank details, reviewed by hand. This is the step that lets us pay out what you earn. It is
-          not a badge — it never appears on your profile, and it does not move you up the ladder below.
+          not a badge. It never appears on your profile, and it does not move you up the ladder below.
         </p>
       </div>
 

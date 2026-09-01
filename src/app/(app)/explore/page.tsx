@@ -111,7 +111,7 @@ export default async function ExplorePage() {
             <Link href="/shop" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Gear for what you make" subtitle="Cameras, mics, lights, laptops — checked before we stock them" icon="ShoppingBag" href="/shop" />
+            <ListRow title="Gear for what you make" subtitle="Cameras, mics, lights, laptops. Checked before we stock them" icon="ShoppingBag" href="/shop" />
             <ListRow title="My orders" subtitle="What you bought, and where it has got to" icon="Package" href="/shop/orders" />
           </div>
         </section>
@@ -122,7 +122,7 @@ export default async function ExplorePage() {
             <Link href="/professionals" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Find a professional" subtitle="Lawyers, accountants, doctors and more — vetted before they are listed" icon="BriefcaseBusiness" href="/professionals" />
+            <ListRow title="Find a professional" subtitle="Lawyers, accountants, doctors and more. Vetted before they are listed" icon="BriefcaseBusiness" href="/professionals" />
             <ListRow title="Offer your own services" subtitle="Get listed in your field and be paid for your time" icon="IdCard" href="/professionals/apply" />
           </div>
         </section>

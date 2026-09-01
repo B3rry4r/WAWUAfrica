@@ -155,7 +155,7 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
           What are you publishing?
         </h1>
         <p className="m-0 text-[13.5px] leading-[1.5] text-text-secondary dt:max-w-[560px] dt:text-[14.5px]">
-          Pick the shape of the thing first — it decides what you upload, what buyers preview, and how it is delivered.
+          Pick the shape of the thing first. It decides what you upload, what buyers preview, and how it is delivered.
         </p>
       </div>
 

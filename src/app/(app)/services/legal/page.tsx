@@ -176,7 +176,7 @@ export default function LegalPage() {
             Not sure what you need?
           </span>
           <span className="text-[13px] leading-[1.45] text-[var(--text-secondary)]">
-            Answer a few questions — about two minutes. Nothing is charged,
+            Answer a few questions. About two minutes. Nothing is charged,
             and no price is quoted until a consultant has read them.
           </span>
         </span>
@@ -554,7 +554,7 @@ function RequestFlow({
                 )}
               </>
             ) : (
-              <span>Paid. We are working on it — your documents appear here when they are ready.</span>
+              <span>Paid. We are working on it. Your documents appear here when they are ready.</span>
             )}
           </span>
         </div>

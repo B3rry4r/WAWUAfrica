@@ -143,7 +143,7 @@ export function EventOrganiserDashboard({ eventId }: { eventId: string }) {
         >
           {cancelled.ordersRefunded} order{cancelled.ordersRefunded === 1 ? "" : "s"} refunded.{" "}
           {cancelled.refundsNeedingAttention > 0
-            ? `${cancelled.refundsNeedingAttention} could not be sent automatically — WAWU support has been notified and will finish them by hand. Those buyers are still owed their money.`
+            ? `${cancelled.refundsNeedingAttention} could not be sent automatically. WAWU support has been notified and will finish them by hand. Those buyers are still owed their money.`
             : "Every ticket is void."}
         </Callout>
       ) : null}
@@ -180,7 +180,7 @@ export function EventOrganiserDashboard({ eventId }: { eventId: string }) {
             </Button>
           </div>
           <p className="m-0 text-[12.5px] leading-[1.55] text-[var(--text-secondary)]">
-            Scan a ticket&apos;s QR, or type its code. A ticket only goes through once — two people scanning the same
+            Scan a ticket&apos;s QR, or type its code. A ticket only goes through once. Two people scanning the same
             code at the same moment get one CHECKED IN and one ALREADY USED.
           </p>
         </section>
@@ -276,7 +276,7 @@ export function EventOrganiserDashboard({ eventId }: { eventId: string }) {
             />
             <span className="text-[12px] text-[var(--text-muted)]">
               {cancelReason.trim().length < 10
-                ? `${10 - cancelReason.trim().length} more characters — they have to be able to understand it.`
+                ? `${10 - cancelReason.trim().length} more characters. They have to be able to understand it.`
                 : "They see this exactly as written."}
             </span>
           </label>

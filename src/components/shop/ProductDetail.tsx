@@ -242,7 +242,7 @@ export function ProductDetail({ slug }: { slug: string }) {
                   href="/shop/wow"
                   className="text-center text-[13px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
                 >
-                  {inCart} already in your WOW — view it
+                  {inCart} already in your WOW. View it
                 </Link>
               ) : null}
             </div>
@@ -273,7 +273,7 @@ export function ProductDetail({ slug }: { slug: string }) {
                 Delivery is arranged with you
               </span>
               <span className="text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
-                We get in touch after you order and sort delivery directly — nothing extra is
+                We get in touch after you order and sort delivery directly. Nothing extra is
                 charged at checkout.
               </span>
             </div>

@@ -183,7 +183,7 @@ export function useCreatorSetup(): CreatorSetupResult {
         body: "This is the gate that unlocks uploading and every creator tool. It is already paid.",
         detail: gates.canUpload
           ? `Active on ${gates.tier === "pro" ? "Pro" : "Basic"} · ${gates.slotsTotal} upload slots`
-          : "Not active — uploading and hosting are closed until it is",
+          : "Not active. Uploading and hosting are closed until it is",
         state: gates.canUpload ? "done" : "todo",
         icon: "BadgeCheck",
         href: "/subscription",
@@ -193,7 +193,7 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "dm",
         title: "Price your paid messages",
-        body: "Fans pay to ask you one question, and you answer inside 24 hours. You set the price — there is no range and no ceiling.",
+        body: "Fans pay to ask you one question, and you answer inside 24 hours. You set the price. There is no range and no ceiling.",
         detail: gates.dmEnabled
           ? gates.dmPrice > 0
             ? `On · you charge ${formatNaira(gates.dmPrice)} a message`
@@ -214,7 +214,7 @@ export function useCreatorSetup(): CreatorSetupResult {
         detail:
           profileParts === 3
             ? "Handle, bio and links all set"
-            : `${profileParts} of 3 done — ${[
+            : `${profileParts} of 3 done - ${[
                 handleSet ? null : "handle",
                 bioSet ? null : "bio",
                 socials > 0 ? null : "social links",
@@ -230,7 +230,7 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "community",
         title: "Start your first community",
-        body: "A room your people talk in. Reading costs nothing, sending costs one credit, and you keep 90% of every credit spent — the best split on the platform.",
+        body: "A room your people talk in. Reading costs nothing, sending costs one credit, and you keep 90% of every credit spent. The best split on the platform.",
         detail:
           hosted === 0
             ? "You are not hosting one yet"
@@ -246,7 +246,7 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "upload",
         title: "Publish your first piece",
-        body: "Your first upload goes out at ₦0 — that is a rule on our side, not a setting. Everything after it you price yourself.",
+        body: "Your first upload goes out at ₦0. That is a rule on our side, not a setting. Everything after it you price yourself.",
         detail:
           published > 0
             ? published === 1
@@ -264,14 +264,14 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "kyc",
         title: "Verify your identity",
-        body: "The second gate, and the only one you can skip. It decides when what you earn is paid out — never what you can publish, host or sell.",
+        body: "The second gate, and the only one you can skip. It decides when what you earn is paid out. Never what you can publish, host or sell.",
         detail:
           gates.kycStatus === "approved"
             ? "Approved · earnings pay out to your bank account"
             : gates.kycStatus === "pending"
               ? "In review, usually 1 to 3 days"
               : gates.kycStatus === "rejected"
-                ? "Not approved — send your ID again and we will look at it"
+                ? "Not approved. Send your ID again and we will look at it"
                 : "Not started · everything you earn is counted and held until it clears",
         state: kycState,
         icon: "ShieldCheck",

@@ -256,7 +256,7 @@ export function TicketTypeEditor({ eventId, eventName }: { eventId: string; even
                         {row.priceNaira > 0
                           ? `Buyer pays ${formatNaira(row.priceNaira)} · about ${formatNaira(
                               Math.round(row.priceNaira * (1 - STANDARD_COMMISSION_RATE)),
-                            )} reaches you. An estimate at the standard rate — a paid plan keeps more.`
+                            )} reaches you. An estimate at the standard rate. A paid plan keeps more.`
                           : "In naira."}
                       </span>
                     </>
@@ -273,7 +273,7 @@ export function TicketTypeEditor({ eventId, eventName }: { eventId: string; even
                   />
                   {frozen ? (
                     <span className="text-[11.5px] text-[var(--text-muted)]">
-                      At least {row.sold} — that is how many are already sold.
+                      At least {row.sold}. That is how many are already sold.
                     </span>
                   ) : null}
                 </label>

@@ -79,7 +79,7 @@ export function DittoDistributionCard() {
       {state.optedIn ? (
         <>
           <p className="m-0 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
-            You are opted in. Use this link to set up your Ditto account — the{" "}
+            You are opted in. Use this link to set up your Ditto account. The{" "}
             {state.discountPercent}% discount is applied through it, so do not sign up directly.
           </p>
           {state.signupUrl ? (

@@ -124,7 +124,7 @@ export function WowCart() {
                     </span>
                   ) : (
                     <span className="text-[12.5px] font-semibold text-[var(--warning)]">
-                      Sold out — not included in your total
+                      Sold out. Not included in your total
                     </span>
                   )}
 

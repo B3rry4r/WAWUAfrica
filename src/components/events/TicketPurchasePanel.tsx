@@ -170,7 +170,7 @@ export function TicketPurchasePanel({ event, referralCode }: TicketPurchasePanel
 
   if (phase === "unconfirmed") {
     return (
-      <Callout tone="warning" title="Your payment went through — we are still confirming it">
+      <Callout tone="warning" title="Your payment went through. We are still confirming it">
         <p className="m-0">
           The money has left your account and your tickets are being issued. This is safe to check again; it will
           not charge you twice.

@@ -654,14 +654,14 @@ function SubmissionSummary({ submission }: { submission: KycSubmission | null })
   const nigerian = submission.country.trim().toLowerCase() === "nigeria";
   const idNumber = nigerian ? submission.bvn : submission.nationalIdEquivalent;
   const rows: [string, string][] = [
-    ["Country", submission.country || "—"],
-    [nigerian ? "BVN" : "National ID", idNumber ? maskMiddle(idNumber) : "—"],
+    ["Country", submission.country || "-"],
+    [nigerian ? "BVN" : "National ID", idNumber ? maskMiddle(idNumber) : "-"],
     ["Document", docTypes.find((d) => d.value === submission.idDocumentType)?.label ?? "ID document"],
     [
       "Payout",
       submission.payoutBankName
         ? `${submission.payoutBankName} ••••${submission.payoutAccountNumber.slice(-4)}`
-        : "—",
+        : "-",
     ],
   ];
   const sent = formatDay(submission.submittedAt);

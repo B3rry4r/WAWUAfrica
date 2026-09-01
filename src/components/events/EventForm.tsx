@@ -222,7 +222,7 @@ export function EventForm({ mode, event }: EventFormProps) {
         <p className="m-0 max-w-[52ch] text-[14px] leading-[1.55] text-[var(--text-secondary)]">
           {mode === "edit"
             ? "Your changes are in. Every edit goes back through review, so the event comes off the public calendar until an admin looks at it again."
-            : "An admin reads every event before it goes on the calendar. Nobody else can see this one yet — you'll find it under My submissions, with the reason attached if it isn't approved."}
+            : "An admin reads every event before it goes on the calendar. Nobody else can see this one yet. You'll find it under My submissions, with the reason attached if it isn't approved."}
         </p>
         <div className="flex flex-wrap gap-[10px]">
           <Button href="/events/mine">My submissions</Button>
@@ -469,7 +469,7 @@ export function EventForm({ mode, event }: EventFormProps) {
 
       <Field
         label="Organiser's page"
-        hint="Optional. If you run a registration, put its address here — it happens on your page, not on WAWU."
+        hint="Optional. If you run a registration, put its address here. It happens on your page, not on WAWU."
         error={errors.externalUrl}
       >
         <Input

@@ -65,7 +65,7 @@ export function EventCard({ event, variant = "row", onGoingChange, onGoingError 
           : "border-[var(--border-hairline)] p-[14px] hover:border-strong xl:p-[18px]"
       } ${past ? "opacity-70" : ""}`}
     >
-      <Link href={href} className="absolute inset-0 rounded-[inherit]" aria-label={`${event.name} — ${event.hostOrg}`} />
+      <Link href={href} className="absolute inset-0 rounded-[inherit]" aria-label={`${event.name} - ${event.hostOrg}`} />
 
       <div className={`flex gap-[14px] ${featured ? "xl:gap-[18px]" : ""}`}>
         <EventDateBlock startsAt={event.startsAt} size={featured ? "lg" : "md"} dim={past} />

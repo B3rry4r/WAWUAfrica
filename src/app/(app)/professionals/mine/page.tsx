@@ -137,7 +137,7 @@ export default function MyProfessionalApplicationsPage() {
                     <span className="flex-1 text-[13px] text-[var(--text-secondary)]">
                       {row.listed
                         ? "Showing in the directory"
-                        : "Hidden — nobody can find you here"}
+                        : "Hidden. Nobody can find you here"}
                     </span>
                     <Button
                       size="sm"

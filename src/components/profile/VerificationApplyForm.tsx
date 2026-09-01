@@ -26,7 +26,7 @@ import type { UploadedFile } from "@/lib/api/uploads";
 const REQUIREMENTS: Record<VerificationLevel, string[]> = {
   basic: ["A phone number and email on the account"],
   verified_user: [
-    "A photo ID showing your name and face — passport, driver's licence or national ID card",
+    "A photo ID showing your name and face. Passport, driver's licence or national ID card",
     "The name on that ID matching the name on your WAWU account",
     "A clear photo of yourself to compare against the ID",
   ],
@@ -145,7 +145,7 @@ export function VerificationApplyForm({ tier, onDone }: { tier: VerificationLeve
           <span className="text-[15px] font-semibold text-text-primary">This is a badge application</span>
         </div>
         <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">
-          A badge is public — it sits beside your name so buyers know who they are dealing with. It is not the
+          A badge is public. It sits beside your name so buyers know who they are dealing with. It is not the
           identity check that unlocks getting paid, and nothing here asks for your BVN, NIN, bank details or
           passwords. Our team reviews every application by hand, and we never charge for one.
         </p>

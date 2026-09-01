@@ -155,7 +155,7 @@ export default function LegalIntakePage() {
       setFinishError(
         e instanceof Error
           ? e.message
-          : "We could not prepare your summary. Your answers are saved — try again in a moment.",
+          : "We could not prepare your summary. Your answers are saved. Try again in a moment.",
       );
     } finally {
       setBusy(false);
@@ -186,7 +186,7 @@ export default function LegalIntakePage() {
               What do you need help with?
             </h1>
             <p className="text-[13.5px] leading-[1.55] text-text-secondary">
-              A few quick questions — about two minutes. Your consultant reads
+              A few quick questions. About two minutes. Your consultant reads
               your answers before you speak, so you never have to start from
               the beginning.
             </p>

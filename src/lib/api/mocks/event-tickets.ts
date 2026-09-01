@@ -78,7 +78,7 @@ const TICKET_TYPES: Record<string, EventTicketType[]> = {
     {
       id: "tt-summit-vip",
       tier: "vip",
-      name: "VIP — front rows and lunch",
+      name: "VIP. Front rows and lunch",
       priceNaira: 35000,
       quantity: 60,
       sold: 41,
@@ -127,7 +127,7 @@ const TICKETS: EventTicket[] = [
     code: mockCode(2),
     status: "valid",
     checkedInAt: null,
-    ticketType: { name: "VIP — front rows and lunch", tier: "vip" },
+    ticketType: { name: "VIP. Front rows and lunch", tier: "vip" },
     event: {
       id: "ev-creator-summit",
       name: "WAWU Creator Summit 2026",

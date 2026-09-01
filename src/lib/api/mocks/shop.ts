@@ -66,7 +66,7 @@ const MOCK_PRODUCTS: Product[] = [
     slug: "sony-fx30-cinema-camera-body",
     brand: "Sony",
     description:
-      "Super 35 sensor, 10-bit internal recording, and the same colour science as the FX3. Body only — pair it with a lens from the same aisle.",
+      "Super 35 sensor, 10-bit internal recording, and the same colour science as the FX3. Body only. Pair it with a lens from the same aisle.",
     category: "video_film",
     subcategory: "Cameras",
     priceNaira: 2_950_000,

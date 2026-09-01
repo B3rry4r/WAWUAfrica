@@ -131,7 +131,7 @@ export default function VerificationPage() {
         </span>
         {submissions.length === 0 && (
           <p className="m-0 rounded-[var(--radius-card)] border border-hairline bg-card p-4 text-[12.5px] leading-[1.5] text-text-muted">
-            You haven&apos;t applied for a badge yet. Only badge applications are listed here — an identity check
+            You haven&apos;t applied for a badge yet. Only badge applications are listed here. An identity check
             submitted for payouts is tracked separately and never appears in this list.
           </p>
         )}

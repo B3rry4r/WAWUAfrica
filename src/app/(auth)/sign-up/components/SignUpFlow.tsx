@@ -278,7 +278,7 @@ export function SignUpFlow() {
                   <span className="text-[12.5px] leading-[1.45] text-text-secondary">
                     <span className="font-semibold text-text-primary">Not open yet.</span>{" "}
                     We are onboarding creators first. Accounts for discovering and buying
-                    open shortly — create a creator account below, or use the code you
+                    open shortly. Create a creator account below, or use the code you
                     were given.
                   </span>
                 </div>
@@ -343,7 +343,7 @@ export function SignUpFlow() {
                 <Icon name="Check" size={14} color="var(--success)" strokeWidth={2.6} className="mt-0.5 shrink-0" />
                 {referralCheck.discountPercent > 0 ? (
                   <span>
-                    {referralCheck.discountPercent}% off {PLANS[referralCheck.tier].name} —{" "}
+                    {referralCheck.discountPercent}% off {PLANS[referralCheck.tier].name} -{" "}
                     <s className="text-text-muted">{formatNaira(referralCheck.originalPriceNaira)}</s>{" "}
                     <span className="font-semibold text-text-primary">{formatNaira(referralCheck.priceNaira)}</span>
                   </span>

@@ -137,7 +137,7 @@ export default async function ProfessionalDetailPage({
 
         <p className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
           WAWU is where the conversation starts. Anything you agree beyond the
-          first message — fees, scope, timelines — is between you and{" "}
+          first message (fees, scope, timelines) is between you and{" "}
           {pro.name.split(" ")[0]}.
         </p>
       </div>

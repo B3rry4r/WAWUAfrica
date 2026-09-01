@@ -316,7 +316,7 @@ export function PaidMessagesSettings() {
             <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
               {priceSet
                 ? "Fans cannot start a paid conversation. Turn it back on whenever you have time to answer."
-                : `Fans pay to ask you one question, and you answer inside ${windowLabel(windowHours)}. Switch it on and name your price — you choose the amount and the reply window, and you can change both whenever you like.`}
+                : `Fans pay to ask you one question, and you answer inside ${windowLabel(windowHours)}. Switch it on and name your price. You choose the amount and the reply window, and you can change both whenever you like.`}
             </span>
             <Button full variant="secondary" onClick={() => setEnabled(true)}>
               {priceSet ? "Turn back on" : "Turn it on and set a price"}
@@ -337,7 +337,7 @@ export function PaidMessagesSettings() {
                   What is one answer from you worth?
                 </span>
                 <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
-                  You have not set a price yet, so nobody can pay to ask you anything. Pick one below or type your own —
+                  You have not set a price yet, so nobody can pay to ask you anything. Pick one below or type your own -
                   there is no ceiling, and you can change it whenever you like.
                 </span>
               </div>

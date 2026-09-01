@@ -144,7 +144,7 @@ export function CreateCommunity() {
           </h2>
           <p className="m-0 text-[13.5px] leading-[1.5] text-text-secondary">
             Reading costs nothing. Sending costs one credit, and you keep{" "}
-            <span className="font-semibold text-text-primary">90%</span> of every credit spent in here — the same on
+            <span className="font-semibold text-text-primary">90%</span> of every credit spent in here. The same on
             both tiers.
           </p>
         </div>

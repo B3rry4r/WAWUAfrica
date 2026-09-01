@@ -231,7 +231,7 @@ export function EarningsDashboard() {
         {approved ? (
           <div className="flex gap-[12px]">
             <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-              <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "—"} label="EVG score" align="start" size="md" />
+              <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "-"} label="EVG score" align="start" size="md" />
             </div>
             <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
               {/* No units-sold count exists on the earnings response — same

@@ -95,7 +95,7 @@ export default function OwnProfilePage() {
   const slots = profile.contentSlots ?? { published: gates.slotsUsed, total: gates.slotsTotal };
   const currentLevel = ladder.find((l) => l.status === "yours");
   const nextLevel = ladder.find((l) => l.status === "next");
-  const purchasesMeta = purchasesError ? "—" : purchasesCount === null ? undefined : String(purchasesCount);
+  const purchasesMeta = purchasesError ? "-" : purchasesCount === null ? undefined : String(purchasesCount);
   const savedMeta = savedCount === null ? undefined : String(savedCount);
 
   return (

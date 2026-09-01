@@ -364,9 +364,9 @@ export default function CacApplyPage() {
       <div className="flex items-start gap-[12px] border-b border-[var(--border-hairline)] p-[14px_16px]">
         <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Names</span>
         <div className="flex flex-col items-end gap-[3px]">
-          <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{first || "—"}</span>
-          <span className="text-[12.5px] text-[var(--text-muted)]">{second || "—"}</span>
-          <span className="text-[12.5px] text-[var(--text-muted)]">{third || "—"}</span>
+          <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{first || "-"}</span>
+          <span className="text-[12.5px] text-[var(--text-muted)]">{second || "-"}</span>
+          <span className="text-[12.5px] text-[var(--text-muted)]">{third || "-"}</span>
         </div>
         <button type="button" onClick={() => setStep(1)} className="cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-semibold text-[var(--accent)] hover:text-[var(--text-primary)]">
           Edit
