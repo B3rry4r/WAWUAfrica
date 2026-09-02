@@ -59,6 +59,8 @@ export default function LegalPage() {
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<LegalRequest | null>(null);
   const [busy, setBusy] = useState(false);
+  /** The service being read about. Selecting one no longer starts it. */
+  const [picked, setPicked] = useState<LegalServiceItem | null>(null);
 
   useEffect(() => {
     getLegalCatalogue()
@@ -189,47 +191,61 @@ export default function LegalPage() {
       ) : (
         <>
           {/*
-            Rows, in TWO COLUMNS on desktop.
+            The services are a SLIDER along the top, and the one you pick opens
+            underneath it.
 
-            Each service used to be a bordered card with a name, a pill, a
-            blurb, a price and its own button. For twenty-seven legal services
-            that is a wall of boxes, and finding the one you need was harder
-            than reading a list of names.
-
-            But one column of twenty-seven rows is its own problem: on a wide
-            screen it is a very long ribbon down the left with the right half
-            empty, and it pushes everything below it off the fold. Two columns
-            halve the height and use the width that is actually there. Mobile
-            stays one column, where a second would leave nothing room to read.
-
-            The whole row is the target, so there is one obvious thing to
-            press and a far larger tap area than a small button in a card.
+            They were a grid of twenty-seven cards: the list was the whole
+            screen, and pressing one immediately started a request, so there
+            was no moment to read what a service actually was or what it cost
+            before committing. Same shape as the professionals screen now — the
+            filter stays visible while you read, so changing your mind costs
+            one tap.
           */}
-          {/*
-            Cards, not rows.
-
-            Twenty-seven identical bordered rows with a chevron read as a
-            database table — the name you are scanning for had nothing to
-            distinguish it from its twenty-six neighbours. These carry no icon
-            because legal services have never had one and inventing a glyph
-            per service would be inventing meaning; the colour does the
-            separating instead, and it is stable per service between visits.
-
-            The price stays on the card: it is the thing somebody is actually
-            comparing across the list.
-          */}
-          <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
-            {services.map((s, i) => (
-              <TileCard
-                key={s.code}
-                index={i}
-                title={s.name}
-                subtitle={s.blurb}
-                meta={s.priceNaira ? formatNaira(s.priceNaira) : "Priced after review"}
-                onClick={() => startRequest(s)}
-              />
-            ))}
+          <div className="wawu-no-scrollbar -mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
+            <div className="flex w-max gap-[10px] py-[6px]">
+              {services.map((s, i) => (
+                <TileCard
+                  key={s.code}
+                  size="sm"
+                  index={i}
+                  title={s.name}
+                  selected={picked?.code === s.code}
+                  onClick={() => setPicked(s)}
+                />
+              ))}
+            </div>
           </div>
+
+          {picked ? (
+            <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px]">
+              <div className="flex flex-col gap-[6px]">
+                <h2 className="m-0 text-[17px] font-semibold text-[var(--text-primary)]">{picked.name}</h2>
+                <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">{picked.blurb}</p>
+              </div>
+              <div className="flex items-baseline gap-[8px]">
+                <span className="text-[20px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
+                  {picked.priceNaira ? formatNaira(picked.priceNaira) : "Priced after review"}
+                </span>
+                {picked.priceNaira ? (
+                  <span className="text-[12.5px] text-[var(--text-muted)]">before we start</span>
+                ) : (
+                  <span className="text-[12.5px] text-[var(--text-muted)]">nothing is charged yet</span>
+                )}
+              </div>
+              <Button onClick={() => startRequest(picked)} loading={busy} disabled={busy}>
+                Start this request
+              </Button>
+              <span className="text-[12px] leading-[1.5] text-[var(--text-muted)]">
+                Starting opens the request. A consultant reads it before anything is charged.
+              </span>
+            </div>
+          ) : (
+            <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--border-hairline)] p-[22px] text-center">
+              <span className="text-[13.5px] text-[var(--text-secondary)]">
+                Pick a service above to see what it covers and what it costs.
+              </span>
+            </div>
+          )}
         </>
       )}
     </div>

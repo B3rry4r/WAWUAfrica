@@ -91,7 +91,13 @@ export function TileCard({
     // The selected ring is an outline rather than a border so it does not
     // change the card's size and shuffle the row when a filter is picked.
     selected ? "outline outline-2 outline-offset-2 outline-[var(--accent)]" : "",
-    disabled ? "opacity-45 grayscale" : "transition-transform duration-200 hover:scale-[1.03]",
+    // Not-yet-open cards keep their COLOUR. `grayscale` plus 45% opacity read
+    // as broken rather than as forthcoming, and on a rail where half the
+    // services are coming soon it drained the whole row. The "Coming soon"
+    // line under the name is what says they are not open; it does not need
+    // the colour taken away as well. Still no hover lift, because there is
+    // nothing to press.
+    disabled ? "opacity-90" : "transition-transform duration-200 hover:scale-[1.03]",
     className,
   ].join(" ");
 

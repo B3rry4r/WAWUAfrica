@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { checkReferralCode, getSignupState, type ReferralCodeCheck } from "@/lib/api/referral";
 import { describeError } from "@/lib/api/errors";
+import { PhoneInput } from "@/components/ui";
 import { referralStorage } from "@/lib/auth/referral-storage";
 import { formatNaira } from "@/lib/format";
 import { PLANS } from "@/types/subscription";
@@ -88,6 +89,17 @@ export function SignUpFlow() {
       // actually open rather than letting Continue fail later.
       if (!state.userSignupEnabled) setAccountType("creator");
     });
+
+    // A code can arrive in the LINK (?ref=BLOG30), which is how a blog shares
+    // one: nobody has to read a code off a page and retype it. It is applied
+    // and validated here exactly as if it had been typed, so an expired or
+    // withdrawn link fails the same way and says so.
+    const ref = searchParams.get("ref");
+    if (ref) {
+      setReferral(ref.toUpperCase());
+      void applyReferralCode(ref);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   useEffect(() => {
@@ -123,11 +135,13 @@ export function SignUpFlow() {
     setStep("details");
   };
 
-  async function applyReferral() {
+  const applyReferral = () => applyReferralCode(referral);
+
+  async function applyReferralCode(code: string) {
     setCheckingReferral(true);
     setReferralError(null);
     try {
-      const check = await checkReferralCode(referral);
+      const check = await checkReferralCode(code);
       setReferralCheck(check);
       // Remembered so the subscription step can price with it without asking
       // for the same code a second time.
@@ -157,7 +171,10 @@ export function SignUpFlow() {
       setOtpState({ email: identity.email, phone: identity.phone, fullName, accountType });
       setStep("otp");
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "Could not create your account.");
+      // The server's own sentence, mapped. A 409 here is the common case and
+      // it has a real way out — sign in — so it must not read as a generic
+      // failure the user can only retry into forever.
+      setSubmitError(describeError(e).body);
     } finally {
       setSubmitting(false);
     }
@@ -449,23 +466,21 @@ export function SignUpFlow() {
             hint="At least 8 characters."
             error={identity.password ? (identity.password.length < 8 ? "Too short, use at least 8 characters." : undefined) : undefined}
           />
-          <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold text-text-secondary">Phone</span>
-            <div className="flex gap-2">
-              <div className="flex h-[52px] shrink-0 items-center gap-[7px] rounded-input border border-hairline bg-input px-3.5 text-[15px] font-semibold">
-                {identity.phoneCountryCode}
-                <Icon name="ChevronDown" size={15} color="var(--text-muted)" strokeWidth={2.2} />
-              </div>
-              <input
-                value={identity.phone}
-                onChange={(e) => setIdentity({ ...identity, phone: e.target.value })}
-                placeholder="803 000 0000"
-                inputMode="tel"
-                className="h-[52px] flex-1 rounded-input border border-hairline bg-input px-4 text-[15px] outline-none placeholder:text-text-disabled [font-feature-settings:var(--font-feature-tabular)]"
-                aria-label="Phone number"
-              />
-            </div>
-          </div>
+          {/*
+            The shared PhoneInput, which is a real picker with flags.
+            Sign-up had hand-rolled its own copy of this row: a plain <div>
+            showing "+234" and a chevron that was not attached to anything, so
+            the dial code looked selectable and could not be changed. Anyone
+            outside Nigeria could not enter their number at all. Profile edit
+            and the care flow were already using the real component.
+          */}
+          <PhoneInput
+            label="Phone"
+            dialCode={identity.phoneCountryCode}
+            value={identity.phone}
+            onDialCodeChange={(code) => setIdentity({ ...identity, phoneCountryCode: code })}
+            onValueChange={(value) => setIdentity({ ...identity, phone: value })}
+          />
         </div>
         <Footer>
           <Button full size="lg" iconRight="ArrowRight" onClick={onContinueIdentity} disabled={Boolean(identityError) || !identity.firstName.trim() || !identity.lastName.trim() || !identity.phone}>
@@ -594,9 +609,24 @@ export function SignUpFlow() {
               ))}
             </div>
           </div>
-          <button type="button" onClick={() => setDetails({ ...details, acceptedTerms: !details.acceptedTerms })} className="flex items-start gap-[11px] pt-0.5 text-left hover:bg-state-hover active:bg-state-press">
+          {/*
+            A real checkbox and a label, NOT a <button> wrapping the sentence.
+            It used to be the latter, which put two <Link>s inside a <button> —
+            invalid HTML, and it meant tapping the words "terms of service"
+            navigated away mid-signup instead of ticking the box. The links
+            stop propagation so they still open, and the rest of the label
+            still toggles, so the tap target stays the whole line.
+          */}
+          <label className="flex cursor-pointer items-start gap-[11px] pt-0.5 text-left">
+            <input
+              type="checkbox"
+              checked={details.acceptedTerms}
+              onChange={(e) => setDetails({ ...details, acceptedTerms: e.target.checked })}
+              className="peer sr-only"
+            />
             <span
-              className={`mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] ${
+              aria-hidden="true"
+              className={`mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--accent)] ${
                 details.acceptedTerms ? "bg-accent" : "border-[1.5px] border-danger bg-transparent"
               }`}
             >
@@ -604,13 +634,43 @@ export function SignUpFlow() {
             </span>
             <span className="flex flex-col gap-1 text-[13.5px] leading-normal text-text-secondary">
               <span>
-                I agree to the <Link href="/terms">terms of service</Link> and <Link href="/privacy/policy">privacy policy</Link>.
+                I agree to the{" "}
+                <Link href="/terms" target="_blank" onClick={(e) => e.stopPropagation()}>
+                  terms of service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy/policy" target="_blank" onClick={(e) => e.stopPropagation()}>
+                  privacy policy
+                </Link>
+                .
               </span>
               {!details.acceptedTerms ? <span className="text-[12px] text-danger">You need to accept the terms to continue.</span> : null}
             </span>
-          </button>
+          </label>
         </div>
         <Footer>
+          {/*
+            This was the bug behind "the button does nothing". submitError was
+            being set on every failure and rendered nowhere, so a 409 (an
+            account already exists on that email OR PHONE) looked identical to
+            success-then-silence, and retrying produced the same 409 again.
+          */}
+          {submitError ? (
+            <div
+              role="alert"
+              className="mb-3 flex items-start gap-2.5 rounded-input border border-danger bg-[var(--danger-tint)] px-3.5 py-3"
+            >
+              <Icon name="TriangleAlert" size={16} color="var(--danger)" strokeWidth={2.2} className="mt-0.5 shrink-0" />
+              <span className="flex flex-col gap-1.5 text-[13px] leading-[1.45] text-text-secondary">
+                <span>{submitError}</span>
+                {/^.*already exists/i.test(submitError) ? (
+                  <Link href="/sign-in" className="font-semibold text-accent">
+                    Sign in instead
+                  </Link>
+                ) : null}
+              </span>
+            </div>
+          ) : null}
           <Button full size="lg" onClick={onCreateAccount} disabled={!details.acceptedTerms || submitting}>
             {submitting ? "Creating account…" : "Create account"}
           </Button>
