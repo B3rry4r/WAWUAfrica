@@ -28,7 +28,7 @@ export type { IconName } from "./Icon";
 export { Input } from "./Input";
 export { ListRow } from "./ListRow";
 export { NairaInput } from "./NairaInput";
-export { PhoneInput, fullPhoneNumber, DIAL_CODES, DEFAULT_DIAL_CODE } from "./PhoneInput";
+export { PhoneInput, fullPhoneNumber, splitPhoneNumber, DIAL_CODES, DEFAULT_DIAL_CODE } from "./PhoneInput";
 export { PriceChip } from "./PriceChip";
 export { QrCode } from "./QrCode";
 export { ProfileHeader } from "./ProfileHeader";

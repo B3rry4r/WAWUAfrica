@@ -7,7 +7,7 @@ import { getOwnProfile, saveProfile } from "@/lib/api/verification";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Input } from "@/components/ui/Input";
-import { PhoneInput, fullPhoneNumber, DEFAULT_DIAL_CODE } from "@/components/ui/PhoneInput";
+import { DEFAULT_DIAL_CODE, PhoneInput, fullPhoneNumber, splitPhoneNumber } from "@/components/ui/PhoneInput";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -203,7 +203,7 @@ export default function EditProfilePage() {
               <PhoneInput
                 label="WhatsApp"
                 dialCode={waDialCode}
-                value={(draft.socials.whatsapp ?? "").replace(/^\+\d{1,4}/, "")}
+                value={splitPhoneNumber(draft.socials.whatsapp ?? "").value}
                 onDialCodeChange={setWaDialCode}
                 onValueChange={(v) =>
                   setDraft((d) => ({ ...d, socials: { ...d.socials, whatsapp: v ? fullPhoneNumber(waDialCode, v) : "" } }))
