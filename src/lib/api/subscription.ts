@@ -154,11 +154,23 @@ export const subscriptionApi: SubscriptionApi = {
 
   subscribe: async (tier, onCharged, referralCode) => {
     try {
-      const init = await apiFetch<FlutterwaveConfigResponse>("/api/hub/creator-subscription", {
+      const init = await apiFetch<
+        FlutterwaveConfigResponse & { free?: boolean; subscription?: CreatorSubscriptionRow }
+      >("/api/hub/creator-subscription", {
         method: "POST",
         authed: true,
         body: { tier, ...(referralCode ? { referralCode } : {}) },
       });
+
+      // A 100%-off code prices the plan at ₦0, and Flutterwave cannot take
+      // ₦0 — so the server has already granted it and there is nothing to
+      // charge or verify. Opening a checkout here would strand the creator on
+      // a page that cannot complete, which is exactly what a fully discounted
+      // code used to do.
+      if (init.free && init.subscription) {
+        onCharged?.();
+        return toSubscription(init.subscription);
+      }
       const row = await chargeAndVerify(init.flutterwaveConfig, PLANS[tier].tier === "pro" ? "Pro" : "Basic", onCharged);
       return toSubscription(row);
     } catch (e) {
