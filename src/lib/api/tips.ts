@@ -4,6 +4,17 @@ import { sessionStorage } from "@/lib/auth/session-storage";
 import type { TipResult } from "./mocks/tips";
 import { sendMockTip, TIP_PRESETS } from "./mocks/tips";
 
+/**
+ * The bounds the server actually enforces (CreateTipDto: @Min(1) @Max(10_000_000)).
+ *
+ * The floor is raised to ₦100 here because a ₦1 tip costs more in card fees
+ * than it moves, and Flutterwave rejects trivially small charges anyway. The
+ * ceiling is the server's own, so the form cannot offer an amount the API
+ * will refuse.
+ */
+export const MIN_TIP_NAIRA = 100;
+export const MAX_TIP_NAIRA = 10_000_000;
+
 export { TIP_PRESETS };
 
 interface FlutterwaveConfigResponse {

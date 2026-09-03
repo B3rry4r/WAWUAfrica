@@ -292,7 +292,7 @@ export function KycFlow() {
             <Button full size="lg" onClick={() => setView("form")}>
               Resubmit KYC
             </Button>
-            <Button full variant="ghost" href="mailto:hello@wawuafrica.com">
+            <Button full variant="ghost" href="mailto:support@wawuafrica.com">
               Contact support
             </Button>
           </>

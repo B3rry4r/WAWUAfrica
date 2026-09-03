@@ -974,7 +974,7 @@ function UnlockDialogBody({
           <Button full size="lg" icon="RotateCcw" onClick={onRefresh}>
             Refresh
           </Button>
-          <Button full variant="ghost" href="mailto:hello@wawuafrica.com">
+          <Button full variant="ghost" href="mailto:support@wawuafrica.com">
             Contact support
           </Button>
         </div>

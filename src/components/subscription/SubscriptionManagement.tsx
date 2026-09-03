@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatNaira } from "@/lib/format";
-import { PLANS } from "@/types/subscription";
+import { PLANS, PLAN_ORDER } from "@/types/subscription";
 import { StorageMeter } from "@/components/ui";
 import { DittoDistributionCard } from "./DittoDistributionCard";
 import type { Subscription } from "@/types/subscription";
@@ -148,7 +148,7 @@ export function SubscriptionManagement() {
    * claims "nothing was charged" and never invites a blind second payment.
    */
   const PAYMENT_ERROR =
-    "We could not complete that payment. If money left your account, do not pay again, contact hello@wawuafrica.com and we will sort it.";
+    "We could not complete that payment. If money left your account, do not pay again, contact support@wawuafrica.com and we will sort it.";
 
   const payAndGoPro = async () => {
     setActionError(null);
@@ -387,7 +387,7 @@ export function SubscriptionManagement() {
                     No proration. This is a new term at full price. Nothing you already published or sold was touched while you were off.
                   </span>
                 </Card>
-                {(["basic", "pro"] as CreatorTier[]).map((t) => (
+                {PLAN_ORDER.map((t) => (
                   <Card key={t}>
                     <div className="flex items-center gap-[10px]">
                       <TierBadge tier={t} />
@@ -1121,7 +1121,7 @@ function DesktopSubscriptionView({
                   : "Pick a tier to start uploading and selling."}
               </span>
             </Card>
-            {(["basic", "pro"] as CreatorTier[]).map((t) => (
+            {PLAN_ORDER.map((t) => (
               <Card key={t}>
                 <div className="flex items-center gap-[10px]">
                   <TierBadge tier={t} />

@@ -23,7 +23,7 @@ export default function AboutPage() {
         <ListRow title="Partners" subtitle="Who we work with" icon="Handshake" href="/partners" />
         <ListRow title="Privacy policy" icon="FileText" href="/privacy/policy" />
         <ListRow title="Terms of service" icon="Scale" href="/terms" />
-        <ListRow title="Contact us" subtitle="hello@wawuafrica.com" icon="Mail" href="mailto:hello@wawuafrica.com" />
+        <ListRow title="Contact us" subtitle="support@wawuafrica.com" icon="Mail" href="mailto:support@wawuafrica.com" />
       </div>
     </div>
   );

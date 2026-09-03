@@ -51,7 +51,7 @@ export default function TermsPage() {
       />
       <Section
         title="Contact"
-        body="Questions about these terms can be sent to hello@wawuafrica.com."
+        body="Questions about these terms can be sent to support@wawuafrica.com."
       />
     </div>
   );

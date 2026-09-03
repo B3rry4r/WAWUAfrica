@@ -198,7 +198,7 @@ export function DmPaySheet({
             </span>
           </div>
           <div className="mt-[6px] flex gap-[10px]">
-            <Button full variant="secondary" href="mailto:hello@wawuafrica.com">
+            <Button full variant="secondary" href="mailto:support@wawuafrica.com">
               Contact support
             </Button>
             <Button

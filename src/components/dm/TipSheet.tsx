@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sendTip, TIP_PRESETS } from "@/lib/api/tips";
+import { sendTip, TIP_PRESETS, MIN_TIP_NAIRA, MAX_TIP_NAIRA } from "@/lib/api/tips";
 import { formatNaira } from "@/lib/format";
 import { Avatar, Button, Icon, Sheet } from "@/components/ui";
 
@@ -25,12 +25,15 @@ export function TipSheet({
   creator: { wawuId: string; name: string } | null;
 }) {
   const [amount, setAmount] = useState<number | null>(null);
+  /** What they typed, kept as text so a half-typed number is not reformatted. */
+  const [custom, setCustom] = useState("");
   const [note, setNote] = useState("");
   const [phase, setPhase] = useState<Phase>("choose");
 
   useEffect(() => {
     if (open) {
       setAmount(null);
+      setCustom("");
       setNote("");
       setPhase("choose");
     }
@@ -67,7 +70,10 @@ export function TipSheet({
                 <button
                   key={p}
                   type="button"
-                  onClick={() => setAmount(p)}
+                  onClick={() => {
+                    setAmount(p);
+                    setCustom("");
+                  }}
                   className={[
                     "h-[54px] cursor-pointer rounded-[var(--radius-input)] border-[1.5px] text-[17px] font-bold [font-feature-settings:var(--font-feature-tabular)]",
                     active
@@ -80,6 +86,40 @@ export function TipSheet({
               );
             })}
           </div>
+          {/*
+            Any amount, not just the four presets.
+            
+            The presets stopped at ₦5,000 and there was no way past them, so a
+            tip larger than that could not be sent at all — while the server
+            has always accepted up to ₦10,000,000. The ceiling was the UI's
+            alone.
+          */}
+          <label className="flex flex-col gap-[7px]">
+            <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Or enter an amount</span>
+            <div className="flex items-center gap-[8px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[15px]">
+              <span className="text-[15px] font-semibold text-[var(--text-muted)]">₦</span>
+              <input
+                value={custom}
+                onChange={(e) => {
+                  // Digits only: a stray comma or space is a 400 from the DTO,
+                  // and stripping it is kinder than refusing the whole entry.
+                  const digits = e.target.value.replace(/[^0-9]/g, "");
+                  setCustom(digits);
+                  const n = Number(digits);
+                  setAmount(digits && n >= MIN_TIP_NAIRA && n <= MAX_TIP_NAIRA ? n : null);
+                }}
+                inputMode="numeric"
+                placeholder="10,000"
+                aria-label="Tip amount in naira"
+                className="h-[52px] flex-1 border-0 bg-transparent text-[17px] font-bold text-[var(--text-primary)] outline-none [font-feature-settings:var(--font-feature-tabular)] placeholder:font-normal placeholder:text-[var(--text-disabled)]"
+              />
+            </div>
+            {custom && amount === null ? (
+              <span className="text-[12px] text-[var(--danger)]">
+                Enter between {formatNaira(MIN_TIP_NAIRA)} and {formatNaira(MAX_TIP_NAIRA)}.
+              </span>
+            ) : null}
+          </label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -131,7 +171,7 @@ export function TipSheet({
             <Button full variant="secondary" onClick={onClose}>
               Close
             </Button>
-            <Button full href="mailto:hello@wawuafrica.com">
+            <Button full href="mailto:support@wawuafrica.com">
               Contact support
             </Button>
           </div>

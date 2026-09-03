@@ -5,7 +5,7 @@ import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
-import { PLANS } from "@/types/subscription";
+import { PLANS, PLAN_ORDER } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
 import { checkReferralCode, type ReferralCodeCheck } from "@/lib/api/referral";
 import { referralStorage } from "@/lib/auth/referral-storage";
@@ -37,7 +37,8 @@ export function CreatorOnboarding() {
   /** True only while the checkout modal is being opened. */
   const [paying, setPaying] = useState(false);
   const [tier, setTier] = useState<CreatorTier>("pro");
-  const [proSelected, setProSelected] = useState(true);
+  // Kept only for the card's emphasis styling. The TIER is the state.
+  const proSelected = tier !== "basic";
   // Set from the subscription the server confirms, so the receipt shows the
   // real renewal date rather than a hardcoded one.
   const [renewsAt, setRenewsAt] = useState<string | null>(null);
@@ -348,27 +349,29 @@ export function CreatorOnboarding() {
 
         {step === "tier" ? (
           <>
+            {/*
+              All THREE plans. This was a two-way toggle over a `proSelected`
+              boolean, so Pro Max could not be chosen at all — the tier existed
+              on the pricing page, in the API and in the allowance table, and
+              there was no way to buy it. PLAN_ORDER is the one list every
+              other pricing surface reads.
+            */}
             <div className="flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
-              {(["Basic", "Pro"] as const).map((label) => {
-                const active = (label === "Pro") === proSelected;
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => {
-                      setProSelected(label === "Pro");
-                      setTier(label === "Pro" ? "pro" : "basic");
-                    }}
-                    className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] text-[13.5px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
-                      active
-                        ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-                        : "bg-transparent text-[var(--text-secondary)] hover:bg-state-hover active:bg-state-press"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+              {PLAN_ORDER.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTier(t)}
+                  aria-pressed={tier === t}
+                  className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] px-[6px] text-[13px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
+                    tier === t
+                      ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+                      : "bg-transparent text-[var(--text-secondary)] hover:bg-state-hover active:bg-state-press"
+                  }`}
+                >
+                  {PLANS[t].name}
+                </button>
+              ))}
             </div>
 
             <div
@@ -408,31 +411,29 @@ export function CreatorOnboarding() {
                     : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
                 }`}
               >
-                <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{proSelected ? "90/10" : "85/15"}</span>
+                <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
+                  {PLANS[tier].split}/{100 - PLANS[tier].split}
+                </span>
                 <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-                  {proSelected ? "Keep 90% on content, DMs, tips and storefront, not 85%." : "Community credits still pay 90% on every tier."}
+                  {PLANS[tier].split === 90
+                    ? "Keep 90% on content, DMs, tips and storefront, not 85%."
+                    : "Community credits still pay 90% on every tier."}
                 </span>
               </div>
 
+              {/*
+                From PLANS, not hand-written per branch. The Pro branch used
+                to list "15 uploads, 2 included, 13 paid" — which is Pro MAX's
+                allowance, on the Pro card, next to Pro's price.
+              */}
               <div className="flex flex-col gap-[9px]">
-                {proSelected ? (
-                  <>
-                    <CheckRow>15 uploads, 2 included, 13 paid</CheckRow>
-                    <CheckRow>Open private communities</CheckRow>
-                    <CheckRow>Up to 3 courses of your choice, included</CheckRow>
-                    <CheckRow>Priority support and recommended deals</CheckRow>
-                    <CheckRow>Gold badge</CheckRow>
-                    <CheckRow>Playbook and pension registration</CheckRow>
-                  </>
-                ) : (
-                  <>
-                    <CheckRow>6 uploads, 1 included, 5 paid</CheckRow>
-                    <CheckRow>Unlimited messages in open communities</CheckRow>
-                    <CheckRow>1 selected course, included</CheckRow>
-                    <CheckRow>Playbook and pension registration</CheckRow>
-                    <CheckRow>Purple badge</CheckRow>
-                  </>
-                )}
+                <CheckRow>
+                  {PLANS[tier].slots} uploads, {PLANS[tier].freeSlots} included,{" "}
+                  {PLANS[tier].slots - PLANS[tier].freeSlots} paid
+                </CheckRow>
+                {PLANS[tier].features.slice(0, 5).map((f) => (
+                  <CheckRow key={f}>{f}</CheckRow>
+                ))}
               </div>
             </div>
           </>
