@@ -60,6 +60,11 @@ export interface OwnProfileStats {
 /** The signed-in user's own profile, read from session + profile records. */
 export interface OwnProfile {
   wawuId: string;
+  /** The three parts as WAWU ID stores them, for the edit form. */
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  /** The three joined, for everywhere that renders one name. */
   name: string;
   handle: string;
   email: string;
@@ -92,6 +97,11 @@ export interface OwnProfile {
 }
 
 export interface OwnProfileDraft {
+  /** The three parts, as WAWU ID stores them. */
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  /** The three joined, for the avatar initial and anything rendering one name. */
   name: string;
   handle: string;
   bio: string;

@@ -35,6 +35,9 @@ export default function EditProfilePage() {
   // Stored as one string, but edited as dial code + number.
   const [waDialCode, setWaDialCode] = useState(DEFAULT_DIAL_CODE);
   const [draft, setDraft] = useState<OwnProfileDraft>({
+    firstName: "",
+    middleName: "",
+    lastName: "",
     name: "",
     handle: "",
     bio: "",
@@ -47,7 +50,7 @@ export default function EditProfilePage() {
     getOwnProfile()
       .then((p: OwnProfile) => {
         if (!active) return;
-        setDraft({ name: p.name, handle: p.handle, bio: p.bio, interests: [...p.interests], socials: { ...p.socials } });
+        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, interests: [...p.interests], socials: { ...p.socials } });
         setLoading(false);
       })
       .catch(() => active && (setLoadError(true), setLoading(false)));
@@ -64,7 +67,7 @@ export default function EditProfilePage() {
   };
 
   const submit = async () => {
-    if (!draft.name.trim() || !draft.handle.trim()) return;
+    if (!draft.firstName.trim() || !draft.lastName.trim() || !draft.handle.trim()) return;
     setSaving(true);
     setSaveError(null);
     try {
@@ -112,16 +115,35 @@ export default function EditProfilePage() {
       ) : (
         <>
           <div className="flex justify-center">
-            <Avatar initial={draft.name.charAt(0) || "A"} size={84} />
+            <Avatar initial={draft.firstName.charAt(0) || "A"} size={84} />
           </div>
 
           <div className="flex flex-col gap-[14px]">
+            {/*
+              Editable, in three parts.
+
+              This was a DISABLED field explaining that names "can't be changed
+              here yet" — true at the time, because WAWU ID had no route to
+              change one. It has one now. That matters more than tidiness: KYC
+              is a manual review against a government ID, so somebody who
+              mistyped their surname at sign-up had a permanently held payout
+              and no way to fix it without support.
+            */}
             <Input
-              label="Full name"
-              value={draft.name}
-              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-              disabled
-              hint="Your name is managed by your WAWU ID account and can't be changed here yet."
+              label="First name"
+              value={draft.firstName}
+              onChange={(e) => setDraft((d) => ({ ...d, firstName: e.target.value }))}
+            />
+            <Input
+              label="Middle name (optional)"
+              value={draft.middleName}
+              onChange={(e) => setDraft((d) => ({ ...d, middleName: e.target.value }))}
+            />
+            <Input
+              label="Last name"
+              value={draft.lastName}
+              onChange={(e) => setDraft((d) => ({ ...d, lastName: e.target.value }))}
+              hint="Use the name on your government ID. Verification and payouts are checked against it."
             />
             <Input
               label="Handle"

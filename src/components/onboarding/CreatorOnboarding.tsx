@@ -56,7 +56,16 @@ export function CreatorOnboarding() {
     if (!stored) return;
     let active = true;
     checkReferralCode(stored)
-      .then((check) => active && setReferral(check))
+      .then((check) => {
+        if (!active) return;
+        setReferral(check);
+        // A code is issued against ONE plan. This screen opens on Pro, so a
+        // code for Basic silently did nothing: the creator saw the full
+        // ₦5,999 with no explanation, which is exactly what the product
+        // owner hit with a 100% code. Selecting the code's own plan is the
+        // only reading of "I was given this code" that is not a trap.
+        setTier(check.tier);
+      })
       // A code that no longer validates simply does not apply. Blocking
       // somebody from subscribing over it would be worse than the full price.
       .catch(() => referralStorage.clear());
@@ -401,6 +410,20 @@ export function CreatorOnboarding() {
                     </span>
                     <span className="text-[12px] text-[var(--text-muted)]">code {referral.code}</span>
                   </span>
+                ) : referral && referral.tier !== tier ? (
+                  // The mismatch was silent. Somebody holding a code and
+                  // looking at full price has to be told which plan it is for,
+                  // and given the one tap that applies it.
+                  <button
+                    type="button"
+                    onClick={() => setTier(referral.tier)}
+                    className="flex items-center gap-[7px] text-left"
+                  >
+                    <span className="text-[12px] text-[var(--text-secondary)]">
+                      Code {referral.code} is {referral.discountPercent}% off {PLANS[referral.tier].name}.
+                    </span>
+                    <span className="text-[12px] font-semibold text-[var(--accent)]">Use it</span>
+                  </button>
                 ) : null}
               </div>
 

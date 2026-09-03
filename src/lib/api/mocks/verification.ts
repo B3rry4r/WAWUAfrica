@@ -11,6 +11,9 @@ import { delay } from "../client";
  */
 export const MOCK_OWN_PROFILE: OwnProfile = {
   wawuId: "wawu-me",
+  firstName: "Adaeze",
+  middleName: "",
+  lastName: "Okonkwo",
   name: "Amara Okafor",
   handle: "amara",
   email: "amara@example.com",

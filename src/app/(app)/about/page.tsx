@@ -20,7 +20,6 @@ export default function AboutPage() {
       <Section title="Nigeria-first" body="Prices are in naira. Verification uses BVN and NIN in Nigeria, national IDs elsewhere, and every review is done by a human." />
 
       <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-        <ListRow title="Partners" subtitle="Who we work with" icon="Handshake" href="/partners" />
         <ListRow title="Privacy policy" icon="FileText" href="/privacy/policy" />
         <ListRow title="Terms of service" icon="Scale" href="/terms" />
         <ListRow title="Contact us" subtitle="support@wawuafrica.com" icon="Mail" href="mailto:support@wawuafrica.com" />

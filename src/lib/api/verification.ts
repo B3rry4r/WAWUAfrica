@@ -139,6 +139,8 @@ interface HubMeResponse {
   wawuUserId: string;
   email: string | null;
   firstName: string;
+  /** Optional: WAWU ID only started storing it when sign-up split the name. */
+  middleName?: string | null;
   lastName: string;
   verificationTier: string;
   accountType: AccountType | null;
@@ -157,6 +159,9 @@ interface HubMeResponse {
 
 /** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubMeResponse doc comment) — never invent one. */
 interface UpdateUserProfileBody {
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   interests?: string[];
   bio?: string;
   handle?: string;
@@ -214,7 +219,10 @@ export async function getOwnProfile(): Promise<OwnProfile> {
   try {
     const me = await apiFetch<HubMeResponse>("/api/hub/users/me", { authed: true });
     const accountType: AccountType = me.accountType ?? "user";
-    const name = `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || me.handle || "WAWU member";
+    const name =
+      [me.firstName, me.middleName, me.lastName].filter(Boolean).join(" ").trim() ||
+      me.handle ||
+      "WAWU member";
 
     let plan: CreatorTier = "basic";
     let contentSlots: OwnProfile["contentSlots"];
@@ -241,6 +249,9 @@ export async function getOwnProfile(): Promise<OwnProfile> {
 
     return {
       wawuId: me.wawuUserId,
+      firstName: me.firstName ?? "",
+      middleName: me.middleName ?? "",
+      lastName: me.lastName ?? "",
       name,
       handle: me.handle ?? "",
       email: me.email ?? "",
@@ -286,6 +297,11 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
       method: "PATCH",
       authed: true,
       body: {
+        // Names live in WAWU ID; the hub proxies them. Sent together, because
+        // a partial rename would land a new surname beside an old first name.
+        firstName: draft.firstName,
+        middleName: draft.middleName,
+        lastName: draft.lastName,
         interests: draft.interests,
         bio: draft.bio,
         handle: draft.handle,

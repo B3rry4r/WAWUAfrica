@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 /**
  * Back control for screens that put their title in the page body rather than
  * in a FlowHeader bar: the profile cover, and the settings-style screens
- * (/privacy, /about, /terms, /partners, the service detail pages).
+ * (/privacy, /about, /terms, the service detail pages).
  *
  * Two things were wrong with it and both are fixed here.
  *
