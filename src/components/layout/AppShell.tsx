@@ -6,6 +6,7 @@ import { SessionProvider } from "@/lib/auth/session-provider";
 import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
 import { CreateFab } from "./CreateFab";
+import { SoundToggle } from "./SoundToggle";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
@@ -85,6 +86,16 @@ export function AppShell({ children, header = true }: AppShellProps) {
         <CreateFab />
         <BottomNav />
       </div>
+      {/*
+        OUTSIDE the xl:hidden block. Create and the bottom bar are mobile-only,
+        but the music is not: putting the toggle in there made it invisible on
+        desktop, where the shell has no bottom bar and the button has a corner
+        to itself. It positions itself for both.
+
+        In the shell rather than on a page, so the track survives every in-app
+        navigation instead of restarting on each route change.
+      */}
+      <SoundToggle />
     </SessionProvider>
   );
 }

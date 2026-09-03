@@ -186,6 +186,62 @@ function SectionMark() {
   );
 }
 
+/**
+ * The App Store and Play Store badges, marked coming soon.
+ *
+ * Deliberately NOT links. There is no app to download yet, so a badge that
+ * navigated anywhere would either 404 or land somebody on a store page with
+ * no WAWU on it — and a store badge is the most clickable thing on a page,
+ * so it has to be honest about being inert. They are plain divs with a
+ * "Coming soon" line, not anchors and not buttons.
+ *
+ * The Apple and Google marks are drawn as SVG paths rather than fetched from
+ * either company's badge CDN: an external image here would be a third-party
+ * request on the landing page, and both companies' badge assets carry usage
+ * terms about not altering them, which a "coming soon" overlay would do.
+ */
+function StoreBadges() {
+  return (
+    <div className="flex flex-col items-center gap-3 py-6 dt:py-8">
+      <span className="text-[11.5px] font-bold uppercase tracking-[0.14em] text-text-muted">
+        Apps coming soon
+      </span>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {[
+          {
+            name: "App Store",
+            lead: "Download on the",
+            // Apple's mark.
+            path: "M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z",
+          },
+          {
+            name: "Google Play",
+            lead: "Get it on",
+            // A simplified Play triangle.
+            path: "M3.6 2.4c-.35.2-.6.6-.6 1.1v17c0 .5.25.9.6 1.1l9.5-9.6-9.5-9.6zM14.3 13.1l2.6 2.6-9.9 5.6 7.3-8.2zM17.7 10.4l2.9 1.6c.6.35.6 1.25 0 1.6l-2.9 1.6-2.9-2.4 2.9-2.4zM14.3 10.9L7 2.7l9.9 5.6-2.6 2.6z",
+          },
+        ].map((s) => (
+          <div
+            key={s.name}
+            className="flex h-[54px] items-center gap-2.5 rounded-[11px] border border-hairline bg-card px-4 opacity-70"
+          >
+            <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0 fill-text-secondary" aria-hidden="true">
+              <path d={s.path} />
+            </svg>
+            <span className="flex flex-col leading-tight">
+              <span className="text-[9.5px] uppercase tracking-[0.06em] text-text-muted">{s.lead}</span>
+              <span className="text-[14px] font-bold text-text-secondary">{s.name}</span>
+            </span>
+            <span className="ml-1 rounded-full bg-tag px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.05em] text-text-muted">
+              Soon
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const STREAMS: { icon: IconName; title: string; blurb: string }[] = [
   { icon: "Palette", title: "Creative Works", blurb: "Sell what you make" },
   { icon: "ShoppingBag", title: "Basket, Beauty & Commerce", blurb: "Products, right from your profile" },
@@ -1024,6 +1080,7 @@ export async function LandingContent() {
         </section>
 
         <SectionMark />
+        <StoreBadges />
 
         {/* ============ FINAL CTA ============ */}
         <section className="px-5 pb-20 pt-10 dt:pb-28">
