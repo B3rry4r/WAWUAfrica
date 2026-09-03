@@ -52,3 +52,28 @@ export function checkReferralCode(code: string): Promise<ReferralCodeCheck> {
     `/api/hub/referral/validate?code=${encodeURIComponent(code.trim())}`,
   );
 }
+
+/**
+ * Remembers the code against the ACCOUNT, not just the browser.
+ *
+ * Best effort: this runs right after sign-up, and a failure here must never
+ * fail the sign-up itself. The browser copy still works for the common case
+ * where somebody stays in the same tab.
+ */
+export async function claimReferralCode(code: string): Promise<void> {
+  try {
+    await apiFetch("/api/hub/referral/claim", { method: "POST", authed: true, body: { code } });
+  } catch {
+    // The local copy is the fast path; losing the durable one is not fatal.
+  }
+}
+
+/** The code this account arrived with, if the server still considers it usable. */
+export async function getClaimedReferralCode(): Promise<string | null> {
+  try {
+    const res = await apiFetch<{ code: string | null }>("/api/hub/referral/mine", { authed: true });
+    return res.code;
+  } catch {
+    return null;
+  }
+}

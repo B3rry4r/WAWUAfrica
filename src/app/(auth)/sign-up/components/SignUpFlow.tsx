@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { checkReferralCode, getSignupState, type ReferralCodeCheck } from "@/lib/api/referral";
+import { checkReferralCode, claimReferralCode, getSignupState, type ReferralCodeCheck } from "@/lib/api/referral";
 import { describeError } from "@/lib/api/errors";
 import { PhoneInput } from "@/components/ui";
 import { referralStorage } from "@/lib/auth/referral-storage";
@@ -168,6 +168,10 @@ export function SignUpFlow() {
         ...details,
         accountType,
       });
+      // The account exists now, so the code can finally be attached to it.
+      // Until this point it lived only in the browser, which does not survive
+      // the trip to an email client and back in a new tab.
+      if (referralCheck) void claimReferralCode(referralCheck.code);
       setOtpState({ email: identity.email, phone: identity.phone, fullName, accountType });
       setStep("otp");
     } catch (e) {

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
 import { PLANS, PLAN_ORDER } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
-import { checkReferralCode, type ReferralCodeCheck } from "@/lib/api/referral";
+import { checkReferralCode, getClaimedReferralCode, type ReferralCodeCheck } from "@/lib/api/referral";
 import { referralStorage } from "@/lib/auth/referral-storage";
 import { subscriptionApi } from "@/lib/api/subscription";
 import { isFlutterwaveCancelled } from "@/lib/flutterwave";
@@ -52,12 +52,24 @@ export function CreatorOnboarding() {
    */
   const [referral, setReferral] = useState<ReferralCodeCheck | null>(null);
   useEffect(() => {
-    const stored = referralStorage.get();
-    if (!stored) return;
     let active = true;
-    checkReferralCode(stored)
+    // The browser copy first, then the ACCOUNT's. The local one is gone
+    // whenever somebody came back in a new tab or on another device, which
+    // is the normal shape of "register, go to your email, come back".
+    void (async () => {
+      const stored = referralStorage.get() ?? (await getClaimedReferralCode());
+      if (!stored || !active) return;
+      await applyStoredCode(stored, () => active);
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const applyStoredCode = async (stored: string, stillActive: () => boolean) => {
+    await checkReferralCode(stored)
       .then((check) => {
-        if (!active) return;
+        if (!stillActive()) return;
         setReferral(check);
         // A code is issued against ONE plan. This screen opens on Pro, so a
         // code for Basic silently did nothing: the creator saw the full
@@ -69,10 +81,7 @@ export function CreatorOnboarding() {
       // A code that no longer validates simply does not apply. Blocking
       // somebody from subscribing over it would be worse than the full price.
       .catch(() => referralStorage.clear());
-    return () => {
-      active = false;
-    };
-  }, []);
+  };
 
   const listPrice = PLANS[tier].price;
   // A code is issued against ONE plan, so it only discounts that plan. Picking
