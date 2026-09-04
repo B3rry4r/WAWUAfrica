@@ -75,8 +75,10 @@ export interface OwnProfile {
   stats: OwnProfileStats;
   interests: string[];
   /**
-   * Where a creator can be reached. Handles are stored bare (no "@"); the
-   * link fields take a full URL.
+   * Where a creator can be reached. Every one of these is a bare handle now,
+   * with or without the "@": the API expands youtube, facebook and linkedin
+   * into full profile links on write. `website` is the exception and stays a
+   * full URL, since a personal site has no handle to expand.
    */
   socials: {
     instagram?: string;
@@ -88,6 +90,9 @@ export interface OwnProfile {
     linkedin?: string;
     website?: string;
   };
+  /** Profile picture and header image. Null until one is uploaded. */
+  avatarUrl: string | null;
+  coverUrl: string | null;
   /** User only — count, never a naira value. */
   credits: number;
   /** Creator only. */
@@ -107,8 +112,10 @@ export interface OwnProfileDraft {
   bio: string;
   interests: string[];
   /**
-   * Where a creator can be reached. Handles are stored bare (no "@"); the
-   * link fields take a full URL.
+   * Where a creator can be reached. Every one of these is a bare handle now,
+   * with or without the "@": the API expands youtube, facebook and linkedin
+   * into full profile links on write. `website` is the exception and stays a
+   * full URL, since a personal site has no handle to expand.
    */
   socials: {
     instagram?: string;
@@ -120,4 +127,7 @@ export interface OwnProfileDraft {
     linkedin?: string;
     website?: string;
   };
+  /** Profile picture and header image. Null clears one that was set. */
+  avatarUrl: string | null;
+  coverUrl: string | null;
 }

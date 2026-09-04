@@ -6,6 +6,7 @@ import type { OwnProfile, OwnProfileDraft } from "@/types/verification";
 import { getOwnProfile, saveProfile } from "@/lib/api/verification";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
+import { FilePicker } from "@/components/ui/FilePicker";
 import { Input } from "@/components/ui/Input";
 import { DEFAULT_DIAL_CODE, PhoneInput, fullPhoneNumber, splitPhoneNumber } from "@/components/ui/PhoneInput";
 import { Button } from "@/components/ui/Button";
@@ -43,6 +44,8 @@ export default function EditProfilePage() {
     bio: "",
     interests: [],
     socials: { instagram: "", whatsapp: "", x: "", tiktok: "", youtube: "", facebook: "", linkedin: "", website: "" },
+    avatarUrl: null,
+    coverUrl: null,
   });
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function EditProfilePage() {
     getOwnProfile()
       .then((p: OwnProfile) => {
         if (!active) return;
-        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, interests: [...p.interests], socials: { ...p.socials } });
+        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, interests: [...p.interests], socials: { ...p.socials }, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl });
         setLoading(false);
       })
       .catch(() => active && (setLoadError(true), setLoading(false)));
@@ -114,8 +117,56 @@ export default function EditProfilePage() {
         </div>
       ) : (
         <>
-          <div className="flex justify-center">
-            <Avatar initial={draft.firstName.charAt(0) || "A"} size={84} />
+          {/*
+            A PROFILE PICTURE, WHICH CREATORS COULD NOT SET AT ALL.
+
+            This was a generated initial with no upload behind it anywhere in
+            the product, so every creator on the platform looked the same. The
+            cover is new too: cards and the profile header had nothing to show
+            but flat colour.
+
+            Both are optional. An account with neither still renders the
+            initial and a plain header, exactly as before.
+          */}
+          <div className="flex flex-col gap-[12px]">
+            <div className="relative">
+              <div className="h-[112px] w-full overflow-hidden rounded-[var(--radius-card)] border border-hairline bg-[var(--surface-input)]">
+                {draft.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={draft.coverUrl} alt="" className="h-full w-full object-cover" />
+                ) : null}
+              </div>
+              <div className="absolute -bottom-[26px] left-1/2 -translate-x-1/2">
+                {draft.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={draft.avatarUrl}
+                    alt=""
+                    className="h-[84px] w-[84px] rounded-full border-[3px] border-[var(--surface-page)] object-cover"
+                  />
+                ) : (
+                  <Avatar initial={draft.firstName.charAt(0) || "A"} size={84} />
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col gap-[10px] pt-[30px]">
+              <FilePicker
+                folder="avatars"
+                accept="image/*"
+                label={draft.avatarUrl ? "Change your profile picture" : "Add a profile picture"}
+                hint="A square photo works best."
+                onUploaded={(f) => setDraft((d) => ({ ...d, avatarUrl: f.fileUrl }))}
+                onCleared={() => setDraft((d) => ({ ...d, avatarUrl: null }))}
+              />
+              <FilePicker
+                folder="profile/cover"
+                accept="image/*"
+                label={draft.coverUrl ? "Change your cover photo" : "Add a cover photo"}
+                hint="Wide, at least 1200 pixels across."
+                onUploaded={(f) => setDraft((d) => ({ ...d, coverUrl: f.fileUrl }))}
+                onCleared={() => setDraft((d) => ({ ...d, coverUrl: null }))}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-[14px]">
@@ -198,7 +249,7 @@ export default function EditProfilePage() {
                 value={draft.socials.instagram ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, instagram: e.target.value } }))}
                 icon={"instagram" as IconName}
-                placeholder="username"
+                placeholder="@username"
               />
               <PhoneInput
                 label="WhatsApp"
@@ -210,43 +261,44 @@ export default function EditProfilePage() {
                 }
               />
               {/*
-                Instagram and WhatsApp alone left most of where an audience
-                actually is unreachable from a profile. Handles are typed bare;
-                the link fields want a full URL because the API validates them
-                as one.
+                EVERY FIELD TAKES A HANDLE.
+
+                Three of these used to demand a full "https://linkedin.com/in/you"
+                while the three above took a bare handle, on the same form.
+                Nobody knows their LinkedIn URL from memory; everybody knows
+                their handle. The API expands a handle into the canonical
+                profile link, and still accepts a pasted URL from anyone who
+                has one to hand, so nothing that worked before stopped working.
               */}
               <Input
                 label="X"
                 value={draft.socials.x ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, x: e.target.value } }))}
-                placeholder="username"
+                placeholder="@username"
               />
               <Input
                 label="TikTok"
                 value={draft.socials.tiktok ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, tiktok: e.target.value } }))}
-                placeholder="username"
+                placeholder="@username"
               />
               <Input
                 label="YouTube"
                 value={draft.socials.youtube ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, youtube: e.target.value } }))}
-                inputMode="url"
-                placeholder="https://youtube.com/@you"
+                placeholder="@you"
               />
               <Input
                 label="Facebook"
                 value={draft.socials.facebook ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, facebook: e.target.value } }))}
-                inputMode="url"
-                placeholder="https://facebook.com/you"
+                placeholder="yourname"
               />
               <Input
                 label="LinkedIn"
                 value={draft.socials.linkedin ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, linkedin: e.target.value } }))}
-                inputMode="url"
-                placeholder="https://linkedin.com/in/you"
+                placeholder="yourname"
               />
               <Input
                 label="Website"

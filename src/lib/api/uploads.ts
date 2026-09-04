@@ -29,6 +29,9 @@ export type UploadFolder =
   // UPLOAD_FOLDERS in the backend.
   | "legal/document"
   | "avatars"
+  // The wide image behind a profile header and on that creator's cards. Its
+  // own prefix, matching UPLOAD_FOLDERS in the backend.
+  | "profile/cover"
   // A community's own cover image, and a photo posted into a room. Two
   // destinations, not one, matching UPLOAD_FOLDERS in the backend's
   // presign-upload.dto.ts — the cover is written by the host alone, a message

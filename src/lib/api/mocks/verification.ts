@@ -24,6 +24,8 @@ export const MOCK_OWN_PROFILE: OwnProfile = {
   stats: { published: 4, sales: 86, followers: "2.4k" },
   interests: ["Agriculture", "Business", "Trade"],
   socials: { instagram: "amara.okafor", whatsapp: "08012345678" },
+  avatarUrl: null,
+  coverUrl: null,
   credits: 48,
   earningsThisMonth: 184500,
   toReply: 3,

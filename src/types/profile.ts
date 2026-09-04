@@ -65,6 +65,13 @@ export interface CreatorProfile {
    * buyer has to be shown the one they are actually paying against.
    */
   dmResponseHours: number;
+  /**
+   * Profile picture and the wide header image. Both optional: an account with
+   * neither falls back to the generated initial and a plain header, which is
+   * what every account did before there was any way to upload one.
+   */
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
   location?: string;
   memberSince?: string;
   replyTime?: string;

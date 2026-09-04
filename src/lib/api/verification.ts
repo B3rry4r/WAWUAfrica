@@ -155,6 +155,8 @@ interface HubMeResponse {
   facebookUrl: string | null;
   linkedinUrl: string | null;
   websiteUrl: string | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
 }
 
 /** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubMeResponse doc comment) — never invent one. */
@@ -167,6 +169,16 @@ interface UpdateUserProfileBody {
   handle?: string;
   instagramHandle?: string;
   whatsappHandle?: string;
+  xHandle?: string;
+  tiktokHandle?: string;
+  /** A handle or a link; the API expands a handle. */
+  youtubeUrl?: string;
+  facebookUrl?: string;
+  linkedinUrl?: string;
+  /** A full URL, always. */
+  websiteUrl?: string;
+  avatarUrl?: string;
+  coverUrl?: string;
 }
 
 /** GET /api/hub/creator/state subset this module reads — see auth.ts's identical HubCreatorStateResponse for the full shape. */
@@ -271,6 +283,8 @@ export async function getOwnProfile(): Promise<OwnProfile> {
         linkedin: me.linkedinUrl ?? undefined,
         website: me.websiteUrl ?? undefined,
       },
+      avatarUrl: me.avatarUrl ?? null,
+      coverUrl: me.coverUrl ?? null,
       credits,
       earningsThisMonth,
       toReply: undefined,
@@ -307,14 +321,21 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
         handle: draft.handle,
         instagramHandle: draft.socials.instagram ?? "",
         whatsappHandle: draft.socials.whatsapp ?? "",
-        // Only send links that were filled in: the API validates these as
-        // URLs, so an empty string would be rejected rather than cleared.
-        ...(draft.socials.x ? { xHandle: draft.socials.x } : {}),
-        ...(draft.socials.tiktok ? { tiktokHandle: draft.socials.tiktok } : {}),
-        ...(draft.socials.youtube ? { youtubeUrl: draft.socials.youtube } : {}),
-        ...(draft.socials.facebook ? { facebookUrl: draft.socials.facebook } : {}),
-        ...(draft.socials.linkedin ? { linkedinUrl: draft.socials.linkedin } : {}),
+        xHandle: draft.socials.x ?? "",
+        tiktokHandle: draft.socials.tiktok ?? "",
+        // Sent even when empty, so a social link can be REMOVED. These used
+        // to be omitted when blank, because the API validated them as URLs
+        // and rejected "" - which meant that once you added a link you could
+        // never take it off your profile. They take handles now, so an empty
+        // value clears the field like every other one on this form.
+        youtubeUrl: draft.socials.youtube ?? "",
+        facebookUrl: draft.socials.facebook ?? "",
+        linkedinUrl: draft.socials.linkedin ?? "",
+        // websiteUrl is still validated as a URL, so it keeps the old
+        // treatment: send it only when there is something valid to send.
         ...(draft.socials.website ? { websiteUrl: draft.socials.website } : {}),
+        ...(draft.avatarUrl ? { avatarUrl: draft.avatarUrl } : {}),
+        ...(draft.coverUrl ? { coverUrl: draft.coverUrl } : {}),
       } satisfies UpdateUserProfileBody,
     });
     // Re-fetch rather than hand-map the PATCH response: upsertMe's response

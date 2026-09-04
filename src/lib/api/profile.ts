@@ -27,6 +27,8 @@ interface RealPublicCreatorProfile {
   facebookUrl: string | null;
   linkedinUrl: string | null;
   websiteUrl: string | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
   tier: "basic" | "pro" | "pro_max";
   dmEnabled: boolean;
   dmPrice: number | null;
@@ -97,6 +99,8 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
     // 24 matches the server's default for a creator who has never changed it.
     dmResponseHours: real.dmResponseHours ?? 24,
     categories: real.interests,
+    avatarUrl: real.avatarUrl ?? null,
+    coverUrl: real.coverUrl ?? null,
     socials: {
       instagram: real.instagramHandle ?? undefined,
       whatsapp: real.whatsappHandle ?? undefined,
