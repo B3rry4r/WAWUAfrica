@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatNaira } from "@/lib/format";
 import { PLANS, PLAN_ORDER } from "@/types/subscription";
+import { referralStorage } from "@/lib/auth/referral-storage";
 import { StorageMeter } from "@/components/ui";
 import { DittoDistributionCard } from "./DittoDistributionCard";
 import type { Subscription } from "@/types/subscription";
 import type { CreatorTier } from "@/types/account";
 import { subscriptionApi } from "@/lib/api/subscription";
+import { ApiError } from "@/lib/api/client";
+import { describeError } from "@/lib/api/errors";
 import { isFlutterwaveCancelled } from "@/lib/flutterwave";
 import type { BillingHistoryPage } from "@/lib/api/subscription";
 import { creatorGates } from "@/lib/auth/gates";
@@ -147,8 +150,26 @@ export function SubscriptionManagement() {
    * moved) from a verify failure (money moved). The copy therefore never
    * claims "nothing was charged" and never invites a blind second payment.
    */
-  const PAYMENT_ERROR =
-    "We could not complete that payment. If money left your account, do not pay again, contact support@wawuafrica.com and we will sort it.";
+  /**
+   * What to show when a payment attempt fails.
+   *
+   * The old copy was ONE fixed sentence for every failure, which is how a 404
+   * from calling the wrong endpoint reached the product owner as "We could
+   * not complete that payment" — a routing bug wearing a payment bug's
+   * clothes, with an instruction to email support about money that had never
+   * left his account.
+   *
+   * A REJECTION (4xx) is the server declining before any charge: it says why,
+   * and that says it plainly. Anything else is a genuine payment-path failure,
+   * where the money may or may not have moved, and there the warning about not
+   * paying twice is the right and necessary thing to say.
+   */
+  const paymentError = (e: unknown): string => {
+    if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
+      return describeError(e).body;
+    }
+    return "We could not complete that payment. If money left your account, do not pay again, contact support@wawuafrica.com and we will sort it.";
+  };
 
   const payAndGoPro = async () => {
     setActionError(null);
@@ -163,31 +184,42 @@ export function SubscriptionManagement() {
       setScreen("billing");
     } catch (e) {
       // Dismissing the checkout modal charges nothing and is not an error.
-      if (!isFlutterwaveCancelled(e)) setActionError(PAYMENT_ERROR);
+      if (!isFlutterwaveCancelled(e)) setActionError(paymentError(e));
     } finally {
       setPaying(false);
     }
   };
 
+  /**
+   * "Choose a plan" — starting a NEW term, on any tier.
+   *
+   * This used to branch: Pro called upgradeToPro(), anything else called
+   * downgradeToBasic(). Both are the WRONG endpoints here. Upgrade and
+   * downgrade MOVE an existing subscription between tiers; this screen is
+   * reached by somebody who has none, or whose term has lapsed. Downgrade
+   * answered 404 "No subscription yet, subscribe via POST
+   * /creator-subscription first", the catch below printed "We could not
+   * complete that payment", and a routing mistake read as a payment failure
+   * for anybody trying to start on Basic. Nothing was ever charged.
+   *
+   * There is one correct call for starting a term, and subscribe() is it. It
+   * also carries the referral code, which the upgrade/downgrade paths never
+   * did — so a 100%-off code silently did nothing here too.
+   */
   const startTier = async (tier: CreatorTier) => {
     setActionError(null);
     setResubTier(tier);
     try {
-      let sub: Subscription;
       let charged = PLANS[tier].price;
-      if (tier === "pro") {
-        const result = await subscriptionApi.upgradeToPro();
-        sub = result.subscription;
-        charged = result.amountCharged;
-      } else {
-        sub = await subscriptionApi.downgradeToBasic();
-      }
+      const referral = referralStorage.get() ?? undefined;
+      const sub = await subscriptionApi.subscribe(tier, undefined, referral);
+      charged = sub.plan.price;
       setSubscription(sub);
       setPaidSummary({ tier, paid: charged });
       setShowPaid(true);
       setScreen("billing");
     } catch (e) {
-      if (!isFlutterwaveCancelled(e)) setActionError(PAYMENT_ERROR);
+      if (!isFlutterwaveCancelled(e)) setActionError(paymentError(e));
     } finally {
       setResubTier(null);
     }
