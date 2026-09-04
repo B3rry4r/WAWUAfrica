@@ -31,7 +31,7 @@ function CheckRow({ children }: { children: React.ReactNode }) {
 
 export function CreatorOnboarding() {
   const router = useRouter();
-  const { user, setCreatorState } = useSession();
+  const { user, setCreatorState, signOut } = useSession();
   const { creator, loading: creatorLoading } = useCreatorState();
   const [step, setStep] = useState<Step>("value");
   /** True only while the checkout modal is being opened. */
@@ -239,7 +239,7 @@ export function CreatorOnboarding() {
 
   if (step === "success") {
     return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
+      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] mx-auto">
         <div className="flex-1 flex flex-col items-center justify-center gap-[16px] py-[36px] px-[24px] text-center">
           <span className="grid place-items-center w-[72px] h-[72px] rounded-[999px] bg-[var(--decor-tint)] border border-[var(--border-decor)]">
             <Icon name="Check" size={34} strokeWidth={2.6} color="var(--accent)" />
@@ -316,8 +316,25 @@ export function CreatorOnboarding() {
   }
 
   return (
-    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
-      <FlowHeader title={title} onBack={() => (step === "value" ? router.back() : setStep("value"))} right={step === "tier" ? <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">Billed yearly</span> : undefined} />
+    // mx-auto, not m-0. /onboarding is the paywall, so it renders with no
+    // desktop sidebar - which left m-0 pinning this column hard against the
+    // left edge with half a screen of empty background beside it.
+    <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] mx-auto">
+      {/*
+        On the first step, back USED to be router.back(). Now that an unpaid
+        creator is held here until they pick a tier, that went nowhere: every
+        app route bounces straight back, so the button looked broken. The way
+        out of a paywall is to leave the account, so it signs out.
+      */}
+      <FlowHeader
+        title={title}
+        onBack={() => {
+          if (step !== "value") return setStep("value");
+          signOut();
+          router.replace("/sign-in");
+        }}
+        right={step === "tier" ? <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">Billed yearly</span> : undefined}
+      />
 
       <div
         className={`flex-1 flex flex-col gap-[18px] px-[20px] pb-[20px] ${step === "value" ? "pt-[24px]" : "pt-[18px]"}`}
@@ -487,9 +504,21 @@ export function CreatorOnboarding() {
 
       <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
         {step === "value" ? (
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep("tier")}>
-            Choose a tier
-          </Button>
+          <>
+            <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep("tier")}>
+              Choose a tier
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                signOut();
+                router.replace("/sign-in");
+              }}
+              className="self-center text-[12.5px] font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            >
+              Sign out
+            </button>
+          </>
         ) : null}
         {step === "tier" ? (
           <>
@@ -516,7 +545,7 @@ export function CreatorOnboarding() {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
+    <div className="flex flex-col items-center justify-center gap-[18px] py-[40px] px-[32px] text-center min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] mx-auto">
       {children}
     </div>
   );

@@ -1,10 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { SessionProvider } from "@/lib/auth/session-provider";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
 import { RequireAuth } from "./RequireAuth";
+import { RequirePaidCreator } from "./RequirePaidCreator";
 
 interface FocusedFlowShellProps {
   children: ReactNode;
@@ -35,7 +37,31 @@ interface FocusedFlowShellProps {
  * (which supplies its own), so this wrapper provides one directly, same as
  * AppShell does.
  */
+/**
+ * /onboarding is the paywall, so it gets NO chrome at any width. The desktop
+ * Sidebar and header were rendering around it, which handed an unpaid creator
+ * a full navigation rail out of the one screen they are meant to complete -
+ * the plan screen was decoration, not a gate (product owner, 4 Sep 2026).
+ *
+ * The other focused routes keep the desktop chrome: /kyc and /subscription
+ * both belong to someone who has already paid, and stranding them on a
+ * single screen with only a back button is the gap this shell was added to
+ * close in the first place.
+ */
+const BARE_ROUTES = ["/onboarding"];
+
 export function FocusedFlowShell({ children }: FocusedFlowShellProps) {
+  const pathname = usePathname();
+  const bare = BARE_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+  if (bare) {
+    return (
+      <SessionProvider>
+        <RequireAuth>{children}</RequireAuth>
+      </SessionProvider>
+    );
+  }
+
   return (
     <SessionProvider>
       <div className="w-full xl:flex xl:h-screen xl:overflow-hidden">
@@ -43,7 +69,9 @@ export function FocusedFlowShell({ children }: FocusedFlowShellProps) {
         <div className="w-full xl:min-w-0 xl:flex-1 xl:flex xl:h-screen xl:flex-col xl:overflow-hidden">
           <DesktopHeader />
           <div className="xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
-            <RequireAuth>{children}</RequireAuth>
+            <RequireAuth>
+              <RequirePaidCreator>{children}</RequirePaidCreator>
+            </RequireAuth>
           </div>
         </div>
       </div>

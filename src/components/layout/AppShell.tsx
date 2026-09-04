@@ -11,6 +11,7 @@ import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
 import { RequireAuth } from "./RequireAuth";
+import { RequirePaidCreator } from "./RequirePaidCreator";
 
 interface AppShellProps {
   children: ReactNode;
@@ -76,7 +77,9 @@ export function AppShell({ children, header = true }: AppShellProps) {
             </>
           ) : null}
           <main className="pb-[96px] xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pb-0">
-            <RequireAuth>{children}</RequireAuth>
+            <RequireAuth>
+              <RequirePaidCreator>{children}</RequirePaidCreator>
+            </RequireAuth>
           </main>
         </div>
       </div>
