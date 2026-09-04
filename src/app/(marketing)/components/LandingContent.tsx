@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -201,43 +202,62 @@ function SectionMark() {
  * terms about not altering them, which a "coming soon" overlay would do.
  */
 function StoreBadges() {
+  const badges = [
+    {
+      name: "App Store",
+      lead: "Download on the",
+      // Apple's mark.
+      path: "M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z",
+    },
+    {
+      name: "Google Play",
+      lead: "Get it on",
+      // A simplified Play triangle.
+      path: "M3.6 2.4c-.35.2-.6.6-.6 1.1v17c0 .5.25.9.6 1.1l9.5-9.6-9.5-9.6zM14.3 13.1l2.6 2.6-9.9 5.6 7.3-8.2zM17.7 10.4l2.9 1.6c.6.35.6 1.25 0 1.6l-2.9 1.6-2.9-2.4 2.9-2.4zM14.3 10.9L7 2.7l9.9 5.6-2.6 2.6z",
+    },
+  ];
+
+  /*
+    Both badges the SAME width, with the WAWU mark between them, on one line
+    at every size.
+
+    They used to be auto-width and wrapped on a phone, so "App Store" and
+    "Google Play" came out different lengths and stacked. `basis-0 grow` makes
+    them share the row equally, and nothing wraps — which is what keeps the
+    mark in the actual middle rather than pushed off-centre by the longer
+    label.
+
+    Not links, and no "Soon" pill. There is no app to download, so a badge
+    that navigated anywhere would 404 or land somebody on a store with no WAWU
+    on it — and a store badge is the most clickable thing on a page. They are
+    plain divs, greyed to the same weight as the watermark above them, which
+    is what says "not yet" without a word.
+  */
   return (
-    <div className="flex flex-col items-center gap-3 py-6 dt:py-8">
-      <span className="text-[11.5px] font-bold uppercase tracking-[0.14em] text-text-muted">
-        Apps coming soon
-      </span>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        {[
-          {
-            name: "App Store",
-            lead: "Download on the",
-            // Apple's mark.
-            path: "M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z",
-          },
-          {
-            name: "Google Play",
-            lead: "Get it on",
-            // A simplified Play triangle.
-            path: "M3.6 2.4c-.35.2-.6.6-.6 1.1v17c0 .5.25.9.6 1.1l9.5-9.6-9.5-9.6zM14.3 13.1l2.6 2.6-9.9 5.6 7.3-8.2zM17.7 10.4l2.9 1.6c.6.35.6 1.25 0 1.6l-2.9 1.6-2.9-2.4 2.9-2.4zM14.3 10.9L7 2.7l9.9 5.6-2.6 2.6z",
-          },
-        ].map((s) => (
-          <div
-            key={s.name}
-            className="flex h-[54px] items-center gap-2.5 rounded-[11px] border border-hairline bg-card px-4 opacity-70"
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0 fill-text-secondary" aria-hidden="true">
+    <div className="mx-auto flex w-full max-w-[520px] items-stretch justify-center gap-2.5 px-5 py-6 dt:gap-4 dt:py-8">
+      {badges.map((s, i) => (
+        <Fragment key={s.name}>
+          {i === 1 ? (
+            <span className="flex shrink-0 items-center px-1" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/wawu-icon-white.svg" alt="" className="h-8 w-auto opacity-25 dt:h-10" />
+            </span>
+          ) : null}
+          <div className="flex h-[52px] basis-0 grow items-center justify-center gap-2 rounded-[11px] border border-hairline bg-card px-2.5 opacity-40 dt:h-[58px] dt:gap-2.5 dt:px-4">
+            <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-text-secondary dt:h-6 dt:w-6" aria-hidden="true">
               <path d={s.path} />
             </svg>
-            <span className="flex flex-col leading-tight">
-              <span className="text-[9.5px] uppercase tracking-[0.06em] text-text-muted">{s.lead}</span>
-              <span className="text-[14px] font-bold text-text-secondary">{s.name}</span>
-            </span>
-            <span className="ml-1 rounded-full bg-tag px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.05em] text-text-muted">
-              Soon
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-[8.5px] uppercase tracking-[0.06em] text-text-muted dt:text-[9.5px]">
+                {s.lead}
+              </span>
+              <span className="truncate text-[12.5px] font-bold text-text-secondary dt:text-[14px]">
+                {s.name}
+              </span>
             </span>
           </div>
-        ))}
-      </div>
+        </Fragment>
+      ))}
     </div>
   );
 }
@@ -1079,7 +1099,6 @@ export async function LandingContent() {
           </div>
         </section>
 
-        <SectionMark />
         <StoreBadges />
 
         {/* ============ FINAL CTA ============ */}
