@@ -237,7 +237,11 @@ export function SignUpFlow() {
     router.push(otpState?.accountType === "creator" ? "/onboarding" : "/home");
   };
 
-  const stepLabel = step === "otp" ? "Step 2 of 3" : step === "interests" ? "Step 3 of 3" : "Step 1 of 3";
+  // A creator's sign-up is two steps, not three: they skip interests and go
+  // to the plan. Counting to three would promise a step that never arrives.
+  const totalSteps = accountType === "creator" ? 2 : 3;
+  const stepLabel =
+    step === "otp" ? `Step 2 of ${totalSteps}` : step === "interests" ? "Step 3 of 3" : `Step 1 of ${totalSteps}`;
 
   // Desktop: the step progress moves into the brand panel instead of sitting
   // atop the form. The "how will you use WAWU" screen keeps the marketing
@@ -246,7 +250,14 @@ export function SignUpFlow() {
   useAuthBrand(
     step === "type"
       ? { kind: "marketing" }
-      : { kind: "steps", current: step === "otp" ? 2 : step === "interests" ? 3 : 1, steps: ["Your details", "Verify your email", "Pick five interests"] },
+      : {
+          kind: "steps",
+          current: step === "otp" ? 2 : step === "interests" ? 3 : 1,
+          steps:
+            accountType === "creator"
+              ? ["Your details", "Verify your email"]
+              : ["Your details", "Verify your email", "Pick five interests"],
+        },
   );
 
   if (step === "type") {
