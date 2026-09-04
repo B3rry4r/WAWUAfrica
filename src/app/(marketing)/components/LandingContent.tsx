@@ -201,7 +201,21 @@ function SectionMark() {
  * request on the landing page, and both companies' badge assets carry usage
  * terms about not altering them, which a "coming soon" overlay would do.
  */
-function StoreBadges() {
+/**
+ * The App Store and Google Play badges.
+ *
+ * Not links, and greyed. There is no app to download, so a badge that
+ * navigated anywhere would 404 or land somebody on a store with no WAWU on
+ * it — and a store badge is the most clickable thing on a page, so it has to
+ * be honest about being inert. Greying them to the weight of the watermark
+ * says "not yet" without a word.
+ *
+ * Two sizes because they appear twice, and the two placements want different
+ * things: the standalone row is a moment on the page, the footer pair is a
+ * detail beside the copyright. Same component either way — a second copy is
+ * how the two drift apart.
+ */
+function StoreBadges({ size = "lg" }: { size?: "lg" | "sm" }) {
   const badges = [
     {
       name: "App Store",
@@ -216,47 +230,43 @@ function StoreBadges() {
       path: "M3.6 2.4c-.35.2-.6.6-.6 1.1v17c0 .5.25.9.6 1.1l9.5-9.6-9.5-9.6zM14.3 13.1l2.6 2.6-9.9 5.6 7.3-8.2zM17.7 10.4l2.9 1.6c.6.35.6 1.25 0 1.6l-2.9 1.6-2.9-2.4 2.9-2.4zM14.3 10.9L7 2.7l9.9 5.6-2.6 2.6z",
     },
   ];
+  const sm = size === "sm";
 
-  /*
-    Both badges the SAME width, with the WAWU mark between them, on one line
-    at every size.
-
-    They used to be auto-width and wrapped on a phone, so "App Store" and
-    "Google Play" came out different lengths and stacked. `basis-0 grow` makes
-    them share the row equally, and nothing wraps — which is what keeps the
-    mark in the actual middle rather than pushed off-centre by the longer
-    label.
-
-    Not links, and no "Soon" pill. There is no app to download, so a badge
-    that navigated anywhere would 404 or land somebody on a store with no WAWU
-    on it — and a store badge is the most clickable thing on a page. They are
-    plain divs, greyed to the same weight as the watermark above them, which
-    is what says "not yet" without a word.
-  */
   return (
-    <div className="mx-auto flex w-full max-w-[520px] items-stretch justify-center gap-2.5 px-5 py-6 dt:gap-4 dt:py-8">
-      {badges.map((s, i) => (
-        <Fragment key={s.name}>
-          {i === 1 ? (
-            <span className="flex shrink-0 items-center px-1" aria-hidden="true">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/wawu-icon-white.svg" alt="" className="h-8 w-auto opacity-25 dt:h-10" />
+    <div
+      className={
+        sm
+          ? "flex items-stretch gap-2"
+          : "mx-auto flex w-full max-w-[520px] items-stretch justify-center gap-3 px-5 py-8 dt:gap-4 dt:py-10"
+      }
+    >
+      {badges.map((s) => (
+        <div
+          key={s.name}
+          className={[
+            // basis-0 grow so both are the SAME width whatever their label
+            // says. Auto-width made "Google Play" wider than "App Store" and
+            // wrapped them onto two rows on a phone.
+            "flex basis-0 grow items-center justify-center rounded-[11px] border border-hairline bg-card opacity-40",
+            sm ? "h-[42px] gap-1.5 px-2.5" : "h-[52px] gap-2 px-2.5 dt:h-[58px] dt:gap-2.5 dt:px-4",
+          ].join(" ")}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className={`shrink-0 fill-text-secondary ${sm ? "h-4 w-4" : "h-5 w-5 dt:h-6 dt:w-6"}`}
+            aria-hidden="true"
+          >
+            <path d={s.path} />
+          </svg>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className={`truncate uppercase tracking-[0.06em] text-text-muted ${sm ? "text-[7.5px]" : "text-[8.5px] dt:text-[9.5px]"}`}>
+              {s.lead}
             </span>
-          ) : null}
-          <div className="flex h-[52px] basis-0 grow items-center justify-center gap-2 rounded-[11px] border border-hairline bg-card px-2.5 opacity-40 dt:h-[58px] dt:gap-2.5 dt:px-4">
-            <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-text-secondary dt:h-6 dt:w-6" aria-hidden="true">
-              <path d={s.path} />
-            </svg>
-            <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate text-[8.5px] uppercase tracking-[0.06em] text-text-muted dt:text-[9.5px]">
-                {s.lead}
-              </span>
-              <span className="truncate text-[12.5px] font-bold text-text-secondary dt:text-[14px]">
-                {s.name}
-              </span>
+            <span className={`truncate font-bold text-text-secondary ${sm ? "text-[11px]" : "text-[12.5px] dt:text-[14px]"}`}>
+              {s.name}
             </span>
-          </div>
-        </Fragment>
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -447,8 +457,10 @@ export async function LandingContent() {
           </div>
         </section>
 
-        <SectionMark />
-
+        {/* The badges stand alone here: no SectionMark above them, so the
+            row itself is the break between sections rather than a logo and
+            then a second thing. */}
+        <StoreBadges />
 
         {/* ============ WOW EXPERIENCE BENTO (dashboard) ============ */}
         <section className="px-5 py-14 dt:py-24">
@@ -1099,7 +1111,7 @@ export async function LandingContent() {
           </div>
         </section>
 
-        <StoreBadges />
+        <SectionMark />
 
         {/* ============ FINAL CTA ============ */}
         <section className="px-5 pb-20 pt-10 dt:pb-28">
@@ -1141,8 +1153,19 @@ export async function LandingContent() {
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-3.5 border-t border-hairline pt-5">
+        {/*
+          Copyright left, store badges right, on the same rule.
+
+          They stack on a phone, where two 42px badges beside a copyright line
+          would leave neither enough width to read. `w-[220px]` on the pair
+          keeps them from stretching across a 1240px footer, which is what a
+          bare flex row would do to them.
+        */}
+        <div className="flex flex-col gap-4 border-t border-hairline pt-5 sm:flex-row sm:items-center sm:gap-3.5">
           <span className="flex-1 text-[12px] text-text-muted">© 2026 WAWUAfrica</span>
+          <div className="w-[220px] shrink-0">
+            <StoreBadges size="sm" />
+          </div>
         </div>
       </footer>
     </div>
