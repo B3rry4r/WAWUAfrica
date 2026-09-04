@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth/session-provider";
 
 /**
@@ -17,11 +17,27 @@ import { useSession } from "@/lib/auth/session-provider";
  * this never redirects during the brief window before localStorage has been
  * read (which would incorrectly bounce an actually-signed-in user).
  */
+/**
+ * Documents anyone may read without an account.
+ *
+ * The sign-up form asks you to agree to the terms and the privacy policy, and
+ * links to them - but both live under (app), so following either link while
+ * signed out bounced you to sign-in. You could not read what you were being
+ * asked to agree to until after you had agreed to it.
+ *
+ * Deliberately narrow: /privacy/policy is the public document, while /privacy
+ * itself and /privacy/blocked are that account's own settings and stay gated.
+ */
+const PUBLIC_ROUTES = ["/terms", "/privacy/policy"];
+
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, hydrated } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const isPublic = PUBLIC_ROUTES.includes(pathname);
 
   useEffect(() => {
+    if (isPublic) return;
     if (hydrated && !isAuthenticated) {
       // Carry where they were trying to go. Without this, following a link to
       // a service and signing in dropped you on the home feed with no sign of
@@ -36,8 +52,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       const next = target && target !== "/" ? `?next=${encodeURIComponent(target)}` : "";
       router.replace(`/sign-in${next}`);
     }
-  }, [hydrated, isAuthenticated, router]);
+  }, [hydrated, isAuthenticated, router, isPublic]);
 
+  if (isPublic) return <>{children}</>;
   if (!hydrated || !isAuthenticated) return null;
   return <>{children}</>;
 }

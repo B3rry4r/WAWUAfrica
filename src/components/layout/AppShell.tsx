@@ -2,7 +2,8 @@
 
 import type { ReactNode } from "react";
 import { useEffect } from "react";
-import { SessionProvider } from "@/lib/auth/session-provider";
+import { usePathname } from "next/navigation";
+import { SessionProvider, useSession } from "@/lib/auth/session-provider";
 import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
 import { CreateFab } from "./CreateFab";
@@ -61,12 +62,54 @@ interface AppShellProps {
  * genuinely needs a sidebar-less focused layout, that's a per-route decision
  * for that screen's task, not a shell-level exception.
  */
+/** Kept in step with RequireAuth's PUBLIC_ROUTES. */
+const PUBLIC_DOCUMENT_ROUTES = ["/terms", "/privacy/policy"];
+
 export function AppShell({ children, header = true }: AppShellProps) {
   // Warm Flutterwave's script so tapping Pay opens the modal immediately
   // instead of sitting on a dead button while a cross-origin script loads.
   useEffect(() => preloadFlutterwaveCheckout(), []);
   return (
     <SessionProvider>
+      <PublicOrShell header={header}>{children}</PublicOrShell>
+    </SessionProvider>
+  );
+}
+
+/**
+ * The terms and the privacy policy are linked from the sign-up form, so they
+ * have to be readable by somebody who has no account yet. RequireAuth lets
+ * them through - but the shell around them does not: AppHeader, Sidebar and
+ * BottomNav all fetch on mount, every one of those calls 401s with no
+ * session, and the first 401 sends the reader to /sign-in through
+ * forceSignIn. Allowing the route was not enough on its own.
+ *
+ * So a signed-out visitor on a public document gets the document, with no
+ * chrome to fetch anything. Signed in, it is an ordinary app screen with the
+ * full shell, which is what it should be when reached from Settings.
+ */
+function PublicOrShell({ children, header }: { children: ReactNode; header: boolean }) {
+  const pathname = usePathname();
+  const { isAuthenticated, hydrated } = useSession();
+
+  // Note the hydration handling: on a public document we render bare until we
+  // KNOW somebody is signed in. Waiting for `hydrated` before deciding would
+  // mount the full shell for a tick, and one tick is all it takes - AppHeader
+  // fetches on mount, 401s without a session, and forceSignIn does a hard
+  // window.location to /sign-in before hydration ever finishes.
+  if (PUBLIC_DOCUMENT_ROUTES.includes(pathname) && !(hydrated && isAuthenticated)) {
+    return (
+      <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-hairline bg-page xl:max-w-[860px]">
+        {children}
+      </div>
+    );
+  }
+  return <FullShell header={header}>{children}</FullShell>;
+}
+
+function FullShell({ children, header }: { children: ReactNode; header: boolean }) {
+  return (
+    <>
       <div className="w-full xl:flex xl:h-screen xl:overflow-hidden">
         <Sidebar />
         <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-hairline bg-page xl:mx-0 xl:flex xl:h-screen xl:max-w-none xl:min-w-0 xl:flex-1 xl:flex-col xl:overflow-hidden xl:border-0">
@@ -99,6 +142,6 @@ export function AppShell({ children, header = true }: AppShellProps) {
         navigation instead of restarting on each route change.
       */}
       <SoundToggle aboveBottomBar />
-    </SessionProvider>
+    </>
   );
 }
