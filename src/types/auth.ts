@@ -104,4 +104,9 @@ export interface SessionUser {
 export interface AuthResponse {
   token: string;
   user: SessionUser;
+  /**
+   * Seconds the emailed verification code stays valid, straight from WAWU ID.
+   * Present on sign-up, which is the only flow that shows the countdown copy.
+   */
+  codeExpiresIn?: number;
 }

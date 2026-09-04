@@ -142,8 +142,16 @@ export const subscriptionApi: SubscriptionApi = {
       // A creator who has never subscribed genuinely has no row — the backend
       // 404s, which is a normal state, not a failure. It used to surface as
       // an error screen on the billing page.
+      //
+      // "none", NOT "expired". Calling it expired made a brand-new creator's
+      // billing screen describe a lapse that never happened: an "Expired"
+      // badge, "Basic ended Not set" (there is no end date, because there was
+      // no plan), "you are back to a plain creator account", reassurance that
+      // their published work keeps selling and their earnings are still owed
+      // - to someone who has published nothing and earned nothing. The state
+      // union has always had "none" for this.
       if (e instanceof ApiError && e.status === 404) {
-        return { plan: { ...PLANS.basic }, state: "expired", renewsAt: "" };
+        return { plan: { ...PLANS.basic }, state: "none", renewsAt: "" };
       }
       if (!isMockModeError(e)) throw e;
       // SEAM: replace with GET /api/hub/creator-subscription — also 404s
@@ -239,11 +247,11 @@ export const subscriptionApi: SubscriptionApi = {
       const row = await apiFetch<CreatorSubscriptionRow>("/api/hub/creator-subscription", { authed: true });
       return toSubscription(row);
     } catch (e) {
-      // A creator who has never subscribed genuinely has no row — the backend
-      // 404s, which is a normal state, not a failure. It used to surface as
-      // an error screen on the billing page.
+      // No row to retry against. Same reading as the fetch above: there is no
+      // subscription, so "none" - which offers a plan to choose, rather than
+      // claiming a plan ended on a date we do not have.
       if (e instanceof ApiError && e.status === 404) {
-        return { plan: { ...PLANS.basic }, state: "expired", renewsAt: "" };
+        return { plan: { ...PLANS.basic }, state: "none", renewsAt: "" };
       }
       if (!isMockModeError(e)) throw e;
       currentSubscription.state = "active";

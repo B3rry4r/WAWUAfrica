@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatNaira } from "@/lib/format";
-import { PLANS, PLAN_ORDER } from "@/types/subscription";
+import { PLANS, PLAN_ORDER, planFeatures } from "@/types/subscription";
 import { referralStorage } from "@/lib/auth/referral-storage";
 import { StorageMeter } from "@/components/ui";
 import { DittoDistributionCard } from "./DittoDistributionCard";
@@ -384,7 +384,7 @@ export function SubscriptionManagement() {
 
                 <Card>
                   <CardLabel>And you also get</CardLabel>
-                  {PLANS.pro.features.map((f) => (
+                  {planFeatures("pro").map((f) => (
                     <CheckRow key={f} ok>{f}</CheckRow>
                   ))}
                 </Card>
@@ -428,7 +428,7 @@ export function SubscriptionManagement() {
                         <span className="text-[13px] font-normal text-[var(--text-muted)]"> / year</span>
                       </span>
                     </div>
-                    {PLANS[t].features.map((f) => (
+                    {planFeatures(t).map((f) => (
                       <CheckRow key={f} ok>{f}</CheckRow>
                     ))}
                     <Button full loading={resubTier === t} onClick={() => startTier(t)}>
@@ -688,7 +688,7 @@ function CurrentView({
             <StatusPill kind="neutral">No plan yet</StatusPill>
           </div>
           <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-            Choose Basic or Pro to start uploading and selling.
+            Pick a tier to start uploading and selling.
           </p>
         </div>
       ) : null}
@@ -772,7 +772,7 @@ function CurrentView({
       {active ? (
         <Card>
           <CardLabel>What {PLANS[tier].name} gives you</CardLabel>
-          {PLANS[tier].features.map((f) => (
+          {planFeatures(tier).map((f) => (
             <CheckRow key={f} ok>{f}</CheckRow>
           ))}
         </Card>
@@ -816,7 +816,7 @@ function CurrentView({
       {none ? (
         <Card>
           <CardLabel>Basic, {formatNaira(PLANS.basic.price)}/yr</CardLabel>
-          {PLANS.basic.features.map((f) => (
+          {planFeatures("basic").map((f) => (
             <CheckRow key={f} ok>{f}</CheckRow>
           ))}
         </Card>
@@ -1007,7 +1007,7 @@ function DesktopSubscriptionView({
           <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-strong)] bg-[var(--surface-card)] p-[24px]">
             <StatusPill kind="neutral">No plan yet</StatusPill>
             <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-              Choose Basic or Pro to start uploading and selling.
+              Pick a tier to start uploading and selling.
             </p>
           </div>
         ) : null}
@@ -1058,7 +1058,7 @@ function DesktopSubscriptionView({
                 </div>
               </div>
               <div className="flex flex-col gap-[10px]">
-                {PLANS.pro.features.map((f) => (
+                {planFeatures("pro").map((f) => (
                   <CheckRow key={f} ok>{f}</CheckRow>
                 ))}
               </div>
@@ -1092,7 +1092,7 @@ function DesktopSubscriptionView({
                 Keeping 90% of every sale instead of 85%, with no slot cap.
               </span>
               <div className="flex flex-col gap-[10px]">
-                {PLANS.pro.features.map((f) => (
+                {planFeatures("pro").map((f) => (
                   <CheckRow key={f} ok>{f}</CheckRow>
                 ))}
               </div>
@@ -1162,7 +1162,7 @@ function DesktopSubscriptionView({
                     <span className="text-[13px] font-normal text-[var(--text-muted)]"> / year</span>
                   </span>
                 </div>
-                {PLANS[t].features.map((f) => (
+                {planFeatures(t).map((f) => (
                   <CheckRow key={f} ok>{f}</CheckRow>
                 ))}
                 <Button full loading={resubTier === t} onClick={() => onStartTier(t)}>

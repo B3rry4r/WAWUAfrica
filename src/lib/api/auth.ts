@@ -195,7 +195,12 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
     // fails, the OTP screen the wizard is about to show would have no code
     // to check against, so a real failure here must fail signUp() too
     // (isIntentionalMockMode still lets pure dev/demo mode through).
-    await apiFetch<{ message: string; expiresIn: number }>("/auth/email/verify/start", {
+    // Keep expiresIn. The OTP screen tells the user how long the code lives,
+    // and that sentence had drifted to "10 minutes" against a server TTL of
+    // five - so anyone who believed it and came back at minute eight found a
+    // code that no longer worked, with no reason given. Carrying the server's
+    // own number means the copy cannot disagree with the server again.
+    const started = await apiFetch<{ message: string; expiresIn: number }>("/auth/email/verify/start", {
       method: "POST",
       baseUrl: WAWU_ID_BASE,
       body: { email: payload.email },
@@ -210,7 +215,7 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       verification: mapVerificationTier(result.user.verificationTier),
       creator: null,
     };
-    return { token: result.accessToken, user };
+    return { token: result.accessToken, user, codeExpiresIn: started.expiresIn };
   } catch (e) {
     if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/register (WAWU ID) + PATCH /api/hub/users/me

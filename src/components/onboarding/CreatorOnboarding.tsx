@@ -5,7 +5,7 @@ import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
 import { useRouter } from "next/navigation";
 import type { CreatorTier } from "@/types/account";
-import { PLANS, PLAN_ORDER } from "@/types/subscription";
+import { PLANS, PLAN_ORDER, planFeatures } from "@/types/subscription";
 import { formatNaira } from "@/lib/format";
 import { checkReferralCode, getClaimedReferralCode, type ReferralCodeCheck } from "@/lib/api/referral";
 import { referralStorage } from "@/lib/auth/referral-storage";
@@ -331,7 +331,7 @@ export function CreatorOnboarding() {
             <div className="flex flex-col gap-[15px]">
               {[
                 { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates. You set the price." },
-                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set your own price a message, and choose how long you get to reply." },
+                { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set your own price for a message, and choose how long you get to reply." },
                 { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">
@@ -454,16 +454,15 @@ export function CreatorOnboarding() {
               </div>
 
               {/*
-                From PLANS, not hand-written per branch. The Pro branch used
-                to list "15 uploads, 2 included, 13 paid" — which is Pro MAX's
-                allowance, on the Pro card, next to Pro's price.
+                planFeatures puts the derived allowance at the head of the
+                list. This card used to render that row itself AND take the
+                plan's own features, which each spelled the same allowance out
+                by hand - so the tier screen said "12 uploads, 2 included, 10
+                paid" and "12 uploads a year - 2 included and 10 paid", one
+                under the other, to someone about to pay.
               */}
               <div className="flex flex-col gap-[9px]">
-                <CheckRow>
-                  {PLANS[tier].slots} uploads, {PLANS[tier].freeSlots} included,{" "}
-                  {PLANS[tier].slots - PLANS[tier].freeSlots} paid
-                </CheckRow>
-                {PLANS[tier].features.slice(0, 5).map((f) => (
+                {planFeatures(tier).slice(0, 6).map((f) => (
                   <CheckRow key={f}>{f}</CheckRow>
                 ))}
               </div>

@@ -78,6 +78,11 @@ export function SignUpFlow() {
   const [resending, setResending] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
+  // How long WAWU ID says the code lives. The screen used to assert ten
+  // minutes against a five-minute server TTL, so the number now comes from
+  // the same response that sent the code. The default matches the server's
+  // current TTL, for the mock path where there is no response to read.
+  const [codeTtlSeconds, setCodeTtlSeconds] = useState(300);
 
   useEffect(() => {
     const type = searchParams.get("type");
@@ -170,12 +175,13 @@ export function SignUpFlow() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await signUp({
+      const created = await signUp({
         ...identity,
         fullName,
         ...details,
         accountType,
       });
+      if (created.codeExpiresIn) setCodeTtlSeconds(created.codeExpiresIn);
       // The account exists now, so the code can finally be attached to it.
       // Until this point it lived only in the browser, which does not survive
       // the trip to an email client and back in a new tab.
@@ -212,7 +218,8 @@ export function SignUpFlow() {
     setResending(true);
     setResendError(null);
     try {
-      await resendEmailVerificationCode(otpState.email);
+      const again = await resendEmailVerificationCode(otpState.email);
+      if (again.expiresIn) setCodeTtlSeconds(again.expiresIn);
       setResendSeconds(42);
       setOtp("");
     } catch (e) {
@@ -736,7 +743,8 @@ export function SignUpFlow() {
           <div className="flex items-start gap-2.5 rounded-input border border-hairline bg-card p-3.5">
             <Icon name="Info" size={16} color="var(--text-muted)" className="mt-0.5" />
             <span className="flex-1 text-[13px] leading-normal text-text-secondary">
-              Codes come from WAWU ID and expire after 10 minutes. Check your spam folder if it has not arrived.
+              Codes come from WAWU ID and expire after {Math.round(codeTtlSeconds / 60)} minutes. Check your spam
+              folder if it has not arrived.
             </span>
           </div>
         </div>
