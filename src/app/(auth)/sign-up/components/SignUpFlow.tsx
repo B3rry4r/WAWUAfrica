@@ -158,7 +158,15 @@ export function SignUpFlow() {
   }
 
   const onCreateAccount = async () => {
-    if (!details.acceptedTerms) return;
+    if (!details.acceptedTerms || submitting) return;
+    // Belt and braces on the 409 loop above: if this journey has ALREADY
+    // created the account, never post /auth/register a second time. A double
+    // tap, a Strict Mode double-invoke, or any future path back into this
+    // form would otherwise ask WAWU ID to create a user that exists.
+    if (otpState) {
+      setStep("otp");
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -686,7 +694,18 @@ export function SignUpFlow() {
 
   if (step === "otp") {
     return (
-      <AuthScaffold title="Verify your email" stepLabel={stepLabel} onBack={() => setStep("details")} spaciousTop>
+      /*
+        NO BACK BUTTON HERE. The account already EXISTS by this point —
+        onCreateAccount has run and WAWU ID has the row. Going back to the
+        details form and pressing Continue again re-posts /auth/register for
+        an email that now exists, which answers 409 "An account with this
+        email or phone already exists". That is the loop the product owner
+        kept hitting: a perfectly good signup that looked like a rejection.
+
+        The way out of this step is the code, or "Change email" below, which
+        goes to sign-in rather than back into the form.
+      */
+      <AuthScaffold title="Verify your email" stepLabel={stepLabel} spaciousTop>
         <div className="flex flex-col gap-[26px]">
           <div className="flex flex-col gap-2.5">
             <h2 className="m-0 text-[26px] font-bold tracking-[-0.025em]">Enter the 6-digit code</h2>
@@ -727,6 +746,40 @@ export function SignUpFlow() {
           </Button>
         </Footer>
       </AuthScaffold>
+    );
+  }
+
+  // A CREATOR PAYS FIRST.
+  //
+  // Verified creators used to be walked through "pick your interests" before
+  // ever seeing a plan. Interests tune a FEED, which is a reader's concern —
+  // a creator arriving to sell something was made to answer three screens of
+  // taste questions before being allowed to buy. Product owner's call: pay at
+  // the start.
+  //
+  // They do not get the interests step at all. Interests tune the feed, and
+  // a creator's next four screens are plan, profile setup and KYC. It is not
+  // a dead end: interests are editable on Edit profile, which is where a
+  // creator who wants a tuned feed sets them, after the account is working.
+  if (step === "done" && accountType === "creator") {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <div className="flex flex-1 flex-col items-center justify-center gap-[18px] px-8 py-10 text-center">
+          <span className="grid h-[88px] w-[88px] place-items-center rounded-button border border-decor bg-decor-tint">
+            <Icon name="Check" size={40} color="var(--accent)" strokeWidth={2.6} />
+          </span>
+          <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em]">Email verified</h2>
+          <p className="m-0 max-w-[300px] text-[15px] leading-normal text-text-secondary">
+            Your WAWU ID is live. Pick a plan to unlock uploading and start earning.
+          </p>
+          <StatusPill kind="success">Creator account created</StatusPill>
+        </div>
+        <div className="px-5 pb-[26px] pt-4">
+          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/onboarding")}>
+            Choose your plan
+          </Button>
+        </div>
+      </div>
     );
   }
 
