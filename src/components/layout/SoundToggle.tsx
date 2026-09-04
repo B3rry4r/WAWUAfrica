@@ -28,7 +28,18 @@ const TRACK = "/wawu-theme.mp3";
  * asked for it, or turned it off, hears nothing — silence is the default and
  * stays the default.
  */
-export function SoundToggle() {
+export interface SoundToggleProps {
+  /**
+   * Lift the button clear of a bottom bar.
+   *
+   * The app shell has a 78px bar and a Create FAB above it; the landing page
+   * has neither. Without this the button floated 94px up an empty page,
+   * which reads as misplaced rather than as clearing something.
+   */
+  aboveBottomBar?: boolean;
+}
+
+export function SoundToggle({ aboveBottomBar = false }: SoundToggleProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [on, setOn] = useState(false);
   // Until the browser has confirmed it will play, the button must not claim
@@ -113,7 +124,14 @@ export function SoundToggle() {
           is a mis-tap waiting to happen. Same height so they read as a pair.
           Bottom-right on desktop, where there is no FAB and no bottom bar.
         */
-        className="fixed bottom-[94px] left-[18px] z-40 grid h-[44px] w-[44px] place-items-center rounded-full border border-hairline bg-[rgba(19,19,22,0.92)] text-text-secondary shadow-float backdrop-blur-md transition-colors hover:text-text-primary active:bg-surface-press xl:bottom-[24px] xl:left-auto xl:right-[24px]"
+        className={[
+          "fixed left-[18px] z-40 grid h-[44px] w-[44px] place-items-center rounded-full border border-hairline bg-[rgba(19,19,22,0.92)] text-text-secondary shadow-float backdrop-blur-md transition-colors hover:text-text-primary active:bg-surface-press",
+          // Bottom-LEFT on a phone: the Create FAB owns bottom-right, and two
+          // floating circles in one corner is a mis-tap waiting to happen.
+          aboveBottomBar ? "bottom-[94px]" : "bottom-[24px]",
+          // Bottom-right on desktop, where there is no FAB and no bottom bar.
+          "xl:bottom-[24px] xl:left-auto xl:right-[24px]",
+        ].join(" ")}
       >
         <Icon name={on ? "Volume2" : "VolumeX"} size={19} strokeWidth={2} color={on ? "var(--accent)" : "currentColor"} />
       </button>

@@ -1,5 +1,6 @@
 import { SessionProvider } from "@/lib/auth/session-provider";
 import { LandingContent } from "@/app/(marketing)/components/LandingContent";
+import { SoundToggle } from "@/components/layout/SoundToggle";
 
 /**
  * `/` — the marketing landing page, for everyone, signed in or not.
@@ -22,6 +23,16 @@ export default function Page() {
   return (
     <SessionProvider>
       <LandingContent />
+      {/*
+        The same toggle the app shell carries, so the theme follows a visitor
+        from the landing page into the product without restarting — one
+        localStorage key, one component, one choice.
+
+        It still cannot autoplay here: browsers require a user gesture before
+        any audible playback, and a landing page is exactly where an
+        unrequested song would be most unwelcome anyway. It waits to be asked.
+      */}
+      <SoundToggle />
     </SessionProvider>
   );
 }

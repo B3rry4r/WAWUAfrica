@@ -95,7 +95,7 @@ export function AppShell({ children, header = true }: AppShellProps) {
         In the shell rather than on a page, so the track survives every in-app
         navigation instead of restarting on each route change.
       */}
-      <SoundToggle />
+      <SoundToggle aboveBottomBar />
     </SessionProvider>
   );
 }
