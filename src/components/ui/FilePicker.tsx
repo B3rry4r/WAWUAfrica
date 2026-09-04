@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { StorageMeter } from "./StorageMeter";
-import { uploadFile, UploadError, type UploadFolder, type UploadedFile } from "@/lib/api/uploads";
+import { isCancelled, uploadFile, UploadError, type UploadFolder, type UploadedFile } from "@/lib/api/uploads";
 
 function humanSize(bytes: number): string {
   if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
@@ -86,25 +86,51 @@ export function FilePicker({
     inputRef.current?.click();
   };
 
+  /*
+    A HELD REFERENCE TO THE UPLOAD IN FLIGHT, so it can be stopped.
+
+    Without one there was no way out of an upload that had died: the picker
+    disables itself while `progress` is non-null, and a stalled XHR fires
+    nothing at all, so `progress` stayed set and the control was locked for
+    the life of the tab. The only escape was to reload the page.
+  */
+  const abortRef = useRef<AbortController | null>(null);
+  const [lastFile, setLastFile] = useState<File | null>(null);
+
+  const send = async (file: File) => {
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setError(null);
+    setProgress(0);
+    try {
+      const result = await uploadFile(file, folder, setProgress, controller.signal);
+      setUploaded(result);
+      setUploadCount((n) => n + 1);
+      onUploaded(result);
+    } catch (err) {
+      // A cancellation is not a failure, and must not be reported as one.
+      if (isCancelled(err)) setError(null);
+      else setError(err instanceof UploadError ? err.message : "That upload did not go through. Please try again.");
+    } finally {
+      abortRef.current = null;
+      setProgress(null);
+    }
+  };
+
   const onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     // Reset so re-picking the same file still fires a change event.
     e.target.value = "";
     if (!file) return;
-
-    setError(null);
-    setProgress(0);
-    try {
-      const result = await uploadFile(file, folder, setProgress);
-      setUploaded(result);
-      setUploadCount((n) => n + 1);
-      onUploaded(result);
-    } catch (err) {
-      setError(err instanceof UploadError ? err.message : "That upload did not go through. Please try again.");
-    } finally {
-      setProgress(null);
-    }
+    setLastFile(file);
+    await send(file);
   };
+
+  const cancel = () => abortRef.current?.abort();
+
+  // Leaving the screen mid-upload should stop it, not leave a request running
+  // against a component that no longer exists.
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const clear = () => {
     setUploaded(null);
@@ -150,6 +176,14 @@ export function FilePicker({
             <span className="text-[12.5px] font-semibold text-[var(--text-secondary)] [font-feature-settings:var(--font-feature-tabular)]">
               {progress}%
             </span>
+            <button
+              type="button"
+              onClick={cancel}
+              aria-label="Cancel this upload"
+              className="grid h-[26px] w-[26px] shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--text-muted)] hover:bg-state-hover hover:text-danger active:bg-state-press"
+            >
+              <Icon name="X" size={15} strokeWidth={2.2} />
+            </button>
           </div>
           <div className="h-[5px] w-full overflow-hidden rounded-full bg-[var(--surface-tag)]">
             <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-200" style={{ width: `${progress}%` }} />
@@ -173,10 +207,23 @@ export function FilePicker({
       )}
 
       {error ? (
-        <span className="flex items-start gap-[7px] text-[12.5px] leading-[1.45] text-[var(--danger)]">
-          <Icon name="TriangleAlert" size={14} color="var(--danger)" className="mt-[1px] shrink-0" />
-          {error}
-        </span>
+        <div className="flex flex-col gap-[7px]">
+          <span className="flex items-start gap-[7px] text-[12.5px] leading-[1.45] text-[var(--danger)]">
+            <Icon name="TriangleAlert" size={14} color="var(--danger)" className="mt-[1px] shrink-0" />
+            {error}
+          </span>
+          {/* The file is still in hand, so retrying should not make them find
+              it again. Most of these failures are a dropped connection. */}
+          {lastFile && progress === null ? (
+            <button
+              type="button"
+              onClick={() => void send(lastFile)}
+              className="self-start text-[12.5px] font-semibold text-[var(--accent)] hover:underline"
+            >
+              Try again
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       {withMeter ? <StorageMeter refreshKey={uploadCount} className="pt-[2px]" /> : null}

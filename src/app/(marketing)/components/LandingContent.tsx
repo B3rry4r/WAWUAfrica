@@ -1141,7 +1141,7 @@ export async function LandingContent() {
           {[
             { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Join the Movement", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
             { label: "Resources", links: [["Explore", "/explore"], ["Learn", "/learn"], ["Services", "/services"]] },
-            { label: "Company", links: [["Terms", "/terms"], ["Privacy", "/privacy/policy"]] },
+            { label: "Company", links: [["Terms and privacy", "/terms"]] },
           ].map((col) => (
             <div key={col.label} className="flex flex-col gap-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">{col.label}</span>

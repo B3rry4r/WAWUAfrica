@@ -63,6 +63,23 @@ export const MAX_UPLOAD_BYTES = 512 * 1024 * 1024;
 export class UploadError extends Error {}
 
 /**
+ * No bytes moved for this long means the connection is gone.
+ *
+ * Deliberately generous: a slow phone on a bad signal still moves SOMETHING
+ * every few seconds, so 45s of complete silence is a dead socket rather than
+ * a slow one. Do not lower it to make a test faster.
+ */
+const STALL_MS = 45_000;
+
+/** The one sentence used for a deliberate cancel, so callers can spot it. */
+export const CANCELLED_MESSAGE = "Upload cancelled.";
+
+/** True when the failure was the user's own cancellation, not a fault. */
+export function isCancelled(e: unknown): boolean {
+  return e instanceof UploadError && e.message === CANCELLED_MESSAGE;
+}
+
+/**
  * The object URL handed back in mock mode, per folder. A blob URL is held by
  * the document until it is explicitly revoked, so re-picking a file (a new KYC
  * document, a different cover image) used to strand the previous file's bytes
@@ -88,6 +105,7 @@ export async function uploadFile(
   file: File,
   folder: UploadFolder,
   onProgress?: (percent: number) => void,
+  signal?: AbortSignal,
 ): Promise<UploadedFile> {
   if (file.size > MAX_UPLOAD_BYTES) {
     throw new UploadError("That file is too large. The limit is 512MB.");
@@ -133,17 +151,72 @@ export async function uploadFile(
     xhr.open("PUT", presign.uploadUrl, true);
     xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
 
+    /*
+      THE STALL DETECTOR, AND WHY A PLAIN TIMEOUT IS NOT ENOUGH.
+
+      An upload that dies mid-flight fires NOTHING. Not onload, not onerror:
+      the socket simply stops moving. This promise never settled, so the
+      picker sat at "uploading" until the tab was closed. That is the "it has
+      just been like this since" report.
+
+      xhr.timeout alone cannot fix it, because it is a deadline for the WHOLE
+      request, and a legitimate 400MB video on Nigerian mobile data can take
+      longer than any deadline short enough to catch a stall. So the rule is
+      about PROGRESS, not total time: if no bytes move for STALL_MS, the
+      connection is gone, whatever the file size.
+    */
+    let lastMovement = Date.now();
+    let stalled = false;
+    const watchdog = setInterval(() => {
+      if (Date.now() - lastMovement < STALL_MS) return;
+      clearInterval(watchdog);
+      // abort() fires onabort, which is what rejects. Rejecting here too would
+      // be a second settle on an already-settled promise, so this only aborts
+      // and lets onabort report which kind of stop it was.
+      stalled = true;
+      xhr.abort();
+    }, 2000);
+
+    const done = () => clearInterval(watchdog);
+
     xhr.upload.onprogress = (event) => {
+      lastMovement = Date.now();
       if (event.lengthComputable && onProgress) {
         onProgress(Math.round((event.loaded / event.total) * 100));
       }
     };
     xhr.onload = () => {
+      done();
       if (xhr.status >= 200 && xhr.status < 300) resolve();
       else reject(new UploadError(`Upload failed (${xhr.status}). Please try again.`));
     };
-    xhr.onerror = () => reject(new UploadError("Upload failed. Check your connection and try again."));
-    xhr.onabort = () => reject(new UploadError("Upload cancelled."));
+    xhr.onerror = () => {
+      done();
+      reject(new UploadError("Upload failed. Check your connection and try again."));
+    };
+    xhr.onabort = () => {
+      done();
+      reject(
+        new UploadError(
+          stalled
+            ? "The upload stopped partway. Check your connection and try again."
+            : CANCELLED_MESSAGE,
+        ),
+      );
+    };
+
+    // Cancellation. The caller holds the signal, so a Cancel button, leaving
+    // the screen, or picking a different file can all stop an upload that is
+    // going nowhere instead of waiting it out.
+    if (signal) {
+      if (signal.aborted) {
+        done();
+        reject(new UploadError(CANCELLED_MESSAGE));
+        return;
+      }
+      signal.addEventListener("abort", () => xhr.abort(), { once: true });
+    }
+
     xhr.send(file);
   });
 

@@ -73,8 +73,12 @@ export default function AboutPage() {
       />
 
       <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-        <ListRow title="Privacy policy" icon="FileText" href="/privacy/policy" />
-        <ListRow title="Terms of service" icon="Scale" href="/terms" />
+        <ListRow
+          title="Master terms, privacy and platform policy"
+          subtitle="Terms and privacy, in one document"
+          icon="Scale"
+          href="/terms"
+        />
         <ListRow title="Contact us" subtitle="support@wawuafrica.com" icon="Mail" href="mailto:support@wawuafrica.com" />
       </div>
     </div>

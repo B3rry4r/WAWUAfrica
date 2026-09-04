@@ -1,21 +1,15 @@
-import { LegalDocument } from "@/components/legal/LegalDocument";
-import { PRIVACY_SECTIONS } from "@/lib/legal/master-agreement";
-
-export const metadata = {
-  title: "Privacy policy · WAWUAfrica",
-};
+import { redirect } from "next/navigation";
+import { PRIVACY_ANCHOR } from "@/lib/legal/master-agreement";
 
 /**
- * The privacy and data sections of the master agreement, with their own
- * numbering kept so a reader can line them up against the full document at
- * /terms. Same source, so the two pages cannot drift.
+ * ONE DOCUMENT, NOT TWO.
+ *
+ * The terms and the privacy policy are a single Master Terms, Privacy and
+ * Platform Policy (product owner, 4 Sep 2026), so this no longer renders a
+ * separate privacy page that could drift from the agreement it is part of.
+ * Every existing link to /privacy/policy still works; it lands on the privacy
+ * provisions inside the one document.
  */
 export default function PrivacyPolicyPage() {
-  return (
-    <LegalDocument
-      title="Privacy policy"
-      sections={PRIVACY_SECTIONS}
-      intro="These are the privacy and data provisions of the WAWUAfrica Master Terms, Privacy and Platform Policy. The numbering follows that document, which you can read in full under Terms of service."
-    />
-  );
+  redirect(`/terms#${PRIVACY_ANCHOR}`);
 }

@@ -663,14 +663,15 @@ export function SignUpFlow() {
               {details.acceptedTerms ? <Icon name="Check" size={14} color="var(--text-on-accent)" strokeWidth={3} /> : null}
             </span>
             <span className="flex flex-col gap-1 text-[13.5px] leading-normal text-text-secondary">
+              {/*
+                ONE link, because it is one document. The terms and the privacy
+                provisions are a single Master Terms, Privacy and Platform
+                Policy, and offering two links implied two agreements to read.
+              */}
               <span>
                 I agree to the{" "}
                 <Link href="/terms" target="_blank" onClick={(e) => e.stopPropagation()}>
-                  terms of service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy/policy" target="_blank" onClick={(e) => e.stopPropagation()}>
-                  privacy policy
+                  master terms, privacy and platform policy
                 </Link>
                 .
               </span>

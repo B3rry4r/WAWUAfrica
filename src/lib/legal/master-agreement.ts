@@ -24,11 +24,24 @@ export type Block =
   | { kind: "sub"; title: string; text: string };
 
 export interface LegalSection {
+  /** The agreement's own section number, 1 to 50. */
   n: number;
   title: string;
-  /** Also shown on /privacy/policy. */
+  /**
+   * The privacy and data provisions. There is no separate privacy page: this
+   * is ONE document (product owner, 4 Sep 2026), and /privacy/policy jumps to
+   * the first of these rather than rendering a second copy that could drift.
+   */
   privacy?: boolean;
   blocks: Block[];
+}
+
+/** Stable anchor for a section, so a link can point at a clause. */
+export function sectionId(section: LegalSection): string {
+  return section.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 const p = (text: string): Block => ({ kind: "p", text });
@@ -667,4 +680,14 @@ export const MASTER_SECTIONS: LegalSection[] = [
   },
 ];
 
-export const PRIVACY_SECTIONS = MASTER_SECTIONS.filter((s) => s.privacy);
+/**
+ * Where /privacy/policy lands.
+ *
+ * Section 24, the head of the privacy provisions, NOT merely the first section
+ * flagged `privacy` - that is section 5 (identity and KYC), which touches
+ * personal data but is not what somebody clicking "privacy policy" came to
+ * read. They should land on "Privacy and data protection" and read forward.
+ */
+export const PRIVACY_ANCHOR = sectionId(
+  MASTER_SECTIONS.find((s) => s.title === "Privacy and data protection")!,
+);

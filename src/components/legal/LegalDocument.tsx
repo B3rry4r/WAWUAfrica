@@ -1,5 +1,5 @@
 import type { Block, LegalSection } from "@/lib/legal/master-agreement";
-import { LEGAL_EFFECTIVE_DATE, LEGAL_UPDATED_DATE } from "@/lib/legal/master-agreement";
+import { LEGAL_EFFECTIVE_DATE, LEGAL_UPDATED_DATE, sectionId } from "@/lib/legal/master-agreement";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 
 /**
@@ -58,8 +58,30 @@ export function LegalDocument({
         </div>
       ) : null}
 
+      {/*
+        A contents list, because fifty sections without one is a wall. Also
+        what makes "section 26" findable when support quotes a clause number.
+      */}
+      <nav className="flex flex-col gap-[6px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px_15px]">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+          Contents
+        </span>
+        <ol className="m-0 flex list-none flex-col gap-[3px] p-0">
+          {sections.map((section) => (
+            <li key={section.n}>
+              <a
+                href={`#${sectionId(section)}`}
+                className="text-[13px] leading-[1.5] text-[var(--text-secondary)] hover:text-[var(--accent)]"
+              >
+                {section.n}. {section.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
       {sections.map((section) => (
-        <section key={section.n} className="flex flex-col gap-[8px]">
+        <section key={section.n} id={sectionId(section)} className="flex scroll-mt-[80px] flex-col gap-[8px]">
           <h2 className="m-0 text-[15px] font-bold text-[var(--text-primary)]">
             {section.n}. {section.title}
           </h2>
