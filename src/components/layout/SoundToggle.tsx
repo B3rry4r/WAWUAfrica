@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { isPlaying, play, subscribe, toggle, wasOn } from "@/lib/sound";
+import { useCreateFabShown } from "./CreateFab";
 
 /**
  * Controls for the WAWU theme. The track itself lives in `@/lib/sound`, not
@@ -10,11 +11,13 @@ import { isPlaying, play, subscribe, toggle, wasOn } from "@/lib/sound";
  *
  * Two shapes, because it belongs in two different kinds of place:
  *
- *  - `SoundFab`, the floating circle. It is right on the LANDING page, which
- *    is a poster with nothing underneath it to cover.
- *  - `SoundSetting`, a row. It is right in the app, where every screen is
- *    somebody's content and a circle pinned over the bottom-left corner sits
- *    on top of it. It was reported doing exactly that.
+ *  - `SoundFab`, the floating circle, on the right, stacked over the Create
+ *    button. It used to be bottom-LEFT, which put it over the content column
+ *    on every screen; the right-hand corner is already the floating-button
+ *    corner, so it is the one place a circle is expected. It takes itself off
+ *    screens somebody is reading.
+ *  - `SoundSetting`, the same control as a settings row, for people who would
+ *    rather set it once and not have a button following them around.
  *
  * `SoundResume` is neither: no UI at all, mounted once by the app shell, so
  * that somebody who left the music on gets it back.
@@ -48,20 +51,20 @@ export function SoundResume() {
   return null;
 }
 
-export interface SoundFabProps {
-  /**
-   * Lift the button clear of a bottom bar.
-   *
-   * The app shell has a 78px bar and a Create FAB above it; the landing page
-   * has neither. Without this the button floated 94px up an empty page,
-   * which reads as misplaced rather than as clearing something.
-   */
-  aboveBottomBar?: boolean;
-}
-
-export function SoundFab({ aboveBottomBar = false }: SoundFabProps) {
+export function SoundFab() {
   const on = usePlaying();
   const flip = useCallback(() => void toggle(), []);
+  /*
+    Stacked ABOVE the Create button rather than beside it.
+
+    Create owns bottom-right at 94px up and is 56px across; this is 44px, so
+    `right-[24px]` puts the two on one vertical axis instead of leaving them
+    slightly out of line, and 160px clears Create with a gap. When there is no
+    Create button (a member account, or a screen where it hides itself) this
+    drops into the space Create would have used, so there is never a floating
+    circle hovering over an empty gap.
+  */
+  const stacked = useCreateFabShown();
 
   return (
     <button
@@ -71,9 +74,19 @@ export function SoundFab({ aboveBottomBar = false }: SoundFabProps) {
       aria-label={on ? "Turn the music off" : "Play the WAWU theme"}
       title={on ? "Turn the music off" : "Play the WAWU theme"}
       className={[
-        "fixed left-[18px] z-40 grid h-[44px] w-[44px] place-items-center rounded-full border border-hairline bg-[rgba(19,19,22,0.92)] text-text-secondary shadow-float backdrop-blur-md transition-colors hover:text-text-primary active:bg-surface-press",
-        aboveBottomBar ? "bottom-[94px]" : "bottom-[24px]",
-        "xl:bottom-[24px] xl:left-auto xl:right-[24px]",
+        "fixed right-[24px] z-40 grid h-[44px] w-[44px] place-items-center rounded-full border border-hairline bg-[rgba(19,19,22,0.92)] text-text-secondary shadow-float backdrop-blur-md transition-colors hover:text-text-primary active:bg-surface-press",
+        stacked ? "bottom-[160px]" : "bottom-[94px]",
+        /*
+          NOT ON THE READING SCREEN.
+
+          TGIF is a page somebody reads, and a button parked over the corner of
+          it is exactly the thing that was reported. The reader sets a
+          `data-reading` flag on <body> while it is open and this hides itself
+          for as long as it is there. Doing it in CSS rather than in React
+          keeps the two apart: the reader does not import the button, and the
+          button does not need to know a tab exists.
+        */
+        "[body[data-reading]_&]:hidden",
       ].join(" ")}
     >
       <Icon name={on ? "Volume2" : "VolumeX"} size={19} strokeWidth={2} color={on ? "var(--accent)" : "currentColor"} />

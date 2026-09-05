@@ -27,13 +27,24 @@ const HIDDEN_ON = [
   "/communities/", // so does a room
 ];
 
-export function CreateFab() {
+/**
+ * Is the Create button on screen right now?
+ *
+ * Exported because the sound button stacks on top of this one and has to know
+ * whether there is anything under it. Two floating buttons deciding
+ * separately where the other one is would drift apart the first time these
+ * rules changed.
+ */
+export function useCreateFabShown(): boolean {
   const { creator, resolved } = useCreatorState();
   const pathname = usePathname();
+  if (!resolved) return false;
+  if (!creatorGates({ creator }).isCreator) return false;
+  return !HIDDEN_ON.some((p) => pathname.startsWith(p));
+}
 
-  if (!resolved) return null;
-  if (!creatorGates({ creator }).isCreator) return null;
-  if (HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
+export function CreateFab() {
+  if (!useCreateFabShown()) return null;
 
   return (
     <Link

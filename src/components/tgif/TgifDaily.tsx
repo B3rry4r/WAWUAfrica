@@ -115,6 +115,23 @@ export function TgifDaily() {
     setDate(startOfDay(new Date()));
   }, []);
 
+  /*
+    SAYS "SOMEBODY IS READING" WHILE THIS IS OPEN.
+
+    The floating music button parks itself in the bottom-right corner, which
+    on this screen is the corner of the card being read. A flag on <body> is
+    the least entangled way to say so: the button hides on it in CSS, nothing
+    here imports the button, and the button never learns that a TGIF tab
+    exists. Cleared on unmount, including when the reader switches to the feed
+    tabs, because this component goes with them.
+  */
+  useEffect(() => {
+    document.body.dataset.reading = "tgif";
+    return () => {
+      delete document.body.dataset.reading;
+    };
+  }, []);
+
   const load = useCallback((on: Date) => {
     setFailed(false);
     setEntry(null);

@@ -143,22 +143,16 @@ function FullShell({ children, header }: { children: ReactNode; header: boolean 
       */}
       <SoundResume />
       {/*
-        The floating circle is DESKTOP ONLY now.
+        The floating circle, back on every size but on the RIGHT.
 
-        On a phone it sat at the bottom-left of every screen with the content
-        column running underneath it, so it covered whatever happened to be
-        there. It was reported sitting on a card's own text, and no position
-        fixes that: a fixed element over a scrolling column always ends up on
-        top of something. The phone gets a row in Settings instead, which is
-        where a preference belongs.
-
-        Desktop is a different shape. There is no bottom bar, the content is a
-        centred column, and the button sits out in the right-hand gutter with
-        nothing under it, so it stays.
+        It used to be bottom-LEFT on a phone, which is where the content column
+        is, so it sat on top of whatever was there. Bottom-right is already the
+        floating-button corner: Create lives there, this stacks above it, and
+        nothing is underneath either of them but page margin. It also removes
+        itself from screens somebody is reading, which is the case that was
+        reported.
       */}
-      <div className="hidden xl:block">
-        <SoundFab />
-      </div>
+      <SoundFab />
     </>
   );
 }
