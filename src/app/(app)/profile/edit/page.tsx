@@ -247,10 +247,9 @@ export default function EditProfilePage() {
               <span className="text-[13px] font-semibold text-text-secondary">Socials</span>
               <Input
                 label="Instagram"
-                prefix={socialFieldValue(draft.socials.instagram, "instagram").prefix}
                 value={socialFieldValue(draft.socials.instagram, "instagram").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, instagram: e.target.value } }))}
-                placeholder="yourname"
+                placeholder="Your username"
               />
               <PhoneInput
                 label="WhatsApp"
@@ -265,9 +264,10 @@ export default function EditProfilePage() {
                 USERNAME WHERE THE PLATFORM HAS ONE, LINK WHERE IT DOES NOT.
 
                 Instagram, X, TikTok and YouTube all give every account a
-                single unambiguous @handle, so those fields show the address
-                in front of the box and ask only for the name. Nobody should
-                have to go and copy their own profile URL.
+                single unambiguous @handle, so those fields ask for the
+                username and nothing else. No address printed in the box, no
+                link to go and copy: the label says the platform, the field
+                takes the name.
 
                 Facebook and LinkedIn stay plain links, deliberately. A large
                 share of Facebook profiles have no username at all and live at
@@ -282,24 +282,21 @@ export default function EditProfilePage() {
               */}
               <Input
                 label="X"
-                prefix={socialFieldValue(draft.socials.x, "x").prefix}
                 value={socialFieldValue(draft.socials.x, "x").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, x: e.target.value } }))}
-                placeholder="yourname"
+                placeholder="Your username"
               />
               <Input
                 label="TikTok"
-                prefix={socialFieldValue(draft.socials.tiktok, "tiktok").prefix}
                 value={socialFieldValue(draft.socials.tiktok, "tiktok").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, tiktok: e.target.value } }))}
-                placeholder="yourname"
+                placeholder="Your username"
               />
               <Input
                 label="YouTube"
-                prefix={socialFieldValue(draft.socials.youtube, "youtube").prefix}
                 value={socialFieldValue(draft.socials.youtube, "youtube").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, youtube: e.target.value } }))}
-                placeholder="yourname"
+                placeholder="Your username"
               />
               <Input
                 label="Facebook"
@@ -320,7 +317,7 @@ export default function EditProfilePage() {
                 label="LinkedIn"
                 value={draft.socials.linkedin ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, linkedin: e.target.value } }))}
-                placeholder="yourname"
+                placeholder="Your username"
               />
               <Input
                 label="Website"
