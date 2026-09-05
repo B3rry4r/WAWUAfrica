@@ -12,6 +12,8 @@ import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 import { HeroRotatingWord } from "./HeroRotatingWord";
 import { SmartScheduler } from "./SmartScheduler";
+import { LandingHeroVideo } from "./LandingHeroVideo";
+import { ServicesRail } from "./ServicesRail";
 
 /**
  * What the ecosystem gives access to. Rendered as the journey strip further
@@ -391,41 +393,33 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The portrait film, with the mascot beside it.
+            The mascot, with the portrait film under it on a phone.
 
-            This replaces the landscape services clip. The two sit as one
-            centred pair: on a wide screen the video is on the left and the
-            mascot on the right, both capped to the same height so their
-            baselines agree rather than one hanging below the other.
+            DESKTOP SHOWS THE IMAGE ONLY. The film is a 18.6MB download and it
+            was not earning that beside a static board that says the same thing
+            in three words, so above the mobile breakpoint it is not mounted at
+            all - not hidden with CSS, which downloads it anyway.
 
-            On a phone they stack, VIDEO FIRST, because the film is the thing
-            that earns the scroll and the mascot is the punchline after it.
+            On a phone both appear, image first: the board is the line that
+            makes somebody keep scrolling, and the film is what holds them once
+            they have.
 
             Muted + playsInline + autoplay is the only combination iOS Safari
             will start on its own; without `playsinline` it takes the video
             fullscreen the moment it plays.
           */}
-          <div className="mx-auto mt-12 flex w-full max-w-[1080px] flex-col items-center justify-center gap-8 px-0 dt:mt-14 dt:flex-row dt:items-center dt:gap-12">
-            <video
-              className="h-auto w-full max-w-[340px] rounded-card border border-hairline object-cover dt:max-w-[380px]"
-              src="/landing-video.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              aria-label="What WAWUAfrica does"
-            />
+          <div className="mx-auto mt-12 flex w-full max-w-[1080px] flex-col items-center justify-center gap-8 px-0 dt:mt-14">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/wawu-mascot-gospel.webp"
               alt="Create the gospel. Amplify the message. Impact culture."
-              className="h-auto w-full max-w-[320px] object-contain dt:max-w-[400px]"
+              className="h-auto w-full max-w-[320px] object-contain dt:max-w-[440px]"
               loading="lazy"
               decoding="async"
               width={900}
               height={1080}
             />
+            <LandingHeroVideo />
           </div>
 
           {/*
@@ -440,32 +434,46 @@ export async function LandingContent() {
             The list is doubled so the loop is seamless — the animation
             translates by exactly -50%, which only lines up if the second half
             is an exact copy. The copy is aria-hidden so a screen reader is
-            not read every service twice, and the whole rail pauses on hover
-            so a card can actually be clicked.
+            not read every service twice.
+
+            It can also be scrolled by hand now, and taking hold of it stops
+            the animation and drops the duplicate half. See ServicesRail for
+            why those two go together.
           */}
           <div className="mt-9 flex flex-col gap-4 dt:mt-12">
-            <div className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_5%,black_95%,transparent)]">
-              <div className="flex w-max gap-4 pr-4 animate-[wawuMarquee_46s_linear_infinite] hover:[animation-play-state:paused]">
-                {[0, 1].map((copy) =>
-                  QUICK_SERVICES.map((service) => (
+            <ServicesRail
+              duplicate={
+                <>
+                  {QUICK_SERVICES.map((service) => (
                     <TileCard
-                      key={`${service.brand}-${copy}`}
+                      key={`${service.brand}-dup`}
                       size="lg"
                       title={service.brand}
                       subtitle={service.soon ? "Coming soon" : service.label}
                       icon={service.icon}
                       gradientClass={service.bg}
-                      // Not yet openable, so deliberately not a link: a card
-                      // that navigates nowhere is worse than one saying so.
-                      {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
-                      // The duplicate half exists only so the -50% loop lines
-                      // up; a screen reader must not read the list twice.
-                      className={copy === 1 ? "[&]:pointer-events-none" : ""}
+                      disabled
+                      className="[&]:pointer-events-none"
                     />
-                  )),
-                )}
-              </div>
-            </div>
+                  ))}
+                </>
+              }
+            >
+              {QUICK_SERVICES.map((service) => (
+                <TileCard
+                  key={service.brand}
+                  size="lg"
+                  title={service.brand}
+                  subtitle={service.soon ? "Coming soon" : service.label}
+                  icon={service.icon}
+                  gradientClass={service.bg}
+                  // Not yet openable, so deliberately not a link: a card
+                  // that navigates nowhere is worse than one saying so.
+                  {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
+                  className="snap-start"
+                />
+              ))}
+            </ServicesRail>
           </div>
         </section>
 
