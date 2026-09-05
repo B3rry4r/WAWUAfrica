@@ -18,7 +18,8 @@ import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSe
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
-import { Button, ErrorState, Icon, Input, Skeleton } from "@/components/ui";
+import { Button, ErrorState, Icon, Input, Skeleton, TileCard } from "@/components/ui";
+import type { IconName } from "@/components/ui/Icon";
 import { Callout } from "@/components/ui/Callout";
 import { formatNaira } from "@/lib/format";
 
@@ -30,6 +31,27 @@ import { formatNaira } from "@/lib/format";
  * money moves, because a typo in a meter number sends real naira to a stranger
  * and there is no getting it back.
  */
+/**
+ * A face for each category.
+ *
+ * The provider's category CODE, not its display name: the names are theirs to
+ * change ("Cable Bill Payment" today, something else tomorrow) while the codes
+ * are the contract. Anything unmapped still gets a card, with a neutral glyph.
+ */
+const CATEGORY_ICON: Record<string, IconName> = {
+  AIRTIME: "Smartphone",
+  MOBILEDATA: "Wifi",
+  INTSERVICE: "Router",
+  CABLEBILLS: "Tv",
+  UTILITYBILLS: "Zap",
+  POWER: "Zap",
+};
+
+function iconFor(category: BillCategory): IconName {
+  const code = (category.code ?? category.name).toUpperCase().replace(/[^A-Z]/g, "");
+  return CATEGORY_ICON[code] ?? "Receipt";
+}
+
 export default function PayPage() {
   const { user } = useSession();
   // Catalogue status. This tool lives at a static route, which Next resolves
@@ -83,7 +105,37 @@ export default function PayPage() {
   const pickBiller = useCallback(async (b: Biller) => {
     setBiller(b); setItem(null); setValidated(null); setItems(null);
     try {
-      setItems(await getBillItems(b.biller_code));
+      const list = await getBillItems(b.biller_code);
+      setItems(list);
+      /*
+        A STEP THAT OFFERS NO CHOICE IS NOT A STEP.
+
+        Airtime is the case that made this obvious, and the reason is in the
+        data rather than the layout. Flutterwave returns four billers for
+        AIRTIME - MTN, Airtel, Glo, 9mobile - and then, under EVERY one of
+        them, four "packages" named after all four networks:
+
+            AT099  MTN VTU
+            AT099  GLO Nigeria
+            AT099  9Mobile
+            AT099  Airtel Nigeria
+
+        Identical item codes. So picking MTN and then being offered Glo is not
+        just confusing, it is a choice with no consequence: all four send
+        AT099, and the network is decided by the BILLER. Whichever was tapped,
+        the same thing happened, which is exactly how it felt to use.
+
+        So the test is not "how many packages" but "how many DISTINCT ones".
+        One real option, whatever the list length, selects itself and the flow
+        moves on. A genuine choice - a DSTV bouquet, a data bundle - has
+        different codes and is still asked.
+      */
+      const distinct = new Set(list.map((i) => i.item_code));
+      if (distinct.size === 1 && list.length > 0) {
+        const only = list[0];
+        setItem(only);
+        setAmount(only.amount > 0 ? String(only.amount) : "");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load packages.");
     }
@@ -192,9 +244,12 @@ export default function PayPage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
-      <ProfileBackButton />
+      {/* Compact, in the row: the floating variant covers the eyebrow. */}
       <div className="flex flex-col gap-[6px]">
-        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Bills Payment</span>
+        <div className="flex items-center gap-[10px]">
+          <ProfileBackButton compact />
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Bills Payment</span>
+        </div>
         <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Pay a bill</h1>
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
           Airtime, data, electricity and cable. Paid straight from the app.
@@ -203,6 +258,44 @@ export default function PayPage() {
 
       {error ? <ErrorState title="Something went wrong" body={error} /> : null}
 
+      {/*
+        WHAT YOU HAVE CHOSEN, AND HOW TO UNDO IT.
+
+        Showing one step at a time is only an improvement if the earlier
+        answers stay visible and changeable. Without this the flow would be a
+        wizard you can enter but not correct, which is worse than the stacked
+        pills it replaces.
+
+        Each crumb clears itself and everything after it, so going back to the
+        category cannot leave a biller from a different category selected.
+      */}
+      {category ? (
+        <div className="flex flex-wrap items-center gap-[8px]">
+          <Crumb
+            label={category.name}
+            onClear={() => {
+              setCategory(null); setBillers(null); setBiller(null);
+              setItems(null); setItem(null); setValidated(null); setAmount("");
+            }}
+          />
+          {biller ? (
+            <Crumb
+              label={biller.name}
+              onClear={() => {
+                setBiller(null); setItems(null); setItem(null);
+                setValidated(null); setAmount("");
+              }}
+            />
+          ) : null}
+          {item && new Set((items ?? []).map((i) => i.item_code)).size > 1 ? (
+            <Crumb
+              label={item.name}
+              onClear={() => { setItem(null); setValidated(null); setAmount(""); }}
+            />
+          ) : null}
+        </div>
+      ) : null}
+
       {unavailable ? (
         <Callout title="Bill payments are not switched on yet">
           Our payment provider has not enabled this account for bills. Nothing you do here would go through, so we
@@ -210,56 +303,93 @@ export default function PayPage() {
         </Callout>
       ) : null}
 
-      {unavailable ? null : !categories ? (
-        <Skeleton variant="row" />
-      ) : (
-        <Section title="1. What are you paying for?">
-          <Chips
-            options={categories.map((c) => ({ key: String(c.id), label: c.name }))}
-            selected={category ? String(category.id) : null}
-            onSelect={(k) => {
-              const found = categories.find((c) => String(c.id) === k);
-              if (found) void pickCategory(found);
-            }}
-          />
-        </Section>
-      )}
+      {/*
+        ONE QUESTION AT A TIME, ON CARDS.
 
-      {category ? (
-        <Section title="2. Who are you paying?">
-          {!billers ? <Skeleton variant="row" /> : (
-            <Chips
-              options={billers.map((b) => ({ key: b.biller_code, label: b.name }))}
-              selected={biller?.biller_code ?? null}
-              onSelect={(k) => {
-                const found = billers.find((b) => b.biller_code === k);
-                if (found) void pickBiller(found);
-              }}
-            />
+        This used to be four rows of identical pills stacked down one screen,
+        all visible at once, so "what am I paying" and "which package" looked
+        like the same kind of choice and the page grew as you went. It reads as
+        the services and legal screens do now: a grid of real cards, one
+        decision on screen, and a line at the top saying what you have already
+        chosen with a way back to change it.
+      */}
+      {unavailable ? null : !category ? (
+        !categories ? (
+          <Skeleton variant="row" />
+        ) : (
+          <Section title="What are you paying for?">
+            <div className="grid grid-cols-2 gap-[10px]">
+              {categories.map((c, i) => (
+                <TileCard
+                  key={c.id}
+                  size="md"
+                  title={c.name}
+                  icon={iconFor(c)}
+                  index={i}
+                  onClick={() => void pickCategory(c)}
+                />
+              ))}
+            </div>
+          </Section>
+        )
+      ) : null}
+
+      {category && !biller ? (
+        <Section title={`Who are you paying for ${category.name.toLowerCase()}?`}>
+          {!billers ? (
+            <Skeleton variant="row" />
+          ) : (
+            <div className="grid grid-cols-2 gap-[10px]">
+              {billers.map((b, i) => (
+                <TileCard
+                  key={b.biller_code}
+                  size="md"
+                  title={b.name}
+                  index={i + 3}
+                  onClick={() => void pickBiller(b)}
+                />
+              ))}
+            </div>
           )}
         </Section>
       ) : null}
 
-      {biller ? (
-        <Section title="3. Which package?">
-          {!items ? <Skeleton variant="row" /> : (
-            <Chips
-              options={items.map((i) => ({
-                key: i.item_code,
-                label: i.amount > 0 ? `${i.name} · ${formatNaira(i.amount)}` : i.name,
-              }))}
-              selected={item?.item_code ?? null}
-              onSelect={(k) => {
-                const found = items.find((i) => i.item_code === k);
-                if (found) pickItem(found);
-              }}
-            />
+      {biller && !item ? (
+        <Section title="Which package?">
+          {!items ? (
+            <Skeleton variant="row" />
+          ) : (
+            <div className="flex flex-col gap-[8px]">
+              {items.map((i, n) => (
+                <button
+                  key={`${i.item_code}:${n}`}
+                  type="button"
+                  onClick={() => pickItem(i)}
+                  className="flex items-center justify-between gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px_15px] text-left transition-colors hover:border-[var(--accent)]"
+                >
+                  <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{i.name}</span>
+                  {i.amount > 0 ? (
+                    <span className="shrink-0 text-[14.5px] font-semibold text-[var(--text-secondary)] [font-feature-settings:var(--font-feature-tabular)]">
+                      {formatNaira(i.amount)}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
           )}
         </Section>
       ) : null}
 
+      {/*
+        No step NUMBER in this title. Steps here collapse: airtime has no real
+        package choice, so numbering the last one "4" was wrong on the most
+        common bill in the product, and would go wrong again the next time a
+        step is skipped. The title says what the step holds instead - and not
+        the field's own name, which would read "Which mobile number?" directly
+        above a box labelled "Mobile Number".
+      */}
       {item ? (
-        <Section title={`4. ${item.label_name ?? "Your number"}`}>
+        <Section title="Number and amount">
           <div className="flex flex-col gap-[12px]">
             <Input
               label={item.label_name ?? "Number"}
@@ -354,5 +484,33 @@ function Chips({
         </button>
       ))}
     </div>
+  );
+}
+
+/**
+ * One answer already given, with a way to take it back.
+ *
+ * The X is the whole point: a step you cannot revisit turns a mistyped tap
+ * into a reload.
+ */
+/*
+  THE WHOLE CRUMB IS THE BUTTON, not the little x on the end of it.
+
+  It was built with only the x clickable, which fails twice: the x is an 18px
+  target on a phone, and the thing people actually aim at is the word. Tapping
+  "Cable TV" did nothing at all, so the way back looked broken even though it
+  was there.
+*/
+function Crumb({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      aria-label={`Change ${label}`}
+      className="inline-flex items-center gap-[7px] rounded-full border border-[var(--border-selected)] bg-[var(--accent-tint)] py-[6px] pl-[12px] pr-[10px] text-[13px] font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-card)]"
+    >
+      {label}
+      <Icon name="X" size={12} strokeWidth={2.6} color="var(--text-muted)" />
+    </button>
   );
 }

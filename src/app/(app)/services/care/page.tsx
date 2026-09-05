@@ -132,9 +132,12 @@ export default function CarePage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
-      <ProfileBackButton />
+      {/* Compact, in the row: the floating variant covers the eyebrow. */}
       <div className="flex flex-col gap-[6px]">
-        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Telemedicine</span>
+        <div className="flex items-center gap-[10px]">
+          <ProfileBackButton compact />
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Telemedicine</span>
+        </div>
         <h1 className="m-0 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">See a doctor</h1>
         <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
           Virtual consultations, medication cover and screening. Pay monthly, use it as often as you need.

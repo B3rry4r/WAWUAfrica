@@ -21,6 +21,15 @@ import { Icon } from "@/components/ui/Icon";
  *
  * The caller is responsible for `items-center` on the row it sits in — that,
  * plus the identical 34px box, is the whole alignment contract.
+ *
+ * WHICH VARIANT. The default one is absolutely positioned at the top-left of
+ * its container, which is right for the profile screen, where it floats over
+ * a cover photo. A screen with no cover has nothing for it to float over, so
+ * it lands on whatever is at the top of the page: the services screens put
+ * their eyebrow there and it covered the first few letters, so "BILLS
+ * PAYMENT" read as "S PAYMENT" and "LEGAL" as "GAL". Those screens pass
+ * `compact` and put it in the eyebrow row. Floating is for a cover image;
+ * everything else takes the compact one.
  */
 export function ProfileBackButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
