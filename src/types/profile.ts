@@ -23,6 +23,8 @@ export interface ProfileContentItem {
   /** Integer Naira; 0 = free. */
   price: number;
   locked: boolean;
+  /** The cover to draw on the tile. Without one it falls back to hatching. */
+  previewAssetUrl?: string | null;
   /** Own-view moderation state. */
   status?: "pending" | "approved";
   /** Own-view meta, e.g. "34 sold", "1,204 views". */

@@ -19,6 +19,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { Sheet } from "@/components/ui/Sheet";
 import { ErrorState } from "@/components/ui/Feedback";
 import { ContentGridCard } from "@/components/ui/ContentCard";
+import { ContentThumb } from "@/components/ui/ContentThumb";
 
 const stepIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -166,7 +167,14 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
   };
 
   if (submitted) {
-    return <Submitted type={type} title={title} price={paid && !firstUpload ? price : 0} />;
+    return (
+      <Submitted
+        type={type}
+        title={title}
+        price={paid && !firstUpload ? price : 0}
+        previewUrl={preview?.fileUrl}
+      />
+    );
   }
 
   const desktopPrice = paid && !firstUpload ? price : 0;
@@ -529,6 +537,7 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
               contentType={type}
               count={meta.label}
               ratio={previewRatio[type]}
+              previewUrl={preview?.fileUrl}
             />
           </div>
         </div>
@@ -596,8 +605,10 @@ function PreviewStep({
   // Only an image can be drawn as a thumbnail here. A video or PDF preview is
   // uploaded and real, but has no frame to show without decoding it, so those
   // are named in words below rather than faked with a picture.
-  const previewImage =
-    preview && /\.(png|jpe?g|webp|gif|avif)$/i.test(preview.name) ? preview.fileUrl : null;
+  // ContentThumb draws images AND video first frames, so anything with a
+  // visual goes to it. Only a PDF has no frame to show.
+  const previewVisual =
+    preview && !/\.pdf$/i.test(preview.name) ? preview.fileUrl : null;
   return (
     <>
       <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
@@ -650,32 +661,14 @@ function PreviewStep({
         */}
         <div className="flex gap-[9px]">
           {[0, 1].map((i) => (
-            <div
-              key={i}
-              className="flex-1 aspect-[3_/_4] overflow-hidden rounded-[10px] border border-[var(--border-hairline)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]"
-            >
-              {previewImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={previewImage} alt="" className="h-full w-full object-cover" />
-              ) : null}
-            </div>
+            <ContentThumb key={i} src={previewVisual} alt="" rounded="10px" className="aspect-[3/4] flex-1" />
           ))}
-          <div className="relative flex-1 aspect-[3_/_4] rounded-[10px] overflow-hidden border border-[var(--border-hairline)]">
-            {previewImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={previewImage} alt="" className="absolute inset-0 h-full w-full scale-[1.12] object-cover blur-[8px]" />
-            ) : (
-              <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] blur-[8px] scale-[1.12]" />
-            )}
-            <div className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center">
-              <Icon name="Lock" size={16} strokeWidth={2.2} color="var(--text-on-accent)" />
-            </div>
-          </div>
+          <ContentThumb src={previewVisual} alt="" locked rounded="10px" className="aspect-[3/4] flex-1" />
         </div>
-        {preview && !previewImage ? (
+        {preview && !previewVisual ? (
           <span className="text-[12px] leading-[1.45] text-[var(--text-muted)]">
-            {preview.name} is uploaded. Buyers will see it here; only images can be
-            shown as a thumbnail on this screen.
+            {preview.name} is uploaded. A PDF has no frame to show here, but buyers
+            will get it as the preview.
           </span>
         ) : null}
       </div>
@@ -898,7 +891,17 @@ function PriceStep({
   );
 }
 
-function Submitted({ type, title, price }: { type: ContentType; title: string; price: number }) {
+function Submitted({
+  type,
+  title,
+  price,
+  previewUrl,
+}: {
+  type: ContentType;
+  title: string;
+  price: number;
+  previewUrl?: string | null;
+}) {
   const router = useRouter();
   return (
     <div className="mx-auto flex min-h-[100vh] w-full max-w-[var(--mobile-column)] flex-col dt:my-0 dt:max-w-[560px] dt:justify-center">
@@ -911,7 +914,10 @@ function Submitted({ type, title, price }: { type: ContentType; title: string; p
           Usually within a day. We will notify you when it goes live.
         </p>
         <div className="flex gap-[13px] w-full p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
-          <div className="w-[52px] h-[66px] rounded-[10px] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
+          {/* The cover they just uploaded, which is the screen the product
+              owner asked about: this was a bare gradient, so the last thing a
+              creator saw after publishing was a placeholder of their own work. */}
+          <ContentThumb src={previewUrl} alt="" rounded="10px" className="h-[66px] w-[52px] shrink-0" />
           <div className="flex-1 min-w-0 flex flex-col gap-[5px]">
             <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{title || "Untitled"}</span>
             <span className="text-[12.5px] text-[var(--text-secondary)]">

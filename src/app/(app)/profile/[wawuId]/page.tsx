@@ -30,6 +30,7 @@ import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { CommunityJoinButton } from "@/components/profile/CommunityJoinButton";
 import { ShareButton } from "@/components/profile/ShareButton";
 import { formatNaira } from "@/lib/format";
+import { ContentThumb } from "@/components/ui/ContentThumb";
 
 const VALID_TABS: ProfileTab[] = ["content", "community", "about"];
 
@@ -318,12 +319,16 @@ function ContentRow({ item }: { item: CreatorProfile["content"][number] }) {
     <Link
       href={`/content/${item.id}`}
       className="flex h-[82px] shrink-0 items-center gap-[13px] rounded-[var(--radius-card)] border border-hairline bg-card px-[14px] no-underline transition-colors hover:border-strong xl:h-auto xl:flex-col xl:items-stretch xl:gap-0 xl:overflow-hidden xl:px-0">
-      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] border border-hairline [background-image:repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)] xl:aspect-video xl:h-auto xl:w-full xl:rounded-none xl:border-0 xl:border-b xl:border-hairline">
-        {item.locked && (
-          <div className="absolute inset-0 grid place-items-center bg-[var(--locked-veil)]">
-            <Icon name="Lock" size={15} color="var(--text-on-accent)" strokeWidth={2.2} />
-          </div>
-        )}
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] border border-hairline xl:aspect-video xl:h-auto xl:w-full xl:rounded-none xl:border-0 xl:border-b xl:border-hairline">
+        {/* The creator's cover. A profile full of identical hatching told a
+            visitor nothing about what the person actually makes. */}
+        <ContentThumb
+          src={item.previewAssetUrl}
+          alt=""
+          locked={item.locked}
+          rounded="0"
+          className="absolute inset-0 h-full w-full !border-0"
+        />
         <span className="absolute right-2.5 top-2.5 hidden xl:flex">{priceNode}</span>
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1 xl:flex-none xl:gap-1.5 xl:px-[14px] xl:pb-[14px] xl:pt-3">

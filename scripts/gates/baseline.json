@@ -304,14 +304,6 @@
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/dm.ts:5"
     },
-    "a015d9d89c242ec4": {
-      "evidence": "src/types/content.ts:16, src/types/profile.ts:50",
-      "gate": "forks",
-      "message": "interface 'CreatorProfile' is declared in 2 files - one of them is a fork",
-      "owner": "legacy-app-repair 2026-08-31",
-      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
-      "where": "src/types/content.ts:16"
-    },
     "aabd563a34ff95b5": {
       "evidence": "* it by hand for the same reason. Stays mock-only until that's modeled.",
       "gate": "deferrals",
@@ -375,6 +367,14 @@
       "owner": "legacy-app-repair 2026-08-31",
       "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
       "where": "src/lib/api/dm.ts:56"
+    },
+    "c7fbafb92ecac804": {
+      "evidence": "src/types/content.ts:16, src/types/profile.ts:52",
+      "gate": "forks",
+      "message": "interface 'CreatorProfile' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/types/content.ts:16"
     },
     "cad547999303df44": {
       "evidence": "import type { PrivacySettings, BlockedAccount } from \"./mocks/settings\";",

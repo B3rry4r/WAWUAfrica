@@ -3,6 +3,7 @@ import type { ContentItem } from "@/types/content";
 import { Icon } from "./Icon";
 import { PriceChip } from "./PriceChip";
 import { StatusPill, type StatusKind } from "./StatusPill";
+import { ContentThumb } from "./ContentThumb";
 
 const statusPill: Record<ContentItem["status"], { kind: StatusKind; label: string }> = {
   live: { kind: "success", label: "Live" },
@@ -34,8 +35,13 @@ export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardPro
         onClick ? "cursor-pointer hover:bg-surface-hover active:bg-surface-press" : "cursor-default"
       }`}
     >
-      <span
-        className="w-[56px] h-[70px] rounded-[10px] shrink-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]"
+      {/* The creator's own cover. This was a bare gradient, so a creator who
+          had just uploaded artwork saw hatching on their own library row. */}
+      <ContentThumb
+        src={item.previewAssetUrl}
+        alt=""
+        rounded="10px"
+        className="h-[70px] w-[56px] shrink-0"
       />
       <span className="flex-1 min-w-0 flex flex-col gap-[6px]">
         <span className="flex items-start gap-[8px]">
@@ -90,6 +96,8 @@ export interface ContentGridCardProps {
   contentType: string;
   count?: string;
   ratio?: string;
+  /** The cover to draw. Without one the tile falls back to the placeholder. */
+  previewUrl?: string | null;
   onClick?: () => void;
 }
 
@@ -101,6 +109,7 @@ export function ContentGridCard({
   contentType,
   count,
   ratio = "1 / 1",
+  previewUrl,
   onClick,
 }: ContentGridCardProps) {
   const locked = state === "locked";
@@ -111,23 +120,20 @@ export function ContentGridCard({
       onClick={onClick}
       className={`flex flex-col gap-[10px] p-0 border-[none] bg-transparent text-left [font-family:var(--font-sans)] ${onClick ? "group cursor-pointer" : "cursor-default"}`}
     >
-      <span
-        className="relative rounded-[var(--radius-media)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)] group-hover:border-strong overflow-hidden w-full" style={{aspectRatio: ratio}}
-      >
-        {locked ? (
-          <span
-            className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center"
-          >
-            <Icon name="Lock" size={16} strokeWidth={2.2} color="var(--text-on-accent)" />
-          </span>
-        ) : null}
+      <span className="relative block w-full" style={{ aspectRatio: ratio }}>
+        <ContentThumb
+          src={previewUrl}
+          alt=""
+          locked={locked}
+          className="h-full w-full group-hover:border-strong"
+        />
         {/* The tile is art, not a surface: a fill hover on the button would
             sit behind the cover image and never be seen. The hover reads as a
             veil laid over the art instead — the heavier of the two neutral
             state tokens, so it still registers over a bright image. */}
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-transparent transition-colors group-hover:bg-state-press"
+          className="pointer-events-none absolute inset-0 rounded-[var(--radius-media)] bg-transparent transition-colors group-hover:bg-state-press"
         />
       </span>
       <span className="flex flex-col gap-[3px]">

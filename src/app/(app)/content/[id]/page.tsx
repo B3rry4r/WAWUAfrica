@@ -26,6 +26,7 @@ import { useSession } from "@/lib/auth/session-provider";
 import { formatNaira, creatorSplitRate } from "@/lib/format";
 import type { ContentPiece, ContentType } from "@/types/content";
 import type { MockComment } from "@/lib/api/mocks/mockComments";
+import { ContentThumb } from "@/components/ui/ContentThumb";
 
 /**
  * "failure" means nothing was charged (init rejected, bank declined, checkout
@@ -426,7 +427,16 @@ function ContentHeader({
 
 function MediaBlock({ content, state }: { content: ContentPiece; state: string }) {
   return (
-    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-media border border-hairline bg-[repeating-linear-gradient(135deg,var(--surface-tag)_0_12px,var(--surface-card)_12px_24px)]">
+    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-media border border-hairline">
+      {/* The creator's own preview, not hatching. This is the screen somebody
+          lands on from the feed, so it was the most visible place the missing
+          thumbnail showed. The type glyph stays on top of it as an affordance. */}
+      <ContentThumb
+        src={content.previewAssetUrl}
+        alt=""
+        rounded="0"
+        className="absolute inset-0 h-full w-full !border-0"
+      />
       <span className="absolute inset-0 grid place-items-center">
         <span className="grid h-[54px] w-[54px] place-items-center rounded-full border border-strong bg-[rgba(11,10,13,0.55)] text-text-primary backdrop-blur">
           <Icon name={typeVisual[content.contentType]} size={22} strokeWidth={2} />
