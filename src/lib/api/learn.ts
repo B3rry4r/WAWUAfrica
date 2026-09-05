@@ -123,10 +123,13 @@ export async function getCourse(id: string): Promise<LearnCourse | null> {
 interface PlaybookWire {
   id: string;
   title: string;
+  author?: string | null;
   pages: number;
   format: string;
   description: string;
-  chapters: { title: string; pages: string }[];
+  /** The document itself. Null means described but nothing to hand out. */
+  fileUrl?: string | null;
+  chapters: { title: string; pages: string; section?: string }[];
   readingSections: { heading: string; body: string }[];
 }
 
@@ -136,9 +139,13 @@ export async function getPlaybook(): Promise<Playbook | null> {
     return {
       id: wire.id,
       title: wire.title,
+      author: wire.author ?? undefined,
       pages: wire.pages,
       format: wire.format,
       description: wire.description,
+      // Was dropped on the floor, so the Download button had nothing to hand
+      // over even when the backend was holding a file.
+      fileUrl: wire.fileUrl ?? null,
       chapters: wire.chapters ?? [],
       readingSections: wire.readingSections ?? [],
       // No backend column for this yet; 0 renders as "no downloads recorded"
