@@ -211,8 +211,29 @@ export default function PayPage() {
     }
   }
 
-  if (live === false) {
-    return <ServiceComingSoon name="Bills Payment" icon="Zap" />;
+  /*
+    ── BILLS PAYMENT IS SWITCHED OFF ──────────────────────────────────────
+    Turned off on the product owner's instruction, 5 Sep 2026. Off HERE, in
+    the code, rather than by flipping the catalogue row: this route is static
+    and Next resolves it ahead of /services/[id], so anybody arriving with the
+    URL rather than through a card would still have walked into a live form
+    that takes money.
+
+    Nothing below is deleted. The flow is finished and works; it is waiting,
+    not abandoned. Delete this constant and the branch under it to put it
+    back, and the catalogue's own `live` check takes over again as before.
+  */
+  const SWITCHED_OFF = true;
+
+  if (SWITCHED_OFF || live === false) {
+    return (
+      <ServiceComingSoon
+        name="Bills Payment"
+        icon="Zap"
+        headline="Bills payment is paused"
+        note="Airtime, data, electricity and cable are paused for now. Nothing you start here would go through, so the form is off until it is back."
+      />
+    );
   }
 
   if (live === null) {

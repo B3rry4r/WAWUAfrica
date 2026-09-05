@@ -54,10 +54,19 @@ export function ServiceComingSoon({
   name,
   icon,
   note,
+  headline,
 }: {
   name: string;
   icon: IconName;
   note?: string;
+  /**
+   * Replaces the default heading.
+   *
+   * Not every closed service is one that never opened. A tool that was working
+   * and has since been switched off is PAUSED, and telling somebody who used it
+   * last week that it is on its way for the first time is simply untrue.
+   */
+  headline?: string;
 }) {
   return (
     <div className={shell}>
@@ -66,7 +75,7 @@ export function ServiceComingSoon({
         <span className="grid h-[46px] w-[46px] place-items-center rounded-[14px] border border-hairline bg-elevated">
           <Icon name={icon} size={22} color="var(--text-secondary)" strokeWidth={2} />
         </span>
-        <span className="text-[20px] font-bold tracking-[-0.02em] text-text-primary">{name} is coming soon</span>
+        <span className="text-[20px] font-bold tracking-[-0.02em] text-text-primary">{headline ?? `${name} is coming soon`}</span>
         <p className="m-0 max-w-[46ch] text-[14px] leading-[1.55] text-text-secondary">
           {note ?? "We are finishing the partner rollout. It opens here first, and nothing is charged until it does."}
         </p>
