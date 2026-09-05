@@ -23,10 +23,18 @@ export interface LearnCourse {
 export interface Playbook {
   id: string;
   title: string;
+  /** Who wrote it. A real book has an author on the cover. */
+  author?: string;
   pages: number;
   format: string;
   description: string;
-  chapters: { title: string; pages: string }[];
+  /** Where the file actually is. Null while a playbook has no PDF yet. */
+  fileUrl?: string | null;
+  /**
+   * Grouped, because the book is. Section is optional so an ungrouped
+   * playbook still renders as a flat chapter list.
+   */
+  chapters: { title: string; pages: string; section?: string }[];
   downloadCount: number;
   /** Powers the in-app "Read here" view — one entry per chapter. */
   readingSections: { heading: string; body: string }[];

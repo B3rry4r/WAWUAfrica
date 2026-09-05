@@ -89,46 +89,150 @@ export const MOCK_COURSES: LearnCourse[] = [
   },
 ];
 
+/**
+ * BUSINESS PLAYBOOK: THE NAIJA WAY, by Emmanuel Lennox.
+ *
+ * A real 213-page book published by WAWU Technology Ltd (ISBN
+ * 978-978-68-0965-6), not a description of one. What was here before was
+ * invented: a made-up title with five made-up chapters and prose nobody
+ * wrote, in front of a download that did not exist.
+ *
+ * Every chapter title and page range below is the book's own, and each
+ * reading section is the opening of that chapter, lifted from the PDF rather
+ * than summarised. `fileUrl` is the actual file.
+ */
 export const MOCK_PLAYBOOK: Playbook = {
-  id: "pb-business",
-  title: "The WAWU Business Playbook",
-  pages: 96,
+  id: "pb-naija-way",
+  title: "Business Playbook: The Naija Way",
+  author: "Emmanuel Lennox",
+  pages: 213,
   format: "PDF",
-  downloadCount: 8412,
+  fileUrl: "/business-playbook-the-naija-way.pdf",
+  downloadCount: 0,
   description:
-    "Everything WAWU knows about running a small business in Nigeria, written down once. Free to everybody, tier or no tier.",
+    "Twenty chapters on building a business in Nigeria, from spotting the idea to handing it on. Written for the market you actually trade in, not the one a textbook describes. Free to everybody, tier or no tier.",
   chapters: [
-    { title: "Registering, and why it pays for itself", pages: "1–14" },
-    { title: "Pricing so you actually make money", pages: "15–29" },
-    { title: "Books, records, and tax without fear", pages: "30–58" },
-    { title: "Getting paid, and chasing what you are owed", pages: "59–78" },
-    { title: "Selling beyond your own street", pages: "79–96" },
+    { section: "The foundation, before you start", title: "The Naija Idea: Spotting Opportunities in Chaos", pages: "7\u201312" },
+    { section: "The foundation, before you start", title: "From \"I Think\" to \"I Know\": Market Research, Naija Style", pages: "13\u201320" },
+    { section: "The foundation, before you start", title: "Crafting Your Battle Plan: The Simple, Actionable Business Plan", pages: "21\u201331" },
+    { section: "The foundation, before you start", title: "Legal Eagles & Corporate Affairs Commission (CAC): Getting Your Papers Right", pages: "32\u201343" },
+    { section: "The foundation, before you start", title: "The Naija Money Talk: Startup Capital, Bootstrapping & \"See Me, See Profit\"", pages: "44\u201356" },
+    { section: "Setting up and operations", title: "Location, Location, Situation: Physical Store, Online, or \"WhatsApp Warehouse\"?", pages: "57\u201367" },
+    { section: "Setting up and operations", title: "Dealing with \"Oga at the Top\": Government Agencies, Regulations & Multiple Taxation", pages: "68\u201376" },
+    { section: "Setting up and operations", title: "Power, Logistics, Internet: Building Your Business Infrastructure", pages: "77\u201384" },
+    { section: "Setting up and operations", title: "Hiring Your First Staff: Family, Friends, or Professionals?", pages: "85\u201394" },
+    { section: "Setting up and operations", title: "Record Keeping & Basic Accounting: Beyond \"The Black Box\"", pages: "95\u2013105" },
+    { section: "Sales and marketing", title: "Pricing for Profit: How to Price Your Product in a Price-Sensitive Market", pages: "106\u2013117" },
+    { section: "Sales and marketing", title: "Branding & Packaging: Why Your \"Pure Water\" Business Needs a Logo", pages: "118\u2013127" },
+    { section: "Sales and marketing", title: "Digital Marketing: From Instagram to WhatsApp, Reaching Millions on a Shoestring", pages: "128\u2013136" },
+    { section: "Sales and marketing", title: "The Art of the Naija Sell: Customer Psychology & Relationship Management", pages: "137\u2013146" },
+    { section: "Sales and marketing", title: "Distribution & Delivery: Getting Your Product to the Customer Despite Bad Roads", pages: "147\u2013156" },
+    { section: "Growth and sustainability", title: "Reinvesting & Managing Cash Flow: Avoiding \"Boombastic to Bankrupt\"", pages: "157\u2013166" },
+    { section: "Growth and sustainability", title: "Scaling Up: When to Expand, Diversify, or Franchise", pages: "167\u2013176" },
+    { section: "Growth and sustainability", title: "Building a Team Culture: From One-Man Squad to a Cohesive Unit", pages: "177\u2013186" },
+    { section: "Growth and sustainability", title: "The Mental Game: Resilience, Burnout, and the Entrepreneur's Health", pages: "187\u2013195" },
+    { section: "Growth and sustainability", title: "Giving Back & Building a Legacy: The Social Responsibility of the Naija Entrepreneur", pages: "196\u2013213" },
   ],
   readingSections: [
     {
-      heading: "Registering, and why it pays for itself",
+      heading: "The Naija Idea: Spotting Opportunities in Chaos",
       body:
-        "A CAC registration costs less than a week of sales and opens doors a personal account never will: business bank accounts, supplier credit, and buyers who ask for a receipt. Do it before you need it, not after a customer asks.",
+        "Your business does not need to be a revolutionary, never-before-seen concept. It simply needs to be a reliable, effective solution to a common, painful problem. The more acute the pain, the more valuable the solution. Carry a small notebook or use the notes app on your phone. Every single time you sigh, grumble, or exclaim in frustration at a product, a service, or a process, write it down.",
     },
     {
-      heading: "Pricing so you actually make money",
+      heading: "From \"I Think\" to \"I Know\": Market Research, Naija Style",
       body:
-        "Cost your materials, your time and your platform fees before you set a number, then round up. Undercharging is the single most common reason small businesses on WAWU stall out in the first year.",
+        "Low-Cost Primary Research: The Street-Smart Methods 1. The \"Stroll and Observe\" Technique (The Silent Investigator) Before you ask a single question, learn to be a master observer. Go to where your potential customers congregate. If you're selling office snacks, spend a week during lunch breaks around the clusters of \"mama put\" canteens and street vendors near business districts in Ikeja or GRA.",
     },
     {
-      heading: "Books, records, and tax without fear",
+      heading: "Crafting Your Battle Plan: The Simple, Actionable Business Plan",
       body:
-        "A daily cash book, even a paper one, is the difference between knowing your month made money and hoping it did. Keep receipts. Keep them separate from your personal spending. That is most of what tax time needs from you.",
+        "The One-Page Naija Battle Plan: Your Strategic Core Before you write a single lengthy paragraph, you must be able to distill the very essence of your business onto one page. If you cannot explain your business simply, you do not understand it well enough. This one-page document will become your North Star, the thing you can glance at in moments of doubt or distraction to remember exactly what you are building and why.",
     },
     {
-      heading: "Getting paid, and chasing what you are owed",
+      heading: "Legal Eagles & Corporate Affairs Commission (CAC): Getting Your Papers Right",
       body:
-        "Ask for a deposit on custom work. Put your terms in writing before you start, even if it's a WhatsApp message. Chasing an unpaid invoice is easier when there was a clear agreement to point back to.",
+        "No Legal Protection: Your Personal Assets are on the Line. This is the single most important reason to register. If you are selling products as an individual and a customer has a bad reaction, or if a debtor decides to sue you, they are suing you personally. This means your personal savings, your car, and even your house could be seized to settle business debts.",
     },
     {
-      heading: "Selling beyond your own street",
+      heading: "The Naija Money Talk: Startup Capital, Bootstrapping & \"See Me, See Profit\"",
       body:
-        "Ghana and other ECOWAS markets are the cheapest first export a Nigerian seller can make, little or no duty, and a fair rehearsal for the paperwork harder markets will ask for later. Start with the country guides.",
+        "Let’s create a detailed, hypothetical budget for a business we’ll call “Uchenna’s Urban Wear,” a clothing brand producing custom-made Afrocentric t-shirts and sweatshirts.",
+    },
+    {
+      heading: "Location, Location, Situation: Physical Store, Online, or \"WhatsApp Warehouse\"?",
+      body:
+        "The Unbeatable Advantages: The Trust Signal: In a market with a high trust deficit, a physical address is a powerful validator. Customers can verify quality firsthand, reducing the perceived risk of purchase. Immediate Gratification: The ability for a customer to walk in, purchase, and walk out with their product is a significant competitive advantage. It satisfies the “I need it now” urge that next-day delivery cannot fulfill.",
+    },
+    {
+      heading: "Dealing with \"Oga at the Top\": Government Agencies, Regulations & Multiple Taxation",
+      body:
+        "The Federal Level: The Big Players These agencies set national standards and regulate specific industries. Corporate Affairs Commission (CAC): You met them in Chapter 4. They are your starting point, responsible for your business’s birth certificate (registration). Federal Inland Revenue Service (FIRS): This is the federal tax authority.",
+    },
+    {
+      heading: "Power, Logistics, Internet: Building Your Business Infrastructure",
+      body:
+        "Layer 1: The Grid (Public Power Supply) The Reality: Unpredictable and often inadequate. It can be stable for days and disappear for weeks. Voltage fluctuations can damage sensitive equipment. The Strategy: View grid power as a bonus, not a base. When it is available, it should be your primary source to save on fuel costs. However, essential equipment must be protected by a voltage stabilizer.",
+    },
+    {
+      heading: "Hiring Your First Staff: Family, Friends, or Professionals?",
+      body:
+        "The Alluring Advantages (Why We Do It): Perceived Trust and Loyalty: You have a pre-existing relationship. You feel you know their character, and you believe they will be more loyal to you than a stranger would. In a business environment rife with theft and disloyalty, this feels like a safe bet.",
+    },
+    {
+      heading: "Record Keeping & Basic Accounting: Beyond \"The Black Box\"",
+      body:
+        "Profit Illusion: The \"Cash in Hand\" Deception. You see money flowing into your business account or your POS, you pay your major bills, and you assume the remainder is your profit. You then use this \"profit\" to cover personal expenses, only to find yourself stranded when a major tax bill, a bulk inventory purchase, or a equipment repair arises.",
+    },
+    {
+      heading: "Pricing for Profit: How to Price Your Product in a Price-Sensitive Market",
+      body:
+        "The Formula: Cost of Goods Sold (COGS) + Overhead Allocation + Desired Profit = Selling Price. You are guaranteed a \"profit\" on every unit sold. The Catastrophic Flaw: This model is completely inward-looking. It ignores the most important factor in the pricing equation: THE CUSTOMER. It does not consider what the customer is willing to pay, what your competitors are charging, or the perceived value of your product.",
+    },
+    {
+      heading: "Branding & Packaging: Why Your \"Pure Water\" Business Needs a Logo",
+      body:
+        "It is an investment in customer loyalty, perceived value, and future profits. It is the consistent expectation of quality, service, and experience that a customer has every time they interact with your business. It is what people say about you when you are not in the room. It is the emotion trust, joy, confidence, sophistication that your business evokes.",
+    },
+    {
+      heading: "Digital Marketing: From Instagram to WhatsApp, Reaching Millions on a Shoestring",
+      body:
+        "The Trust Deficit is Real: Online scams are rampant. Your digital presence must be meticulously crafted to build trust. Social proof—testimonials, user-generated content is your most powerful weapon. Community Over Corporation: Nigerians crave connection. They don't want to interact with a faceless brand; they want to connect with a person, a story, a mission.",
+    },
+    {
+      heading: "The Art of the Naija Sell: Customer Psychology & Relationship Management",
+      body:
+        "A product that signals success, sophistication, or being \"in the know\" has immense appeal. The \"Package Deal\": The value is in the entire experience the product, the packaging, the customer service, the brand story. A slightly more expensive item that comes with impeccable service and a sense of prestige is often chosen over a cheaper, bare-bones alternative.",
+    },
+    {
+      heading: "Distribution & Delivery: Getting Your Product to the Customer Despite Bad Roads",
+      body:
+        "Traffic & Security: \"Go-slows,\" road closures, and security concerns in certain regions can disrupt the most carefully planned delivery schedules. The Human Factor: Dispatch Riders: The backbone of intra-city logistics, but managing them requires dealing with issues of reliability, honesty, and customer interaction.",
+    },
+    {
+      heading: "Reinvesting & Managing Cash Flow: Avoiding \"Boombastic to Bankrupt\"",
+      body:
+        "Cash Outflow (You Pay): You pay your suppliers for raw materials, your staff, your rent, and your generator fuel. The Production Lag: You turn materials into finished goods. Cash Inflow (You Get Paid): The customer buys your product. But critically, the money might not hit your account immediately. Payment on Delivery (POD): You may wait days for the dispatch rider to remit cash.",
+    },
+    {
+      heading: "Scaling Up: When to Expand, Diversify, or Franchise",
+      body:
+        "Systemization: Have you documented your key processes? Is the business dependent on you, the founder, for every decision? If you cannot systemize it, you cannot scale it. Is your brand recognized and trusted in your current market? A weak brand will not travel well to new locations or support new product lines. Is Your Team Ready for Greater Responsibility?",
+    },
+    {
+      heading: "Building a Team Culture: From One-Man Squad to a Cohesive Unit",
+      body:
+        "We are transparent in our dealings and take responsibility for our mistakes. Hiring for Culture Add, Not Just Culture Fit: Don't just hire people who think like you. Hire people who bring diverse skills and perspectives but share your core values. Use the structured hiring process from Chapter 9. From \"Jobs\" to \"Roles and Responsibilities\": Create a clear Role Charter for every position.",
+    },
+    {
+      heading: "The Mental Game: Resilience, Burnout, and the Entrepreneur's Health",
+      body:
+        "The Family & Community Expectation: Your success is often seen as a family asset. Suddenly, you become the \"ATM,\" expected to solve financial problems for a wide circle of relatives. Saying \"no\" can be construed as selfishness, leading to guilt and relational strain.",
+    },
+    {
+      heading: "Giving Back & Building a Legacy: The Social Responsibility of the Naija Entrepreneur",
+      body:
+        "Obligatory Giving: Reactive, emotion-driven, often unfocused. It responds to the loudest request, not the greatest need. Strategic Giving: Proactive, planned, and aligned with your business's core competencies and values. It creates measurable impact and often generates returns for your business in terms of brand equity, employee morale, and community goodwill.",
     },
   ],
 };

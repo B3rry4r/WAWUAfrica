@@ -67,6 +67,10 @@ function OverviewView({ playbook, onRead }: { playbook: Playbook; onRead: () => 
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <h1 className="m-0 text-[20px] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--text-primary)]">{playbook.title}</h1>
+          {/* A real book has an author on the cover, so it has one here. */}
+          {playbook.author ? (
+            <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{playbook.author}</span>
+          ) : null}
           <span className="text-[12.5px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
             {playbook.pages} pages · {playbook.format}
           </span>
@@ -82,14 +86,23 @@ function OverviewView({ playbook, onRead }: { playbook: Playbook; onRead: () => 
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Inside</span>
         <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-1">
           {playbook.chapters.map((ch, i) => (
-            <div key={ch.title} className="flex items-center gap-3 rounded-[var(--radius-input)] p-3">
-              <span className="w-[22px] shrink-0 text-[12px] font-bold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">{ch.title}</span>
-              <span className="shrink-0 text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-                Pages {ch.pages}
-              </span>
+            <div key={ch.title} className="flex flex-col">
+              {/* The book is organised in four parts, so the list is too. The
+                  heading prints once, above the first chapter that carries it. */}
+              {ch.section && ch.section !== playbook.chapters[i - 1]?.section ? (
+                <span className="px-3 pb-1 pt-3 text-[11.5px] font-semibold uppercase tracking-[0.07em] text-[var(--text-muted)]">
+                  {ch.section}
+                </span>
+              ) : null}
+              <div className="flex items-center gap-3 rounded-[var(--radius-input)] p-3">
+                <span className="w-[22px] shrink-0 text-[12px] font-bold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">{ch.title}</span>
+                <span className="shrink-0 text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+                  {ch.pages}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -98,7 +111,7 @@ function OverviewView({ playbook, onRead }: { playbook: Playbook; onRead: () => 
       <div className="flex items-center gap-[11px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px_15px]">
         <Icon name="Download" size={16} color="var(--text-muted)" />
         <span className="flex-1 text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
-          Downloaded {playbook.downloadCount.toLocaleString("en-NG")} times. Yours to keep and to pass on.
+          {playbook.pages} pages, {playbook.format}. Yours to keep and to pass on.
         </span>
       </div>
 
@@ -106,7 +119,7 @@ function OverviewView({ playbook, onRead }: { playbook: Playbook; onRead: () => 
           width: `full` on the download button was winning the whole 547px and
           squeezing "Read here" into a two-line 108px stub beside it. */}
       <div className="flex gap-2.5 dt:justify-start">
-        <DownloadButton title={playbook.title} className="dt:w-auto" />
+        <DownloadButton title={playbook.title} fileUrl={playbook.fileUrl ?? undefined} className="dt:w-auto" />
         <Button
           size="lg"
           variant="secondary"
@@ -140,7 +153,7 @@ function ReadingView({ playbook, onBack }: { playbook: Playbook; onBack: () => v
           </section>
         ))}
       </div>
-      <DownloadButton title={playbook.title} />
+      <DownloadButton title={playbook.title} fileUrl={playbook.fileUrl ?? undefined} />
     </>
   );
 }

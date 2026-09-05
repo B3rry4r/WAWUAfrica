@@ -593,6 +593,11 @@ function PreviewStep({
   onPreview: (f: UploadedFile | null) => void;
 }) {
   const isPdf = type === "pdf";
+  // Only an image can be drawn as a thumbnail here. A video or PDF preview is
+  // uploaded and real, but has no frame to show without decoding it, so those
+  // are named in words below rather than faked with a picture.
+  const previewImage =
+    preview && /\.(png|jpe?g|webp|gif|avif)$/i.test(preview.name) ? preview.fileUrl : null;
   return (
     <>
       <p className="m-0 text-[14px] leading-[1.5] text-[var(--text-secondary)]">
@@ -629,20 +634,64 @@ function PreviewStep({
       ) : null}
 
       <div className="flex flex-col gap-[11px]">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">How it will look</span>
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">
+          {preview ? "How it will look" : "How it will look once you add a preview"}
+        </span>
+        {/*
+          THE CREATOR'S OWN FILE, once there is one.
+
+          These three cards used to be striped placeholders in every state, so
+          somebody who had just uploaded a cover still saw hatching and
+          reasonably asked whether they were meant to see their own work here.
+          The first two now show the real preview, and the third shows it
+          blurred behind the lock, which is exactly what a buyer sees before
+          paying. The placeholders remain for the state that genuinely has
+          nothing to show yet.
+        */}
         <div className="flex gap-[9px]">
-          <div className="flex-1 aspect-[3_/_4] rounded-[10px] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
-          <div className="flex-1 aspect-[3_/_4] rounded-[10px] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] border border-[var(--border-hairline)]" />
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="flex-1 aspect-[3_/_4] overflow-hidden rounded-[10px] border border-[var(--border-hairline)] bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)]"
+            >
+              {previewImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={previewImage} alt="" className="h-full w-full object-cover" />
+              ) : null}
+            </div>
+          ))}
           <div className="relative flex-1 aspect-[3_/_4] rounded-[10px] overflow-hidden border border-[var(--border-hairline)]">
-            <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] blur-[8px] scale-[1.12]" />
+            {previewImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewImage} alt="" className="absolute inset-0 h-full w-full scale-[1.12] object-cover blur-[8px]" />
+            ) : (
+              <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,_var(--surface-tag)_0_12px,_var(--surface-card)_12px_24px)] blur-[8px] scale-[1.12]" />
+            )}
             <div className="absolute inset-0 bg-[var(--locked-veil)] grid place-items-center">
               <Icon name="Lock" size={16} strokeWidth={2.2} color="var(--text-on-accent)" />
             </div>
           </div>
         </div>
+        {preview && !previewImage ? (
+          <span className="text-[12px] leading-[1.45] text-[var(--text-muted)]">
+            {preview.name} is uploaded. Buyers will see it here; only images can be
+            shown as a thumbnail on this screen.
+          </span>
+        ) : null}
       </div>
 
-      <InfoNote text={type === "audio" ? "For audio the preview is a 30 to 60 second clip. For a course it is the first lesson." : "For audio the preview is a 30 to 60 second clip. For a course it is the first lesson."} />
+      {/* This was a ternary whose two branches were the same sentence, so it
+          told an audio creator about courses and a course creator about audio.
+          It now says the one thing that applies. */}
+      <InfoNote
+        text={
+          type === "audio"
+            ? "For audio the preview is a 30 to 60 second clip."
+            : type === "course"
+              ? "For a course the preview is the first lesson."
+              : "Buyers see the preview before paying. The full file stays locked until they buy."
+        }
+      />
     </>
   );
 }

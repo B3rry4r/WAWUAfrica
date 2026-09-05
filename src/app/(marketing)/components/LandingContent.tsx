@@ -391,28 +391,40 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The product video, then the services.
+            The portrait film, with the mascot beside it.
 
-            Landscape 16:9, so it sits ABOVE the services at full width rather
-            than beside them. The previous portrait video was paired sideways
-            with the tiles and left a tall void down one side that no amount
-            of `justify-between` could close. Stacking is also the only thing
-            that works unchanged on a phone.
+            This replaces the landscape services clip. The two sit as one
+            centred pair: on a wide screen the video is on the left and the
+            mascot on the right, both capped to the same height so their
+            baselines agree rather than one hanging below the other.
+
+            On a phone they stack, VIDEO FIRST, because the film is the thing
+            that earns the scroll and the mascot is the punchline after it.
 
             Muted + playsInline + autoplay is the only combination iOS Safari
             will start on its own; without `playsinline` it takes the video
             fullscreen the moment it plays.
           */}
-          <div className="mx-auto mt-12 w-full max-w-[1080px] px-0 dt:mt-14">
+          <div className="mx-auto mt-12 flex w-full max-w-[1080px] flex-col items-center justify-center gap-8 px-0 dt:mt-14 dt:flex-row dt:items-center dt:gap-12">
             <video
-              className="aspect-video w-full rounded-card border border-hairline object-cover"
-              src="/wawu-services.mp4"
+              className="h-auto w-full max-w-[340px] rounded-card border border-hairline object-cover dt:max-w-[380px]"
+              src="/landing-video.mp4"
               autoPlay
               muted
               loop
               playsInline
               preload="metadata"
               aria-label="What WAWUAfrica does"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/wawu-mascot-gospel.webp"
+              alt="Create the gospel. Amplify the message. Impact culture."
+              className="h-auto w-full max-w-[320px] object-contain dt:max-w-[400px]"
+              loading="lazy"
+              decoding="async"
+              width={900}
+              height={1080}
             />
           </div>
 
