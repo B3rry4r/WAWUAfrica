@@ -79,16 +79,9 @@ function gradientFor(date: Date): string {
 }
 
 const LONG_DATE = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" });
-const SHORT_DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
 
 function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function addDays(d: Date, n: number): Date {
-  const next = new Date(d);
-  next.setDate(next.getDate() + n);
-  return next;
 }
 
 interface Card {
@@ -110,35 +103,40 @@ export function TgifDaily() {
     watch yesterday's verse swap for today's. Null until mounted, so there is
     one date and it is theirs.
   */
-  const [today, setToday] = useState<Date | null>(null);
-  const [shown, setShown] = useState<Date | null>(null);
+  const [date, setDate] = useState<Date | null>(null);
   const [entry, setEntry] = useState<TgifEntry | null>(null);
   const [failed, setFailed] = useState(false);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    const now = startOfDay(new Date());
-    setToday(now);
-    setShown(now);
+    setDate(startOfDay(new Date()));
   }, []);
 
-  const load = useCallback((date: Date) => {
+  const load = useCallback((on: Date) => {
     setFailed(false);
     setEntry(null);
     setStep(0);
-    getTgifEntry(date)
+    getTgifEntry(on)
       .then(setEntry)
       .catch(() => setFailed(true));
   }, []);
 
   useEffect(() => {
-    if (shown) load(shown);
-  }, [shown, load]);
+    if (date) load(date);
+  }, [date, load]);
 
   const say = useCallback((text: string) => personalise(text, firstName), [firstName]);
 
+  /*
+    "Remember" IS NOT ONE OF THESE CARDS, and it used to be.
+
+    It is pinned under the story instead, where it stays put the whole time
+    rather than going by once. Leaving it in both places printed the same
+    sentence twice on one screen, big on the card and again three centimetres
+    below it, which reads as a bug rather than as emphasis.
+  */
   const cards: Card[] = useMemo(() => {
-    if (!entry || !shown) return [];
+    if (!entry || !date) return [];
     const list: Card[] = [
       {
         label: "The verse",
@@ -146,7 +144,7 @@ export function TgifDaily() {
           <div className="flex flex-col gap-[16px]">
             <div className="flex flex-col gap-[3px]">
               <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[rgba(255,255,255,0.72)]">
-                {LONG_DATE.format(shown)}
+                {LONG_DATE.format(date)}
               </span>
               <span className="text-[15px] font-semibold text-white">
                 {firstName ? `Dear ${firstName},` : "Dear friend,"}
@@ -168,17 +166,6 @@ export function TgifDaily() {
         label: "The reality",
         body: (
           <p className="m-0 text-[15.5px] leading-[1.66] text-[rgba(255,255,255,0.94)]">{say(entry.reality)}</p>
-        ),
-      },
-      {
-        label: "Remember",
-        body: (
-          // The one line the document means for somebody to carry around and
-          // repeat. It is first person ("I am not condemned"), so it gets the
-          // biggest type on the card and nothing else to compete with.
-          <p className="m-0 text-[24px] font-bold leading-[1.36] tracking-[-0.01em] text-white [text-wrap:balance]">
-            {say(entry.remember)}
-          </p>
         ),
       },
       {
@@ -209,7 +196,7 @@ export function TgifDaily() {
       });
     }
     return list;
-  }, [entry, shown, firstName, say]);
+  }, [entry, date, firstName, say]);
 
   const last = cards.length - 1;
   const back = useCallback(() => setStep((s) => Math.max(0, s - 1)), []);
@@ -233,14 +220,13 @@ export function TgifDaily() {
         title="Could not open today's reading"
         caption="Check your connection and try again."
         action="Try again"
-        onAction={() => shown && load(shown)}
+        onAction={() => date && load(date)}
       />
     );
   }
 
-  if (!shown || !entry || !cards.length) return <TgifSkeleton />;
+  if (!date || !entry || !cards.length) return <TgifSkeleton />;
 
-  const isToday = today != null && shown.getTime() === today.getTime();
   const card = cards[step];
   const atEnd = step === last;
 
@@ -248,7 +234,7 @@ export function TgifDaily() {
     <div className="flex w-full max-w-[560px] flex-col gap-[12px]">
       <div
         className="relative flex min-h-[430px] flex-col overflow-hidden rounded-[var(--radius-card)] p-[16px_18px_18px]"
-        style={{ backgroundImage: gradientFor(shown) }}
+        style={{ backgroundImage: gradientFor(date) }}
       >
         <span className="pointer-events-none absolute -right-8 -top-10 opacity-[0.13]" aria-hidden="true">
           <Icon name="Quote" size={190} color="#fff" strokeWidth={1} />
@@ -326,44 +312,48 @@ export function TgifDaily() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px_16px]">
-        {/*
-          The series is labelled, not just printed. On its own, "THE NEW
-          CREATION" in small caps reads as another heading with nothing under
-          it. It is not called "this month's" because the document's series run
-          29 to 35 days and do not line up with a calendar month.
-        */}
-        <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">Series</span>
-        <div className="flex flex-col gap-[2px]">
-          <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{entry.series}</span>
-          <span className="text-[13.5px] text-[var(--text-secondary)]">{entry.seriesTheme}</span>
+      {/*
+        UNDER THE STORY: THE LINE TO CARRY, AND NOTHING TO BROWSE.
+
+        This slot held yesterday and tomorrow. It should not have: a devotional
+        is for the day it is for, and a pair of arrows turns it into an archive
+        to page through, which is a different product and a worse one. Today's
+        is the only reading there is.
+
+        What sits here instead is the day's own "Remember" line. It is the one
+        sentence the document means for somebody to take with them, and it is
+        the only part worth having on screen after the story is done, so it
+        stays put while the cards move and is still there when they finish. It
+        is not a constant: there are 365 of them, one per day, so this line
+        changes with the reading like everything else on the screen.
+      */}
+      <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px_16px]">
+        <div className="flex flex-col gap-[5px]">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--accent)]">Remember today</span>
+          <p className="m-0 text-[15.5px] font-semibold leading-[1.5] text-[var(--text-primary)]">
+            {say(entry.remember)}
+          </p>
         </div>
 
-        {/*
-          Yesterday and tomorrow, because a reading somebody liked should not
-          be gone at midnight, and because a day missed is not a punishment
-          here: all 365 are on the device already. "Today" only appears once
-          there is somewhere to come back from.
-        */}
-        <div className="mt-[4px] flex flex-wrap items-center gap-[8px]">
-          <DayStep label={SHORT_DATE.format(addDays(shown, -1))} icon="ChevronLeft" onClick={() => setShown(addDays(shown, -1))} />
-          {isToday ? null : (
-            <button
-              type="button"
-              onClick={() => today && setShown(today)}
-              className="rounded-[var(--radius-chip)] bg-[var(--accent)] px-[13px] py-[7px] text-[12.5px] font-semibold text-[var(--text-on-accent)]"
-            >
-              Today
-            </button>
-          )}
-          <DayStep label={SHORT_DATE.format(addDays(shown, 1))} icon="ChevronRight" iconFirst={false} onClick={() => setShown(addDays(shown, 1))} />
+        <div className="flex items-end justify-between gap-[10px] border-t border-t-[var(--border-hairline)] pt-[11px]">
+          {/*
+            The series is labelled, not just printed. On its own, "THE NEW
+            CREATION" in small caps reads as another heading with nothing under
+            it. It is not called "this month's" because the document's series
+            run 29 to 35 days and do not line up with a calendar month.
+          */}
+          <div className="flex min-w-0 flex-col gap-[1px]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">Series</span>
+            <span className="truncate text-[13px] font-semibold text-[var(--text-primary)]">{entry.series}</span>
+            <span className="truncate text-[12.5px] text-[var(--text-secondary)]">{entry.seriesTheme}</span>
+          </div>
           {step > 0 ? (
             <button
               type="button"
               onClick={() => setStep(0)}
-              className="ml-auto text-[12.5px] font-semibold text-[var(--accent)]"
+              className="shrink-0 text-[12.5px] font-semibold text-[var(--accent)]"
             >
-              Start again
+              Read it again
             </button>
           ) : null}
         </div>
@@ -392,31 +382,6 @@ function StepButton({
       onClick={onClick}
       disabled={disabled}
       className="inline-flex items-center gap-[5px] rounded-[var(--radius-chip)] border border-[rgba(255,255,255,0.3)] px-[12px] py-[7px] text-[12.5px] font-semibold text-white transition-colors hover:bg-[rgba(255,255,255,0.16)] disabled:invisible"
-    >
-      {iconFirst ? glyph : null}
-      {label}
-      {iconFirst ? null : glyph}
-    </button>
-  );
-}
-
-function DayStep({
-  label,
-  icon,
-  iconFirst = true,
-  onClick,
-}: {
-  label: string;
-  icon: Parameters<typeof Icon>[0]["name"];
-  iconFirst?: boolean;
-  onClick: () => void;
-}) {
-  const glyph = <Icon name={icon} size={14} color="currentColor" strokeWidth={2.4} />;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-[5px] rounded-[var(--radius-chip)] border border-[var(--border-hairline)] bg-[var(--surface-page)] px-[11px] py-[7px] text-[12.5px] font-semibold text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
     >
       {iconFirst ? glyph : null}
       {label}
