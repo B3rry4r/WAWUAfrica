@@ -10,7 +10,7 @@ import type {
   SessionUser,
 } from "@/types/auth";
 import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "@/types/account";
-import { apiFetch, ApiError, isMockModeError } from "@/lib/api/client";
+import { apiFetch, ApiError, delay, isMockModeError } from "@/lib/api/client";
 import { WAWU_ID_BASE } from "@/lib/api/config";
 
 /**
@@ -146,20 +146,39 @@ function toCreatorState(state: HubCreatorStateResponse): CreatorState {
 }
 
 /**
- * WAWUAfrica-specific onboarding field WAWU ID doesn't own. Best-effort: the
- * WAWU ID session is already valid even if this fails, so we still let the
- * user in rather than fail the whole signup — worst case GET /api/hub/users/me
- * returns accountType:null until they retry (e.g. on next sign-in).
+ * Writes the WAWUAfrica-specific account type WAWU ID does not own.
+ *
+ * This USED to swallow any failure with a comment saying the worst case was
+ * "accountType:null until they retry (e.g. on next sign-in)". Nothing retried
+ * on next sign-in. A single failed PATCH here left the server believing a
+ * paying creator was a reader, forever: the rest of the signup still looked
+ * right, because the wizard carries the chosen account type in its own state,
+ * and the demotion only appeared the next time they signed in.
+ *
+ * So it retries. Three quick attempts, because this is one small write on a
+ * connection that has already carried a registration successfully, and the
+ * cost of losing it is an account that behaves as the wrong type.
+ *
+ * It is still best-effort at the end: the WAWU ID session is valid either way
+ * and blocking signup on this would be worse. What makes that survivable now
+ * is that sign-in asks the server for creator state outright rather than
+ * trusting this flag, so a creator is recognised even if every attempt failed.
  */
 async function completeHubOnboarding(accessToken: string, accountType: AccountType): Promise<void> {
-  try {
-    await apiFetch("/api/hub/users/me", {
-      method: "PATCH",
-      token: accessToken,
-      body: { accountType },
-    });
-  } catch {
-    // SEAM: PATCH /api/hub/users/me — see doc comment above.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await apiFetch("/api/hub/users/me", {
+        method: "PATCH",
+        token: accessToken,
+        body: { accountType },
+      });
+      return;
+    } catch (e) {
+      // A refusal will refuse again: only retry what might succeed next time.
+      const worthRetrying = !(e instanceof ApiError) || e.status >= 500;
+      if (!worthRetrying || attempt === 2) return;
+      await delay(400 * (attempt + 1));
+    }
   }
 }
 
@@ -284,27 +303,55 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
     sessionStorage.setRefreshToken(result.refreshToken);
 
     const me = await apiFetch<HubMeResponse>("/api/hub/users/me", { token: result.accessToken });
-    const accountType: AccountType = me.accountType ?? "user";
 
+    /*
+      ALWAYS ASK THE SERVER FOR CREATOR STATE. DO NOT GATE THIS QUESTION ON
+      me.accountType.
+
+      This used to read `if (accountType === "creator") { ...fetch state... }`,
+      which asked whether somebody is a creator only when a cached profile flag
+      already said so. Anything that lost or never wrote that flag therefore
+      signed a real creator in as a plain user, silently and permanently: the
+      first session after signing up looked right, because the wizard sets the
+      account type locally from its own state, and then the NEXT sign-in asked
+      the server, got "user", and demoted them. Signing out was all it took.
+
+      creatorGates() has said for a while that "creator state exists ⇒ this IS
+      a creator account, full stop", and that the profile flag is a stale cache
+      of a guess. Sign-in now agrees with it: ask outright, and let the answer
+      decide. A reader simply has no creator state, which costs one 403.
+    */
     let creator: CreatorState | null = null;
-    if (accountType === "creator") {
-      try {
-        const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { token: result.accessToken });
-        creator = toCreatorState(state);
-      } catch (e) {
-        // 404/403 is the one benign case: a creator account with no
-        // CreatorState row yet (pre-tier-selection). creatorGates() already
-        // treats null as "not yet a creator" downstream.
-        const noRowYet = e instanceof ApiError && (e.status === 404 || e.status === 403);
-        // Anything else — 5xx, timeout, network — is a REQUEST FAILURE, not
-        // evidence about this account. Swallowing it used to hand a real,
-        // paid, KYC-approved creator a session with creator:null, which
-        // silently locked uploading, earnings and every creator surface for
-        // the rest of the session with no error anywhere. Surface it so the
-        // sign-in screen can retry instead of signing them in demoted.
-        // (Genuine mock mode still falls through to the outer catch below.)
-        if (!noRowYet && !isIntentionalMockMode(e)) throw e;
-      }
+    try {
+      const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { token: result.accessToken });
+      creator = toCreatorState(state);
+    } catch (e) {
+      // 403/404 is the ordinary answer for an account that is not a creator,
+      // and for a creator who has not picked a tier yet.
+      const notACreator = e instanceof ApiError && (e.status === 404 || e.status === 403);
+      // Anything else — 5xx, timeout, network — is a REQUEST FAILURE, not
+      // evidence about this account. Swallowing it used to hand a real,
+      // paid, KYC-approved creator a session with creator:null, which
+      // silently locked uploading, earnings and every creator surface for
+      // the rest of the session with no error anywhere. Surface it so the
+      // sign-in screen can retry instead of signing them in demoted.
+      // (Genuine mock mode still falls through to the outer catch below.)
+      if (!notACreator && !isIntentionalMockMode(e)) throw e;
+    }
+
+    // The server's own answer wins over the cached flag. A profile row that
+    // was never written, or written as "user" before they upgraded, must not
+    // outrank live creator state.
+    const accountType: AccountType = creator !== null ? "creator" : me.accountType ?? "user";
+
+    // Heal the row rather than re-deriving this on every sign-in. If the hub
+    // disagrees with its own creator state, the profile write was lost at
+    // signup, and every OTHER surface that reads accountType (the dashboard,
+    // admin lists, anything not using creatorGates) is still reading the wrong
+    // answer. Best-effort on purpose: the session above is already correct, so
+    // a failure here costs nothing this time round.
+    if (me.accountType !== accountType) {
+      void completeHubOnboarding(result.accessToken, accountType);
     }
 
     const user: SessionUser = {
