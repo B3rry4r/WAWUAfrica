@@ -7,7 +7,7 @@ import { SessionProvider, useSession } from "@/lib/auth/session-provider";
 import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
 import { CreateFab } from "./CreateFab";
-import { SoundToggle } from "./SoundToggle";
+import { SoundFab, SoundResume } from "./SoundToggle";
 import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
@@ -141,7 +141,24 @@ function FullShell({ children, header }: { children: ReactNode; header: boolean 
         In the shell rather than on a page, so the track survives every in-app
         navigation instead of restarting on each route change.
       */}
-      <SoundToggle aboveBottomBar />
+      <SoundResume />
+      {/*
+        The floating circle is DESKTOP ONLY now.
+
+        On a phone it sat at the bottom-left of every screen with the content
+        column running underneath it, so it covered whatever happened to be
+        there. It was reported sitting on a card's own text, and no position
+        fixes that: a fixed element over a scrolling column always ends up on
+        top of something. The phone gets a row in Settings instead, which is
+        where a preference belongs.
+
+        Desktop is a different shape. There is no bottom bar, the content is a
+        centred column, and the button sits out in the right-hand gutter with
+        nothing under it, so it stays.
+      */}
+      <div className="hidden xl:block">
+        <SoundFab />
+      </div>
     </>
   );
 }

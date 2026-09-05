@@ -1,6 +1,6 @@
 import { SessionProvider } from "@/lib/auth/session-provider";
 import { LandingContent } from "@/app/(marketing)/components/LandingContent";
-import { SoundToggle } from "@/components/layout/SoundToggle";
+import { SoundFab, SoundResume } from "@/components/layout/SoundToggle";
 
 /**
  * `/` — the marketing landing page, for everyone, signed in or not.
@@ -32,7 +32,8 @@ export default function Page() {
         any audible playback, and a landing page is exactly where an
         unrequested song would be most unwelcome anyway. It waits to be asked.
       */}
-      <SoundToggle />
+      <SoundResume />
+      <SoundFab />
     </SessionProvider>
   );
 }

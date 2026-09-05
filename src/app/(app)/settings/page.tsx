@@ -6,6 +6,7 @@ import type { OwnProfile } from "@/types/verification";
 import { Avatar } from "@/components/ui/Avatar";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { ListRow } from "@/components/ui/ListRow";
+import { SoundSetting } from "@/components/layout/SoundToggle";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { SettingsFooterActions } from "@/components/shared/SettingsFooterActions";
@@ -164,6 +165,22 @@ export default function SettingsPage() {
                 </div>
               </section>
             ))}
+
+            {/*
+              The music lives here now, not on a circle floating over every
+              screen. It is a preference, it is set once, and Settings is
+              where the other preferences are. Phone only: on desktop the
+              button still sits out in the right-hand gutter, where there is
+              nothing underneath it to cover.
+            */}
+            <section className="flex flex-col gap-[8px] xl:hidden">
+              <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                Sound
+              </span>
+              <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+                <SoundSetting />
+              </div>
+            </section>
 
             <SettingsFooterActions />
           </>

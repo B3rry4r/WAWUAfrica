@@ -1,34 +1,54 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
-
-const KEY = "wawu.sound";
-const TRACK = "/wawu-theme.mp3";
+import { isPlaying, play, subscribe, toggle, wasOn } from "@/lib/sound";
 
 /**
- * The WAWU theme, and the button that turns it off.
+ * Controls for the WAWU theme. The track itself lives in `@/lib/sound`, not
+ * in here: see that file for why it had to stop being the button's property.
  *
- * ── IT CANNOT AUTOPLAY, AND THAT IS NOT A CHOICE WE MAKE ───────────────────
- * Every current browser blocks audible autoplay until the page has had a real
- * user gesture. Chrome, Safari and Firefox all refuse it, and Safari on iOS
- * refuses it hardest. So the track starts on a TAP, always. Anything that
- * claimed to autoplay would simply be silent on most devices, with no way for
- * anyone to tell whether the feature was broken or the song had not started.
+ * Two shapes, because it belongs in two different kinds of place:
  *
- * ── WHY THE FILE IS NOT DOWNLOADED UNTIL SOMEBODY ASKS ─────────────────────
- * `preload="none"`. The track is 8.7MB, most of this audience is on mobile
- * data in Nigeria, and most visitors will never turn music on. Fetching it on
- * page load would spend their money on something they did not ask for. It is
- * requested the first time the button is pressed and cached from then on.
+ *  - `SoundFab`, the floating circle. It is right on the LANDING page, which
+ *    is a poster with nothing underneath it to cover.
+ *  - `SoundSetting`, a row. It is right in the app, where every screen is
+ *    somebody's content and a circle pinned over the bottom-left corner sits
+ *    on top of it. It was reported doing exactly that.
  *
- * ── THE CHOICE STICKS ──────────────────────────────────────────────────────
- * Somebody who turned it ON gets it back on their next visit, because the tap
- * that navigated them into the page counts as the gesture. Somebody who never
- * asked for it, or turned it off, hears nothing — silence is the default and
- * stays the default.
+ * `SoundResume` is neither: no UI at all, mounted once by the app shell, so
+ * that somebody who left the music on gets it back.
  */
-export interface SoundToggleProps {
+
+/** Subscribes to the track and reports whether it is actually sounding. */
+function usePlaying(): boolean {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    setOn(isPlaying());
+    return subscribe(() => setOn(isPlaying()));
+  }, []);
+  return on;
+}
+
+/**
+ * Resumes a previous "on", once the visitor gives the browser the gesture it
+ * is waiting for. Their first tap anywhere counts, so this waits for one
+ * rather than trying and failing on load.
+ */
+export function SoundResume() {
+  useEffect(() => {
+    if (!wasOn() || isPlaying()) return;
+    const tryPlay = () => {
+      void play();
+    };
+    tryPlay();
+    window.addEventListener("pointerdown", tryPlay, { once: true });
+    return () => window.removeEventListener("pointerdown", tryPlay);
+  }, []);
+  return null;
+}
+
+export interface SoundFabProps {
   /**
    * Lift the button clear of a bottom bar.
    *
@@ -39,102 +59,64 @@ export interface SoundToggleProps {
   aboveBottomBar?: boolean;
 }
 
-export function SoundToggle({ aboveBottomBar = false }: SoundToggleProps) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [on, setOn] = useState(false);
-  // Until the browser has confirmed it will play, the button must not claim
-  // sound is on. A control that lies about its own state is worse than none.
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    try {
-      setOn(window.localStorage.getItem(KEY) === "on");
-    } catch {
-      // Private window, or site data blocked. Silence is the safe default.
-    }
-    setReady(true);
-  }, []);
-
-  // Resume a previous "on" once the visitor interacts with the page. Their
-  // first click anywhere is the gesture the browser is waiting for.
-  useEffect(() => {
-    if (!ready || !on) return;
-    const el = audioRef.current;
-    if (!el || !el.paused) return;
-
-    const tryPlay = () => {
-      void el.play().catch(() => {
-        // Still refused. Reflect reality rather than showing a speaker icon
-        // over silence.
-        setOn(false);
-      });
-    };
-    tryPlay();
-    window.addEventListener("pointerdown", tryPlay, { once: true });
-    return () => window.removeEventListener("pointerdown", tryPlay);
-  }, [ready, on]);
-
-  const toggle = useCallback(() => {
-    const el = audioRef.current;
-    if (!el) return;
-    if (on) {
-      el.pause();
-      setOn(false);
-      try {
-        window.localStorage.setItem(KEY, "off");
-      } catch {
-        /* choice is still honoured for this page */
-      }
-      return;
-    }
-    void el
-      .play()
-      .then(() => {
-        setOn(true);
-        try {
-          window.localStorage.setItem(KEY, "on");
-        } catch {
-          /* as above */
-        }
-      })
-      .catch(() => setOn(false));
-  }, [on]);
+export function SoundFab({ aboveBottomBar = false }: SoundFabProps) {
+  const on = usePlaying();
+  const flip = useCallback(() => void toggle(), []);
 
   return (
-    <>
-      <audio
-        ref={audioRef}
-        src={TRACK}
-        loop
-        preload="none"
-        // Not a player: no controls, no keyboard target, nothing for a screen
-        // reader to announce. The button below is the whole interface.
+    <button
+      type="button"
+      onClick={flip}
+      aria-pressed={on}
+      aria-label={on ? "Turn the music off" : "Play the WAWU theme"}
+      title={on ? "Turn the music off" : "Play the WAWU theme"}
+      className={[
+        "fixed left-[18px] z-40 grid h-[44px] w-[44px] place-items-center rounded-full border border-hairline bg-[rgba(19,19,22,0.92)] text-text-secondary shadow-float backdrop-blur-md transition-colors hover:text-text-primary active:bg-surface-press",
+        aboveBottomBar ? "bottom-[94px]" : "bottom-[24px]",
+        "xl:bottom-[24px] xl:left-auto xl:right-[24px]",
+      ].join(" ")}
+    >
+      <Icon name={on ? "Volume2" : "VolumeX"} size={19} strokeWidth={2} color={on ? "var(--accent)" : "currentColor"} />
+    </button>
+  );
+}
+
+/** The same control as a settings row, with a switch instead of a circle. */
+export function SoundSetting() {
+  const on = usePlaying();
+  const flip = useCallback(() => void toggle(), []);
+
+  return (
+    <button
+      type="button"
+      onClick={flip}
+      role="switch"
+      aria-checked={on}
+      className="flex w-full items-center gap-[13px] rounded-[var(--radius-input)] p-[11px_10px] text-left transition-colors hover:bg-[var(--state-hover)] active:bg-[var(--state-press)]"
+    >
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-hairline bg-input text-text-secondary">
+        <Icon name={on ? "Volume2" : "VolumeX"} size={17} color={on ? "var(--accent)" : "currentColor"} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-[1px]">
+        <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">The WAWU theme</span>
+        <span className="text-[12.5px] text-[var(--text-muted)]">
+          {on ? "Playing. Tap to turn it off." : "Background music while you browse."}
+        </span>
+      </span>
+      {/* A real switch, because this row changes something rather than opening
+          somewhere, and a chevron would promise a screen that does not exist. */}
+      <span
         aria-hidden="true"
-        tabIndex={-1}
-      />
-      <button
-        type="button"
-        onClick={toggle}
-        aria-pressed={on}
-        aria-label={on ? "Turn the music off" : "Play the WAWU theme"}
-        title={on ? "Turn the music off" : "Play the WAWU theme"}
-        /*
-          Bottom-LEFT on a phone. The Create FAB owns bottom-right at
-          `bottom-[94px] right-[18px]`, and two floating circles in one corner
-          is a mis-tap waiting to happen. Same height so they read as a pair.
-          Bottom-right on desktop, where there is no FAB and no bottom bar.
-        */
-        className={[
-          "fixed left-[18px] z-40 grid h-[44px] w-[44px] place-items-center rounded-full border border-hairline bg-[rgba(19,19,22,0.92)] text-text-secondary shadow-float backdrop-blur-md transition-colors hover:text-text-primary active:bg-surface-press",
-          // Bottom-LEFT on a phone: the Create FAB owns bottom-right, and two
-          // floating circles in one corner is a mis-tap waiting to happen.
-          aboveBottomBar ? "bottom-[94px]" : "bottom-[24px]",
-          // Bottom-right on desktop, where there is no FAB and no bottom bar.
-          "xl:bottom-[24px] xl:left-auto xl:right-[24px]",
-        ].join(" ")}
+        className={`relative h-[24px] w-[42px] shrink-0 rounded-full transition-colors ${
+          on ? "bg-accent" : "bg-tag"
+        }`}
       >
-        <Icon name={on ? "Volume2" : "VolumeX"} size={19} strokeWidth={2} color={on ? "var(--accent)" : "currentColor"} />
-      </button>
-    </>
+        <span
+          className={`absolute top-[3px] h-[18px] w-[18px] rounded-full bg-white transition-all ${
+            on ? "left-[21px]" : "left-[3px]"
+          }`}
+        />
+      </span>
+    </button>
   );
 }
