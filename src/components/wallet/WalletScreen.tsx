@@ -28,6 +28,24 @@ export function WalletScreen() {
   const [notReady, setNotReady] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  /**
+   * Hands over the account number.
+   *
+   * The clipboard API is unavailable on an insecure origin and throws in some
+   * in-app browsers, so the fallback selects the digits instead: the number
+   * still has to be gettable when the tidy path is not there.
+   */
+  const copyNumber = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -109,21 +127,40 @@ export function WalletScreen() {
             </Button>
           </section>
 
-          {/* The wallet's own account number. Somebody can be paid straight
-              into it, which is worth saying plainly rather than hiding. */}
+          {/*
+            ADDING MONEY, given the same weight as taking it out.
+
+            This was one passive line under the account number. The number IS
+            the way money comes in from outside a sale - a photographer
+            invoicing a client off-platform is paid straight into this wallet -
+            and a number you cannot copy is a number nobody uses. It now says
+            what it is for, and hands the digits over in one tap.
+          */}
           {wallet.accountNumber ? (
-            <section className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[15px]">
-              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[var(--surface-tag)]">
-                <Icon name="Landmark" size={17} color="var(--text-secondary)" />
+            <section className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.07em] text-[var(--text-muted)]">
+                Add money
               </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-                <span className="text-[15px] font-semibold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
-                  {wallet.accountNumber}
+              <div className="flex items-center gap-[12px]">
+                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[var(--surface-tag)]">
+                  <Icon name="Landmark" size={17} color="var(--text-secondary)" />
                 </span>
-                <span className="text-[12.5px] text-[var(--text-muted)]">
-                  {wallet.bankName ?? "Your WAWU account"}. Money sent here lands in this wallet.
+                <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+                  <span className="text-[19px] font-bold tracking-[0.02em] text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
+                    {wallet.accountNumber}
+                  </span>
+                  <span className="text-[12.5px] text-[var(--text-muted)]">
+                    {wallet.bankName ?? "Your WAWU account"}
+                  </span>
                 </span>
-              </span>
+                <Button size="sm" variant="secondary" onClick={() => void copyNumber(wallet.accountNumber!)}>
+                  {copied ? "Copied" : "Copy"}
+                </Button>
+              </div>
+              <p className="m-0 text-[12.5px] leading-[1.5] text-[var(--text-secondary)]">
+                This account is yours. Anyone can transfer to it from any Nigerian bank and it lands
+                here, on top of what your sales pay in.
+              </p>
             </section>
           ) : null}
 
