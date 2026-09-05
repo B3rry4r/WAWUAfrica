@@ -85,8 +85,20 @@ export function SignInForm() {
 
   if (needsVerification) {
     return (
-      <div className="flex min-h-screen flex-col px-5 pt-11 xl:min-h-0 xl:px-0 xl:pt-0">
-        <div className="flex flex-1 flex-col gap-6 xl:flex-none">
+      <div className="flex min-h-screen flex-col justify-center px-5 py-10 xl:min-h-0 xl:justify-start xl:px-0 xl:py-0 xl:pt-0">
+        {/*
+          A PANEL, ON MOBILE ONLY.
+
+          The form sits over moving footage here, and a label or a placeholder
+          on a bright frame is the thing that makes video backgrounds unusable.
+          This is what keeps the text, inputs and buttons at a fixed contrast
+          whatever is playing behind them, while still letting the video read
+          around and through it.
+
+          xl: drops all of it. Desktop puts the video in the panel BESIDE the
+          form, so the form itself is on plain background and needs nothing.
+        */}
+        <div className="flex flex-col gap-6 rounded-[20px] border border-white/10 bg-[rgba(11,10,13,0.62)] p-5 backdrop-blur-md xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-none">
           <Link href="/" aria-label="WAWUAfrica home" className="self-start xl:hidden">
             <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto object-contain" />
           </Link>
@@ -120,7 +132,7 @@ export function SignInForm() {
             </button>
           </div>
 
-          <div className="-mx-5 mt-auto flex flex-col gap-3.5 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mx-0 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0">
+          <div className="flex flex-col gap-3.5 pt-1 xl:pt-0">
             <Button full size="lg" onClick={onVerifyAndSignIn} disabled={otp.length < 6 || otpSubmitting}>
               {otpSubmitting ? "Verifying…" : "Verify and sign in"}
             </Button>
@@ -143,8 +155,20 @@ export function SignInForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col px-5 pt-11 xl:min-h-0 xl:px-0 xl:pt-0">
-      <div className="flex flex-1 flex-col gap-6 xl:flex-none">
+    <div className="flex min-h-screen flex-col justify-center px-5 py-10 xl:min-h-0 xl:justify-start xl:px-0 xl:py-0 xl:pt-0">
+      {/*
+          A PANEL, ON MOBILE ONLY.
+
+          The form sits over moving footage here, and a label or a placeholder
+          on a bright frame is the thing that makes video backgrounds unusable.
+          This is what keeps the text, inputs and buttons at a fixed contrast
+          whatever is playing behind them, while still letting the video read
+          around and through it.
+
+          xl: drops all of it. Desktop puts the video in the panel BESIDE the
+          form, so the form itself is on plain background and needs nothing.
+        */}
+        <div className="flex flex-col gap-6 rounded-[20px] border border-white/10 bg-[rgba(11,10,13,0.62)] p-5 backdrop-blur-md xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-none">
         <Link href="/" aria-label="WAWUAfrica home" className="self-start xl:hidden">
             <img src="/wawu-logo-white.png" alt="WAWU" className="h-6 w-auto object-contain" />
           </Link>
@@ -194,7 +218,7 @@ export function SignInForm() {
           {error ? <p className="m-0 text-[13px] font-medium text-danger">{error}</p> : null}
         </div>
 
-        <div className="-mx-5 mt-auto flex flex-col gap-3.5 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mx-0 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0">
+        <div className="flex flex-col gap-3.5 pt-1 xl:pt-0">
           <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
             {submitting ? "Signing in…" : "Sign in"}
           </Button>

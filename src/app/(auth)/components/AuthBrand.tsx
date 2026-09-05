@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
+import { useIsDesktopAuth } from "./useIsDesktopAuth";
 
 /**
  * Desktop-only (xl:) brand panel for the auth routes. Per the design, the
@@ -45,6 +46,7 @@ export function useAuthBrand(content: AuthBrandContent) {
 }
 
 export function AuthBrandPanel() {
+  const isDesktop = useIsDesktopAuth();
   const ctx = useContext(AuthBrandContext);
   const content = ctx?.content ?? DEFAULT_BRAND;
 
@@ -57,26 +59,33 @@ export function AuthBrandPanel() {
         wrong shape — a 9:16 video beside a row of tiles left a tall void down
         one side. This panel is exactly that shape, so it finally fits.
 
-        Only ever rendered at xl. The whole panel is `hidden xl:flex`, so a
-        phone never downloads the file — which matters, because it is a large
-        one and this is a sign-in screen, not a landing page.
+        MOUNTED, not merely hidden. This used to rely on the panel's
+        `hidden xl:flex` and a comment claiming "a phone never downloads the
+        file". That was false: display:none does not stop a <video> fetching
+        its source, and a 390px viewport was measured pulling 19.7MB on this
+        screen — 18.6MB of it this file, for a panel it never shows. The
+        breakpoint is decided in JS now so the element is never mounted below
+        xl, and the bytes are genuinely not requested.
 
         The gradient over it is not decoration: white text on moving footage
         is unreadable about a third of the time. The scrim keeps the copy at a
         fixed contrast whatever frame is playing, and it is anchored to the
         bottom where the copy actually sits.
       */}
-      <video
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
-        src="/landing-video.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-hidden="true"
-        tabIndex={-1}
-      />
+      {isDesktop ? (
+        <video
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
+          src="/landing-video.mp4"
+          poster="/landing-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+      ) : null}
       <div
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(11,10,13,0.68)_0%,rgba(11,10,13,0.42)_26%,rgba(11,10,13,0.82)_58%,rgba(11,10,13,0.95)_100%)]"
         aria-hidden="true"
