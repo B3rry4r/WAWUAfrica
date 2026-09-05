@@ -8,6 +8,7 @@ import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { FilePicker } from "@/components/ui/FilePicker";
 import { Input } from "@/components/ui/Input";
+import { socialFieldValue } from "@/lib/social-handles";
 import { DEFAULT_DIAL_CODE, PhoneInput, fullPhoneNumber, splitPhoneNumber } from "@/components/ui/PhoneInput";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -246,10 +247,10 @@ export default function EditProfilePage() {
               <span className="text-[13px] font-semibold text-text-secondary">Socials</span>
               <Input
                 label="Instagram"
-                value={draft.socials.instagram ?? ""}
+                prefix={socialFieldValue(draft.socials.instagram, "instagram").prefix}
+                value={socialFieldValue(draft.socials.instagram, "instagram").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, instagram: e.target.value } }))}
-                icon={"instagram" as IconName}
-                placeholder="@username"
+                placeholder="yourname"
               />
               <PhoneInput
                 label="WhatsApp"
@@ -261,38 +262,59 @@ export default function EditProfilePage() {
                 }
               />
               {/*
-                EVERY FIELD TAKES A HANDLE.
+                USERNAME WHERE THE PLATFORM HAS ONE, LINK WHERE IT DOES NOT.
 
-                Three of these used to demand a full "https://linkedin.com/in/you"
-                while the three above took a bare handle, on the same form.
-                Nobody knows their LinkedIn URL from memory; everybody knows
-                their handle. The API expands a handle into the canonical
-                profile link, and still accepts a pasted URL from anyone who
-                has one to hand, so nothing that worked before stopped working.
+                Instagram, X, TikTok and YouTube all give every account a
+                single unambiguous @handle, so those fields show the address
+                in front of the box and ask only for the name. Nobody should
+                have to go and copy their own profile URL.
+
+                Facebook and LinkedIn stay plain links, deliberately. A large
+                share of Facebook profiles have no username at all and live at
+                profile.php?id=<digits>, and LinkedIn splits people (/in/)
+                from organisations (/company/), so a single prefix would be
+                wrong for a good number of people. Better an honest link field
+                than a prefix that quietly builds a dead address.
+
+                All of them still ACCEPT either: the API expands a bare handle
+                and leaves a pasted URL alone, so nothing a creator types is
+                rejected for being the wrong shape.
               */}
               <Input
                 label="X"
-                value={draft.socials.x ?? ""}
+                prefix={socialFieldValue(draft.socials.x, "x").prefix}
+                value={socialFieldValue(draft.socials.x, "x").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, x: e.target.value } }))}
-                placeholder="@username"
+                placeholder="yourname"
               />
               <Input
                 label="TikTok"
-                value={draft.socials.tiktok ?? ""}
+                prefix={socialFieldValue(draft.socials.tiktok, "tiktok").prefix}
+                value={socialFieldValue(draft.socials.tiktok, "tiktok").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, tiktok: e.target.value } }))}
-                placeholder="@username"
+                placeholder="yourname"
               />
               <Input
                 label="YouTube"
-                value={draft.socials.youtube ?? ""}
+                prefix={socialFieldValue(draft.socials.youtube, "youtube").prefix}
+                value={socialFieldValue(draft.socials.youtube, "youtube").value}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, youtube: e.target.value } }))}
-                placeholder="@you"
+                placeholder="yourname"
               />
               <Input
                 label="Facebook"
                 value={draft.socials.facebook ?? ""}
                 onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, facebook: e.target.value } }))}
-                placeholder="yourname"
+                inputMode="url"
+                placeholder="Paste your profile or page link"
+                hint="Facebook profiles often have no username, so paste the link."
+              />
+              <Input
+                label="LinkedIn"
+                value={draft.socials.linkedin ?? ""}
+                onChange={(e) => setDraft((d) => ({ ...d, socials: { ...d.socials, linkedin: e.target.value } }))}
+                inputMode="url"
+                placeholder="Paste your profile or company link"
               />
               <Input
                 label="LinkedIn"
