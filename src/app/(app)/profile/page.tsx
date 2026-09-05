@@ -121,6 +121,9 @@ export default function OwnProfilePage() {
             <ListRow title="Creator dashboard" subtitle="Earnings, uploads, messages" icon="LayoutDashboard" href="/creator" />
             <ListRow title="My content" subtitle={`${profile.stats.published} published · ${slots.published} of ${slots.total} slots`} icon="Layers" href="/create/library" />
             <ListRow title="Earnings" icon="HandCoins" href="/earnings" />
+            {/* The wallet is where the money actually is, and where it
+                leaves from. Earnings is the record of what was sold. */}
+            <ListRow title="Wallet" subtitle="Your balance, and withdrawals" icon="Wallet" href="/wallet" />
             <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
             {/* Two different systems, and this screen used to list only the
                 second one under the bare title "Verification" — so a creator
