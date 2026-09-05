@@ -12,7 +12,6 @@ import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 import { HeroRotatingWord } from "./HeroRotatingWord";
 import { SmartScheduler } from "./SmartScheduler";
-import { LandingHeroVideo } from "./LandingHeroVideo";
 import { ServicesRail } from "./ServicesRail";
 
 /**
@@ -387,39 +386,27 @@ export async function LandingContent() {
             <p className="m-0 mt-6 max-w-[540px] text-[17px] leading-relaxed text-text-secondary dt:text-[19px]">
               Build. Earn. Grow. Thrive. All in one place.
             </p>
-            <div className="mt-9">
-              <WhitePill href="/sign-up?type=creator">Join the Movement</WhitePill>
-            </div>
           </div>
 
           {/*
-            The mascot, with the portrait film under it on a phone.
+            The mascot board. No film at any width any more.
 
-            DESKTOP SHOWS THE IMAGE ONLY. The film is a 18.6MB download and it
-            was not earning that beside a static board that says the same thing
-            in three words, so above the mobile breakpoint it is not mounted at
-            all - not hidden with CSS, which downloads it anyway.
-
-            On a phone both appear, image first: the board is the line that
-            makes somebody keep scrolling, and the film is what holds them once
-            they have.
-
-            Muted + playsInline + autoplay is the only combination iOS Safari
-            will start on its own; without `playsinline` it takes the video
-            fullscreen the moment it plays.
+            It carried a portrait video underneath on phones and nothing on
+            desktop; now neither, so this is one image on every screen. Bigger
+            on desktop, where it is the only thing in this band and was sized
+            as though it had something beside it.
           */}
-          <div className="mx-auto mt-12 flex w-full max-w-[1080px] flex-col items-center justify-center gap-8 px-0 dt:mt-14">
+          <div className="mx-auto mt-12 flex w-full max-w-[1080px] items-center justify-center px-0 dt:mt-14">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/wawu-mascot-gospel.webp"
               alt="Create the gospel. Amplify the message. Impact culture."
-              className="h-auto w-full max-w-[320px] object-contain dt:max-w-[440px]"
+              className="h-auto w-full max-w-[360px] object-contain dt:max-w-[680px]"
               loading="lazy"
               decoding="async"
-              width={900}
-              height={1080}
+              width={1145}
+              height={1374}
             />
-            <LandingHeroVideo />
           </div>
 
           {/*
