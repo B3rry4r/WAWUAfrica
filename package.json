@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "sync-agent-rules": "bash scripts/sync-agent-rules.sh",
     "check:copy": "node scripts/check-copy.mjs",
-    "check:qr": "node scripts/check-qr.mjs"
+    "check:qr": "node scripts/check-qr.mjs",
+    "check:tgif": "node scripts/check-tgif.mjs",
+    "build:tgif": "node scripts/build-tgif.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.31.0",

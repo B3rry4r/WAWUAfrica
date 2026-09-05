@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { HomeRightRail } from "@/components/shared/HomeRightRail";
 import { getFeed } from "@/lib/api/content";
+import { TgifDaily } from "@/components/tgif/TgifDaily";
 import type { ContentPiece } from "@/types/content";
 
 // "Trending" used to sit here as a third tab, but there is no distinct
@@ -14,7 +15,16 @@ import type { ContentPiece } from "@/types/content";
 // to derive one from honestly. It rendered the exact same items as "For
 // you" with nothing behind the label. Removed rather than left as a fake
 // sort — see the "Following" doc comment below for the sibling fix.
+/*
+  TGIF LEADS, and it is what the tab opens on.
+
+  That is the product owner's own ordering ("TGIF - For You- Following"), and
+  it is the one tab whose value is spent by lunchtime: a devotional read at
+  9pm has already missed its day, while the feed is the same whenever it is
+  opened. Putting it anywhere else means most people meet it only by accident.
+*/
 const TABS = [
+  { id: "tgif", label: "TGIF" },
   { id: "for-you", label: "For you" },
   { id: "following", label: "Following" },
 ] as const;
@@ -24,7 +34,7 @@ type TabId = (typeof TABS)[number]["id"];
 export function HomeFeed() {
   const [items, setItems] = useState<ContentPiece[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<TabId>("for-you");
+  const [tab, setTab] = useState<TabId>("tgif");
 
   useEffect(() => {
     let active = true;
@@ -67,7 +77,16 @@ export function HomeFeed() {
         </div>
 
         <div className="flex flex-col gap-4 px-4 pb-8 pt-4 xl:px-[26px] xl:pt-[22px]">
-          {error ? (
+          {/*
+            TGIF is checked BEFORE the feed's own loading and error states,
+            because it does not need the feed. It reads a file that shipped
+            with the app, so a feed that is slow, or down, or empty has nothing
+            to do with whether today's reading can be shown. Ordering it after
+            those checks would have hidden it behind an unrelated failure.
+          */}
+          {tab === "tgif" ? (
+            <TgifDaily />
+          ) : error ? (
             <EmptyState
               icon="WifiOff"
               title="Could not load your feed"
