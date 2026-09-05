@@ -27,12 +27,21 @@ as mobile — desktop is a new shell around the same product, not a different on
 
 These are how the product currently works, so code matches itself — not rules to
 quote back at the product owner. If they ask for something that contradicts a
-line here, build it and update the line. The one exception is the cash-balance
-note, which carries a licensing consequence rather than a preference.
+line here, build it and update the line. The one line to raise before building
+is the wallet note: who custodies creator money decides whether a CBN licence
+is needed, so a change that puts WAWU in custody is worth checking rather than
+assuming.
 - Naira (₦) only. Never dollars.
 - Revenue splits: 85/15 standard, 90/10 for Pro-tier creators. Never invent a rate.
-- **No wallet today.** A cashable balance is a CBN licensing trigger in Nigeria,
-  so it is a deliberate decision rather than an oversight.
+- **Creators have a wallet; WAWU does not hold the money.** Each wallet is a
+  Flutterwave *payout subaccount*: an account at Flutterwave MFB in the
+  creator's own name, under Flutterwave's CBN banking licence. Flutterwave
+  custodies it, WAWU only instructs. That distinction is the whole point, and
+  it is what keeps the old concern answered rather than ignored: WAWU holding
+  a cashable balance itself would be a CBN licensing trigger in Nigeria.
+  Flutterwave's balance is authoritative; never sum one client-side or in the
+  hub and show it as the balance. (Built 5 Sep 2026, replacing the earlier
+  "no wallet today" note.)
 - **WAWU Credits render as a COUNT** ("48 credits"), never a naira value, never cashable.
 - No DRM, no screenshot-blocking, no liveness/Face-ID. These do not exist in this product.
 - **Creator is an ACCOUNT TYPE**, not a trust-tier badge or an earned level.

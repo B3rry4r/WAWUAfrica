@@ -30,14 +30,26 @@ const RULES = [
     allow: [/\$\{/],
   },
   {
-    id: "no-wallet",
-    // No wallet, no cash balance, no cash-out. Ever.
-    test: /\bwallet\b|cash out\b|cash-out\b|withdraw/i,
-    // Copy that exists precisely to SAY there is no wallet is the point, not a
-    // violation. Allow a negation anywhere in the same sentence.
+    id: "credits-never-cash",
+    // WAS "no-wallet". Creators HAVE a wallet now (product owner, 5 Sep 2026):
+    // a Flutterwave payout subaccount, which is an account at Flutterwave MFB
+    // in the creator's own name under Flutterwave's banking licence. WAWU does
+    // not custody it, so the CBN trigger the old rule guarded against still
+    // does not apply, and the words "wallet" and "withdraw" are now ordinary
+    // product vocabulary.
+    //
+    // What has NOT changed, and is what this rule now protects: WAWU CREDITS
+    // are a count, never money. Nobody withdraws a credit, cashes one out, or
+    // sees one priced in naira. That was always the separate half of the old
+    // rule and it is the half with teeth.
+    // Either order: "withdraw your credits" is the same claim as "credits you
+    // can withdraw", and a one-directional regex catches only half of them.
+    // cash/cashed/cashing out, withdraw/withdrawn/withdrawal, payout, paid out.
+    // "cashed out" is the same claim as "cash out" and slipped a narrower one.
+    test: /\bcredits?\b[^.]{0,40}\b(withdraw\w*|cash(?:ed|ing)?[\s-]?out|payout|paid out)\b|\b(withdraw\w*|cash(?:ed|ing)?[\s-]?out|payout|paid out)\b[^.]{0,40}\bcredits?\b/i,
     allow: [
-      /\b(no|not|never|n't|cannot|can't|without)\b[^.]{0,80}(wallet|cash|withdraw)/i,
-      /(wallet|cash|withdraw)[^.]{0,80}\b(no|not|never|n't|cannot|can't)\b/i,
+      /\b(no|not|never|n't|cannot|can't)\b[^.]{0,60}(withdraw|cash)/i,
+      /(withdraw|cash)[^.]{0,60}\b(no|not|never|n't|cannot|can't)\b/i,
     ],
   },
   {
