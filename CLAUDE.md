@@ -18,10 +18,13 @@ contracts in `docs/02_TECHNICAL_CONTEXT.md` as the target shape, not as live end
 ## Current phase
 **Mobile is built and design-conformant** (audited against every mobile screen;
 product-rule violations, dead ends, and convention drift fixed — see git log).
-**Desktop is next.** The desktop designs are complete and approved — build from
-`design/screens/desktop/*.dc.html`. Desktop implementation has not started yet;
-this is greenfield work, not a fix pass. Follow the same account-type/gate rules
-as mobile — desktop is a new shell around the same product, not a different one.
+**Desktop is built, not pending.** This line used to say desktop "has not
+started yet"; an independent QA pass found 107 files carrying `xl:` breakpoints,
+a Sidebar, a DesktopHeader and a ThreePaneLayout, with two desktop artboards
+matching their designs picture-to-picture. A next developer reading the old
+sentence would have rebuilt what is already there. What remains is conformance:
+most desktop artboards in `design/screens/desktop/*.dc.html` have never been
+compared to the built screen. Same account-type and gate rules as mobile.
 
 ## Product notes
 

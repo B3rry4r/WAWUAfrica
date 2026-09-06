@@ -1,0 +1,1814 @@
+{
+  "generated": "2026-09-06T01:13:20.989Z",
+  "note": "coverage answers 'does a design render exist and was it paired'. conformance answers 'did someone put the app capture beside it and look'. They are independent on purpose. Only a completed picture-to-picture comparison moves conformance off 'unverified'.",
+  "denominator_note": "180 artboards rendered (157 mobile + 23 desktop). The 76 WAWU-Flow-Canvas renders are excluded: that canvas re-lays-out the same mobile artboards as a flow diagram, so counting them would inflate the denominator with duplicates.",
+  "totals": {
+    "artboards": 180,
+    "compared": 10,
+    "conforms": 3,
+    "diverges": 7,
+    "unverified": 170
+  },
+  "rows": [
+    {
+      "artboard": "WAWU-Auth__Entry-choice-creator-card-carries-the-cost-and-the-ID-check-up-front-0",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Entry-choice-creator-card-carries-the-cost-and-the-ID-check-up-front-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Forgot-password-9",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Forgot-password-9.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Interests-button-stays-locked-until-the-minimum-is-met-7",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Interests-button-stays-locked-until-the-minimum-is-met-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__OTP-destination-shown-back-resend-on-a-timer-5",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__OTP-destination-shown-back-resend-on-a-timer-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Part-1-identity-filled-1",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Part-1-identity-filled-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Part-1-validation-short-password-incomplete-email-2",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Part-1-validation-short-password-incomplete-email-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Part-2-location-and-about-you-filled-3",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Part-2-location-and-about-you-filled-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Part-2-region-empty-state-and-unaccepted-terms-4",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Part-2-region-empty-state-and-unaccepted-terms-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Reset-password-mismatch-state-10",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Reset-password-mismatch-state-10.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Sign-in-8",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Sign-in-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Auth__Success-moment-6",
+      "canvas_file": "WAWU-Auth",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Auth__Success-moment-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Communities-Credits__1-Communities-balance-is-a-count-at-the-top-0",
+      "canvas_file": "WAWU-Communities-Credits",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Communities-Credits__1-Communities-balance-is-a-count-at-the-top-0.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/s_communities_credits__WAWU-Communities-Credits_1-balance-is-a-count__mobile.png",
+      "finding": "Credits render as a COUNT in both (rule holds). Design has a screen title 'Communities' with a search icon, a single-line purple-bordered credits pill, and underlined text tabs. Build has the global app header instead of a screen title, a taller stacked credits card with a 'WAWU CREDITS' eyebrow, and a segmented pill tab control."
+    },
+    {
+      "artboard": "WAWU-Communities-Credits__2-3-Chat-on-trial-banner-states-what-changes-after-1",
+      "canvas_file": "WAWU-Communities-Credits",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Communities-Credits__2-3-Chat-on-trial-banner-states-what-changes-after-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Communities-Credits__4-Paid-chat-count-under-the-composer-1-credit-used-on-the-message-2",
+      "canvas_file": "WAWU-Communities-Credits",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Communities-Credits__4-Paid-chat-count-under-the-composer-1-credit-used-on-the-message-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Communities-Credits__5-Empty-balance-composer-blocked-thread-still-readable-3",
+      "canvas_file": "WAWU-Communities-Credits",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Communities-Credits__5-Empty-balance-composer-blocked-thread-still-readable-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Communities-Credits__6-Three-packs-per-message-value-honest-fine-print-4",
+      "canvas_file": "WAWU-Communities-Credits",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Communities-Credits__6-Three-packs-per-message-value-honest-fine-print-4.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/s_communities_topup__WAWU-Communities-Credits_6-Three-packs__mobile.png",
+      "finding": "Three packs and a POPULAR chip are there. Missing: the PER-MESSAGE VALUE on every pack ('₦10 a message', '₦8.33', '₦6.67'), the pack names (Starter/Popular/Pro), and two thirds of the fine print. Design says credits cannot be refunded or turned back into naira and only pay for open-community messages, not content, tips or paid messages; the build says only 'Credits never expire and are never a cash balance.' Two of the artboard's three named subjects are absent."
+    },
+    {
+      "artboard": "WAWU-Communities-Credits__7-Success-the-new-balance-as-a-count-5",
+      "canvas_file": "WAWU-Communities-Credits",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Communities-Credits__7-Success-the-new-balance-as-a-count-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__1-Free-plays-in-full-engagement-row-live-0",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__1-Free-plays-in-full-engagement-row-live-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__2-Locked-a-real-preview-then-a-labelled-cut-line-1",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__2-Locked-a-real-preview-then-a-labelled-cut-line-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__2b-Locked-course-gated-at-the-episode-2",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__2b-Locked-course-gated-at-the-episode-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__3-Unlock-sheet-the-split-stated-in-naira-3",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__3-Unlock-sheet-the-split-stated-in-naira-3.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/s_content_unlocksheet__WAWU-Content-Detail_3-Unlock-sheet-split-in-naira__mobile.png",
+      "finding": "Sheet exists and opens. Design states the split as percentage AND naira ('Zainab keeps 85% — ₦1,275'); the build states naira only ('zainab-pro keeps ₦4,500'), dropping the percentage the artboard exists to show. Design's labelled 'You pay / ₦1,500' row is replaced by '₦5,000 once'. Design names the creator ('Zainab Bello'); build shows the handle. Caption 'Pay once and it stays in your purchases' moved below the button and shortened."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__4a-Processing-4",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__4a-Processing-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__4b-Success-5",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__4b-Success-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__4c-Failed-with-a-way-back-in-6",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__4c-Failed-with-a-way-back-in-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__5-Unlocked-one-quiet-Yours-chip-no-fanfare-7",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__5-Unlocked-one-quiet-Yours-chip-no-fanfare-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__6-Comments-the-existing-thread-restyled-8",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__6-Comments-the-existing-thread-restyled-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Content-Detail__7-My-purchases-the-verb-matches-the-type-9",
+      "canvas_file": "WAWU-Content-Detail",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Content-Detail__7-My-purchases-the-verb-matches-the-type-9.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__1-Settings-the-deal-stated-before-you-switch-it-on-0",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__1-Settings-the-deal-stated-before-you-switch-it-on-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__2-Inbox-sorted-by-how-little-time-is-left-1",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__2-Inbox-sorted-by-how-little-time-is-left-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__3-Replied-earned-state-on-the-message-itself-2",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__3-Replied-earned-state-on-the-message-itself-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__4a-Warning-10-to-30-3",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__4a-Warning-10-to-30-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__4b-Off-for-7-days-30-to-50-4",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__4b-Off-for-7-days-30-to-50-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__4c-Off-for-30-days-over-50-5",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__4c-Off-for-30-days-over-50-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__5-Earnings-four-streams-no-balance-no-withdraw-6",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__5-Earnings-four-streams-no-balance-no-withdraw-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-DM-Earnings__6-KYC-pending-visible-counted-held-7",
+      "canvas_file": "WAWU-Creator-DM-Earnings",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-DM-Earnings__6-KYC-pending-visible-counted-held-7.png",
+      "coverage": "paired",
+      "conformance": "conforms",
+      "capture": ".qa-audit/captures/s_earnings_kycpending__WAWU-Creator-DM-Earnings_6-KYC-pending-visible-counted-held__mobile.png",
+      "finding": "Structure matches: verification banner, EARNED THIS MONTH with a 'Held, not payable yet' chip, the reassurance line, and a WHERE IT CAME FROM breakdown. Build adds a fourth stream (Tips), which artboard 5 also shows. Only divergence: the banner tone is accent-purple where the design uses amber. Verified: earnings are visible and counted while payout is held."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Approved-15",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Approved-15.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Basic-limits-stated-plainly-4",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Basic-limits-stated-plainly-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Confirm-renewal-date-up-front-5",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Confirm-renewal-date-up-front-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Dashboard-paid-uploading-KYC-pending-17",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Dashboard-paid-uploading-KYC-pending-17.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Document-camera-or-file-picker-10",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Document-camera-or-file-picker-10.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Failed-8",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Failed-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__From-a-locked-creator-surface-1",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__From-a-locked-creator-surface-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__From-the-profile-standing-upgrade-card-0",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__From-the-profile-standing-upgrade-card-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__National-ID-fields-follow-the-signup-country-9",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__National-ID-fields-follow-the-signup-country-9.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Payout-details-12",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Payout-details-12.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Pending-the-state-most-creators-live-in-for-days-14",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Pending-the-state-most-creators-live-in-for-days-14.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Pro-the-90-10-split-leads-3",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Pro-the-90-10-split-leads-3.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/s_onboarding_basic__WAWU-Creator-Onboarding_Basic-limits-stated-plainly__mobile.png",
+      "finding": "PRICE AND ALLOWANCE DISAGREE WITH THE DESIGN. Design: ₦18,999 a year, '7 uploads — 2 free, 5 paid', two tiers. Build: ₦14,999 a year, '12 uploads a year, 2 included and 10 paid', three tiers (Pro Max added, ruled). The 90/10 block itself matches."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Processing-6",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Processing-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Readability-confirm-11",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Readability-confirm-11.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Rejected-reason-plus-resubmit-selling-unaffected-16",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Rejected-reason-plus-resubmit-selling-unaffected-16.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Review-and-submit-13",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Review-and-submit-13.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Success-KYC-can-be-deferred-7",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Success-KYC-can-be-deferred-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Onboarding__Value-screen-2",
+      "canvas_file": "WAWU-Creator-Onboarding",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Onboarding__Value-screen-2.png",
+      "coverage": "paired",
+      "conformance": "conforms",
+      "capture": ".qa-audit/captures/s_onboarding_tiers__WAWU-Creator-Onboarding_Value-screen__mobile.png",
+      "finding": "Headline, three benefit rows, the TWO STEPS card and the 'Choose a tier' CTA all match. Copy differs only where the 1 Sep no-em-dash ruling applies and where the ₦50-₦500 DM range was replaced by 'Set your own price'."
+    },
+    {
+      "artboard": "WAWU-Creator-Profile__1-Default-not-followed-Content-tab-0",
+      "canvas_file": "WAWU-Creator-Profile",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Profile__1-Default-not-followed-Content-tab-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Profile__2-Followed-Community-tab-join-states-differ-1",
+      "canvas_file": "WAWU-Creator-Profile",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Profile__2-Followed-Community-tab-join-states-differ-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Profile__3-Shop-every-item-carries-a-handoff-pill-2",
+      "canvas_file": "WAWU-Creator-Profile",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Profile__3-Shop-every-item-carries-a-handoff-pill-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Profile__4-About-response-time-is-the-useful-fact-3",
+      "canvas_file": "WAWU-Creator-Profile",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Profile__4-About-response-time-is-the-useful-fact-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Profile__7-New-creator-no-content-DMs-off-no-shop-Community-and-Shop-are-bare-t-4",
+      "canvas_file": "WAWU-Creator-Profile",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Profile__7-New-creator-no-content-DMs-off-no-shop-Community-and-Shop-are-bare-t-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Creator-Profile__8-Own-view-Edit-profile-replaces-Follow-dashboard-entry-drafts-and-pen-5",
+      "canvas_file": "WAWU-Creator-Profile",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Creator-Profile__8-Own-view-Edit-profile-replaces-Follow-dashboard-entry-drafts-and-pen-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__All-five-levels-on-one-page-with-earned-pending-and-locked-visible-tog-21",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__All-five-levels-on-one-page-with-earned-pending-and-locked-visible-tog-21.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Cover-then-a-wide-identity-row-the-three-paid-actions-sit-together-on--20",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Cover-then-a-wide-identity-row-the-three-paid-actions-sit-together-on--20.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D1-Shell-creator-account-same-shell-slot-3-swaps-1",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D1-Shell-creator-account-same-shell-slot-3-swaps-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D1-Shell-user-account-1440-900-0",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D1-Shell-user-account-1440-900-0.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/d_home_user__D1-Shell-user-account__desktop.png",
+      "finding": "BUILT, contradicting CLAUDE.md's 'desktop has not started'. Three-pane shell, right rail (Creators to follow / Trending now / Sell what you know) and bottom credits panel all match. Diverges: the design's 5-item rail (Home, Communities, Explore, Messages, Profile) is a 9-item rail in the build (Shop, Services, Events, Professionals added; Profile replaced by Settings, ruled). Tabs TGIF/For you/Following vs design For you/Following/Trending. The rail credits panel gains a Top up button the design does not have."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D10-Explore-1440-1040-12",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D10-Explore-1440-1040-12.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D11-Product-detail-the-CTA-names-its-destination-13",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D11-Product-detail-the-CTA-names-its-destination-13.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D12-Learn-entitlement-first-then-both-kinds-14",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D12-Learn-entitlement-first-then-both-kinds-14.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D14-Communities-rooms-beside-the-thread-17",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D14-Communities-rooms-beside-the-thread-17.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D17-Settings-list-beside-the-pane-22",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D17-Settings-list-beside-the-pane-22.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D2-Landing-page-1440-2380-2",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D2-Landing-page-1440-2380-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D5-My-purchases-1440-900-7",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D5-My-purchases-1440-900-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D6-Creator-dashboard-1440-900-8",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D6-Creator-dashboard-1440-900-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D7-Publishing-upload-and-monetisation-in-one-view-1440-1040-9",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D7-Publishing-upload-and-monetisation-in-one-view-1440-1040-9.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D8-Paid-questions-inbox-three-panes-10",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D8-Paid-questions-inbox-three-panes-10.png",
+      "coverage": "paired",
+      "conformance": "conforms",
+      "capture": ".qa-audit/captures/d_dm_inbox__D8-Paid-questions-inbox-three-panes__desktop.png",
+      "finding": "Three-pane structure built as designed, including the exact 'Questions / Soonest deadline first' header. Row treatment, countdown pills, held-amount lines and the 'Send answer · earn ₦270' composer could not be compared: the test creator's inbox is empty and no seeded paid-DM thread was reachable. Structure conforms; row-level conformance UNVERIFIED."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__D9-Subscription-current-plan-and-the-upgrade-case-11",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__D9-Subscription-current-plan-and-the-upgrade-case-11.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Fade-and-rise-8px-72-scrim-with-a-3px-blur-page-visibly-behind-it-proc-6",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Fade-and-rise-8px-72-scrim-with-a-3px-blur-page-visibly-behind-it-proc-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Grouped-by-consequence-not-by-time-anything-with-a-deadline-or-an-amou-18",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Grouped-by-consequence-not-by-time-anything-with-a-deadline-or-an-amou-18.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Live-and-coming-soon-sit-as-equals-same-card-honest-status-the-status--15",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Live-and-coming-soon-sit-as-equals-same-card-honest-status-the-status--15.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Mobile-s-stacked-lock-and-sticky-CTA-become-a-two-column-detail-media--5",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Mobile-s-stacked-lock-and-sticky-CTA-become-a-two-column-detail-media--5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Mobile-s-two-stacked-cards-become-a-centred-520px-column-against-the-b-3",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Mobile-s-two-stacked-cards-become-a-centred-520px-column-against-the-b-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__One-query-every-type-cards-for-content-rows-for-people-and-things-No-r-19",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__One-query-every-type-cards-for-content-rows-for-people-and-things-No-r-19.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__The-three-step-progress-moves-into-the-brand-panel-so-the-form-column--4",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__The-three-step-progress-moves-into-the-brand-panel-so-the-form-column--4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Desktop-Shell__Three-columns-steps-form-cost-the-mobile-version-needed-a-separate-rev-16",
+      "canvas_file": "WAWU-Desktop-Shell",
+      "surface": "desktop",
+      "design_render": "build/design_shots/WAWU-Desktop-Shell__Three-columns-steps-form-cost-the-mobile-version-needed-a-separate-rev-16.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Explore__1-Landing-shops-Learn-Services-each-with-a-real-preview-0",
+      "canvas_file": "WAWU-Explore",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Explore__1-Landing-shops-Learn-Services-each-with-a-real-preview-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Explore__2-All-eleven-categories-1",
+      "canvas_file": "WAWU-Explore",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Explore__2-All-eleven-categories-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Explore__3-Creator-discovery-filter-by-category-follow-in-place-2",
+      "canvas_file": "WAWU-Explore",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Explore__3-Creator-discovery-filter-by-category-follow-in-place-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Home-Feed__3-Loading-shimmer-at-1-4s-1",
+      "canvas_file": "WAWU-Home-Feed",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Home-Feed__3-Loading-shimmer-at-1-4s-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Home-Feed__4-Empty-following-nobody-with-a-way-out-2",
+      "canvas_file": "WAWU-Home-Feed",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Home-Feed__4-Empty-following-nobody-with-a-way-out-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Home-Feed__5-Browse-category-price-and-type-filters-3",
+      "canvas_file": "WAWU-Home-Feed",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Home-Feed__5-Browse-category-price-and-type-filters-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Home-Feed__Feed-locked-and-free-one-after-the-other-0",
+      "canvas_file": "WAWU-Home-Feed",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Home-Feed__Feed-locked-and-free-one-after-the-other-0.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/s_home_foryou__WAWU-Home-Feed_Feed-locked-and-free__mobile.png",
+      "finding": "Design puts a full-width 'Unlock for ₦X' primary button INSIDE each locked feed card and a 'PPV ₦X' pill by the title. The built card has neither: price is a chip over the media and there is no buy control in the feed, so the purchase starts one screen later. Design tabs are 'For you / Following / Trending'; built tabs are 'TGIF / For you / Following' (TGIF is ruled, Trending's removal is not). Duration '1h 20m' is printed twice on the same card."
+    },
+    {
+      "artboard": "WAWU-Landing-Page__board-0-0",
+      "canvas_file": "WAWU-Landing-Page",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Landing-Page__board-0-0.png",
+      "coverage": "renderer-artefact",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "Not an artboard: the 430px frame filter caught a non-screen element. The WAWU Landing Page canvas has no fixed-size phone frames at all, so its mobile design is NOT rendered and cannot be compared."
+    },
+    {
+      "artboard": "WAWU-Learn__1-Landing-entitlement-first-then-both-kinds-0",
+      "canvas_file": "WAWU-Learn",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Learn__1-Landing-entitlement-first-then-both-kinds-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Learn__2-Course-entitlement-then-a-named-handoff-1",
+      "canvas_file": "WAWU-Learn",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Learn__2-Course-entitlement-then-a-named-handoff-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Learn__3-Playbook-free-to-everyone-download-or-read-2",
+      "canvas_file": "WAWU-Learn",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Learn__3-Playbook-free-to-everyone-download-or-read-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Learn__4-Country-guides-the-requirement-in-the-subtitle-3",
+      "canvas_file": "WAWU-Learn",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Learn__4-Country-guides-the-requirement-in-the-subtitle-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Learn__5-Article-reference-that-routes-into-a-service-4",
+      "canvas_file": "WAWU-Learn",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Learn__5-Article-reference-that-routes-into-a-service-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Learn__6-Pro-2-of-3-left-spent-slot-shown-as-enrolled-5",
+      "canvas_file": "WAWU-Learn",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Learn__6-Pro-2-of-3-left-spent-slot-shown-as-enrolled-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__1-Landing-two-shops-handoff-stated-up-front-0",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__1-Landing-two-shops-handoff-stated-up-front-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__2-Basket-goods-priced-in-naira-1",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__2-Basket-goods-priced-in-naira-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__3-Beauty-services-with-where-they-are-2",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__3-Beauty-services-with-where-they-are-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__4-Product-the-CTA-names-the-destination-3",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__4-Product-the-CTA-names-the-destination-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__5-Search-both-shops-then-WAWU-s-own-results-4",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__5-Search-both-shops-then-WAWU-s-own-results-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__6-Two-entry-points-profile-and-under-a-piece-5",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__6-Two-entry-points-profile-and-under-a-piece-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__7-Tip-sheet-presets-custom-amount-a-note-6",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__7-Tip-sheet-presets-custom-amount-a-note-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Marketplace-Tips__8-Tip-sent-no-access-change-said-plainly-7",
+      "canvas_file": "WAWU-Marketplace-Tips",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Marketplace-Tips__8-Tip-sent-no-access-change-said-plainly-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-IA-Board__Explore-a-destination-not-a-drawer-3",
+      "canvas_file": "WAWU-Nav-IA-Board",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-IA-Board__Explore-a-destination-not-a-drawer-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-IA-Board__Home-bottom-bar-carries-all-five-0",
+      "canvas_file": "WAWU-Nav-IA-Board",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-IA-Board__Home-bottom-bar-carries-all-five-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-IA-Board__Home-communities-surface-as-a-feed-filter-4",
+      "canvas_file": "WAWU-Nav-IA-Board",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-IA-Board__Home-communities-surface-as-a-feed-filter-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-IA-Board__Home-four-tabs-Create-as-a-FAB-Profile-in-the-header-2",
+      "canvas_file": "WAWU-Nav-IA-Board",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-IA-Board__Home-four-tabs-Create-as-a-FAB-Profile-in-the-header-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-IA-Board__Inbox-paid-DMs-and-communities-under-one-roof-5",
+      "canvas_file": "WAWU-Nav-IA-Board",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-IA-Board__Inbox-paid-DMs-and-communities-under-one-roof-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-IA-Board__Secondary-level-a-grid-icon-in-the-header-1",
+      "canvas_file": "WAWU-Nav-IA-Board",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-IA-Board__Secondary-level-a-grid-icon-in-the-header-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-Locked__Creator-account-slot-3-is-Create-1",
+      "canvas_file": "WAWU-Nav-Locked",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-Locked__Creator-account-slot-3-is-Create-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-Locked__User-account-slot-3-is-Explore-0",
+      "canvas_file": "WAWU-Nav-Locked",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-Locked__User-account-slot-3-is-Explore-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Nav-Locked__board-2-2",
+      "canvas_file": "WAWU-Nav-Locked",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Nav-Locked__board-2-2.png",
+      "coverage": "renderer-artefact",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "Not an artboard: the 430px frame filter caught a non-screen element. The WAWU Landing Page canvas has no fixed-size phone frames at all, so its mobile design is NOT rendered and cannot be compared."
+    },
+    {
+      "artboard": "WAWU-Notifications-Search__1-Money-and-urgency-first-amounts-shown-expiring-DM-gets-a-button-0",
+      "canvas_file": "WAWU-Notifications-Search",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Notifications-Search__1-Money-and-urgency-first-amounts-shown-expiring-DM-gets-a-button-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Notifications-Search__1b-Earlier-approvals-billing-followers-tips-1",
+      "canvas_file": "WAWU-Notifications-Search",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Notifications-Search__1b-Earlier-approvals-billing-followers-tips-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Notifications-Search__2-Empty-with-three-things-to-actually-do-2",
+      "canvas_file": "WAWU-Notifications-Search",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Notifications-Search__2-Empty-with-three-things-to-actually-do-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Notifications-Search__3-Before-typing-recent-trending-creators-3",
+      "canvas_file": "WAWU-Notifications-Search",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Notifications-Search__3-Before-typing-recent-trending-creators-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Notifications-Search__4-5-All-tab-three-treatments-one-per-type-4",
+      "canvas_file": "WAWU-Notifications-Search",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Notifications-Search__4-5-All-tab-three-treatments-one-per-type-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Notifications-Search__6-No-results-shorter-terms-then-near-matches-5",
+      "canvas_file": "WAWU-Notifications-Search",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Notifications-Search__6-No-results-shorter-terms-then-near-matches-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__1-Entry-on-her-profile-price-and-promise-together-0",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__1-Entry-on-her-profile-price-and-promise-together-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__2-Compose-and-pay-deadline-shown-as-a-real-time-1",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__2-Compose-and-pay-deadline-shown-as-a-real-time-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__3a-Processing-2",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__3a-Processing-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__3b-Success-3",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__3b-Success-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__3c-Failed-the-draft-survives-4",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__3c-Failed-the-draft-survives-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__4-Awaiting-countdown-and-the-composer-rests-5",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__4-Awaiting-countdown-and-the-composer-rests-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__5-Responded-next-message-is-priced-in-the-composer-6",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__5-Responded-next-message-is-priced-in-the-composer-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__6-Refunded-stated-plainly-with-a-free-route-out-7",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__6-Refunded-stated-plainly-with-a-free-route-out-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Paid-DM__7-Messages-the-waiting-thread-sits-on-top-8",
+      "canvas_file": "WAWU-Paid-DM",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Paid-DM__7-Messages-the-waiting-thread-sits-on-top-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Profiles-Verification__1-User-badge-ladder-is-the-only-status-here-0",
+      "canvas_file": "WAWU-Profiles-Verification",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Profiles-Verification__1-User-badge-ladder-is-the-only-status-here-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Profiles-Verification__2-Creator-badge-tier-and-EVG-are-three-separate-marks-1",
+      "canvas_file": "WAWU-Profiles-Verification",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Profiles-Verification__2-Creator-badge-tier-and-EVG-are-three-separate-marks-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Profiles-Verification__3-Edit-photo-name-handle-bio-interests-links-2",
+      "canvas_file": "WAWU-Profiles-Verification",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Profiles-Verification__3-Edit-photo-name-handle-bio-interests-links-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Profiles-Verification__4-Five-levels-earned-next-and-not-yet-3",
+      "canvas_file": "WAWU-Profiles-Verification",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Profiles-Verification__4-Five-levels-earned-next-and-not-yet-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Profiles-Verification__5-A-level-s-submission-documents-and-fields-4",
+      "canvas_file": "WAWU-Profiles-Verification",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Profiles-Verification__5-A-level-s-submission-documents-and-fields-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Profiles-Verification__6-All-three-states-on-one-screen-5",
+      "canvas_file": "WAWU-Profiles-Verification",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Profiles-Verification__6-All-three-states-on-one-screen-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__1-Type-picker-grouped-by-how-it-is-delivered-0",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__1-Type-picker-grouped-by-how-it-is-delivered-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__2-Stream-upload-progress-plus-thumbnail-choice-1",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__2-Stream-upload-progress-plus-thumbnail-choice-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__3-Download-upload-file-done-cover-next-2",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__3-Download-upload-file-done-cover-next-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__4-Preview-step-creator-decides-the-giveaway-3",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__4-Preview-step-creator-decides-the-giveaway-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__5-Details-4",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__5-Details-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__6-Paid-earnings-computed-live-Pro-upside-stated-5",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__6-Paid-earnings-computed-live-Pro-upside-stated-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__6b-First-upload-explained-not-silently-blocked-6",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__6b-First-upload-explained-not-silently-blocked-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__7-Slots-full-upgrade-or-free-one-up-7",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__7-Slots-full-upgrade-or-free-one-up-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__8-Submitted-8",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__8-Submitted-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Publishing__9-Content-list-every-state-with-sales-9",
+      "canvas_file": "WAWU-Publishing",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Publishing__9-Content-list-every-state-with-sales-9.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__1a-Details-0",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__1a-Details-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__1b-Documents-one-done-one-uploading-one-waiting-1",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__1b-Documents-one-done-one-uploading-one-waiting-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__1c-Review-every-row-editable-2",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__1c-Review-every-row-editable-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__2-NEPC-same-pattern-export-fields-CAC-prefilled-3",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__2-NEPC-same-pattern-export-fields-CAC-prefilled-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__3-Validation-each-error-says-what-to-do-4",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__3-Validation-each-error-says-what-to-do-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__4-Submitted-reference-cost-and-the-refund-rule-5",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__4-Submitted-reference-cost-and-the-refund-rule-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__5-Browse-availability-on-the-card-6",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__5-Browse-availability-on-the-card-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__6-Mentor-what-to-ask-when-and-that-it-is-free-7",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__6-Mentor-what-to-ask-when-and-that-it-is-free-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__7-Request-topic-the-real-problem-a-date-8",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__7-Request-topic-the-real-problem-a-date-8.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Service-Apply-Mentors__7b-Confirmed-awaiting-his-acceptance-9",
+      "canvas_file": "WAWU-Service-Apply-Mentors",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Service-Apply-Mentors__7b-Confirmed-awaiting-his-acceptance-9.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Services__1-Landing-open-now-then-what-Pro-will-carry-0",
+      "canvas_file": "WAWU-Services",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Services__1-Landing-open-now-then-what-Pro-will-carry-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Services__2-Live-service-apply-review-access-1",
+      "canvas_file": "WAWU-Services",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Services__2-Live-service-apply-review-access-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Services__3-Coming-soon-real-page-honest-status-notify-only-2",
+      "canvas_file": "WAWU-Services",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Services__3-Coming-soon-real-page-honest-status-notify-only-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Services__4-All-four-states-submitted-in-review-ready-and-a-rejection-3",
+      "canvas_file": "WAWU-Services",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Services__4-All-four-states-submitted-in-review-ready-and-a-rejection-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__1a-User-no-DM-settings-no-tier-no-earnings-0",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__1a-User-no-DM-settings-no-tier-no-earnings-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__1b-Creator-a-Creating-group-appears-on-top-1",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__1b-Creator-a-Creating-group-appears-on-top-1.png",
+      "coverage": "paired",
+      "conformance": "diverges",
+      "capture": ".qa-audit/captures/s_settings_creator__WAWU-Settings-States_1b-Creator-Creating-group__mobile.png",
+      "finding": "The artboard's whole point is that the creating group appears ON TOP; the build puts ACCOUNT first and CREATOR second, and does not highlight the creator group. Design rows carry live values ('Paid messages · On · ₦300 each', 'Tier and billing · Pro · renews 14 Aug 2027', 'Payout details · GTB ••••6789'); the build's rows carry static subtitles, and the Paid messages row states a hardcoded 'Reply within 24 hours' that was wrong for the test creator (12h). Design's 'Sign-in details (email, phone and password)' row has no counterpart anywhere in the built Settings."
+    },
+    {
+      "artboard": "WAWU-Settings-States__2-Preferences-the-money-losing-one-cannot-be-switched-off-2",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__2-Preferences-the-money-losing-one-cannot-be-switched-off-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__3-Privacy-each-toggle-says-its-consequence-3",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__3-Privacy-each-toggle-says-its-consequence-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__4-Delete-losses-what-stays-typed-confirmation-4",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__4-Delete-losses-what-stays-typed-confirmation-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__5-Saved-content-guides-and-products-together-5",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__5-Saved-content-guides-and-products-together-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__6-About-the-static-pages-hang-off-here-6",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__6-About-the-static-pages-hang-off-here-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Settings-States__6b-Partners-delivering-today-vs-still-being-arranged-7",
+      "canvas_file": "WAWU-Settings-States",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Settings-States__6b-Partners-delivering-today-vs-still-being-arranged-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Subscription-Management__1-Current-tier-renewal-slots-limits-0",
+      "canvas_file": "WAWU-Subscription-Management",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Subscription-Management__1-Current-tier-renewal-slots-limits-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Subscription-Management__2-Upgrade-the-split-shown-against-real-sales-1",
+      "canvas_file": "WAWU-Subscription-Management",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Subscription-Management__2-Upgrade-the-split-shown-against-real-sales-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Subscription-Management__3-Upgrade-paid-proration-and-next-renewal-stated-2",
+      "canvas_file": "WAWU-Subscription-Management",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Subscription-Management__3-Upgrade-paid-proration-and-next-renewal-stated-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Subscription-Management__4-Past-due-two-lists-no-ambiguity-3",
+      "canvas_file": "WAWU-Subscription-Management",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Subscription-Management__4-Past-due-two-lists-no-ambiguity-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Subscription-Management__5-Expired-work-money-perks-answered-separately-4",
+      "canvas_file": "WAWU-Subscription-Management",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Subscription-Management__5-Expired-work-money-perks-answered-separately-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-Subscription-Management__6-Cancel-consequences-then-a-cheaper-option-5",
+      "canvas_file": "WAWU-Subscription-Management",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-Subscription-Management__6-Cancel-consequences-then-a-cheaper-option-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__1-Home-no-Create-in-the-bar-0",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__1-Home-no-Create-in-the-bar-0.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__3-User-profile-no-earnings-no-upload-no-tier-badge-1",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__3-User-profile-no-earnings-no-upload-no-tier-badge-1.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__4-The-upgrade-prompt-earned-on-My-purchases-2",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__4-The-upgrade-prompt-earned-on-My-purchases-2.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__5-Own-profile-one-dashboard-entry-carries-every-creator-tool-3",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__5-Own-profile-one-dashboard-entry-carries-every-creator-tool-3.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__6-Dashboard-verified-creator-4",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__6-Dashboard-verified-creator-4.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__8-Same-dashboard-KYC-pending-earnings-visible-held-5",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__8-Same-dashboard-KYC-pending-earnings-visible-held-5.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__As-Adaeze-sees-it-6",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__As-Adaeze-sees-it-6.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    },
+    {
+      "artboard": "WAWU-User-vs-Creator__As-Emeka-a-fan-sees-it-his-own-user-nav-underneath-7",
+      "canvas_file": "WAWU-User-vs-Creator",
+      "surface": "mobile",
+      "design_render": "build/design_shots/WAWU-User-vs-Creator__As-Emeka-a-fan-sees-it-his-own-user-nav-underneath-7.png",
+      "coverage": "paired",
+      "conformance": "unverified",
+      "capture": null,
+      "finding": "NOT COMPARED. No app capture was placed beside this design render in this pass."
+    }
+  ]
+}

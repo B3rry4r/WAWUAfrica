@@ -128,7 +128,25 @@ export const PLANS: Record<CreatorTier, Plan> = {
       "Advanced creator monetisation",
       "Creator equipment access",
       "Up to 3 training courses",
-      "1 month health insurance",
+      /*
+        "1 month health insurance" WAS SOLD HERE and is not built.
+
+        Pro Max costs ₦29,999 a year and this line was rendered by
+        planFeatures() with a tick beside it on six in-app surfaces. Searching
+        the whole of src/ for it returns this one string: no screen, no API
+        call, no partner, nothing that would ever deliver a policy to anybody
+        who paid for it.
+
+        The other entitlements in these lists were checked at the same time and
+        are real, so this is not a sweep: "Personal pension registration" has
+        the partner request flow in lib/api/lifestyle.ts (PartnerServiceKind
+        'pension'), and "Creator equipment access" has the shop and
+        /shop/orders behind it. Only this one had nothing.
+
+        Removed rather than annotated, because a tick next to a promise nobody
+        can keep is worse than a shorter list. Put it back the moment there is
+        something behind it.
+      */
     ],
   },
 };

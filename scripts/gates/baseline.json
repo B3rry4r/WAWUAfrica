@@ -312,14 +312,6 @@
       "reason": "Explanatory prose in a doc comment, not an open item. This gate matches phrases like 'not yet' and 'never called' which this codebase uses to EXPLAIN deliberate design. Sampled 10; the one that looked like a real defect (community-message 402 gate) was verified correct. Re-audit if the comment style changes.",
       "where": "src/lib/api/services.ts:272"
     },
-    "aacbbb4400fb8105": {
-      "evidence": "src/app/(app)/services/cac/apply/page.tsx:38, src/app/(app)/services/nepc/apply/page.tsx:35",
-      "gate": "forks",
-      "message": "interface 'DocSlot' is declared in 2 files - one of them is a fork",
-      "owner": "legacy-app-repair 2026-08-31",
-      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
-      "where": "src/app/(app)/services/cac/apply/page.tsx:38"
-    },
     "b0a203524796b2be": {
       "evidence": "} from \"./mocks/settings\";",
       "gate": "fake_data",
@@ -447,6 +439,14 @@
       "owner": "legacy-app-repair 2026-08-31",
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/client.ts:237"
+    },
+    "47feb3355c4ac1c5": {
+      "evidence": "src/app/(app)/services/cac/apply/page.tsx:38, src/app/(app)/services/nepc/apply/page.tsx:34",
+      "gate": "forks",
+      "message": "interface 'DocSlot' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/app/(app)/services/cac/apply/page.tsx:38"
     }
   }
 }

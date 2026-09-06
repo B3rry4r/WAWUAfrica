@@ -93,7 +93,18 @@ export default function SettingsPage() {
                     meta: KYC_STATUS_LABEL[gates.kycStatus],
                   },
                   { title: "Subscription", subtitle: "Plan, billing and renewal", icon: "BadgeCheck", href: "/subscription" },
-                  { title: "Paid messages", subtitle: "Reply within 24 hours", icon: "MessageCircle", href: "/messages/settings" },
+                  {
+                    title: "Paid messages",
+                    // The creator's OWN window, not a fixed sentence. This row
+                    // read "Reply within 24 hours" to everybody, including a
+                    // creator who had set 12 - and that window is the promise a
+                    // buyer pays against and a refund is measured by. The two
+                    // sibling screens (PaidMessagesSettings, DmPaySheet) already
+                    // render the live value from the same state.
+                    subtitle: `Reply within ${gates.dmResponseHours} hours`,
+                    icon: "MessageCircle",
+                    href: "/messages/settings",
+                  },
                   { title: "Earnings", subtitle: "Payouts and history", icon: "HandCoins", href: "/earnings" },
                 ],
               } satisfies Group,

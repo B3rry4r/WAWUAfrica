@@ -549,7 +549,18 @@ function PurchasePanelStats({ content }: { content: ContentPiece }) {
   return (
     <div className="flex gap-[18px] rounded-card border border-hairline bg-card px-5 py-[18px]">
       <StatBlock value={content.views.toLocaleString("en-NG")} label="Views" align="start" size="sm" />
-      <StatBlock value={`${Math.round(content.ratingPct ?? 96)}%`} label="Liked" align="start" size="sm" />
+      {/*
+        NOTHING RATED IT YET IS NOT 96%.
+
+        All three of these read `content.ratingPct ?? 96`, so a piece nobody
+        had rated announced "96% liked" - a specific, flattering, invented
+        figure, on the screen where somebody decides whether to pay. The field
+        is `number | null` precisely because it can be absent; the absence is
+        the fact, and the row simply goes away.
+      */}
+      {content.ratingPct == null ? null : (
+        <StatBlock value={`${Math.round(content.ratingPct)}%`} label="Liked" align="start" size="sm" />
+      )}
       <StatBlock value={String(content.commentCount)} label="Comments" align="start" size="sm" />
     </div>
   );
@@ -658,7 +669,9 @@ function EngagementRow({
       <div className="flex items-center gap-5 border-y border-hairline py-3.5">
         <Stat text={`${content.views.toLocaleString("en-NG")} views`} />
         <Stat text={`${content.commentCount} comments`} />
-        <span className="ml-auto text-[12.5px] font-semibold text-text-muted">{Math.round(content.ratingPct ?? 96)}% liked</span>
+        {content.ratingPct == null ? null : (
+          <span className="ml-auto text-[12.5px] font-semibold text-text-muted">{Math.round(content.ratingPct)}% liked</span>
+        )}
       </div>
     );
   }
@@ -667,7 +680,9 @@ function EngagementRow({
       <div className="flex items-center gap-5">
         <Stat text={`${content.views.toLocaleString("en-NG")} views`} />
         <Stat text={`${content.commentCount} comments`} />
-        <span className="ml-auto text-[12.5px] font-semibold text-text-muted">{Math.round(content.ratingPct ?? 96)}% liked</span>
+        {content.ratingPct == null ? null : (
+          <span className="ml-auto text-[12.5px] font-semibold text-text-muted">{Math.round(content.ratingPct)}% liked</span>
+        )}
       </div>
       <div className="flex gap-2">
         <button

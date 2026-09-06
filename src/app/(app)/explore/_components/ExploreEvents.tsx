@@ -71,6 +71,18 @@ export function ExploreEvents() {
               <EventRow key={event.id} event={event} />
             ))}
           </div>
+        ) : failed ? (
+          /*
+            A FAILED FETCH IS NOT AN EMPTY CALENDAR.
+
+            Both branches used to render the same sentence, so a reader whose
+            request had just failed was told there were no events on. That is a
+            statement about the product made from a network error, and it is
+            the kind nobody reports: it looks like an answer.
+          */
+          <p className="m-0 px-[6px] py-[8px] text-[13px] leading-[1.5] text-[var(--text-secondary)]">
+            We could not load the calendar just now. Browse it below and it will try again.
+          </p>
         ) : (
           <p className="m-0 px-[6px] py-[8px] text-[13px] leading-[1.5] text-[var(--text-secondary)]">
             Nothing on the calendar right now. Workshops, summits and meetups show up here once an admin approves

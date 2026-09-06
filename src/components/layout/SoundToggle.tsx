@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { isPlaying, play, subscribe, toggle, wasOn } from "@/lib/sound";
+import { usePathname } from "next/navigation";
 import { useCreateFabShown } from "./CreateFab";
 
 /**
@@ -51,7 +52,19 @@ export function SoundResume() {
   return null;
 }
 
+/*
+  Routes where a floating circle sits on top of the thing you are using.
+
+  Same list, same reason, as CreateFab's. The QA pass found this button
+  covering the "96% liked" figure on a content page and floating in the middle
+  of the empty detail pane on the desktop paid-questions inbox. A reading
+  surface and a conversation are both things somebody is IN, and a music
+  control is not worth a pixel of either.
+*/
+const HIDDEN_ON = ["/content/", "/messages", "/communities/", "/learn/"];
+
 export function SoundFab() {
+  const pathname = usePathname();
   const on = usePlaying();
   const flip = useCallback(() => void toggle(), []);
   /*
@@ -65,6 +78,8 @@ export function SoundFab() {
     circle hovering over an empty gap.
   */
   const stacked = useCreateFabShown();
+
+  if (HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
 
   return (
     <button

@@ -17,7 +17,9 @@ import "./globals.css";
  * of it.
  */
 const SITE = "https://wawuafrica.com";
-const TITLE = "WAWUAfrica — get paid for what you know";
+// No em-dash. This string is a browser tab, a Google result and the title
+// on every share card, which is about as user-visible as copy gets.
+const TITLE = "WAWUAfrica: get paid for what you know";
 const DESCRIPTION =
   "Publish your work, price it in naira, and keep up to 90% of what you earn. Courses, videos, audio and PDFs, plus the business services African creators actually need.";
 

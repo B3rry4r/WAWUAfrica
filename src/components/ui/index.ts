@@ -15,7 +15,6 @@ export { ComingSoonPill } from "./ComingSoonPill";
 export { CommunityImage } from "./CommunityImage";
 export { CreditCount } from "./CreditCount";
 export { EmptyState } from "./EmptyState";
-export { EngagementBar } from "./EngagementBar";
 export { ErrorState } from "./ErrorState";
 export { FilePicker } from "./FilePicker";
 export { StorageMeter } from "./StorageMeter";

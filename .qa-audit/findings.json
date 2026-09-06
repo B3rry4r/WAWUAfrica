@@ -1,0 +1,220 @@
+{
+  "generated": "2026-09-06",
+  "ranking": "worst-first by what the finding hides or costs, not by discovery order.",
+  "severity_key": {
+    "defect": "the app is wrong and a user notices",
+    "divergence-with-reason": "differs from the design but a recorded ruling explains it",
+    "unclear": "cannot be settled from a render or the code - needs the product owner"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "rank": 1,
+      "severity": "defect",
+      "title": "The public landing page states figures, guarantees and a government endorsement that nothing in the product implements",
+      "owning_file": "src/app/(marketing)/components/LandingContent.tsx",
+      "evidence": "Rendered and confirmed present on http://127.0.0.1:3418/ at 1440px in this pass: '₦2.4M Avg Monthly Revenue' (:793) and '₦860k Last Instant Payout' (:797) are string literals sitting beside a card captioned 'Real-time Growth' whose chart is a hand-drawn static SVG (:824). 'Instant Payouts - get paid when you want, no stories' appears five times (:305,:786,:789,:798,:994). 'Federal Government-approved' (:294). Six comparison-table features are ticked as things WAWU has that competitors do not - Smart Vault, 1-on-1 Calls, Lifetime Memberships, Membership Trials & Promo Codes, Scheduler, Analytics per post & message (:298-:306) - none of which exist anywhere in src/. 'Device & Equipment Financing: Partnerships' (:295). 'Join Millions' (:1024). Three testimonials with full names, @handles and cities (:1029). Capture: .qa-audit/captures/d_landing__D2-Landing-page__desktop.png",
+      "why_it_matters": "'Instant Payouts' is contradicted by the app's own wallet model: WalletEntryStatus is pending|completed|failed with a settledAt, WithdrawSheet.tsx:105 hedges 'usually within minutes', and messages/[threadId]:122 tells buyers refunds take 3 to 5 days. 'Federal Government-approved' is a regulatory claim on a Nigerian fintech-adjacent product. The revenue figures are the first thing a prospective creator reads before paying ₦14,999.",
+      "action": "Escalate the Government claim before anything else. Every other figure either gets a writer or comes off the page."
+    },
+    {
+      "id": "F02",
+      "rank": 2,
+      "severity": "unclear",
+      "title": "170 of 180 design artboards were never compared to the app - by anyone, including this pass",
+      "owning_file": ".qa-audit/coverage-inventory.json",
+      "evidence": "10 artboards had an app capture placed beside the design render and looked at. 170 did not. Whole flows have zero compared rows: all 10 Publishing artboards, all 9 Paid DM, all 10 Service Apply / Mentors, 7 of 8 Marketplace & Tips, 5 of 6 Notifications & Search, 5 of 6 Profiles & Verification, 16 of 18 Creator Onboarding, 21 of 23 Desktop Shell.",
+      "why_it_matters": "This is the number that bounds the worth of every other row in this report. The previous pipeline's failure mode was reporting screens as 'covered' when they had only been paired; the same trap is live here. Nothing in this report says the other 170 are fine - it says nobody looked.",
+      "action": "Do not read the low defect count as quality. Read the unverified list by name in coverage-inventory.json."
+    },
+    {
+      "id": "F03",
+      "rank": 3,
+      "severity": "unclear",
+      "title": "What a creator PAYS and what they GET are different numbers in the design, the docs, the client and live production",
+      "owning_file": "src/types/subscription.ts",
+      "evidence": "Pro price - approved design (WAWU-Creator-Onboarding artboard 'Pro: the 90/10 split leads'): ₦18,999 a year. docs/00_PLATFORM_MAP.md: ₦18,999. The running app's tier picker: ₦14,999. Verified picture-to-picture, captures s_onboarding_basic__...__mobile.png beside build/design_shots/WAWU-Creator-Onboarding__Pro-the-90-10-split-leads-3.png. Upload allowance - design: '7 uploads, 2 free, 5 paid'. docs/03_USER_FLOWS.md: 'Basic 3, Pro 7'. docs/01_SPEC.md: '6 uploads Basic / 15 Pro'. src/types/auth.ts comment: 'Basic 3, Pro 7'. The running app: '12 uploads a year, 2 included and 10 paid'. LIVE PRODUCTION GET /api/hub/creator/state for a real Basic account returns slotsTotal: 6.",
+      "why_it_matters": "Five sources, no two agreeing, on the two numbers that define the paid product. A creator is being charged ₦4,000 less than the approved design and given an allowance that appears in no document. Only the owner can say which is right; every fix made from a doc will be wrong.",
+      "action": "Owner picks one price and one allowance, then the other four sources get corrected to it."
+    },
+    {
+      "id": "F04",
+      "rank": 4,
+      "severity": "defect",
+      "title": "Bills Payment is advertised as OPEN NOW on the services list and on the landing page, then refuses on the screen it links to",
+      "owning_file": "src/app/(app)/services/pay/page.tsx",
+      "evidence": "The switch-off itself is correct and hard: SWITCHED_OFF=true returns ServiceComingSoon BEFORE any form markup, and the running app confirms the form is genuinely absent, not hidden (capture s_services_pay_off__mobile.png). But the catalogue that links to it was not switched off with it. /services renders 'OPEN NOW / Bills Payment / Airtime, data, electricity and cable / No added fee - Instant' (capture s_services__WAWU-Services_1-Landing-open-now__mobile.png), and the public landing page renders 'Bills Payment - Airtime, power, cable' with no paused marker while listing Loans, BNPL, Pensions and Telemedicine as 'Coming soon'. LIVE PRODUCTION GET https://api.wawuafrica.com/api/hub/services returns Bills Payment with status:'live', turnaround:'Instant' today.",
+      "why_it_matters": "The status is server-owned; the switch-off is client-side only. A user is told a service is open and instant, taps it, and is told it is paused. On production the same disagreement is live right now.",
+      "action": "Flip the service row's status server-side, or make the catalogue card read the same constant the screen does."
+    },
+    {
+      "id": "F05",
+      "rank": 5,
+      "severity": "unclear",
+      "title": "The product's own documents contradict each other 22 times, including on what a creator IS",
+      "owning_file": "docs/01_SPEC.md",
+      "evidence": "Full list with both quotes in the Phase 1 product-source reconciliation. The load-bearing ones: (a) CLAUDE.md says 'Creator is an ACCOUNT TYPE, not a trust-tier badge' and that a paid subscription is the gate, while 01_SPEC §7, 03_USER_FLOWS B1 and 02_TECHNICAL §3.1 all gate creator capability on the certified_professional/trusted_partner trust ladder - and 00_PLATFORM_MAP contradicts itself on the same point in §3.4 vs its §5 table. (b) 03_USER_FLOWS B1: 'No entry fee to publish content' vs 00_PLATFORM_MAP: 'Gated by a paid yearly subscription'. (c) CLAUDE.md nav 'Home/Communities/Explore/Messages/Settings' vs 01_SPEC §7 'Home/Market/Create/Opportunities/More' - a nav containing a section CLAUDE.md bans. (d) The wallet exists in CLAUDE.md only; 01_SPEC, 03_USER_FLOWS and TASKS.md all still say there is no wallet, TASKS.md says 'ever'. (e) Event tickets are BUILT per 01_SPEC and forbidden per 00_PLATFORM_MAP and CLAUDE.md.",
+      "why_it_matters": "The code currently follows CLAUDE.md, which is right per CLAUDE.md's own tie-breaker. But three other documents instruct the opposite, and they are what the handoff docs point new work at. This is how the KYC-step regression in this skill's history happened.",
+      "action": "One reconciliation pass on the docs before the next feature pass, or the next agent rebuilds the trust-tier gate."
+    },
+    {
+      "id": "F06",
+      "rank": 6,
+      "severity": "defect",
+      "title": "CLAUDE.md tells the next developer desktop has not been started. It is built - 107 files, a sidebar, a desktop header, a three-pane layout",
+      "owning_file": "CLAUDE.md",
+      "evidence": "CLAUDE.md: 'Desktop implementation has not started yet; this is greenfield work, not a fix pass.' Verified against the running app at 1440px: 26 desktop screens captured, all 26 rendered a real desktop composition. Picture-to-picture against build/design_shots/WAWU-Desktop-Shell__D1-Shell-user-account-0.png, the built shell matches the design's three-pane structure, right rail and credits panel. D8's three-pane inbox matches down to the 'Questions / Soonest deadline first' header. 107 files use xl: breakpoints; src/components/layout/ contains Sidebar.tsx, DesktopHeader.tsx and ThreePaneLayout.tsx. TASKS.md separately lists desktop-specific bugs as open, which also presumes desktop exists.",
+      "why_it_matters": "A greenfield instruction against an existing implementation is how work gets duplicated or thrown away.",
+      "action": "Change the line to say what desktop actually needs, which is a conformance pass against D1-D17, not a build."
+    },
+    {
+      "id": "F07",
+      "rank": 7,
+      "severity": "defect",
+      "title": "Settings shows every creator a hardcoded 'Reply within 24 hours' regardless of the window they set",
+      "owning_file": "src/app/(app)/settings/page.tsx",
+      "evidence": "Line 96 is the literal string. Verified in the running app: the test creator's dmResponseHours is 12 (confirmed in GET /api/hub/creator/state and rendered correctly as 'How long you have to reply' on /messages/settings), and /settings still renders 'Paid messages - Reply within 24 hours' (capture s_settings_creator__...__mobile.png). PaidMessagesSettings.tsx:383 and DmPaySheet.tsx:167 both render the live value, so the data is available at this call site.",
+      "why_it_matters": "The window is the creator's promise to a paying buyer and the thing a refund is measured against. Settings states the wrong one. The approved design puts the live price on this row ('On - ₦300 each'), not a fixed sentence.",
+      "action": "Read gates.dmResponseHours, as the two sibling screens already do."
+    },
+    {
+      "id": "F08",
+      "rank": 8,
+      "severity": "defect",
+      "title": "A creator's net is computed at the standard 15% commission on the ticket editor, ignoring the Pro 90/10 rate",
+      "owning_file": "src/components/events/TicketTypeEditor.tsx",
+      "evidence": "Line 258: Math.round(row.priceNaira * (1 - STANDARD_COMMISSION_RATE)) with no tier branch. PAID_TIER_COMMISSION_RATE = 0.1 is exported and referenced nowhere. Same defect mirrored in src/lib/api/mocks/event-tickets.ts:361. gates.tier is available at this call site. Every other split in the app is correct.",
+      "why_it_matters": "A Pro creator is quoted 85% where the product promises 90%. It is a money figure shown before a decision.",
+      "action": "Branch on gates.tier, or delete the unused constant and say plainly that ticketing is always 85/15."
+    },
+    {
+      "id": "F09",
+      "rank": 9,
+      "severity": "defect",
+      "title": "The feed's buy control from the approved design is not in the built feed",
+      "owning_file": "src/app/(app)/components/HomeFeed.tsx",
+      "evidence": "Picture-to-picture, capture s_home_foryou__WAWU-Home-Feed_Feed-locked-and-free__mobile.png beside build/design_shots/WAWU-Home-Feed__Feed-locked-and-free-one-after-the-other-0.png. The design draws a full-width 'Unlock for ₦2,500' primary button inside every locked feed card plus a 'PPV ₦2,500' pill beside the title. The build has neither: the price is a small chip over the media and there is no purchase control until the user opens the detail screen. The design's 'Trending' tab is also absent with no recorded ruling (TGIF's addition IS ruled, 5 Sep). The card prints its duration twice, once as a media chip and once as the subtitle.",
+      "why_it_matters": "It moves the only revenue action one tap further away on the app's default screen. That is a product decision, and it does not appear to have been taken deliberately.",
+      "action": "Either restore the in-card CTA or record the ruling that removed it. Same for Trending."
+    },
+    {
+      "id": "F10",
+      "rank": 10,
+      "severity": "defect",
+      "title": "Explore renders a raw UUID where a creator's name should be",
+      "owning_file": "src/app/(app)/explore/page.tsx",
+      "evidence": "The running app's /explore creator rail lists '55d03d5d6-77c2-4761-9297-8c0aaf845426 - 0 pieces' as a followable creator alongside chidi-creates and zainab-pro. Captured in the label probe and visible in s_explore__WAWU-Explore_1-Landing__mobile.png.",
+      "why_it_matters": "A creator row with no handle falls back to the id instead of to a name or to being filtered out. The same null-handle path renders a bare '@ -' on a profile.",
+      "action": "Fall back to the display name, or omit handle-less rows from discovery."
+    },
+    {
+      "id": "F11",
+      "rank": 11,
+      "severity": "defect",
+      "title": "The Buy-credits sheet drops the per-message value and two thirds of the fine print the design specifies",
+      "owning_file": "src/components/communities/",
+      "evidence": "Picture-to-picture, s_communities_topup__WAWU-Communities-Credits_6-Three-packs__mobile.png beside WAWU-Communities-Credits__6-Three-packs-per-message-value-honest-fine-print-4.png. The artboard names three things; the build has one. Missing: '₦10 a message / ₦8.33 a message / ₦6.67 a message' under each pack, the pack names Starter/Popular/Pro, and the scope sentence 'they only pay for messages in open communities, not content, tips or paid messages'. The build's fine print is 'Credits never expire and are never a cash balance.'",
+      "why_it_matters": "The per-message value is how a buyer compares three packs. Its absence is the difference between a priced choice and three numbers. The credits-are-not-money rule still holds in the build.",
+      "action": "Restore the per-unit value and the scope sentence."
+    },
+    {
+      "id": "F12",
+      "rank": 12,
+      "severity": "defect",
+      "title": "Settings inverts the artboard it was built from, and the designed 'Sign-in details' row does not exist",
+      "owning_file": "src/app/(app)/settings/page.tsx",
+      "evidence": "Picture-to-picture against WAWU-Settings-States__1b-Creator-a-Creating-group-appears-on-top-1.png. The artboard's stated subject is that the creating group appears ON TOP and is visually highlighted; the build puts ACCOUNT first, CREATOR second, and highlights neither. The design's 'Sign-in details - Email, phone and password' row has no counterpart anywhere in the built Settings, so there is no route from Settings to changing an email, phone or password. Design rows carry live values (renewal date, payout bank, DM price); build rows carry static subtitles.",
+      "why_it_matters": "The missing row is the bigger half: it is a designed capability with no screen behind it, not a layout difference.",
+      "action": "Confirm whether sign-in details are deliberately owned by WAWU ID rather than this app. If so it is a divergence-with-reason and wants a recorded ruling; if not, it is unbuilt."
+    },
+    {
+      "id": "F13",
+      "rank": 13,
+      "severity": "unclear",
+      "title": "Home's Following tab can never show anything, and Explore cannot tell a failed fetch from an empty calendar",
+      "owning_file": "src/app/(app)/components/HomeFeed.tsx",
+      "evidence": "HomeFeed.tsx:111 renders an unconditional \"Following feed isn't ready yet\" empty state; there is no follow-list endpoint behind the tab. Confirmed in the running app: capture s_home_following__WAWU-Home-Feed_4-Empty-following__mobile.png. Separately, ExploreEvents renders identical markup for a failed fetch and for zero events. The design's WAWU-Home-Feed artboard 4 is an empty-following state WITH a way out; the build's is a permanent placeholder.",
+      "why_it_matters": "One of three top-level tabs on the app's default screen is a placeholder that shipped looking like an empty state. A user cannot tell it is not coming back.",
+      "action": "Owner decides: build the follow feed, or say so on the tab."
+    },
+    {
+      "id": "F14",
+      "rank": 14,
+      "severity": "unclear",
+      "title": "Wallet copy names WAWU as the account's institution when the bank name is missing, and promises inbound transfers nothing verifies",
+      "owning_file": "src/components/wallet/WalletScreen.tsx",
+      "evidence": "The balance itself is clean and this was checked specifically: wallet.availableNgn comes straight from GET /api/hub/wallet, the backend reads it from the Flutterwave gateway (wallet.service.ts:135), and there is no client-side sum anywhere in src/app or src/components. Two copy lines are the issue. :152 falls back to 'Your WAWU account' when bankName is absent - naming WAWU as the institution, which is the custody framing CLAUDE.md exists to prevent. :160 states 'Anyone can transfer to it from any Nigerian bank and it lands here'; nothing in src/ implements or verifies that, and whether a Flutterwave payout subaccount accepts arbitrary inbound NIP is a provider question.",
+      "why_it_matters": "CLAUDE.md names this as the one line to raise with the owner rather than change, because who custodies the money decides whether a CBN licence is needed.",
+      "action": "Raise with the owner. Do not edit the custody framing on an agent's judgement."
+    },
+    {
+      "id": "F15",
+      "rank": 15,
+      "severity": "defect",
+      "title": "Plans sell four things with nothing behind them",
+      "owning_file": "src/types/subscription.ts",
+      "evidence": "'1 month health insurance', 'Personal pension registration' (:65), 'Priority support', 'Creator equipment access' are sold on plans costing ₦5,999 to ₦29,999 a year with no implementation in src/. Three plan bullets also use the word 'opportunities' (:67,:87,:127), which CLAUDE.md bans as a section, and src/lib/legal/master-agreement.ts:262 renders an entire Terms section titled 'Jobs and professional opportunities' on /terms.",
+      "why_it_matters": "These are paid-for entitlements, not marketing adjectives.",
+      "action": "Mark them coming-soon on the plan card the way the design does for health insurance, or remove them."
+    },
+    {
+      "id": "F16",
+      "rank": 16,
+      "severity": "divergence-with-reason",
+      "title": "The bottom bar and header differ from every mobile artboard, deliberately",
+      "owning_file": "src/components/layout/BottomNav.tsx",
+      "evidence": "Every mobile artboard draws slot 5 as Profile and (on creator boards) slot 3 as Create. The build ships Home/Communities/Explore/Messages/Settings with Create as a floating action button, and an avatar in the header. Seen in all 10 compared captures.",
+      "citation": "CLAUDE.md Navigation, two product-owner overrides dated 21 Aug 2026: slot 3 no longer swaps by account type, Create moved to the FAB; slot 5 is Settings, Profile is a row inside it and on the header avatar.",
+      "why_it_matters": "Recorded so a later audit does not re-report it. TASKS.md still carries four open items telling a developer to change CLAUDE.md back to slot 5 = Profile; acting on those would regress this.",
+      "action": "Close the stale TASKS.md items."
+    },
+    {
+      "id": "F17",
+      "rank": 17,
+      "severity": "divergence-with-reason",
+      "title": "Em-dashes are gone from app copy but survive in the page title and in the devotional's scripture quotes",
+      "owning_file": "src/app/layout.tsx",
+      "evidence": "18 hits, and the rule is otherwise well kept - 1,022 of 1,107 raw matches are code comments, which are exempt, and ~40 en-dashes are numeric ranges, which are correct. Two that are not: layout.tsx:20 'WAWUAfrica — get paid for what you know' is the site <title> and OG title on every page, and public/tgif/*.json carries 15 em-dashes inside the quote field, which TgifDaily renders. ContentLibrary.tsx:134 uses '–' as an empty-value placeholder, the exact case the rule names.",
+      "citation": "CLAUDE.md Code boundaries, product-owner instruction 1 Sep 2026.",
+      "why_it_matters": "The TGIF ones are the interesting half: tgif.ts documents quote as 'exactly as the translation punctuates it'. A blind replace would alter scripture. That is an owner call, not a lint fix.",
+      "action": "Fix layout.tsx and ContentLibrary.tsx. Ask the owner about the quotes."
+    },
+    {
+      "id": "F18",
+      "rank": 18,
+      "severity": "defect",
+      "title": "A prefilled CAC record appears on the NEPC application for an account that has none",
+      "owning_file": "src/app/(app)/services/nepc/apply/page.tsx",
+      "evidence": "The running app renders 'Okeke Farms / Enugu / RC 7742119 - pulled from your CAC record' on /services/nepc/apply for a freshly created test account with no CAC application (capture walk_creator_pro_services-nepc-apply__mobile.png). Related: services/[id]/apply/page.tsx:5 reads MOCK_SERVICES directly inside a component, untagged, on a screen whose POST is live; src/lib/api/explore.ts is the only API module with mock fallbacks and zero // SEAM: tags.",
+      "why_it_matters": "Fabricated data presented to the user as their own record, on a form that is about to be submitted to a government registration service.",
+      "action": "Read the real CAC application or show the empty state."
+    },
+    {
+      "id": "F19",
+      "rank": 19,
+      "severity": "defect",
+      "title": "The floating sound toggle sits on top of content on every screen",
+      "owning_file": "src/components/layout/SoundToggle.tsx",
+      "evidence": "Visible in the viewport-sized captures, not only the full-page ones: on /content/:id it covers the '96% liked' engagement figure (s_content_unlocksheet capture, pre-sheet frame), and on the desktop paid-questions inbox it floats in the middle of the empty detail pane (d_dm_inbox__D8-...__desktop.png). It appears in no design artboard.",
+      "why_it_matters": "Small, but it is on every screen and it hides real values.",
+      "action": "It already hides itself on the TGIF tab in CSS; the same treatment where it overlaps content."
+    },
+    {
+      "id": "F20",
+      "rank": 20,
+      "severity": "unclear",
+      "title": "EngagementBar is exported from the ui barrel and imported by nothing",
+      "owning_file": "src/components/ui/EngagementBar.tsx",
+      "evidence": "Verified directly: zero importers.",
+      "why_it_matters": "The design's content-detail artboard 1 is titled 'engagement row live'. Dead shared UI next to an artboard about that exact row is worth one look before deleting it.",
+      "action": "Confirm the engagement row on /content/:id is the intended one, then delete."
+    }
+  ],
+  "checked_and_NOT_defects": [
+    {"what":"A paid Pro creator got 403 'This endpoint is only available to creator accounts' on Messages, My content, Earnings and Subscription in the first route walk.","verdict":"HARNESS ARTEFACT, not a product defect. The backend's CreatorAccountGuard reads UserProfile.accountType; the first walk's actors had a CreatorState row inserted by hand with no UserProfile row. creator-subscription.service.ts:1039 writes the CreatorState row, the entitlement and accountType:'creator' in ONE transaction, and it is the only site in the backend that creates a CreatorState, so the split state is not reachable through the product. Re-run with coherent actors: all four screens work."},
+    {"what":"The mobile unlock sheet appeared not to open.","verdict":"BROKEN DRIVE, not a missing sheet. Both a mobile and a desktop copy of the CTA are in the DOM at all times; the desktop copy is 0x0 but still counts as visible to Playwright, so the click landed on it. Re-driven by bounding box: the sheet opens correctly."},
+    {"what":"An earnings screen said 'You have not started verification yet' for an actor whose CreatorState.kycStatus is 'pending'.","verdict":"CORRECT. The backend maps a creator with no KycSubmission row to 'not_started' regardless of the CreatorState default, verified against the live API. The client mapping (auth.ts:140) is right."},
+    {"what":"'Withdraw to your bank' did not respond.","verdict":"CORRECT. disabled:true at a zero balance."},
+    {"what":"Bottom nav rendering over list content in full-page screenshots.","verdict":"CAPTURE ARTEFACT. position:fixed elements render at their viewport offset in a fullPage screenshot. Not reported."}
+  ]
+}

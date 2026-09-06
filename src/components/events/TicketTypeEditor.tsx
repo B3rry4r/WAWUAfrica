@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listTicketTypes, setTicketTypes } from "@/lib/api/event-tickets";
 import { describeError } from "@/lib/api/errors";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitRate, formatNaira } from "@/lib/format";
+import { useCreatorState } from "@/lib/auth/use-creator-state";
+import { creatorGates } from "@/lib/auth/gates";
 import {
-  STANDARD_COMMISSION_RATE,
   TICKET_TIERS,
   TICKET_TIER_LABEL,
   type EventTicketType,
@@ -65,6 +66,15 @@ function blankRow(): Row {
 }
 
 export function TicketTypeEditor({ eventId, eventName }: { eventId: string; eventName: string }) {
+  // The live tier, not the session's sign-in-time copy: somebody who upgraded
+  // to Pro after signing in is on 90/10 now, and this is a money figure.
+  const { creator } = useCreatorState();
+  // Named tiers only. `tier` is null while creator state is unknown, and a
+  // `!== "basic"` test would have quietly handed that null the Pro rate --
+  // the same 5% error in the other direction.
+  const tier = creatorGates({ creator }).tier;
+  const splitRate = creatorSplitRate(tier === "pro" || tier === "pro_max");
+
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [saving, setSaving] = useState(false);
@@ -253,10 +263,20 @@ export function TicketTypeEditor({ eventId, eventName }: { eventId: string; even
                         placeholder="5000"
                       />
                       <span className="text-[11.5px] leading-[1.45] text-[var(--text-muted)]">
+                        {/*
+                          THE CREATOR'S OWN RATE, not the standard one.
+
+                          This multiplied by a flat 85% for everybody, so a Pro
+                          creator was quoted 85% of their own ticket while the
+                          product sells them 90/10. It is a money figure shown
+                          before somebody sets a price, which is the worst place
+                          to be 5% out. creatorSplitRate() is the same helper
+                          every other split in the app already uses.
+                        */}
                         {row.priceNaira > 0
                           ? `Buyer pays ${formatNaira(row.priceNaira)} · about ${formatNaira(
-                              Math.round(row.priceNaira * (1 - STANDARD_COMMISSION_RATE)),
-                            )} reaches you. An estimate at the standard rate. A paid plan keeps more.`
+                              Math.round(row.priceNaira * splitRate),
+                            )} reaches you, an estimate at your ${Math.round(splitRate * 100)}% rate.`
                           : "In naira."}
                       </span>
                     </>

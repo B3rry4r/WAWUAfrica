@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { CacBusinessRecord } from "@/types/services";
-import { getCacBusinessRecord, submitNepcApplication } from "@/lib/api/services";
+import { submitNepcApplication } from "@/lib/api/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Button, ErrorState, FilePicker, Icon, Input } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
@@ -54,8 +53,23 @@ export default function NepcApplyPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
 
-  const [record, setRecord] = useState<CacBusinessRecord | null>(null);
-  const [recordState, setRecordState] = useState<"loading" | "ready" | "error">("loading");
+  /*
+    THE APPLICANT TYPES THEIR RC NUMBER. We do not know it.
+
+    This screen used to open `getCacBusinessRecord()` and print the answer as
+    "Okeke Farms - RC 7742119 - pulled from your CAC record", with a green tick,
+    to every single person who reached it. That record is a fixture: no endpoint
+    backs it, `ServiceApplication` has no businessName or rcNumber column, and
+    nothing anywhere had ever written it for the person reading it. A fabricated
+    company shown to somebody as their own, on a form that is submitted to a
+    government registration desk.
+
+    The real contract already expected this: ApplyNepcDto takes `rcNumber` as a
+    plain required string precisely because the applicant supplies it. Only the
+    RC number is asked for, because only the RC number is stored - asking for a
+    business name nobody persists would be inventing a second field to lose.
+  */
+  const [rcNumber, setRcNumber] = useState("");
 
   const [category, setCategory] = useState(EXPORT_CATEGORIES[0]);
   const [mainProduct, setMainProduct] = useState("");
@@ -69,30 +83,6 @@ export default function NepcApplyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
   const [result, setResult] = useState<{ reference: string; applicationId: string } | null>(null);
-
-  const loadRecord = () => {
-    setRecordState("loading");
-    getCacBusinessRecord()
-      .then((r) => {
-        setRecord(r);
-        setRecordState("ready");
-      })
-      .catch(() => setRecordState("error"));
-  };
-
-  useEffect(() => {
-    let active = true;
-    getCacBusinessRecord()
-      .then((r) => {
-        if (!active) return;
-        setRecord(r);
-        setRecordState("ready");
-      })
-      .catch(() => active && setRecordState("error"));
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Real uploads (POST /uploads/presign + direct PUT). These slots used to
   // fill themselves in with setInterval/setTimeout and no file attached, so
@@ -116,7 +106,8 @@ export default function NepcApplyPage() {
     setDocs((prev) => prev.map((d) => (d.key === key ? { ...d, state: "empty", meta: undefined, url: undefined } : d)));
   };
 
-  const detailsValid = !!mainProduct.trim() && markets.length > 0 && !!yearlyVolume.trim() && !!record;
+  const detailsValid =
+    !!mainProduct.trim() && markets.length > 0 && !!yearlyVolume.trim() && !!rcNumber.trim();
 
   const allDocsUploaded = docs.every((d) => d.state === "uploaded");
   const docsReadyCount = docs.filter((d) => d.state === "uploaded").length;
@@ -137,12 +128,12 @@ export default function NepcApplyPage() {
   };
 
   const submit = async () => {
-    if (submitting || !record) return;
+    if (submitting || !rcNumber.trim()) return;
     setSubmitting(true);
     setSubmitError(undefined);
     try {
       const res = await submitNepcApplication({
-        rcNumber: record.rcNumber,
+        rcNumber: rcNumber.trim(),
         exportCategory: category,
         mainProduct: mainProduct.trim(),
         targetMarkets: markets,
@@ -193,33 +184,25 @@ export default function NepcApplyPage() {
         <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">NEPC certification requires a CAC-registered business.</p>
       </div>
 
-      {recordState === "loading" ? (
-        <div className="h-[60px] animate-pulse rounded-[var(--radius-input)] bg-[var(--surface-tag)]" />
-      ) : recordState === "error" ? (
-        <ErrorState title="Couldn't load your CAC record" body="Check your connection and try again." onRetry={loadRecord} />
-      ) : record ? (
-        <div className="flex items-center gap-[12px] rounded-[var(--radius-input)] border border-[rgba(184,232,62,0.3)] bg-[var(--success-tint)] p-[14px_15px]">
-          <Icon name="Check" size={16} color="var(--success)" strokeWidth={2.4} />
-          <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-            <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">{record.businessName}</span>
-            <span className="text-[12px] text-[var(--text-secondary)] [font-feature-settings:var(--font-feature-tabular)]">
-              {record.rcNumber} · pulled from your CAC record
-            </span>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-start gap-[10px] rounded-[var(--radius-input)] border border-[rgba(255,183,3,0.3)] bg-[var(--warning-tint)] p-[13px_14px]">
-          <Icon name="TriangleAlert" size={16} color="var(--warning)" strokeWidth={2.2} className="mt-[1px]" />
-          <div className="flex flex-1 flex-col gap-[6px]">
-            <span className="text-[13.5px] leading-[1.45] text-[var(--text-primary)]">
-              You&apos;ll need a CAC-registered business before applying for NEPC.
-            </span>
-            <Button size="sm" variant="secondary" href="/services/cac/apply">
-              Start CAC registration
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="flex flex-col gap-[8px]">
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">CAC registration number</span>
+        <Input
+          value={rcNumber}
+          onChange={(e) => setRcNumber(e.target.value)}
+          placeholder="RC 1234567"
+          aria-label="CAC registration number"
+        />
+        {showDetailErrors && !rcNumber.trim() ? (
+          <span className="text-[12px] text-[var(--danger)]">NEPC needs the number on your CAC certificate.</span>
+        ) : (
+          <span className="flex flex-wrap items-center gap-[6px] text-[12px] leading-[1.45] text-[var(--text-muted)]">
+            It is on your CAC certificate.
+            <Link href="/services/cac/apply" className="font-semibold text-[var(--accent)]">
+              Not registered yet?
+            </Link>
+          </span>
+        )}
+      </div>
 
       <div className="flex flex-col gap-[8px]">
         <span className="text-[13px] font-semibold text-[var(--text-secondary)]">What you export</span>
@@ -340,7 +323,7 @@ export default function NepcApplyPage() {
       {submitError && <ErrorState title="Couldn't submit" body={submitError} onRetry={submit} />}
       {!submitError && (
         <div className="flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)]">
-          <ReviewRow label="Business" value={record ? `${record.businessName} · ${record.rcNumber}` : "-"} onEdit={() => setStep(1)} />
+          <ReviewRow label="CAC number" value={rcNumber.trim() || "-"} onEdit={() => setStep(1)} />
           <ReviewRow label="What you export" value={category} onEdit={() => setStep(1)} />
           <ReviewRow label="Main product" value={mainProduct || "-"} onEdit={() => setStep(1)} />
           <ReviewRow label="Target markets" value={markets.length ? markets.join(", ") : "-"} onEdit={() => setStep(1)} />
@@ -392,7 +375,7 @@ export default function NepcApplyPage() {
   const summaryCard = (
     <div className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[20px]">
       <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Application summary</span>
-      <SummaryRow label="Business" value={record ? `${record.businessName} · ${record.rcNumber}` : "Pending CAC"} />
+      <SummaryRow label="CAC number" value={rcNumber.trim() || "-"} />
       <SummaryRow label="Exports" value={category} />
       <SummaryRow label="Main product" value={mainProduct || "-"} />
       <SummaryRow label="Target markets" value={markets.length ? `${markets.length} selected` : "-"} />

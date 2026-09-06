@@ -1,0 +1,416 @@
+[
+  {
+    "id": "walk_creator_pro_root",
+    "actor": "creator_pro",
+    "route": "/",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_about",
+    "actor": "creator_pro",
+    "route": "/about",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_communities",
+    "actor": "creator_pro",
+    "route": "/communities",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_communities-20000000-0000-4000-8000-000000000001",
+    "actor": "creator_pro",
+    "route": "/communities/20000000-0000-4000-8000-000000000001",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_communities-20000000-0000-4000-8000-000000000001-requests",
+    "actor": "creator_pro",
+    "route": "/communities/20000000-0000-4000-8000-000000000001/requests",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_communities-new",
+    "actor": "creator_pro",
+    "route": "/communities/new",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_content-10000000-0000-4000-8000-000000000001",
+    "actor": "creator_pro",
+    "route": "/content/10000000-0000-4000-8000-000000000001",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_create",
+    "actor": "creator_pro",
+    "route": "/create",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_create-library",
+    "actor": "creator_pro",
+    "route": "/create/library",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_create-new",
+    "actor": "creator_pro",
+    "route": "/create/new",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_creator",
+    "actor": "creator_pro",
+    "route": "/creator",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_creator-setup",
+    "actor": "creator_pro",
+    "route": "/creator/setup",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_earnings",
+    "actor": "creator_pro",
+    "route": "/earnings",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_events",
+    "actor": "creator_pro",
+    "route": "/events",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_events-mine",
+    "actor": "creator_pro",
+    "route": "/events/mine",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_events-new",
+    "actor": "creator_pro",
+    "route": "/events/new",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_explore",
+    "actor": "creator_pro",
+    "route": "/explore",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_explore-categories",
+    "actor": "creator_pro",
+    "route": "/explore/categories",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_explore-creators",
+    "actor": "creator_pro",
+    "route": "/explore/creators",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_forgot-password",
+    "actor": "creator_pro",
+    "route": "/forgot-password",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_home",
+    "actor": "creator_pro",
+    "route": "/home",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_kyc",
+    "actor": "creator_pro",
+    "route": "/kyc",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_learn",
+    "actor": "creator_pro",
+    "route": "/learn",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_learn-courses",
+    "actor": "creator_pro",
+    "route": "/learn/courses",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_learn-courses-50000000-0000-4000-8000-000000000001",
+    "actor": "creator_pro",
+    "route": "/learn/courses/50000000-0000-4000-8000-000000000001",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_learn-guides",
+    "actor": "creator_pro",
+    "route": "/learn/guides",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_learn-guides-60000000-0000-4000-8000-000000000001",
+    "actor": "creator_pro",
+    "route": "/learn/guides/60000000-0000-4000-8000-000000000001",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_learn-playbook",
+    "actor": "creator_pro",
+    "route": "/learn/playbook",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_messages",
+    "actor": "creator_pro",
+    "route": "/messages",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_messages-90000000-0000-4000-8000-000000000001",
+    "actor": "creator_pro",
+    "route": "/messages/90000000-0000-4000-8000-000000000001",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_messages-settings",
+    "actor": "creator_pro",
+    "route": "/messages/settings",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_notifications",
+    "actor": "creator_pro",
+    "route": "/notifications",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_onboarding",
+    "actor": "creator_pro",
+    "route": "/onboarding",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_payment-return",
+    "actor": "creator_pro",
+    "route": "/payment/return",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_privacy",
+    "actor": "creator_pro",
+    "route": "/privacy",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_privacy-blocked",
+    "actor": "creator_pro",
+    "route": "/privacy/blocked",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_privacy-policy",
+    "actor": "creator_pro",
+    "route": "/privacy/policy",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_professionals",
+    "actor": "creator_pro",
+    "route": "/professionals",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_professionals-apply",
+    "actor": "creator_pro",
+    "route": "/professionals/apply",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_professionals-mine",
+    "actor": "creator_pro",
+    "route": "/professionals/mine",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_profile",
+    "actor": "creator_pro",
+    "route": "/profile",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_profile-edit",
+    "actor": "creator_pro",
+    "route": "/profile/edit",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_profile-verification",
+    "actor": "creator_pro",
+    "route": "/profile/verification",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_purchases",
+    "actor": "creator_pro",
+    "route": "/purchases",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_reset-password",
+    "actor": "creator_pro",
+    "route": "/reset-password",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_saved",
+    "actor": "creator_pro",
+    "route": "/saved",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_search",
+    "actor": "creator_pro",
+    "route": "/search",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services",
+    "actor": "creator_pro",
+    "route": "/services",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-cac",
+    "actor": "creator_pro",
+    "route": "/services/cac",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-cac-apply",
+    "actor": "creator_pro",
+    "route": "/services/cac/apply",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-care",
+    "actor": "creator_pro",
+    "route": "/services/care",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-legal",
+    "actor": "creator_pro",
+    "route": "/services/legal",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-legal-intake",
+    "actor": "creator_pro",
+    "route": "/services/legal/intake",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-nepc",
+    "actor": "creator_pro",
+    "route": "/services/nepc",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-nepc-apply",
+    "actor": "creator_pro",
+    "route": "/services/nepc/apply",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_services-pay",
+    "actor": "creator_pro",
+    "route": "/services/pay",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_settings",
+    "actor": "creator_pro",
+    "route": "/settings",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_settings-delete-account",
+    "actor": "creator_pro",
+    "route": "/settings/delete-account",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_settings-notifications",
+    "actor": "creator_pro",
+    "route": "/settings/notifications",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_shop",
+    "actor": "creator_pro",
+    "route": "/shop",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_shop-checkout",
+    "actor": "creator_pro",
+    "route": "/shop/checkout",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_shop-orders",
+    "actor": "creator_pro",
+    "route": "/shop/orders",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_shop-wow",
+    "actor": "creator_pro",
+    "route": "/shop/wow",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_sign-in",
+    "actor": "creator_pro",
+    "route": "/sign-in",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_sign-up",
+    "actor": "creator_pro",
+    "route": "/sign-up",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_subscription",
+    "actor": "creator_pro",
+    "route": "/subscription",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_terms",
+    "actor": "creator_pro",
+    "route": "/terms",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_tickets",
+    "actor": "creator_pro",
+    "route": "/tickets",
+    "fullPage": true
+  },
+  {
+    "id": "walk_creator_pro_wallet",
+    "actor": "creator_pro",
+    "route": "/wallet",
+    "fullPage": true
+  }
+]
