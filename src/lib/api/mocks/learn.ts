@@ -239,9 +239,9 @@ export const MOCK_PLAYBOOK: Playbook = {
 
 const NEPC_CROSS_SELL = {
   heading: "Need the certificate?",
-  body: "NEPC export support runs inside WAWU, free to start, 3 to 5 days to first reply.",
-  href: "/services/nepc/apply",
-  label: "Apply for NEPC",
+  body: "NEPC export support runs inside WAWU. Answer a few questions and a legal consultant picks it up.",
+  href: "/services/legal/intake?matter=cross_border",
+  label: "Talk to the legal desk",
 } as const;
 
 const COUNTRY_GUIDES: CountryGuide[] = [

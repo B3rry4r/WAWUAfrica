@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   completeLegalIntake,
   getLegalMatters,
@@ -36,8 +36,30 @@ type Answer = string | string[] | null;
  * answering eighteen questions in nine groups. Answers save on every change,
  * so a closed tab costs nothing.
  */
+/*
+  `?matter=` starts the intake already on a subject.
+
+  Other services hand off to this one rather than each growing a form of their
+  own - NEPC export certification is the first, arriving on `cross_border`.
+  Somebody who has already said "I want an export certificate" should not then
+  be asked what they need; the picker is still there for anyone arriving
+  without one, and an unrecognised value falls through to it rather than
+  starting the wrong intake.
+
+  useSearchParams needs a Suspense boundary, same wrapper as profile/[wawuId]
+  and create/new.
+*/
 export default function LegalIntakePage() {
+  return (
+    <Suspense>
+      <LegalIntake />
+    </Suspense>
+  );
+}
+
+function LegalIntake() {
   const router = useRouter();
+  const requestedMatter = useSearchParams().get("matter");
 
   const [matters, setMatters] = useState<LegalMatterOption[] | null>(null);
   const [intake, setIntake] = useState<LegalIntake | null>(null);
@@ -55,6 +77,16 @@ export default function LegalIntakePage() {
       .then(setMatters)
       .catch(() => setFailed("We could not load the legal service just now."));
   }, []);
+
+  // Only once the real list is known, and only for a value that is in it.
+  const begun = useRef(false);
+  useEffect(() => {
+    if (begun.current || intake || !matters || !requestedMatter) return;
+    if (!matters.some((m) => m.value === requestedMatter)) return;
+    begun.current = true;
+    void begin(requestedMatter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matters, requestedMatter, intake]);
 
   /* ---- saving ---------------------------------------------------------- */
 

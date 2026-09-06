@@ -8,10 +8,25 @@ import { Button, ErrorState, Icon } from "@/components/ui";
 import { PageColumn } from "@/components/layout/PageColumn";
 import type { IconName } from "@/components/ui/Icon";
 
+/*
+  NEPC IS A CONVERSATION WITH LEGAL, NOT A FORM OF ITS OWN.
+
+  This page used to open a five-step application at /services/nepc/apply that
+  collected documents, took payment, and posted an application. It was the
+  wrong shape for the product: export certification is one of the things the
+  legal desk handles, and legal already has a real intake that ends with a
+  consultant reading a brief. A second bespoke form beside it meant two ways
+  in, two sets of copy to keep true, and one of them quietly inventing a CAC
+  record for whoever opened it.
+
+  So this hands off to the legal intake on `cross_border`, which is the matter
+  that covers export. Nothing about NEPC is lost: the intake asks what you
+  make and where you sell, and it reaches somebody who can answer.
+*/
 const STEPS = [
-  { title: "Tell us what you make", note: "A few lines about your product or service." },
-  { title: "Share where you sell", note: "Your WAWU profile and any storefronts." },
-  { title: "Talk to the export desk", note: "An agent matches you to the right NEPC desk." },
+  { title: "Say what you export", note: "A few questions about your product and your markets." },
+  { title: "A consultant reads it", note: "Your answers reach the legal desk as a brief." },
+  { title: "They take it from there", note: "You talk it through, and they handle the NEPC side." },
 ];
 
 export default function NepcServicePage() {
@@ -90,8 +105,8 @@ export default function NepcServicePage() {
       </section>
 
       {/* Natural width at desktop — see PageColumn. */}
-      <Button full size="lg" href="/services/nepc/apply" className="xl:w-auto xl:self-start">
-        Start now
+      <Button full size="lg" href="/services/legal/intake?matter=cross_border" className="xl:w-auto xl:self-start">
+        Talk to the legal desk
       </Button>
     </PageColumn>
   );

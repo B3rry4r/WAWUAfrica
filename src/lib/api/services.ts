@@ -90,7 +90,11 @@ function deriveCta(real: RealPartnerService): PartnerService["cta"] {
   // Older rows written before ctaHref existed.
   const name = real.name.toLowerCase();
   if (name.includes("cac")) return { label: "Apply now", href: "/services/cac/apply" };
-  if (name.includes("nepc")) return { label: "Start now", href: "/services/nepc/apply" };
+  // NEPC has no application form of its own any more: export certification is
+  // a legal matter and goes through the legal desk's intake.
+  if (name.includes("nepc")) {
+    return { label: "Talk to the legal desk", href: "/services/legal/intake?matter=cross_border" };
+  }
   return undefined;
 }
 
