@@ -16,11 +16,8 @@ export const MOCK_SERVICES: PartnerService[] = [
     blurb:
       "Pay any bill without leaving WAWU. Confirm the meter or number first, pay with your card, and the top-up lands straight away.",
     icon: "Zap",
-    status: "live",
-    turnaround: "Instant",
-    priceFrom: "No added fee",
-    partner: "Flutterwave",
-    cta: { label: "Pay a bill", href: "/services/pay" },
+    status: "coming",
+    comingNote: "Bills payment is paused for now.",
   },
   {
     id: "legal",

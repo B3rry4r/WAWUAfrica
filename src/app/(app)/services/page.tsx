@@ -95,8 +95,11 @@ export default function ServicesPage() {
     );
   }
 
-  const live = services.filter((s) => s.status === "live");
-  const coming = services.filter((s) => s.status === "coming");
+  const normalized = services.map((s) =>
+    s.slug === "pay" || s.id === "pay" ? { ...s, status: "coming" as const } : s,
+  );
+  const live = normalized.filter((s) => s.status === "live");
+  const coming = normalized.filter((s) => s.status === "coming");
   const featured = applications.find((a) => a.status === "under_review" || a.status === "pending") ?? applications[0] ?? null;
 
   return (

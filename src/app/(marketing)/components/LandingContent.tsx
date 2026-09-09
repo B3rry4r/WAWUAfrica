@@ -82,6 +82,7 @@ const QUICK_SERVICES: {
     blurb: "Pay any bill in seconds.",
     icon: "CreditCard",
     href: "/services/pay",
+    soon: true,
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]",
   },
   {
@@ -389,24 +390,21 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The mascot board. No film at any width any more.
-
-            It carried a portrait video underneath on phones and nothing on
-            desktop; now neither, so this is one image on every screen. Bigger
-            on desktop, where it is the only thing in this band and was sized
-            as though it had something beside it.
+            The hero art. Mobile gets the portrait cut, desktop the wide cut.
+            A picture element so the browser downloads only the one it shows.
           */}
           <div className="mx-auto mt-12 flex w-full max-w-[1080px] items-center justify-center px-0 dt:mt-14">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/wawu-mascot-gospel.webp"
-              alt="Create the gospel. Amplify the message. Impact culture."
-              className="h-auto w-full max-w-[360px] object-contain dt:max-w-[680px]"
-              loading="lazy"
-              decoding="async"
-              width={1145}
-              height={1374}
-            />
+            <picture className="flex w-full items-center justify-center">
+              <source media="(min-width: 1024px)" srcSet="/wawu-hero-desktop.png" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/wawu-hero-mobile.png"
+                alt="WAWU creators on the app."
+                className="h-auto w-full max-w-[360px] object-contain dt:max-w-[1020px]"
+                loading="eager"
+                decoding="async"
+              />
+            </picture>
           </div>
 
           {/*

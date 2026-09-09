@@ -133,7 +133,6 @@ export default async function ExplorePage() {
             <Link href="/services" className={seeAll}>See all</Link>
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Bills Payment" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
             <ListRow title="Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
             <ListRow title="CAC, NEPC, legal and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
           </div>
