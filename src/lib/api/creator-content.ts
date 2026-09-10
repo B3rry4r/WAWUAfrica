@@ -116,6 +116,8 @@ export interface ContentApi {
   getLibrary: () => Promise<ContentItem[]>;
   getLibraryItem: (id: string) => Promise<ContentItem | undefined>;
   publish: (item: Omit<ContentItem, "id" | "status">) => Promise<ContentItem>;
+  /** Creators had no way to take a piece down. See DELETE /api/hub/content/:id. */
+  deleteItem: (id: string) => Promise<void>;
 }
 
 export const contentApi: ContentApi = {
@@ -207,5 +209,17 @@ export const contentApi: ContentApi = {
 
     libraryItems.unshift(created);
     return created;
+  },
+
+  deleteItem: async (id) => {
+    try {
+      await apiFetch<void>(`/api/hub/content/${id}`, { method: "DELETE", authed: true });
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
+      // SEAM: replace with DELETE /api/hub/content/:id
+      const idx = libraryItems.findIndex((i) => i.id === id);
+      if (idx >= 0) libraryItems.splice(idx, 1);
+      await mockRequest(undefined, 200);
+    }
   },
 };

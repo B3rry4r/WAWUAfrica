@@ -7,7 +7,7 @@ import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { PLANS } from "@/types/subscription";
 import type { ContentItem, ContentStatus } from "@/types/content";
 import { CreatorUploadCard } from "@/components/ui/ContentCard";
-import { BackLink, Button, EmptyState, ErrorState, Skeleton } from "@/components/ui";
+import { BackLink, Button, EmptyState, ErrorState, Sheet, Skeleton } from "@/components/ui";
 
 type Filter = "all" | ContentStatus;
 
@@ -42,6 +42,11 @@ export function ContentLibrary() {
   const [items, setItems] = useState<ContentItem[] | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [error, setError] = useState(false);
+  // The piece a delete confirmation is currently open for, and whether the
+  // DELETE call it triggers is in flight.
+  const [pendingDelete, setPendingDelete] = useState<ContentItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Routes a rejected item back into the publishing wizard, prefilled, so it
   // can actually be fixed and resubmitted instead of dead-ending here.
@@ -60,6 +65,24 @@ export function ContentLibrary() {
       .then(setItems)
       .catch(() => setError(true));
   }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await contentApi.deleteItem(pendingDelete.id);
+      // Removed locally rather than a full reload: the slot meter above
+      // reads off `items`, so this is also what makes a returned upload
+      // slot show up immediately instead of only after the next visit.
+      setItems((prev) => (prev ? prev.filter((i) => i.id !== pendingDelete.id) : prev));
+      setPendingDelete(null);
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "Could not delete this piece. Try again.");
+    } finally {
+      setDeleting(false);
+    }
+  }, [pendingDelete]);
 
   useEffect(() => {
     load();
@@ -180,6 +203,10 @@ export function ContentLibrary() {
                     item={item}
                     onClick={canResubmit ? () => resubmit(item) : undefined}
                     onFix={canResubmit ? () => resubmit(item) : undefined}
+                    onDelete={() => {
+                      setDeleteError(null);
+                      setPendingDelete(item);
+                    }}
                   />
                 );
               })}
@@ -200,6 +227,28 @@ export function ContentLibrary() {
           ) : null}
         </div>
       </div>
+
+      <Sheet
+        open={pendingDelete !== null}
+        onClose={() => (deleting ? null : setPendingDelete(null))}
+        title="Delete this piece?"
+        caption="This cannot be undone. It disappears from your library and from your profile right away."
+      >
+        <div className="flex flex-col gap-[14px] px-[16px] pb-[16px]">
+          {pendingDelete ? (
+            <span className="truncate text-[14.5px] font-semibold text-text-primary">{pendingDelete.title}</span>
+          ) : null}
+          {deleteError ? <span className="text-[13px] text-danger">{deleteError}</span> : null}
+          <div className="flex flex-col gap-[10px] dt:flex-row-reverse">
+            <Button full variant="danger" loading={deleting} onClick={confirmDelete}>
+              Delete
+            </Button>
+            <Button full variant="secondary" onClick={() => setPendingDelete(null)} disabled={deleting}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Sheet>
     </div>
   );
 }
