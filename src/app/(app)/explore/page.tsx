@@ -127,16 +127,6 @@ export default async function ExplorePage() {
           </div>
         </section>
 
-        <section className="flex flex-col gap-[11px]">
-          <div className="flex items-center gap-[10px] px-[2px]">
-            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Services</span>
-            <Link href="/services" className={seeAll}>See all</Link>
-          </div>
-          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
-            <ListRow title="CAC, NEPC, legal and more" subtitle="Everything else WAWU can do for you" icon="Briefcase" href="/services" />
-          </div>
-        </section>
       </div>
     </div>
   );

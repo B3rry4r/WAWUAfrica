@@ -81,7 +81,7 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
   });
   return {
     wawuId: real.wawuUserId,
-    name: real.handle ?? real.wawuUserId,
+    name: real.handle ?? "WAWU creator",
     handle: real.handle ?? real.wawuUserId,
     bio: real.bio ?? "",
     verification: "basic",
