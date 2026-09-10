@@ -47,7 +47,18 @@ interface RealCreatorDiscoveryItem {
 export async function getCreators(category?: ExploreCategoryId): Promise<CreatorDiscovery[]> {
   const query = category ? `?category=${encodeURIComponent(category)}&perPage=50` : "?perPage=50";
   try {
-    const rows = await apiFetch<RealCreatorDiscoveryItem[]>(`/api/hub/creators${query}`);
+    // Explore is a Server Component (page.tsx's `dynamic = "force-dynamic"`
+    // already says "don't cache this route"), but that route-level flag only
+    // protects requests that actually run through it. Next.js's fetch data
+    // cache is otherwise separate from the page/CDN cache and persists
+    // ACROSS deploys until something invalidates it — so a build that ever
+    // rendered this without the flag (or a subtly different one) can leave
+    // every future visitor, incognito included, stuck on that one frozen
+    // response. `cache: "no-store"` here means this specific call can never
+    // be served from that cache, independent of what the route config is.
+    const rows = await apiFetch<RealCreatorDiscoveryItem[]>(`/api/hub/creators${query}`, {
+      cache: "no-store",
+    });
     return rows.map((r) => ({
       wawuId: r.wawuId,
       name: r.name,
