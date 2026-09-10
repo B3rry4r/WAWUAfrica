@@ -27,6 +27,7 @@ import { formatNaira, creatorSplitRate } from "@/lib/format";
 import type { ContentPiece, ContentType } from "@/types/content";
 import type { MockComment } from "@/lib/api/mocks/mockComments";
 import { ContentThumb } from "@/components/ui/ContentThumb";
+import { FullscreenMediaViewer } from "@/components/ui/FullscreenMediaViewer";
 
 /**
  * "failure" means nothing was charged (init rejected, bank declined, checkout
@@ -426,8 +427,35 @@ function ContentHeader({
 }
 
 function MediaBlock({ content, state }: { content: ContentPiece; state: string }) {
+  const [playerOpen, setPlayerOpen] = useState(false);
+
+  // Playable in full screen: video or audio, and not behind the paywall.
+  // "Free plays, paid stays locked until paid for" is enforced upstream of
+  // this component too — `content.fullAssetUrl` is only ever populated by
+  // the backend for free content or a completed purchase, so a locked piece
+  // has nothing here to play even if this check were bypassed.
+  const playable = (content.contentType === "video" || content.contentType === "audio") && state !== "locked";
+  const playSrc = content.fullAssetUrl ?? content.previewAssetUrl;
+
   return (
-    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-media border border-hairline">
+    <>
+    <div
+      className={`relative aspect-[16/10] w-full overflow-hidden rounded-media border border-hairline ${playable ? "cursor-pointer" : ""}`}
+      role={playable ? "button" : undefined}
+      tabIndex={playable ? 0 : undefined}
+      aria-label={playable ? `Play ${content.title}` : undefined}
+      onClick={playable ? () => setPlayerOpen(true) : undefined}
+      onKeyDown={
+        playable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setPlayerOpen(true);
+              }
+            }
+          : undefined
+      }
+    >
       {/* The creator's own preview, not hatching. This is the screen somebody
           lands on from the feed, so it was the most visible place the missing
           thumbnail showed. The type glyph stays on top of it as an affordance. */}
@@ -473,6 +501,21 @@ function MediaBlock({ content, state }: { content: ContentPiece; state: string }
         </span>
       )}
     </div>
+
+    {/* A SIBLING of the clickable block above, not a child of it: the close
+        button's click would otherwise bubble up through this component's DOM
+        position and immediately re-trigger the parent's onClick, reopening
+        the viewer it was just told to close. */}
+    {playable && playSrc && (
+      <FullscreenMediaViewer
+        open={playerOpen}
+        onClose={() => setPlayerOpen(false)}
+        src={playSrc}
+        kind={content.contentType === "audio" ? "audio" : "video"}
+        title={content.title}
+      />
+    )}
+    </>
   );
 }
 

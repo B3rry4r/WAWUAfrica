@@ -440,7 +440,7 @@ function AboutTab({ profile }: { profile: CreatorProfile }) {
             and then gave you no way to go there. They are links now, opened in
             a new tab, with rel=noopener since they point off-platform.
           */}
-          <div className="flex flex-wrap gap-[10px]">
+          <div className="flex flex-nowrap gap-[10px] overflow-x-auto">
             {socialLinks(profile.socials).map((s) => (
               <SocialPill key={s.label} icon={s.icon} label={s.label} href={s.href} />
             ))}

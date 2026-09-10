@@ -17,6 +17,7 @@ export { CreditCount } from "./CreditCount";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
 export { FilePicker } from "./FilePicker";
+export { FullscreenMediaViewer } from "./FullscreenMediaViewer";
 export { StorageMeter } from "./StorageMeter";
 export { TileCard, TILE_GRADIENTS, tileGradient } from "./TileCard";
 export { PlanPrice } from "./PlanPrice";

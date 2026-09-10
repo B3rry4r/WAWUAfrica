@@ -1,5 +1,6 @@
-import type { CreatorProfile } from "@/types/profile";
-import { apiFetch, isMockModeError } from "./client";
+import type { CreatorProfile, ProfileContentItem } from "@/types/profile";
+import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
+import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import {
   getMockProfileFollowing,
   isMockCommunityJoined,
@@ -7,6 +8,68 @@ import {
   setMockProfileFollowing,
   toggleMockCommunityJoin,
 } from "./mocks/profile";
+
+/**
+ * Wire shape of GET /api/hub/users/:wawuId/content (same ContentPieceResponse
+ * every other content endpoint returns — status is always "live" here, this
+ * endpoint never lists a pending/rejected/removed piece). See getCreatorContent.
+ */
+interface RealProfileContentRow {
+  id: string;
+  contentType: ContentType;
+  title: string;
+  price: number;
+  previewAssetUrl: string;
+  fullAssetUrl: string | null;
+  fullAssetLocked: boolean;
+  durationLabel: string | null;
+  pageCount: number | null;
+}
+
+/**
+ * GET /api/hub/users/:wawuId/content — a creator's own published shelf, as
+ * seen from their profile page. This backend gap is why the Content tab used
+ * to hardcode `content: []` regardless of what a creator had live: the only
+ * profile aggregate that existed (`public-profile`) returned a COUNT, never
+ * the items.
+ *
+ * `fullAssetLocked` comes straight from the server's own per-requester gate
+ * (free, or the caller purchased it) — never recomputed here. That is the
+ * whole of "paid stays locked until paid for": nothing on this screen
+ * decides it, it only renders what the backend already decided.
+ */
+async function getCreatorContent(wawuId: string): Promise<ProfileContentItem[]> {
+  try {
+    const { data } = await apiFetchPaginated<RealProfileContentRow>(
+      `/api/hub/users/${wawuId}/content?perPage=50`,
+      { authed: true, cache: "no-store" },
+    );
+    return data.map((row) => ({
+      id: row.id,
+      title: row.title,
+      kindLabel: [
+        CONTENT_TYPE_META[row.contentType]?.label ?? row.contentType,
+        row.durationLabel ?? (row.pageCount ? `${row.pageCount} pages` : null),
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      price: row.price,
+      locked: row.fullAssetLocked,
+      previewAssetUrl: row.previewAssetUrl,
+    }));
+  } catch (e) {
+    // A creator's other tabs (About, Community), DM and Follow all work off
+    // `public-profile` alone. Degrading to an empty Content tab on a genuine
+    // network hiccup here is a smaller failure than losing the whole page —
+    // unlike the mock-fallback rule elsewhere in this file, this is not
+    // masking a real error as fake success, it is one panel staying empty.
+    if (!isMockModeError(e)) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to load creator content", e);
+    }
+    return [];
+  }
+}
 
 /**
  * Real GET /users/:wawuId/public-profile response shape
@@ -67,22 +130,34 @@ function formatFollowerCount(n: number): string {
  *    still treated as CLOSED, never as a free message.
  *  - `location` / `memberSince` / `replyTime`: no such columns exist; left
  *    undefined (all three are optional on CreatorProfile).
- *  - `content` / `communities`: the endpoint returns COUNTS only
- *    (contentCount / communityCount) — never the actual item lists. Listing
- *    "this creator's content" / "this creator's communities" is Content/
- *    Community module work (a creator-scoped list filter neither module
- *    exposes today), out of this file's scope. Left as empty arrays.
+ *  - `content`: now REAL, from GET /users/:wawuId/content
+ *    (getCreatorContent) — fetched alongside this call rather than after it,
+ *    so opening a profile costs one round trip, not two. Used to be
+ *    hardcoded `[]`: `public-profile` returns only `contentCount`, never the
+ *    items, so the Content tab read "Nothing published yet" for every
+ *    creator regardless of what they had live.
+ *  - `communities`: the endpoint returns a COUNT only (communityCount) —
+ *    never the actual item list. Listing "this creator's communities" is
+ *    Community module work (a creator-scoped list filter that module doesn't
+ *    expose today), out of this file's scope. Left as an empty array.
  *  - `products`: correctly empty, not a gap — WAWUBasket/WAWUBeauty are
  *    external apps (CLAUDE.md); Hub API never carries their product data.
  */
 export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile> {
-  const real = await apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
-    authed: true,
-  });
+  const [real, content] = await Promise.all([
+    apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
+      authed: true,
+    }),
+    getCreatorContent(wawuId),
+  ]);
   return {
     wawuId: real.wawuUserId,
-    name: real.handle ?? real.wawuUserId,
-    handle: real.handle ?? real.wawuUserId,
+    name: real.handle ?? "WAWU creator",
+    // Empty, not the raw id: ProfileHeader only renders "@{handle}" when
+    // handle is truthy, so a handleless creator's row is skipped entirely
+    // instead of showing "@55d03d5d6-77c2-4761-9297-8c0aaf845426" under the
+    // "WAWU creator" fallback name two lines up — same bug, one line lower.
+    handle: real.handle ?? "",
     bio: real.bio ?? "",
     verification: "basic",
     plan: real.tier,
@@ -111,7 +186,7 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
       linkedin: real.linkedinUrl ?? undefined,
       website: real.websiteUrl ?? undefined,
     },
-    content: [],
+    content,
     communities: [],
     products: [],
   };

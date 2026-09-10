@@ -21,16 +21,31 @@ export interface CreatorUploadCardProps {
   item: ContentItem;
   onClick?: () => void;
   onFix?: () => void;
+  /** Creators had no way to take a piece down at all — see onDelete's call site. */
+  onDelete?: () => void;
 }
 
 /** Creator dashboard upload-list row (status pill, earnings, fix-and-resubmit). */
-export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardProps) {
+export function CreatorUploadCard({ item, onClick, onFix, onDelete }: CreatorUploadCardProps) {
   const pill = statusPill[item.status];
 
   return (
-    <button
-      type="button"
+    // A `<div>`, not a `<button>`: the delete affordance below is a real
+    // button of its own, and a button cannot nest inside another button.
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
       className={`flex gap-[13px] p-[14px] rounded-[var(--radius-card)] bg-[var(--surface-card)] text-left w-full border [font-family:var(--font-sans)] ${borderClass[item.status]} ${
         onClick ? "cursor-pointer hover:bg-surface-hover active:bg-surface-press" : "cursor-default"
       }`}
@@ -50,10 +65,23 @@ export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardPro
           >
             {item.title}
           </span>
-          <span className="flex shrink-0">
+          <span className="flex shrink-0 items-center gap-[6px]">
             <StatusPill kind={pill.kind} size="xs">
               {pill.label}
             </StatusPill>
+            {onDelete ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                aria-label={`Delete ${item.title}`}
+                className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full text-[var(--text-muted)] hover:bg-state-hover hover:text-danger active:bg-state-press"
+              >
+                <Icon name="Trash2" size={14} strokeWidth={2} />
+              </button>
+            ) : null}
           </span>
         </span>
 
@@ -85,7 +113,7 @@ export function CreatorUploadCard({ item, onClick, onFix }: CreatorUploadCardPro
           <span className="text-[13px] text-[var(--text-muted)]">Your first upload</span>
         ) : null}
       </span>
-    </button>
+    </div>
   );
 }
 
