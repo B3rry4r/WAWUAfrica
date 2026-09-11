@@ -63,7 +63,7 @@ export function ServicesRail({
     >
       <div
         className={[
-          "flex w-max gap-4 pr-4",
+          "flex w-max gap-1.5 pr-4",
           taken
             ? ""
             : "animate-[wawuMarquee_46s_linear_infinite] hover:[animation-play-state:paused]",
