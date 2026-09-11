@@ -12,7 +12,6 @@ import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 import { HeroRotatingWord } from "./HeroRotatingWord";
 import { SmartScheduler } from "./SmartScheduler";
-import { ServicesRail } from "./ServicesRail";
 
 /**
  * What the ecosystem gives access to. Rendered as the journey strip further
@@ -154,6 +153,17 @@ const QUICK_SERVICES: {
 ];
 
 /**
+ * Open services lead the grid, "coming soon" ones trail — asked for once the
+ * grid stopped captioning them and started just dimming them instead: a
+ * dimmed tile in among the live ones needs its position to carry some of
+ * what the caption used to say. `sort` is stable, so within each group the
+ * order above is preserved.
+ */
+const ORDERED_QUICK_SERVICES = [...QUICK_SERVICES].sort(
+  (a, b) => Number(Boolean(a.soon)) - Number(Boolean(b.soon)),
+);
+
+/**
  * The two storefronts, as ordinary entries in the services directory.
  *
  * They used to get their own oversized row below — a gradient card each,
@@ -286,7 +296,7 @@ function StoreBadges({ size = "lg" }: { size?: "lg" | "sm" }) {
 
 const STREAMS: { icon: IconName; title: string; blurb: string }[] = [
   { icon: "Palette", title: "Creative Works", blurb: "Sell what you make" },
-  { icon: "ShoppingBag", title: "Basket, Beauty & Commerce", blurb: "Products, right from your profile" },
+  { icon: "BriefcaseBusiness", title: "Professionals", blurb: "Book verified lawyers, doctors and more" },
   { icon: "MessageCircle", title: "Premium Messaging", blurb: "Cash in on your WOW" },
   { icon: "UserRoundSearch", title: "Training & Consultations", blurb: "Turn expertise into income" },
   { icon: "Landmark", title: "Lifestyle Services", blurb: "Legal, health, payments and more" },
@@ -400,17 +410,43 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The hero art. Mobile gets the portrait cut, desktop the wide cut.
-            A picture element so the browser downloads only the one it shows.
+            The hero art: two images (creators, professionals) crossfading on
+            a loop, asked for once WAWU had a shot for each and wanted both
+            shown rather than picking one. Each image still gets its own
+            mobile portrait cut and desktop wide cut exactly as before — the
+            crossfade and the mobile/desktop swap are two INDEPENDENT axes,
+            not four images to pick from by hand. Concretely: one `<picture>`
+            per subject, each still carrying its own `source media` breakpoint
+            switch, and the two `<picture>`s stacked on top of each other via
+            `absolute inset-0` with opposite-phase opacity animations
+            (`wawuHeroFadeA` / `wawuHeroFadeB`, tokens.css) so at every moment
+            exactly one is fully opaque. `aspect-[...]` on the wrapper (not a
+            height driven by the `<img>`, which is now positioned out of
+            flow) is what keeps the space reserved at both breakpoints so
+            nothing collapses. `motion-safe:` gates the animation entirely;
+            under `prefers-reduced-motion` the creators cut is what's shown,
+            static, and the professionals layer's own base `opacity-0` simply
+            never gets an animation to override it.
           */}
-          <div className="mx-auto mt-12 flex w-full max-w-[1080px] items-center justify-center px-0 dt:mt-14">
-            <picture className="flex w-full items-center justify-center">
-              <source media="(min-width: 1024px)" srcSet="/wawu-hero-desktop.png" />
+          <div className="relative mx-auto mt-12 aspect-[1024/1536] w-full max-w-[360px] dt:mt-14 dt:aspect-[1536/1024] dt:max-w-[1020px]">
+            <picture className="absolute inset-0 flex items-center justify-center motion-safe:animate-[wawuHeroFadeA_10s_ease-in-out_infinite]">
+              <source media="(min-width: 1024px)" srcSet="/wawu-hero-desktop-creators.png" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/wawu-hero-mobile.png"
+                src="/wawu-hero-mobile-creators.png"
                 alt="WAWU creators on the app."
-                className="h-auto w-full max-w-[360px] object-contain dt:max-w-[1020px]"
+                className="h-full w-full object-contain"
+                loading="eager"
+                decoding="async"
+              />
+            </picture>
+            <picture className="absolute inset-0 flex items-center justify-center opacity-0 motion-safe:animate-[wawuHeroFadeB_10s_ease-in-out_infinite]">
+              <source media="(min-width: 1024px)" srcSet="/wawu-hero-desktop-professionals.png" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/wawu-hero-mobile-professionals.png"
+                alt="WAWU professionals on the app."
+                className="h-full w-full object-contain"
                 loading="eager"
                 decoding="async"
               />
@@ -418,59 +454,33 @@ export async function LandingContent() {
           </div>
 
           {/*
-            The services as a sliding rail of cards.
+            The services as a fixed grid, not a rail.
 
-            Same treatment the industry marquee used, moved onto the thing it
-            was always more useful for: these are DESTINATIONS, and a card big
-            enough to carry a name and a watermark reads at a glance where a
-            74px tile did not. The row slides so all eight are seen without a
-            grid tall enough to push the fold.
-
-            The list is doubled so the loop is seamless — the animation
-            translates by exactly -50%, which only lines up if the second half
-            is an exact copy. The copy is aria-hidden so a screen reader is
-            not read every service twice.
-
-            It can also be scrolled by hand now, and taking hold of it stops
-            the animation and drops the duplicate half. See ServicesRail for
-            why those two go together.
+            Was a sliding/auto-scrolling marquee; the product owner called
+            that "just bad" and asked for it gone outright ("it's no more a
+            slider"), titles only (no subtitle line), a not-yet-open service
+            shown as visually disabled rather than captioned "Coming soon",
+            and a layout that is 4-per-row over two lines on mobile and one
+            straight line on desktop. Eight services both ways is exactly
+            `grid-cols-4` (2 rows) on mobile and `grid-cols-8` (1 row) on
+            desktop — no scrolling, no duplicate list, no animation.
           */}
-          <div className="mt-9 flex flex-col gap-4 dt:mt-12">
-            <ServicesRail
-              duplicate={
-                <>
-                  {QUICK_SERVICES.map((service) => (
-                    <TileCard
-                      key={`${service.brand}-dup`}
-                      layout="stacked"
-                      size="lg"
-                      title={service.brand}
-                      subtitle={service.soon ? "Coming soon" : service.label}
-                      icon={service.icon}
-                      iconImageSrc={service.iconImageSrc}
-                      disabled
-                      className="[&]:pointer-events-none"
-                    />
-                  ))}
-                </>
-              }
-            >
-              {QUICK_SERVICES.map((service) => (
-                <TileCard
-                  key={service.brand}
-                  layout="stacked"
-                  size="lg"
-                  title={service.brand}
-                  subtitle={service.soon ? "Coming soon" : service.label}
-                  icon={service.icon}
-                  iconImageSrc={service.iconImageSrc}
-                  // Not yet openable, so deliberately not a link: a card
-                  // that navigates nowhere is worse than one saying so.
-                  {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
-                  className="snap-start"
-                />
-              ))}
-            </ServicesRail>
+          <div className="mt-9 grid grid-cols-4 gap-x-2 gap-y-7 dt:mt-12 dt:grid-cols-8 dt:gap-x-4">
+            {ORDERED_QUICK_SERVICES.map((service) => (
+              <TileCard
+                key={service.brand}
+                layout="stacked"
+                size="sm"
+                title={service.brand}
+                icon={service.icon}
+                iconImageSrc={service.iconImageSrc}
+                // Not yet openable, so deliberately not a link: a card
+                // that navigates nowhere is worse than one saying so.
+                // Also the "visually disabled" signal now that there is no
+                // "Coming soon" caption to say it in words.
+                {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
+              />
+            ))}
           </div>
         </section>
 

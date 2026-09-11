@@ -179,7 +179,7 @@ function IdentityBlock({ profile, isCreator, tier }: { profile: OwnProfile; isCr
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <Avatar initial={profile.name.charAt(0)} size={66} />
+        <Avatar src={profile.avatarUrl} initial={profile.name.charAt(0)} size={66} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-[7px]">
             <span className="text-[20px] font-semibold tracking-[-0.02em] text-text-primary">{profile.name}</span>
