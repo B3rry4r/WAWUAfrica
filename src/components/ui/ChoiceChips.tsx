@@ -17,11 +17,18 @@ export interface ChoiceChipOption<T> {
 
 export interface ChoiceChipsProps<T> {
   options: readonly ChoiceChipOption<T>[];
-  /** The chosen value, or null when nothing is chosen yet. */
-  value: T | null;
+  /** The chosen value (single mode), or the chosen values (`multiple`), or null/empty when nothing is chosen yet. */
+  value: T | T[] | null;
+  /**
+   * Always the ONE value the tapped chip carries, in both modes. In
+   * `multiple` mode the caller toggles it into their own array — this stays
+   * the same shape either way rather than branching what it hands back.
+   */
   onSelect: (value: T) => void;
   /** Names the group for screen readers — a bare row of buttons does not. */
   ariaLabel: string;
+  /** Lets more than one chip stay selected at once. Default: single-select. */
+  multiple?: boolean;
 }
 
 export function ChoiceChips<T extends string | number>({
@@ -29,13 +36,16 @@ export function ChoiceChips<T extends string | number>({
   value,
   onSelect,
   ariaLabel,
+  multiple = false,
 }: ChoiceChipsProps<T>) {
   if (options.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2" role="group" aria-label={ariaLabel}>
       {options.map((option) => {
-        const selected = value === option.value;
+        const selected = multiple
+          ? Array.isArray(value) && value.includes(option.value)
+          : value === option.value;
         return (
           <button
             key={String(option.value)}

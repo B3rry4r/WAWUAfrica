@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { ContentCard } from "@/components/content/ContentCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Icon } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { HomeRightRail } from "@/components/shared/HomeRightRail";
 import { getFeed } from "@/lib/api/content";
 import { TgifDaily } from "@/components/tgif/TgifDaily";
+import { isHidden as isTgifHidden, setHidden as setTgifHidden, subscribe as subscribeTgifHidden } from "@/lib/tgif-preference";
 import type { ContentPiece } from "@/types/content";
 
 // "Trending" used to sit here as a third tab, but there is no distinct
@@ -35,6 +37,24 @@ export function HomeFeed() {
   const [items, setItems] = useState<ContentPiece[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabId>("tgif");
+  // Starts `false` (shown) so the server-rendered markup and the first client
+  // paint agree, then syncs to the real, possibly-hidden preference on mount
+  // — same reason `usePlaying()` in SoundToggle.tsx defers to an effect
+  // rather than reading localStorage inside useState's initializer.
+  const [tgifHidden, setTgifHiddenState] = useState(false);
+
+  useEffect(() => {
+    setTgifHiddenState(isTgifHidden());
+    return subscribeTgifHidden(() => setTgifHiddenState(isTgifHidden()));
+  }, []);
+
+  // A hidden TGIF that was also the active tab has nothing to show — land on
+  // the feed instead of a blank pane.
+  useEffect(() => {
+    if (tgifHidden && tab === "tgif") setTab("for-you");
+  }, [tgifHidden, tab]);
+
+  const visibleTabs = useMemo(() => TABS.filter((t) => t.id !== "tgif" || !tgifHidden), [tgifHidden]);
 
   useEffect(() => {
     let active = true;
@@ -55,25 +75,43 @@ export function HomeFeed() {
   return (
     <div className="flex flex-col xl:flex-row xl:items-start">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex gap-[26px] border-b border-hairline px-[18px] xl:px-[26px]">
-          {TABS.map((t) => {
-            const active = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={`relative pb-[12px] text-[14.5px] transition-colors xl:h-[54px] xl:pb-0 ${
-                  active ? "font-semibold text-text-primary" : "font-medium text-text-muted hover:text-text-primary"
-                }`}
-              >
-                {t.label}
-                {active ? (
-                  <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] rounded-[2px] bg-accent" aria-hidden="true" />
-                ) : null}
-              </button>
-            );
-          })}
+        <div className="flex items-center justify-between gap-[10px] border-b border-hairline px-[18px] xl:px-[26px]">
+          <div className="flex gap-[26px]">
+            {visibleTabs.map((t) => {
+              const active = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  className={`relative pb-[12px] text-[14.5px] transition-colors xl:h-[54px] xl:pb-0 ${
+                    active ? "font-semibold text-text-primary" : "font-medium text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  {t.label}
+                  {active ? (
+                    <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] rounded-[2px] bg-accent" aria-hidden="true" />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+          {/*
+            Reachable whether or not the tab is currently showing — a control
+            that only lived ON the TGIF tab would vanish the moment somebody
+            used it to hide TGIF, with no way back short of clearing
+            localStorage by hand.
+          */}
+          <button
+            type="button"
+            onClick={() => setTgifHidden(!tgifHidden)}
+            aria-pressed={!tgifHidden}
+            title={tgifHidden ? "Show TGIF on Home" : "Hide TGIF from Home"}
+            className="mb-[8px] shrink-0 rounded-full p-[6px] text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary active:bg-surface-press xl:mb-0"
+          >
+            <Icon name={tgifHidden ? "EyeOff" : "Eye"} size={16} strokeWidth={2} color="currentColor" />
+            <span className="sr-only">{tgifHidden ? "Show TGIF on Home" : "Hide TGIF from Home"}</span>
+          </button>
         </div>
 
         <div className="flex flex-col gap-4 px-4 pb-8 pt-4 xl:px-[26px] xl:pt-[22px]">

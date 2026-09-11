@@ -83,7 +83,13 @@ export interface MyProfessionalApplication {
 }
 
 export interface ProfessionalApplicationDraft {
-  category: CategoryId | "";
+  /**
+   * More than one is allowed: the API models one application PER category
+   * (`ProfessionalProfile` is unique on `[wawuUserId, category]`), so picking
+   * several here sends one application per category, sharing this same
+   * headline/about/services/credential — see `applyAsProfessional`.
+   */
+  categories: CategoryId[];
   headline: string;
   about: string;
   services: string[];

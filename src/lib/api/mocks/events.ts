@@ -38,7 +38,7 @@ function initials(name: string): string {
 }
 
 function speakers(entries: Array<[string, string]>) {
-  return entries.map(([name, title], i) => ({ name, title, initials: initials(name), order: i }));
+  return entries.map(([name, title], i) => ({ name, title, photoUrl: null, initials: initials(name), order: i }));
 }
 
 /**
@@ -464,6 +464,7 @@ export async function createMockEvent(hostWawuId: string, draft: EventDraft): Pr
     speakers: (draft.speakers ?? []).map((s, i) => ({
       name: s.name,
       title: s.title ?? null,
+      photoUrl: s.photoUrl ?? null,
       initials: initials(s.name),
       order: s.order ?? i,
     })),
@@ -503,6 +504,7 @@ export async function updateMockEvent(id: string, edit: EventEdit): Promise<Wawu
           speakers: edit.speakers.map((s, i) => ({
             name: s.name,
             title: s.title ?? null,
+            photoUrl: s.photoUrl ?? null,
             initials: initials(s.name),
             order: s.order ?? i,
           })),

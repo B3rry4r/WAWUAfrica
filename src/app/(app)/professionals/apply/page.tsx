@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CATEGORIES, type CategoryId } from "@/lib/categories";
+import { CATEGORIES } from "@/lib/categories";
 import {
   applyAsProfessional,
   getMyApplications,
@@ -26,8 +26,12 @@ import { ChoiceChips } from "@/components/ui/ChoiceChips";
 import { FilePicker } from "@/components/ui/FilePicker";
 import { Skeleton } from "@/components/ui/Skeleton";
 
+function categoryName(id: string): string {
+  return CATEGORIES.find((c) => c.id === id)?.name ?? id.replace(/_/g, " ");
+}
+
 const EMPTY: ProfessionalApplicationDraft = {
-  category: "",
+  categories: [],
   headline: "",
   about: "",
   services: [],
@@ -58,7 +62,11 @@ export default function ApplyProfessionalPage() {
       .catch(() => setMine([]));
   }, []);
 
-  const regulated = isRegulatedCategory(draft.category);
+  // If ANY picked category is regulated, the shared credential fields below
+  // lock to a licence — the one submission per regulated category actually
+  // needs it, and reusing the same fields on an unregulated pick alongside it
+  // is a fair trade against making someone fill in the whole form twice.
+  const anyRegulated = draft.categories.some(isRegulatedCategory);
 
   /**
    * A regulated field accepts a licence and nothing else, so the choice is
@@ -67,44 +75,64 @@ export default function ApplyProfessionalPage() {
    */
   const credentialOptions = useMemo(
     () =>
-      (regulated
+      (anyRegulated
         ? (["licence"] as CredentialKind[])
         : (["portfolio", "qualification", "licence"] as CredentialKind[])
       ).map((k) => ({ value: k, label: CREDENTIAL_LABEL[k] })),
-    [regulated],
+    [anyRegulated],
   );
 
   useEffect(() => {
-    if (regulated && draft.credentialKind !== "licence") {
+    if (anyRegulated && draft.credentialKind !== "licence") {
       setDraft((d) => ({ ...d, credentialKind: "licence" }));
     }
-  }, [regulated, draft.credentialKind]);
+  }, [anyRegulated, draft.credentialKind]);
 
-  const alreadyIn = draft.category
-    ? mine?.find((m) => m.category === draft.category)
-    : undefined;
+  /** Any selected category that already has an application on file. */
+  const alreadyIn = draft.categories
+    .map((c) => mine?.find((m) => m.category === c))
+    .filter((m): m is MyProfessionalApplication => Boolean(m));
+
+  const hasPendingDuplicate = alreadyIn.some((m) => m.status === "pending");
 
   const complete =
-    draft.category !== "" &&
+    draft.categories.length > 0 &&
     draft.headline.trim().length >= MIN_HEADLINE &&
     draft.about.trim().length >= MIN_ABOUT &&
-    (!regulated ||
+    (!anyRegulated ||
       (draft.licenceNumber.trim().length > 0 && draft.issuingBody.trim().length > 0));
 
   async function submit() {
     setState("saving");
     setError(null);
-    try {
-      await applyAsProfessional(draft, regulated);
+    // One call per category — the API's own unit, see applyAsProfessional.
+    const results = await Promise.allSettled(
+      draft.categories.map((category) =>
+        applyAsProfessional(draft, category, isRegulatedCategory(category)),
+      ),
+    );
+    const failedCategories = draft.categories.filter((_, i) => results[i].status === "rejected");
+    if (failedCategories.length === 0) {
       router.push("/professionals/mine");
-    } catch (e) {
-      setState("error");
+      return;
+    }
+    setState("error");
+    if (failedCategories.length === results.length) {
+      const first = results[0] as PromiseRejectedResult;
       setError(
-        e instanceof Error
-          ? e.message
+        first.reason instanceof Error
+          ? first.reason.message
           : "We could not send your application. Try again.",
       );
+      return;
     }
+    // Some categories went through, some did not. Staying on the page (rather
+    // than navigating to "mine", where the successful ones now also show)
+    // means the draft — and the retry — is still right here for the rest.
+    setDraft((d) => ({ ...d, categories: failedCategories }));
+    setError(
+      `${results.length - failedCategories.length} of ${results.length} categories were submitted. The rest did not go through, try again below.`,
+    );
   }
 
   if (!resolved) {
@@ -162,34 +190,43 @@ export default function ApplyProfessionalPage() {
 
         <section className="flex flex-col gap-[9px]">
           <span className="text-[13px] font-semibold text-text-secondary">
-            Which field?
+            Which fields? <span className="font-normal text-text-muted">Pick as many as apply.</span>
           </span>
           <ChoiceChips
-            ariaLabel="Which field?"
+            multiple
+            ariaLabel="Which fields?"
             options={CATEGORIES.map((c) => ({ value: c.id, label: c.name }))}
-            value={(draft.category || null) as CategoryId | null}
-            onSelect={(value) => setDraft((d) => ({ ...d, category: value }))}
+            value={draft.categories}
+            onSelect={(value) =>
+              setDraft((d) => ({
+                ...d,
+                categories: d.categories.includes(value)
+                  ? d.categories.filter((c) => c !== value)
+                  : [...d.categories, value],
+              }))
+            }
           />
-          {alreadyIn ? (
+          {alreadyIn.map((m) => (
             <Callout
-              tone={alreadyIn.status === "rejected" ? "warning" : "info"}
+              key={m.category}
+              tone={m.status === "rejected" ? "warning" : "info"}
               title={
-                alreadyIn.status === "approved"
-                  ? "You are already listed here"
-                  : alreadyIn.status === "pending"
-                    ? "You already have an application under review here"
-                    : "This application was turned down"
+                m.status === "approved"
+                  ? `You are already listed under ${categoryName(m.category)}`
+                  : m.status === "pending"
+                    ? `You already have an application under review in ${categoryName(m.category)}`
+                    : `Your ${categoryName(m.category)} application was turned down`
               }
             >
-              {alreadyIn.status === "rejected"
-                ? (alreadyIn.rejectionReason ??
+              {m.status === "rejected"
+                ? (m.rejectionReason ??
                   "Fix what was raised and send it again. This replaces the old one.")
-                : "Pick a different field, or manage this one from your applications."}
+                : "Deselect it, or manage this one from your applications."}
             </Callout>
-          ) : null}
+          ))}
         </section>
 
-        {regulated ? (
+        {anyRegulated ? (
           <Callout tone="warning" title="This field is regulated">
             We confirm your practising licence with the body that issued it
             before you go live. A portfolio cannot stand in for one here.
@@ -282,7 +319,7 @@ export default function ApplyProfessionalPage() {
           />
         </section>
 
-        {regulated ? (
+        {anyRegulated ? (
           <>
             <Input
               label="Licence number"
@@ -326,9 +363,13 @@ export default function ApplyProfessionalPage() {
         <Button
           full
           onClick={submit}
-          disabled={!complete || state === "saving" || alreadyIn?.status === "pending"}
+          disabled={!complete || state === "saving" || hasPendingDuplicate}
         >
-          {state === "saving" ? "Sending…" : "Send application"}
+          {state === "saving"
+            ? "Sending…"
+            : draft.categories.length > 1
+              ? `Send ${draft.categories.length} applications`
+              : "Send application"}
         </Button>
         <span className="text-center text-[12px] leading-[1.5] text-text-muted">
           A person reviews this. You will see the outcome under your
