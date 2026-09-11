@@ -44,14 +44,20 @@ export async function getMyApplications(): Promise<MyProfessionalApplication[]> 
 }
 
 /**
- * POST /api/hub/professionals/applications.
+ * POST /api/hub/professionals/applications, for ONE category.
  *
  * Licence fields are sent only for a regulated category. Outside those the
  * API has no use for them, and passing a number nobody will check invites the
  * applicant to think one was verified.
+ *
+ * A draft carrying several `categories` is sent as one call per category (see
+ * the apply page) rather than widened into an array here, because the API
+ * itself has no concept of a multi-category application — it is N separate
+ * `ProfessionalProfile` rows under the hood, one per field.
  */
 export async function applyAsProfessional(
-  draft: ProfessionalApplicationDraft,
+  draft: Omit<ProfessionalApplicationDraft, "categories">,
+  category: CategoryId,
   regulated: boolean,
 ): Promise<MyProfessionalApplication> {
   return apiFetch<MyProfessionalApplication>(
@@ -60,7 +66,7 @@ export async function applyAsProfessional(
       method: "POST",
       authed: true,
       body: {
-        category: draft.category,
+        category,
         headline: draft.headline.trim(),
         about: draft.about.trim(),
         services: draft.services.filter((s) => s.trim().length > 0),

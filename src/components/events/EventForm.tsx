@@ -11,6 +11,7 @@ import {
   EVENT_CATEGORY_LABEL,
   EVENT_FORMAT_LABEL,
   EVENT_FORMATS,
+  EVENT_TIMEZONES,
   EVENT_TYPE_LABEL,
   EVENT_TYPES,
   type EventCategory,
@@ -20,7 +21,7 @@ import {
   type EventType,
   type WawuEvent,
 } from "@/types/events";
-import { Button, Icon, Input } from "@/components/ui";
+import { Button, FilePicker, Icon, Input, PhoneInput, fullPhoneNumber, splitPhoneNumber } from "@/components/ui";
 
 /**
  * Submit an event, or edit one you already submitted.
@@ -86,11 +87,14 @@ interface FormState {
   bannerUrl: string;
   category: EventCategory;
   contactEmail: string;
-  contactPhone: string;
+  /** Split so the field can offer a real country-code dropdown; joined back into one string in toDraft. */
+  contactPhoneDialCode: string;
+  contactPhoneValue: string;
   speakers: EventSpeakerDraft[];
 }
 
 function initialState(event?: WawuEvent): FormState {
+  const contactPhone = splitPhoneNumber(event?.contactPhone ?? "");
   return {
     name: event?.name ?? "",
     description: event?.description ?? "",
@@ -112,8 +116,13 @@ function initialState(event?: WawuEvent): FormState {
     // puts wrong events in front of people browsing by it.
     category: event?.category ?? "other",
     contactEmail: event?.contactEmail ?? "",
-    contactPhone: event?.contactPhone ?? "",
-    speakers: (event?.speakers ?? []).map((s) => ({ name: s.name, title: s.title ?? "" })),
+    contactPhoneDialCode: contactPhone.dialCode,
+    contactPhoneValue: contactPhone.value,
+    speakers: (event?.speakers ?? []).map((s) => ({
+      name: s.name,
+      title: s.title ?? "",
+      ...(s.photoUrl ? { photoUrl: s.photoUrl } : {}),
+    })),
   };
 }
 
@@ -151,6 +160,7 @@ function toDraft(form: FormState): EventDraft {
     .map((s, i) => ({
       name: s.name.trim(),
       ...(s.title?.trim() ? { title: s.title.trim() } : {}),
+      ...(s.photoUrl ? { photoUrl: s.photoUrl } : {}),
       order: i,
     }));
   return {
@@ -170,7 +180,9 @@ function toDraft(form: FormState): EventDraft {
     ...(form.bannerUrl.trim() ? { bannerUrl: form.bannerUrl.trim() } : {}),
     category: form.category,
     ...(form.contactEmail.trim() ? { contactEmail: form.contactEmail.trim() } : {}),
-    ...(form.contactPhone.trim() ? { contactPhone: form.contactPhone.trim() } : {}),
+    ...(form.contactPhoneValue.trim()
+      ? { contactPhone: fullPhoneNumber(form.contactPhoneDialCode, form.contactPhoneValue.trim()) }
+      : {}),
     speakers,
   };
 }
@@ -386,14 +398,37 @@ export function EventForm({ mode, event }: EventFormProps) {
             />
           </Field>
         </div>
-        <div className="xl:w-[180px]">
+        <div className="xl:w-[220px]">
           <Field label="Time zone" hint="Shown next to the time.">
-            <Input
-              value={form.timezone}
-              maxLength={LIMITS.timezone}
-              placeholder="WAT"
-              onChange={(e) => set("timezone", e.target.value)}
-            />
+            <div className="relative">
+              <select
+                value={form.timezone}
+                onChange={(e) => set("timezone", e.target.value)}
+                className="flex h-[52px] w-full cursor-pointer appearance-none items-center rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] text-[15px] text-[var(--text-primary)]"
+              >
+                {/*
+                  An event being edited can carry a timezone typed in before
+                  this was a dropdown. Rather than silently swap it for WAT,
+                  the unrecognised value gets its own option so editing never
+                  rewrites a host's existing event out from under them.
+                */}
+                {EVENT_TIMEZONES.some((z) => z.value === form.timezone) || !form.timezone ? null : (
+                  <option value={form.timezone}>{form.timezone}</option>
+                )}
+                {EVENT_TIMEZONES.map((z) => (
+                  <option key={z.value} value={z.value}>
+                    {z.label}
+                  </option>
+                ))}
+              </select>
+              <Icon
+                name="ChevronDown"
+                size={16}
+                strokeWidth={2.2}
+                color="var(--text-muted)"
+                className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2"
+              />
+            </div>
           </Field>
         </div>
       </div>
@@ -456,14 +491,14 @@ export function EventForm({ mode, event }: EventFormProps) {
           </Field>
         </div>
         <div className="flex-1">
-          <Field label="Contact phone" hint="Optional, and shown publicly on the event page.">
-            <Input
-              value={form.contactPhone}
-              onChange={(e) => set("contactPhone", e.target.value.slice(0, LIMITS.contactPhone))}
-              placeholder="+234"
-              inputMode="tel"
-            />
-          </Field>
+          <PhoneInput
+            label="Contact phone"
+            dialCode={form.contactPhoneDialCode}
+            value={form.contactPhoneValue}
+            onDialCodeChange={(code) => set("contactPhoneDialCode", code)}
+            onValueChange={(v) => set("contactPhoneValue", v.slice(0, LIMITS.contactPhone))}
+            hint="Optional, and shown publicly on the event page."
+          />
         </div>
       </div>
 
@@ -482,43 +517,88 @@ export function EventForm({ mode, event }: EventFormProps) {
       </Field>
 
       <Field label="Speakers" hint="Optional. Up to 20." error={errors.speakers}>
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-[12px]">
           {form.speakers.map((s, i) => (
-            <div key={i} className="flex items-start gap-[8px]">
-              <div className="flex min-w-0 flex-1 flex-col gap-[8px] xl:flex-row">
-                <Input
-                  className="xl:flex-1"
-                  value={s.name}
-                  maxLength={LIMITS.speakerName}
-                  placeholder="Name"
-                  onChange={(e) =>
-                    set(
-                      "speakers",
-                      form.speakers.map((row, j) => (j === i ? { ...row, name: e.target.value } : row)),
-                    )
-                  }
-                />
-                <Input
-                  className="xl:flex-1"
-                  value={s.title ?? ""}
-                  maxLength={LIMITS.speakerTitle}
-                  placeholder="What they do"
-                  onChange={(e) =>
-                    set(
-                      "speakers",
-                      form.speakers.map((row, j) => (j === i ? { ...row, title: e.target.value } : row)),
-                    )
-                  }
-                />
+            <div
+              key={i}
+              className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-tag)] p-[12px]"
+            >
+              <div className="flex items-start gap-[8px]">
+                <div className="flex min-w-0 flex-1 flex-col gap-[8px] xl:flex-row">
+                  <Input
+                    className="xl:flex-1"
+                    value={s.name}
+                    maxLength={LIMITS.speakerName}
+                    placeholder="Name"
+                    onChange={(e) =>
+                      set(
+                        "speakers",
+                        form.speakers.map((row, j) => (j === i ? { ...row, name: e.target.value } : row)),
+                      )
+                    }
+                  />
+                  <Input
+                    className="xl:flex-1"
+                    value={s.title ?? ""}
+                    maxLength={LIMITS.speakerTitle}
+                    placeholder="What they do"
+                    onChange={(e) =>
+                      set(
+                        "speakers",
+                        form.speakers.map((row, j) => (j === i ? { ...row, title: e.target.value } : row)),
+                      )
+                    }
+                  />
+                </div>
+                <button
+                  type="button"
+                  aria-label={`Remove speaker ${i + 1}`}
+                  onClick={() => set("speakers", form.speakers.filter((_, j) => j !== i))}
+                  className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
+                >
+                  <Icon name="X" size={16} color="currentColor" />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={`Remove speaker ${i + 1}`}
-                onClick={() => set("speakers", form.speakers.filter((_, j) => j !== i))}
-                className="mt-[6px] grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
-              >
-                <Icon name="X" size={16} color="currentColor" />
-              </button>
+
+              <div className="flex items-center gap-[10px]">
+                {s.photoUrl ? (
+                  <div className="relative shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={s.photoUrl}
+                      alt=""
+                      className="h-[48px] w-[48px] rounded-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Remove ${s.name.trim() || "this speaker"}'s photo`}
+                      onClick={() =>
+                        set(
+                          "speakers",
+                          form.speakers.map((row, j) => (j === i ? { ...row, photoUrl: undefined } : row)),
+                        )
+                      }
+                      className="absolute -right-[4px] -top-[4px] grid h-[20px] w-[20px] place-items-center rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)] text-[var(--text-secondary)] hover:text-danger"
+                    >
+                      <Icon name="X" size={11} strokeWidth={2.6} color="currentColor" />
+                    </button>
+                  </div>
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <FilePicker
+                    folder="event/speaker"
+                    accept="image/*"
+                    label={s.photoUrl ? "Replace their photo" : "Add their photo"}
+                    hint="Optional."
+                    onUploaded={(file) =>
+                      set(
+                        "speakers",
+                        form.speakers.map((row, j) => (j === i ? { ...row, photoUrl: file.fileUrl } : row)),
+                      )
+                    }
+                  />
+                </div>
+              </div>
             </div>
           ))}
           {form.speakers.length < LIMITS.speakers ? (

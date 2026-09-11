@@ -37,7 +37,11 @@ export type UploadFolder =
   // presign-upload.dto.ts — the cover is written by the host alone, a message
   // photo by any member. Both are image-only server-side.
   | "community/image"
-  | "community/message";
+  | "community/message"
+  // A speaker's photo on a submitted event. Its own prefix, matching
+  // UPLOAD_FOLDERS in the backend: set by the host, not the speaker, who may
+  // have no WAWU account to upload through at all.
+  | "event/speaker";
 
 interface PresignResponse {
   uploadUrl: string;

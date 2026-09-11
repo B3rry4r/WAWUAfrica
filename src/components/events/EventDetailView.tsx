@@ -377,7 +377,7 @@ export function EventDetailView({ id }: { id: string }) {
                 <div className="flex flex-col gap-[12px] xl:grid xl:grid-cols-2 xl:gap-[14px]">
                   {event.speakers.map((s) => (
                     <div key={`${s.order}-${s.name}`} className="flex items-center gap-[12px]">
-                      <Avatar initial={s.initials || s.name.charAt(0)} size={40} />
+                      <Avatar src={s.photoUrl} initial={s.initials || s.name.charAt(0)} size={40} />
                       <div className="min-w-0">
                         <div className="truncate text-[14.5px] font-semibold text-[var(--text-primary)]">{s.name}</div>
                         {s.title ? (

@@ -13,7 +13,7 @@ import { sessionStorage } from "@/lib/auth/session-storage";
 import { formatNaira } from "@/lib/format";
 import type { DeliveryDetails } from "@/types/shop";
 import { subdivisionsFor } from "@/lib/geo";
-import { Button, Callout, Icon, Input, Skeleton } from "@/components/ui";
+import { Button, Callout, DEFAULT_DIAL_CODE, Icon, Input, PhoneInput, Skeleton, fullPhoneNumber } from "@/components/ui";
 import { ShopHeader } from "./ShopHeader";
 import { useWowCart } from "./WowCartProvider";
 
@@ -57,6 +57,7 @@ export function ShopCheckout() {
   const { cart, loading, refresh } = useWowCart();
 
   const [form, setForm] = useState<DeliveryDetails>(EMPTY);
+  const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
   const [errors, setErrors] = useState<Partial<Record<keyof DeliveryDetails, string>>>({});
   const [phase, setPhase] = useState<Phase>("idle");
   const [failure, setFailure] = useState<string | null>(null);
@@ -116,6 +117,7 @@ export function ShopCheckout() {
     try {
       opened = await checkout({
         ...form,
+        deliveryPhone: fullPhoneNumber(dialCode, form.deliveryPhone),
         deliveryNote: form.deliveryNote?.trim() || undefined,
       });
     } catch (e) {
@@ -224,14 +226,19 @@ export function ShopCheckout() {
             />
           </Field>
 
-          <Field label="Phone number" error={errors.deliveryPhone} hint="We call this to arrange delivery.">
-            <Input
+          <div className="flex flex-col gap-[8px]">
+            <PhoneInput
+              label="Phone number"
+              dialCode={dialCode}
               value={form.deliveryPhone}
-              onChange={(e) => set("deliveryPhone", e.target.value.slice(0, 30))}
-              placeholder="+234 801 234 5678"
-              inputMode="tel"
+              onDialCodeChange={setDialCode}
+              onValueChange={(v) => set("deliveryPhone", v.slice(0, 30))}
+              hint={errors.deliveryPhone ? undefined : "We call this to arrange delivery."}
             />
-          </Field>
+            {errors.deliveryPhone ? (
+              <span className="text-[12.5px] text-[var(--danger)]">{errors.deliveryPhone}</span>
+            ) : null}
+          </div>
 
           <Field label="Address" error={errors.deliveryAddress}>
             <Input

@@ -71,6 +71,8 @@ export const EVENT_CATEGORIES = Object.keys(EVENT_CATEGORY_LABEL) as EventCatego
 export interface EventSpeaker {
   name: string;
   title: string | null;
+  /** Object-storage URL. Null renders as the initials chip instead. */
+  photoUrl: string | null;
   initials: string;
   order: number;
 }
@@ -149,6 +151,8 @@ export interface EventGoing {
 export interface EventSpeakerDraft {
   name: string;
   title?: string;
+  /** Object-storage URL from POST /uploads/presign (folder "event/speaker"). */
+  photoUrl?: string;
   order?: number;
 }
 
@@ -250,3 +254,27 @@ export const EVENT_TYPE_LABEL: Record<EventType, string> = {
 
 export const EVENT_FORMATS = Object.keys(EVENT_FORMAT_LABEL) as EventFormat[];
 export const EVENT_TYPES = Object.keys(EVENT_TYPE_LABEL) as EventType[];
+
+/**
+ * Timezone choices offered on the event form, as a dropdown rather than free
+ * text ("WAT" typed by hand let in "wat", "West Africa Time", "GMT+1", every
+ * one a different string next to the same time). Display only: `timezone` is
+ * never used for date math, the actual instant is `startsAt`'s own ISO
+ * string, computed from the browser's local clock when the host picks it,
+ * and the server never guesses a zone. Nigeria first, since that is who this
+ * app serves, then the rest of Africa, then the zones an overseas host is
+ * most likely posting from.
+ */
+export const EVENT_TIMEZONES: { value: string; label: string }[] = [
+  { value: "WAT", label: "WAT (West Africa, UTC+1)" },
+  { value: "GMT", label: "GMT (Greenwich, UTC+0)" },
+  { value: "CAT", label: "CAT (Central Africa, UTC+2)" },
+  { value: "EAT", label: "EAT (East Africa, UTC+3)" },
+  { value: "SAST", label: "SAST (South Africa, UTC+2)" },
+  { value: "CET", label: "CET (Central Europe, UTC+1)" },
+  { value: "BST", label: "BST (British Summer, UTC+1)" },
+  { value: "EST", label: "EST (US Eastern, UTC-5)" },
+  { value: "CST", label: "CST (US Central, UTC-6)" },
+  { value: "PST", label: "PST (US Pacific, UTC-8)" },
+  { value: "IST", label: "IST (India, UTC+5:30)" },
+];

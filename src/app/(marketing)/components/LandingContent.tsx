@@ -473,8 +473,17 @@ export async function LandingContent() {
             version of this (per-icon border, plus a panel around the whole
             grid) was tried and asked back out — "remove the containers,
             just icons and text... let them be close, not spaced between".
+
+            The grid itself is capped at the same 360px the hero art uses on
+            mobile, not left to `mx-auto` alone. Below the 1024px `dt:`
+            cutoff a tablet-width viewport still gets this 4-column grid (the
+            flex row is a desktop-only swap), and with no cap the columns
+            stretch to fill the tablet's much wider content area, scattering
+            the icons across the row ("tablet mode has grave spaces"). The
+            cap keeps the grid tile-sized at every width until `dt:` hands it
+            off to the flex row, which is free to use the full desktop width.
           */}
-          <div className="mx-auto mt-4 grid grid-cols-4 place-items-center gap-x-0.5 gap-y-0.5 dt:mt-4 dt:flex dt:flex-row dt:flex-wrap dt:justify-center dt:gap-x-2 dt:gap-y-2">
+          <div className="mx-auto mt-4 grid max-w-[360px] grid-cols-4 place-items-center gap-0 dt:mt-4 dt:flex dt:max-w-none dt:flex-row dt:flex-wrap dt:justify-center dt:gap-0">
             {ORDERED_QUICK_SERVICES.map((service) => (
               <TileCard
                 key={service.brand}
