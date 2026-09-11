@@ -8,6 +8,8 @@ const creators = [
   {
     wawuId: "wawu-adaeze",
     name: "Adaeze Okonkwo",
+    handle: "adaezeokonkwo",
+    avatarUrl: null,
     field: "Business Strategist",
     pieceCount: 4,
     verification: "certified_professional" as const,
@@ -17,6 +19,8 @@ const creators = [
   {
     wawuId: "wawu-funmi",
     name: "Funmi Adeyemi",
+    handle: "funmiadeyemi",
+    avatarUrl: null,
     field: "Accountant",
     pieceCount: 6,
     verification: "certified_professional" as const,
@@ -26,6 +30,8 @@ const creators = [
   {
     wawuId: "wawu-zainab",
     name: "Zainab Bello",
+    handle: "zainabbello",
+    avatarUrl: null,
     field: "Agribusiness Trainer",
     pieceCount: 3,
     verification: "verified_business" as const,
@@ -35,6 +41,8 @@ const creators = [
   {
     wawuId: "wawu-musa",
     name: "Musa Danladi",
+    handle: "musadanladi",
+    avatarUrl: null,
     field: "Welder and trainer",
     pieceCount: 3,
     following: false,
@@ -43,6 +51,8 @@ const creators = [
   {
     wawuId: "wawu-ifeanyi",
     name: "Ifeanyi Nwosu",
+    handle: "ifeanyinwosu",
+    avatarUrl: null,
     field: "Fashion Designer",
     pieceCount: 5,
     verification: "verified_business" as const,

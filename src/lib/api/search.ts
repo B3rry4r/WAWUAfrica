@@ -38,11 +38,18 @@ interface WireContentPiece {
   fullAssetLocked: boolean;
 }
 
-/** Backend CreatorProfile (src/common/types/user-profile.type.ts) — a UserProfile+CreatorState+EvgScore aggregate. */
+/**
+ * Backend CreatorProfile (src/common/types/user-profile.type.ts) — a
+ * UserProfile+CreatorState+EvgScore aggregate. `avatarUrl` IS populated
+ * server-side (search-response.service.ts's buildCreatorProfiles reads
+ * `profile.avatarUrl` straight off UserProfile) — confirmed against the
+ * backend directly, not a placeholder gap like the fields documented below.
+ */
 interface WireCreatorProfile {
   wawuUserId: string;
   handle: string | null;
   bio: string | null;
+  avatarUrl: string | null;
   interests: string[];
   instagramHandle: string | null;
   whatsappHandle: string | null;
@@ -149,6 +156,7 @@ function toSearchCreatorResult(item: WireCreatorProfile): SearchCreatorResult {
   return {
     wawuId: item.wawuUserId,
     fullName: item.handle ?? item.wawuUserId,
+    avatarUrl: item.avatarUrl,
     headline: item.bio ?? "",
     verificationLevel: "basic",
     pieceCount: item.contentCount,

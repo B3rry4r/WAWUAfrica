@@ -53,7 +53,11 @@ export function ProfileActions({
         )}
       </div>
       <DmPaySheet open={dmOpen} onClose={() => setDmOpen(false)} creator={creator} />
-      <TipSheet open={tipOpen} onClose={() => setTipOpen(false)} creator={{ wawuId: creator.wawuId, name: creator.name }} />
+      <TipSheet
+        open={tipOpen}
+        onClose={() => setTipOpen(false)}
+        creator={{ wawuId: creator.wawuId, name: creator.name, avatarUrl: creator.avatarUrl }}
+      />
     </>
   );
 }

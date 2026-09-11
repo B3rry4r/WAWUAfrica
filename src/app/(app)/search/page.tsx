@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge, BackLink } from "@/components/ui";
+import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge, BackLink, Avatar } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { ContentCard } from "@/components/content/ContentCard";
 import { FollowButton } from "@/components/shared/FollowButton";
@@ -177,8 +177,8 @@ export default function SearchPage() {
             <div className="flex flex-col overflow-hidden rounded-card border border-hairline bg-card">
               {suggestedCreators.map((c, i) => (
                 <div key={c.wawuId} className={`flex items-center gap-3 px-4 py-3.5 has-[a:hover]:bg-state-hover ${i ? "border-t border-hairline" : ""}`}>
-                  <Link href={`/profile/${c.wawuId}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
-                    {c.fullName.charAt(0)}
+                  <Link href={`/profile/${c.wawuId}`} className="shrink-0">
+                    <Avatar src={c.avatarUrl} initial={c.fullName.charAt(0)} size={40} />
                   </Link>
                   <Link href={`/profile/${c.wawuId}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-1.5">
@@ -251,8 +251,8 @@ export default function SearchPage() {
             <section className="flex flex-col gap-2">
               {(tab === "all" ? results.creators.slice(0, 2) : results.creators).map((c) => (
                 <div key={c.wawuId} className="flex items-center gap-3 rounded-card border border-hairline bg-card px-4 py-3.5 has-[a:hover]:bg-surface-hover">
-                  <Link href={`/profile/${c.wawuId}`} className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-accent-tint text-[14px] font-semibold text-accent-hover">
-                    {c.fullName.charAt(0)}
+                  <Link href={`/profile/${c.wawuId}`} className="shrink-0">
+                    <Avatar src={c.avatarUrl} initial={c.fullName.charAt(0)} size={40} />
                   </Link>
                   <Link href={`/profile/${c.wawuId}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-1.5">

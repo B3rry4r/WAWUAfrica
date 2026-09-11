@@ -115,7 +115,7 @@ function UserRail() {
               aria-label={`${c.fullName}, ${c.headline}`}
               className="absolute inset-0 rounded-card no-underline hover:bg-state-hover active:bg-state-press"
             />
-            <Avatar initial={c.fullName} size={38} />
+            <Avatar src={c.avatarUrl} initial={c.fullName} size={38} />
             <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-semibold">{c.fullName}</span>
               <span className="truncate text-[12px] text-text-muted">
@@ -182,7 +182,7 @@ function CreatorRail({ creator }: { creator: CreatorState | null }) {
       {unopened ? (
         <RailCard eyebrow="Needs a reply" tone="urgent">
           <div className="flex items-center gap-[11px]">
-            <Avatar initial={unopened.buyerInitials} size={38} />
+            <Avatar src={unopened.buyerAvatarUrl} initial={unopened.buyerInitials} size={38} />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-semibold">{unopened.buyerName}</span>
               <span className="truncate text-[12px] text-danger">

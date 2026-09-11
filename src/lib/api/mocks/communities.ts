@@ -242,7 +242,7 @@ export async function getMockJoinRequests(communityId: string): Promise<Communit
   await delay(220);
   return (MOCK_JOIN_REQUESTS[communityId] ?? []).map((r) => ({
     communityId,
-    user: { wawuId: r.wawuId, handle: r.handle },
+    user: { wawuId: r.wawuId, handle: r.handle, avatarUrl: null },
     requestedAt: r.requestedAt,
   }));
 }

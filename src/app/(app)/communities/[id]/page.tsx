@@ -190,7 +190,7 @@ export default function CommunityDetailPage() {
                   >
                     {!mine && (
                       <span className="flex items-center gap-[6px] text-[12px] font-bold text-[var(--accent-hover)]">
-                        <Avatar initial={m.sender.name.charAt(0)} size={18} />
+                        <Avatar src={m.sender.avatarUrl} initial={m.sender.name.charAt(0)} size={18} />
                         {m.sender.name}
                       </span>
                     )}

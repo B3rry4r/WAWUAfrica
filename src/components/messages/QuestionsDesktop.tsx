@@ -155,7 +155,7 @@ export function QuestionsDesktop() {
                 isSelected ? "bg-selected-tint" : "hover:bg-state-hover"
               } ${t.status !== "awaiting" ? "opacity-70" : ""}`}
             >
-              <Avatar initials={t.buyerInitials} size={44} />
+              <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={44} />
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="flex items-baseline gap-2">
                   <span className="truncate text-[14px] font-semibold text-text-primary">{t.buyerName}</span>

@@ -99,6 +99,11 @@ export interface SessionUser {
   /** Profile credibility ladder. Separate from creator KYC and paid tier. */
   verification: VerificationLevel;
   creator: CreatorState | null;
+  /**
+   * Null through sign-up/OTP (no photo exists yet for a brand-new account)
+   * and picked up on the next real sign-in, same pattern as `creator`.
+   */
+  avatarUrl: string | null;
 }
 
 export interface AuthResponse {

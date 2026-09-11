@@ -25,9 +25,11 @@ export function CreatorGridCard({ creator }: { creator: CreatorDiscovery }) {
         href={`/profile/${creator.wawuId}`}
         className="flex w-full flex-col items-start gap-3 no-underline"
       >
-        <Avatar initial={creator.name.charAt(0)} size={56} />
+        <Avatar src={creator.avatarUrl} initial={creator.name.charAt(0)} size={56} />
         <div className="flex items-center gap-[7px]">
-          <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{creator.name}</span>
+          <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">
+            {creator.handle ? `@${creator.handle}` : creator.name}
+          </span>
           {creator.verification ? <VerificationBadge tier={creator.verification} size={16} /> : null}
         </div>
         <span className="text-[12.5px] text-[var(--text-muted)]">

@@ -41,6 +41,8 @@ export interface DmThreadSummary {
   creatorWawuId: string;
   creatorName: string;
   creatorHandle: string;
+  /** Real photo, from DirectMessage's server-joined `otherParty`. Null is normal. */
+  creatorAvatarUrl: string | null;
   snippet: string;
   lastAt: string;
   unread: boolean;

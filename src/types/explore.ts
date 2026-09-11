@@ -14,6 +14,8 @@ export const EXPLORE_CATEGORIES: ExploreCategory[] = CATEGORIES;
 export interface CreatorDiscovery {
   wawuId: string;
   name: string;
+  handle: string | null;
+  avatarUrl: string | null;
   field: string;
   /** Number of published content pieces. */
   pieceCount: number;

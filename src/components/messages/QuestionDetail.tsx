@@ -45,7 +45,7 @@ export function QuestionDetail({ thread, earn, onReply }: QuestionDetailProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-[68px] shrink-0 items-center gap-3 border-b border-hairline px-[26px]">
-        <Avatar initials={thread.buyerInitials} size={38} />
+        <Avatar src={thread.buyerAvatarUrl} initials={thread.buyerInitials} size={38} />
         <div className="flex flex-col gap-0.5">
           <span className="text-[15px] font-semibold text-text-primary">{thread.buyerName}</span>
           <span className="text-[12.5px] text-text-muted">

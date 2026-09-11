@@ -57,7 +57,7 @@ export default function BlockedAccountsPage() {
               key={a.id}
               className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[12px_14px]"
             >
-              <Avatar initial={a.name.charAt(0)} size={40} />
+              <Avatar src={a.avatarUrl} initial={a.name.charAt(0)} size={40} />
               <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
                 <span className="truncate text-[14.5px] font-semibold text-[var(--text-primary)]">{a.name}</span>
                 <span className="truncate text-[12px] text-[var(--text-muted)]">

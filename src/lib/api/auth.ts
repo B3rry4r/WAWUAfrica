@@ -79,9 +79,17 @@ interface WawuIdRegisterBody {
 
 // ── Hub API wire shapes this module reads post-auth ──────────────────────────
 
+// This used to declare only { accountType, interests } — a narrower copy of
+// the same GET /api/hub/users/me response verification.ts's own HubMeResponse
+// already reads in full, avatarUrl included. The narrow shape silently
+// dropped every other field the endpoint actually returns, avatarUrl among
+// them, before it ever reached SessionUser: the header avatar rendering
+// initials wasn't a missing feature, it was this type lying about the
+// response shape.
 interface HubMeResponse {
   accountType: AccountType | null;
   interests: string[];
+  avatarUrl: string | null;
 }
 
 interface HubCreatorStateResponse {
@@ -233,6 +241,7 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       interests: [],
       verification: mapVerificationTier(result.user.verificationTier),
       creator: null,
+      avatarUrl: null,
     };
     return { token: result.accessToken, user, codeExpiresIn: started.expiresIn };
   } catch (e) {
@@ -246,6 +255,7 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       interests: [],
       verification: "basic",
       creator: null,
+      avatarUrl: null,
     };
     return { token: `mock-token-${Date.now()}`, user };
   }
@@ -273,6 +283,7 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
       interests: [],
       verification: mapVerificationTier(result.user.verificationTier),
       creator: null,
+      avatarUrl: null,
     };
     return { token: result.accessToken, user };
   } catch (e) {
@@ -286,6 +297,7 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
       interests: [],
       verification: "basic",
       creator: null,
+      avatarUrl: null,
     };
     return { token: `mock-token-${Date.now()}`, user };
   }
@@ -362,6 +374,7 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       interests: me.interests ?? [],
       verification: mapVerificationTier(result.user.verificationTier),
       creator,
+      avatarUrl: me.avatarUrl ?? null,
     };
     return { token: result.accessToken, user };
   } catch (e) {
@@ -376,6 +389,7 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       interests: [],
       verification: "basic",
       creator: null,
+      avatarUrl: null,
     };
     return { token: `mock-token-${Date.now()}`, user };
   }

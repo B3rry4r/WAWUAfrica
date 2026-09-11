@@ -17,6 +17,7 @@ export interface CreatorProfile {
   wawuId: string;
   fullName: string;
   handle: string;
+  avatarUrl?: string | null;
   headline?: string;
   location?: string;
   verificationLevel: VerificationLevel;

@@ -41,6 +41,7 @@ export interface ProfessionalListing {
   wawuId: string;
   name: string;
   handle: string | null;
+  avatarUrl: string | null;
   category: CategoryId;
   headline: string;
   services: string[];
