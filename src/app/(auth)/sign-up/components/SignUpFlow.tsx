@@ -346,7 +346,8 @@ export function SignUpFlow() {
               <span className="min-w-0 flex-1">
                 <span className="block text-[17px] font-semibold text-text-primary">I want to create and earn</span>
                 <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
-                  Everything above, plus upload and price your work, paid DMs, host communities, and keep 85%, 90% on Pro.
+                  Everything above, plus upload and price your work, paid DMs, host communities, list your services
+                  as a professional, and keep 85%, 90% on Pro.
                 </span>
               </span>
             </span>
