@@ -56,6 +56,25 @@ export interface TileCardProps {
   meta?: string;
   /** Watermark. Omit on lists that have no icons of their own. */
   icon?: IconName;
+  /**
+   * A supplied icon badge (PNG/SVG). Self-contained art — its own dark tile
+   * and glow baked in — so it is shown near-solid rather than bled to a
+   * low-opacity watermark. `layout="overlay"` (the default) draws it top
+   * right, clear of the title/subtitle scrim at the bottom. `layout="stacked"`
+   * draws it large, leading the card. Takes priority over `icon` when both
+   * are passed.
+   */
+  iconImageSrc?: string;
+  /**
+   * "overlay" (default): icon watermarked behind a full-bleed gradient, title
+   * and subtitle on a bottom scrim — the original landing-services treatment.
+   * "stacked": a big icon leads a plain card, title and subtitle sit below it
+   * in normal flow, no gradient. Asked for by name — "the icons should be big
+   * and be the actual slides, the write-ups below them" — after the gradient
+   * version read as a wall of mismatched colours once every card carried a
+   * supplied icon rather than a single lucide glyph.
+   */
+  layout?: "overlay" | "stacked";
   href?: string;
   onClick?: () => void;
   /** Greys the card and drops the link — for a service that is not open yet. */
@@ -64,17 +83,25 @@ export interface TileCardProps {
   selected?: boolean;
   /** Picks the gradient. Pass the item's index. */
   index?: number;
-  /** An explicit gradient, when the caller already owns one. */
+  /** An explicit gradient, when the caller already owns one. Ignored by `layout="stacked"`. */
   gradientClass?: string;
   size?: TileCardSize;
   className?: string;
 }
+
+const STACKED_ICON_SIZE: Record<TileCardSize, string> = {
+  sm: "h-20 w-20",
+  md: "h-28 w-28",
+  lg: "h-32 w-32",
+};
 
 export function TileCard({
   title,
   subtitle,
   meta,
   icon,
+  iconImageSrc,
+  layout = "overlay",
   href,
   onClick,
   disabled = false,
@@ -84,6 +111,62 @@ export function TileCard({
   size = "md",
   className = "",
 }: TileCardProps) {
+  if (layout === "stacked") {
+    // No card shell on purpose: "remove the containers, the icons should be
+    // big and bold, the title shows below" — the icon itself is the tile,
+    // not a badge sitting inside one.
+    const stackedShell = [
+      "flex shrink-0 flex-col items-center gap-1 text-center",
+      size === "sm" ? "w-[110px]" : size === "lg" ? "w-[160px] dt:w-[175px]" : "w-full",
+      selected ? "outline outline-2 outline-offset-4 outline-[var(--accent)]" : "",
+      disabled ? "opacity-70" : "transition-transform duration-200 hover:scale-[1.05]",
+      className,
+    ].join(" ");
+
+    const stackedBody = (
+      <>
+        {iconImageSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={iconImageSrc}
+            alt=""
+            className={`${STACKED_ICON_SIZE[size]} drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]`}
+          />
+        ) : icon ? (
+          <Icon
+            name={icon}
+            size={size === "sm" ? 56 : size === "lg" ? 88 : 76}
+            color="var(--accent)"
+            strokeWidth={1.6}
+          />
+        ) : null}
+        <span className="flex flex-col gap-0.5">
+          <span className={`block font-bold leading-tight text-text-primary ${size === "sm" ? "text-[13px]" : "text-[15px]"}`}>
+            {title}
+          </span>
+          {subtitle ? (
+            <span className="block text-[12.5px] leading-snug text-text-secondary">{subtitle}</span>
+          ) : null}
+          {meta ? <span className="mt-0.5 block text-[11.5px] font-semibold leading-tight text-accent">{meta}</span> : null}
+        </span>
+      </>
+    );
+
+    if (disabled) return <div className={stackedShell}>{stackedBody}</div>;
+    if (href) {
+      return (
+        <Link href={href} className={`${stackedShell} no-underline`}>
+          {stackedBody}
+        </Link>
+      );
+    }
+    return (
+      <button type="button" onClick={onClick} className={`${stackedShell} cursor-pointer`}>
+        {stackedBody}
+      </button>
+    );
+  }
+
   const shell = [
     "relative block shrink-0 overflow-hidden rounded-media text-left",
     SIZE[size],
@@ -103,7 +186,14 @@ export function TileCard({
 
   const body = (
     <>
-      {icon ? (
+      {iconImageSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={iconImageSrc}
+          alt=""
+          className={`absolute right-3 top-3 drop-shadow-[0_6px_16px_rgba(0,0,0,0.45)] ${size === "sm" ? "h-9 w-9" : "h-12 w-12"}`}
+        />
+      ) : icon ? (
         <span className="absolute -bottom-4 -right-4 opacity-25">
           <Icon name={icon} size={size === "sm" ? 70 : 110} color="var(--text-on-accent)" strokeWidth={1.2} />
         </span>

@@ -63,6 +63,8 @@ const QUICK_SERVICES: {
   label: string;
   blurb: string;
   icon: IconName;
+  /** The commissioned icon badge replacing `icon`'s lucide glyph on this rail. */
+  iconImageSrc?: string;
   href?: string;
   soon?: boolean;
   /** The card's own gradient, same treatment the industry cards used. */
@@ -73,6 +75,7 @@ const QUICK_SERVICES: {
     label: "Creator equipment",
     blurb: "Cameras, mics, lights and laptops, checked before we stock them.",
     icon: "ShoppingBag",
+    iconImageSrc: "/icons/services/shop.png",
     href: "/shop",
     bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]",
   },
@@ -81,6 +84,7 @@ const QUICK_SERVICES: {
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
     icon: "CreditCard",
+    iconImageSrc: "/icons/services/bills-payment.png",
     href: "/services/pay",
     soon: true,
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]",
@@ -90,6 +94,7 @@ const QUICK_SERVICES: {
     label: "Filings and lawyers",
     blurb: "CAC and tax filings, or book a lawyer.",
     icon: "Scale",
+    iconImageSrc: "/icons/services/legal.png",
     href: "/services/legal",
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]",
   },
@@ -98,6 +103,7 @@ const QUICK_SERVICES: {
     label: "Borrow",
     blurb: "Apply for credit against what you earn here.",
     icon: "Landmark",
+    iconImageSrc: "/icons/services/loans.png",
     // Not open yet, same as BNPL. Both halves of the old "Loans/EasyBuy"
     // entry are coming soon — splitting them was about naming two different
     // products, not about opening one of them.
@@ -113,6 +119,7 @@ const QUICK_SERVICES: {
     label: "Buy now, pay later",
     blurb: "Spread the cost of a purchase over monthly payments.",
     icon: "Smartphone",
+    iconImageSrc: "/icons/services/bnpl.png",
     soon: true,
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]",
   },
@@ -121,6 +128,7 @@ const QUICK_SERVICES: {
     label: "Retirement",
     blurb: "Save for later on irregular income.",
     icon: "PiggyBank",
+    iconImageSrc: "/icons/services/pensions.png",
     soon: true,
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]",
   },
@@ -129,6 +137,7 @@ const QUICK_SERVICES: {
     label: "What's on",
     blurb: "Find what is happening, or list your own.",
     icon: "CalendarDays",
+    iconImageSrc: "/icons/services/events.png",
     href: "/events",
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]",
   },
@@ -137,6 +146,7 @@ const QUICK_SERVICES: {
     label: "Health cover",
     blurb: "See a doctor and get covered.",
     icon: "Stethoscope",
+    iconImageSrc: "/icons/services/telemedicine.png",
     soon: true,
     bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-aqua))]",
   },
@@ -432,11 +442,12 @@ export async function LandingContent() {
                   {QUICK_SERVICES.map((service) => (
                     <TileCard
                       key={`${service.brand}-dup`}
+                      layout="stacked"
                       size="lg"
                       title={service.brand}
                       subtitle={service.soon ? "Coming soon" : service.label}
                       icon={service.icon}
-                      gradientClass={service.bg}
+                      iconImageSrc={service.iconImageSrc}
                       disabled
                       className="[&]:pointer-events-none"
                     />
@@ -447,11 +458,12 @@ export async function LandingContent() {
               {QUICK_SERVICES.map((service) => (
                 <TileCard
                   key={service.brand}
+                  layout="stacked"
                   size="lg"
                   title={service.brand}
                   subtitle={service.soon ? "Coming soon" : service.label}
                   icon={service.icon}
-                  gradientClass={service.bg}
+                  iconImageSrc={service.iconImageSrc}
                   // Not yet openable, so deliberately not a link: a card
                   // that navigates nowhere is worse than one saying so.
                   {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
