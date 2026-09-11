@@ -117,7 +117,7 @@ export function CommunityThreadDesktop({ id, onJoined }: { id: string; onJoined?
                       </span>
                     ) : (
                       <span className="flex items-center gap-[7px] text-[12.5px] text-text-muted">
-                        <Avatar initial={m.sender.name.charAt(0)} size={18} />
+                        <Avatar src={m.sender.avatarUrl} initial={m.sender.name.charAt(0)} size={18} />
                         {m.sender.name} · {m.sentAt}
                       </span>
                     )}

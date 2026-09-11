@@ -70,7 +70,7 @@ export function ContentCard({ content, state, ratio = "4 / 3", href, authorRow =
     >
       {authorRow ? (
         <div className="flex items-center gap-2.5 p-3 pb-2.5">
-          <Avatar initial={content.creator.fullName} size={36} />
+          <Avatar src={content.creator.avatarUrl} initial={content.creator.fullName} size={36} />
           <div className="flex min-w-0 flex-1 items-center gap-1.5">
             <span className="truncate text-[14.5px] font-semibold text-text-primary">{content.creator.fullName}</span>
             <VerificationBadge tier={content.creator.verificationLevel} size={16} />

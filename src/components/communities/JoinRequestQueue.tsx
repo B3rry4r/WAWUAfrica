@@ -118,7 +118,11 @@ export function JoinRequestQueue({
             key={r.user.wawuId}
             className="flex flex-wrap items-center gap-[11px] rounded-input border border-hairline bg-elevated px-[13px] py-[12px]"
           >
-            <Avatar initial={(r.user.handle ?? r.user.wawuId).charAt(0).toUpperCase()} size={36} />
+            <Avatar
+              src={r.user.avatarUrl}
+              initial={(r.user.handle ?? r.user.wawuId).charAt(0).toUpperCase()}
+              size={36}
+            />
             <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
               <span className="truncate text-[14px] font-semibold text-text-primary">{label}</span>
               <span className="truncate text-[12.5px] text-text-muted">Asked {waitedFor(r.requestedAt)}</span>

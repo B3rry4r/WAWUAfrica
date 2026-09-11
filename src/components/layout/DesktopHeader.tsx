@@ -72,7 +72,7 @@ export function DesktopHeader() {
         aria-label="Account"
         className="flex h-10 items-center gap-[10px] rounded-full border border-hairline bg-input py-0 pl-[4px] pr-[6px] hover:border-strong hover:bg-surface-hover active:bg-surface-press"
       >
-        <Avatar initial={firstName.charAt(0)} size={32} />
+        <Avatar src={user?.avatarUrl} initial={firstName.charAt(0)} size={32} />
         <span className="text-[13.5px] font-semibold text-text-primary">{firstName}</span>
         <Icon name="ChevronDown" size={15} color="var(--text-muted)" strokeWidth={2.2} />
       </Link>

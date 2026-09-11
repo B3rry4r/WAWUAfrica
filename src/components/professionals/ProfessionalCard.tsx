@@ -37,7 +37,7 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalListing }) {
       className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px] no-underline text-inherit transition-colors hover:border-strong hover:bg-surface-hover active:bg-surface-press"
     >
       <div className="flex items-start gap-[12px]">
-        <Avatar initial={pro.name.charAt(0)} size={48} />
+        <Avatar src={pro.avatarUrl} initial={pro.name.charAt(0)} size={48} />
         <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
           <span className="flex items-center gap-[6px]">
             <span className="truncate text-[15px] font-semibold text-[var(--text-primary)]">

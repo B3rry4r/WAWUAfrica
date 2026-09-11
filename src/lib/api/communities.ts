@@ -44,7 +44,14 @@ interface CommunityWire {
   messagesToday: number;
 }
 
-/** Wire shape for GET/POST /api/hub/communities/:id/messages (community-message.type.ts). */
+/**
+ * Wire shape for GET/POST /api/hub/communities/:id/messages
+ * (community-message.type.ts). `sender` is populated on GET's list() from a
+ * batched UserProfile + WAWU ID lookup (real name, handle, avatar) — it is
+ * absent on POST's create() response, where the sender is always the caller
+ * and toCommunityMessage() below falls back to the session user for that
+ * case.
+ */
 interface CommunityMessageWire {
   id: string;
   communityId: string;
@@ -54,6 +61,7 @@ interface CommunityMessageWire {
   imageUrl: string | null;
   costInCredits: number;
   sentAt: string;
+  sender?: { wawuId: string; name: string; handle: string | null; avatarUrl: string | null };
 }
 
 /** Wire shape returned by POST /api/hub/communities/:id/join (community-membership.type.ts). */
@@ -77,6 +85,7 @@ export type CommunityMembershipStatus = "joined" | "pending";
  */
 interface CommunityJoinRequestWire extends CommunityMembershipWire {
   handle: string | null;
+  avatarUrl: string | null;
 }
 
 /**
@@ -145,15 +154,27 @@ function toCommunity(c: CommunityWire): Community {
 }
 
 /**
- * GAP: CommunityMessage's wire shape only carries `senderWawuId` — no
- * display name or avatar (community-message.type.ts is a thin Prisma
- * re-export, no profile join). Falls back to the raw wawuId as the name.
+ * The backend now joins the sender's real profile in on GET's list()
+ * (community-message.service.ts's `list()`, batched via WawuIdClient +
+ * UserProfile). POST's create() response has no `sender` (the sender there
+ * is always the caller, who already knows who they are) — that case falls
+ * back to the signed-in session user rather than a bare wawuId, so a message
+ * that has just been sent doesn't flash an id where the name goes before the
+ * next refetch fills it in. The absolute last resort (`sender` missing AND
+ * no session user, which should not happen for an authed send) still falls
+ * back to the raw wawuId rather than an empty name.
  */
 function toCommunityMessage(m: CommunityMessageWire): CommunityMessage {
+  const self = sessionStorage.getUser();
+  const sender = m.sender
+    ? { wawuId: m.sender.wawuId, name: m.sender.name || m.sender.handle || m.senderWawuId, handle: m.sender.handle, avatarUrl: m.sender.avatarUrl }
+    : self && self.wawuId === m.senderWawuId
+      ? { wawuId: m.senderWawuId, name: self.fullName || m.senderWawuId, handle: null, avatarUrl: self.avatarUrl ?? null }
+      : { wawuId: m.senderWawuId, name: m.senderWawuId, handle: null, avatarUrl: null };
   return {
     id: m.id,
     communityId: m.communityId,
-    sender: { wawuId: m.senderWawuId, name: m.senderWawuId },
+    sender,
     text: m.text,
     imageUrl: m.imageUrl ?? null,
     costInCredits: m.costInCredits,
@@ -503,7 +524,7 @@ export async function getJoinRequests(communityId: string): Promise<CommunityJoi
     );
     return data.map((r) => ({
       communityId: r.communityId,
-      user: { wawuId: r.userWawuId, handle: r.handle },
+      user: { wawuId: r.userWawuId, handle: r.handle, avatarUrl: r.avatarUrl },
       requestedAt: r.requestedAt,
     }));
   } catch (e) {

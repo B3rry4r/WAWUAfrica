@@ -183,26 +183,29 @@ export async function savePrivacySettings(next: PrivacySettings): Promise<Privac
   }
 }
 
-/** Real BlockedAccount row (blocked-account.service.ts) — references the blocked user by wawuId only. */
+/**
+ * Real BlockedAccount row (blocked-account.service.ts). `blockedUser` is the
+ * server's batched profile join (blocked-account.type.ts's additive
+ * `blockedUser` field) — absent only if the lookup genuinely found nothing
+ * (an id WAWU ID and UserProfile both have no record of).
+ */
 interface RealBlockedAccount {
   id: string;
   userWawuId: string;
   blockedWawuId: string;
   blockedAt: string;
+  blockedUser?: { wawuId: string; name: string; handle: string | null; avatarUrl: string | null };
 }
 
 /**
  * GET /api/hub/settings/privacy/blocked (blocked-account.controller.ts,
- * WawuAuthGuard, paginated). GAP: the real row only carries `blockedWawuId`
- * — a bare id reference — never a display name or handle. There is no join
- * to any profile data in blocked-account.service.ts's `list()` (confirmed
- * by reading it), and even UserProfile's own public-profile aggregate has
- * no "name" field to backfill from (see profile.ts's getCreatorProfile gap
- * note) — only `handle`, and only for accounts with a completed onboarding
- * row. Rather than fabricate a plausible-looking fake name, both `name` and
- * `handle` fall back to the raw blockedWawuId so the gap stays visible
- * instead of hidden, until a real display-name source exists for this
- * endpoint.
+ * WawuAuthGuard, paginated). The row now carries the blocked user's real
+ * name/handle/avatar via `blockedUser` (blocked-account.service.ts's `list()`
+ * batch-joins UserProfile + WAWU ID) — this used to fall back to the raw
+ * blockedWawuId for both `name` and `handle` because no join existed. The
+ * raw-id fallback is kept only for the genuine edge case where the lookup
+ * itself comes back empty (row.blockedUser is absent), so the gap stays
+ * visible instead of silently blank.
  */
 export async function getBlockedAccounts(): Promise<BlockedAccount[]> {
   try {
@@ -211,9 +214,10 @@ export async function getBlockedAccounts(): Promise<BlockedAccount[]> {
     });
     return data.map((row) => ({
       id: row.id,
-      name: row.blockedWawuId,
-      handle: row.blockedWawuId,
+      name: row.blockedUser?.name || row.blockedUser?.handle || row.blockedWawuId,
+      handle: row.blockedUser?.handle || row.blockedWawuId,
       blockedAt: row.blockedAt,
+      avatarUrl: row.blockedUser?.avatarUrl ?? null,
     }));
   } catch (e) {
     if (!isMockModeError(e)) throw e;

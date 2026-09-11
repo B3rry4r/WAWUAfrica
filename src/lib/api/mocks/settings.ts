@@ -66,6 +66,8 @@ export interface BlockedAccount {
   name: string;
   handle: string;
   blockedAt: string;
+  /** Real photo, from BlockedAccount's server-joined `blockedUser`. Null/absent is normal. */
+  avatarUrl?: string | null;
 }
 
 export const MOCK_NOTIFICATION_SETTINGS: NotificationSettings = {

@@ -388,7 +388,7 @@ export async function LandingContent() {
 
       <main className="relative z-10">
         {/* ============ HERO ============ */}
-        <section className="relative px-5 pb-12 pt-[120px] dt:pb-14 dt:pt-[190px]">
+        <section className="relative px-5 pb-6 pt-[120px] dt:pb-8 dt:pt-[190px]">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_55%_45%_at_50%_18%,var(--accent-tint-strong),transparent_70%)]"
             aria-hidden="true"
@@ -461,11 +461,15 @@ export async function LandingContent() {
             slider"), titles only (no subtitle line), a not-yet-open service
             shown as visually disabled rather than captioned "Coming soon",
             and a layout that is 4-per-row over two lines on mobile and one
-            straight line on desktop. Eight services both ways is exactly
-            `grid-cols-4` (2 rows) on mobile and `grid-cols-8` (1 row) on
-            desktop — no scrolling, no duplicate list, no animation.
+            straight line on desktop. Mobile stays `grid-cols-4` (2 rows,
+            each tile filling its column) but desktop is a centered flex row,
+            not `grid-cols-8`: eight equal-width columns spread across the
+            full content width put far more air between tiles than between
+            an icon and its own label, reading as scattered rather than as
+            one row. Flex with a fixed gap sizes each tile to its own content
+            instead, so the row reads as a group.
           */}
-          <div className="mt-9 grid grid-cols-4 gap-x-2 gap-y-7 dt:mt-12 dt:grid-cols-8 dt:gap-x-4">
+          <div className="mt-6 grid grid-cols-4 gap-x-2 gap-y-7 dt:mt-6 dt:flex dt:flex-row dt:flex-wrap dt:justify-center dt:gap-x-10 dt:gap-y-8">
             {ORDERED_QUICK_SERVICES.map((service) => (
               <TileCard
                 key={service.brand}

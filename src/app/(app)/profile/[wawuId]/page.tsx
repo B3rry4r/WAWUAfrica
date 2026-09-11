@@ -157,7 +157,7 @@ function DesktopIdentity({ profile, following, onToggleFollow }: { profile: Crea
       <div className="h-[180px] shrink-0 bg-[linear-gradient(160deg,var(--accent-deep),var(--surface-elevated))]" />
       <div className="-mt-[66px] flex items-end gap-5 border-b border-hairline px-[26px] pb-5">
         <div className="overflow-hidden rounded-full border-[3px] border-page">
-          <Avatar initial={profile.name.charAt(0)} size={96} />
+          <Avatar src={profile.avatarUrl} initial={profile.name.charAt(0)} size={96} />
         </div>
         <div className="flex min-w-0 flex-1 items-end justify-between gap-5 pb-1.5">
           <div className="flex min-w-0 flex-col gap-1.5">
@@ -169,7 +169,7 @@ function DesktopIdentity({ profile, following, onToggleFollow }: { profile: Crea
             {metaParts.length > 0 && <span className="text-[14px] text-text-secondary">{metaParts.join(" · ")}</span>}
           </div>
           <DesktopProfileActions
-            creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, dmPrice: profile.dmPrice, dmResponseHours: profile.dmResponseHours, verification: profile.verification }}
+            creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, avatarUrl: profile.avatarUrl, dmPrice: profile.dmPrice, dmResponseHours: profile.dmResponseHours, verification: profile.verification }}
             dmEnabled={profile.dmEnabled}
             following={following}
           />
@@ -235,7 +235,7 @@ function FullHeader({ profile, following, onToggleFollow }: { profile: CreatorPr
         onPrimary={onToggleFollow}
       />
       <ProfileActions
-        creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, dmPrice: profile.dmPrice, dmResponseHours: profile.dmResponseHours, verification: profile.verification }}
+        creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, avatarUrl: profile.avatarUrl, dmPrice: profile.dmPrice, dmResponseHours: profile.dmResponseHours, verification: profile.verification }}
         dmEnabled={profile.dmEnabled}
       />
     </div>
@@ -259,7 +259,7 @@ function CompactHeader({ profile, following, onToggleFollow }: { profile: Creato
       <div className="flex shrink-0 items-center gap-[7px]">
         <FollowButton wawuId={profile.wawuId} initial={following} size="sm" />
         <CompactHeaderActions
-          creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, dmPrice: profile.dmPrice, dmResponseHours: profile.dmResponseHours, verification: profile.verification }}
+          creator={{ wawuId: profile.wawuId, name: profile.name, handle: profile.handle, avatarUrl: profile.avatarUrl, dmPrice: profile.dmPrice, dmResponseHours: profile.dmResponseHours, verification: profile.verification }}
           dmEnabled={profile.dmEnabled}
         />
       </div>

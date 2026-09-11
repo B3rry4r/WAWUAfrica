@@ -124,7 +124,7 @@ export function AppHeader() {
         aria-label="Your profile"
         className="shrink-0 rounded-full hover:bg-state-hover active:bg-state-press"
       >
-        <Avatar initial={(user?.fullName ?? "?").charAt(0)} size={34} />
+        <Avatar src={user?.avatarUrl} initial={(user?.fullName ?? "?").charAt(0)} size={34} />
       </Link>
       {!resolved ? (
         <Skeleton variant="circle" className="h-9 w-9 shrink-0" />

@@ -113,14 +113,16 @@ function cloneThread(t: ThreadDetail): ThreadDetail {
 
 /**
  * Wire shape of DirectMessage as returned by the real backend
- * (/workspace/projects/WAWU-Hub-API/src/direct-message — prisma model is
- * the wire shape verbatim). This is the CREATOR side: `creatorWawuId` is
- * always the signed-in caller here, `senderWawuId` is the buyer.
+ * (/workspace/projects/WAWU-Hub-API/src/direct-message — see
+ * src/common/types/direct-message.type.ts). This is the CREATOR side:
+ * `creatorWawuId` is always the signed-in caller here, `senderWawuId` is the
+ * buyer.
  *
- * GAP: the row carries only `senderWawuId` — no buyer name/initials. There
- * is no profile-join on this endpoint and no bulk user-lookup route in
- * DirectMessage's contract. Thread/ThreadDetail's buyer fields are
- * synthesized below as placeholders (see `buyerDisplay`).
+ * `otherParty` is the buyer's real identity, batch-joined server-side
+ * (direct-message.type.ts's additive `otherParty` field) — `getState()` /
+ * `getThreads()` read it off /dm/inbox, `getThread()` off /dm/:id. It is
+ * `null` only when the lookup genuinely found nothing, which `buyerDisplay`
+ * below still falls back to a placeholder for.
  */
 interface RawDirectMessage {
   id: string;
@@ -134,6 +136,7 @@ interface RawDirectMessage {
   respondedAt: string | null;
   responseText: string | null;
   flutterwaveTxRef: string;
+  otherParty: { wawuId: string; name: string; handle: string | null; avatarUrl: string | null } | null;
 }
 
 /**
@@ -163,11 +166,20 @@ function toPenaltyKind(state: RawResponseStats["penaltyState"]): PenaltyKind {
 }
 
 /**
- * GAP: no buyer profile available on the DM row (see RawDirectMessage doc
- * comment) — placeholder until a real name source is wired in.
+ * The buyer's real name now comes from `otherParty` (see RawDirectMessage's
+ * doc comment). Falls back to a placeholder only in the genuine edge case
+ * where the server-side lookup found nothing.
  */
-function buyerDisplay(senderWawuId: string): { buyerName: string; buyerInitials: string } {
-  return { buyerName: "Buyer", buyerInitials: senderWawuId.slice(0, 1).toUpperCase() || "B" };
+function buyerDisplay(
+  dm: RawDirectMessage,
+): { buyerName: string; buyerInitials: string; buyerAvatarUrl: string | null } {
+  const other = dm.otherParty;
+  const name = other?.name || other?.handle || "Buyer";
+  return {
+    buyerName: name,
+    buyerInitials: name.slice(0, 1).toUpperCase() || "B",
+    buyerAvatarUrl: other?.avatarUrl ?? null,
+  };
 }
 
 /** "22h ago" / "2h ago" / "1d ago" — matches the mock's copy style. */
@@ -201,13 +213,14 @@ function toThreadStatus(status: RawDirectMessage["status"]): ThreadStatus {
 }
 
 function toThread(dm: RawDirectMessage): Thread {
-  const { buyerName, buyerInitials } = buyerDisplay(dm.senderWawuId);
+  const { buyerName, buyerInitials, buyerAvatarUrl } = buyerDisplay(dm);
   const remainingMs = new Date(dm.deadlineAt).getTime() - Date.now();
   const awaiting = dm.status === "awaiting_response";
   return {
     id: dm.id,
     buyerName,
     buyerInitials,
+    buyerAvatarUrl,
     preview: dm.text,
     price: dm.amount,
     // GAP: DirectMessage has no separate "opened" state — the mock model's
@@ -236,7 +249,7 @@ function toThreadMessages(dm: RawDirectMessage): ThreadMessage[] {
 }
 
 function toThreadDetail(dm: RawDirectMessage): ThreadDetail {
-  const { buyerName, buyerInitials } = buyerDisplay(dm.senderWawuId);
+  const { buyerName, buyerInitials, buyerAvatarUrl } = buyerDisplay(dm);
   const remainingMs = new Date(dm.deadlineAt).getTime() - Date.now();
   const awaiting = dm.status === "awaiting_response";
   const duration = awaiting && remainingMs > 0 ? formatDuration(remainingMs) : undefined;
@@ -244,6 +257,7 @@ function toThreadDetail(dm: RawDirectMessage): ThreadDetail {
     id: dm.id,
     buyerName,
     buyerInitials,
+    buyerAvatarUrl,
     // GAP: no buyer location on the backend.
     location: undefined,
     askedAgo: formatAgo(dm.sentAt),

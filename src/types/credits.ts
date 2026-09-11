@@ -51,7 +51,7 @@ export interface Community {
  */
 export interface CommunityJoinRequest {
   communityId: string;
-  user: { wawuId: string; handle: string | null };
+  user: { wawuId: string; handle: string | null; avatarUrl: string | null };
   /** ISO timestamp of when they asked — the queue is ordered oldest-first. */
   requestedAt: string;
 }
@@ -59,7 +59,14 @@ export interface CommunityJoinRequest {
 export interface CommunityMessage {
   id: string;
   communityId: string;
-  sender: { wawuId: string; name: string; avatarUrl?: string };
+  /**
+   * Real name, handle and photo now come from the server (CommunityMessage's
+   * `sender` field, batch-joined from UserProfile + WAWU ID) instead of the
+   * bare wawuId this used to fall back to as `name`. `handle` and
+   * `avatarUrl` are genuinely nullable: not every profile has a handle set,
+   * and not every account has uploaded a photo.
+   */
+  sender: { wawuId: string; name: string; handle?: string | null; avatarUrl?: string | null };
   /** Null on an image-only message: a photo IS the message. */
   text: string | null;
   /** A photo posted in the room. A message is text, an image, or both. */

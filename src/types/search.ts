@@ -6,6 +6,7 @@ export type SearchTab = "all" | "content" | "creators" | "communities";
 export interface SearchCreatorResult {
   wawuId: string;
   fullName: string;
+  avatarUrl?: string | null;
   headline: string;
   location?: string;
   verificationLevel: VerificationLevel;

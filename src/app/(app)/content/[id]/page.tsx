@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, RefObject } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { PriceChip } from "@/components/ui/PriceChip";
@@ -364,7 +365,11 @@ export default function ContentDetailPage() {
       <TipSheet
         open={tipOpen}
         onClose={() => setTipOpen(false)}
-        creator={content ? { wawuId: content.creator.wawuId, name: content.creator.fullName } : null}
+        creator={
+          content
+            ? { wawuId: content.creator.wawuId, name: content.creator.fullName, avatarUrl: content.creator.avatarUrl }
+            : null
+        }
       />
 
       <RateSheet
@@ -525,9 +530,7 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
       <h1 className="m-0 text-[22px] font-bold leading-snug tracking-[-0.015em]">{content.title}</h1>
       <div className="flex items-center gap-2">
         <Link href={`/profile/${content.creator.wawuId}`} className="flex min-w-0 items-center gap-2 hover:text-accent-hover">
-          <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-accent-tint text-[13px] font-semibold text-accent-hover">
-            {content.creator.fullName.charAt(0)}
-          </span>
+          <Avatar src={content.creator.avatarUrl} initial={content.creator.fullName.charAt(0)} size={34} />
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="flex items-center gap-1.5">
               <span className="truncate text-[14px] font-semibold">{content.creator.fullName}</span>

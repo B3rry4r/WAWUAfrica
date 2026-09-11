@@ -20,6 +20,7 @@ interface RealCreatorDiscoveryItem {
   wawuId: string;
   name: string;
   handle: string | null;
+  avatarUrl: string | null;
   field: string | null;
   pieceCount: number;
   verification: VerificationLevel;
@@ -62,6 +63,8 @@ export async function getCreators(category?: ExploreCategoryId): Promise<Creator
     return rows.map((r) => ({
       wawuId: r.wawuId,
       name: r.name,
+      handle: r.handle,
+      avatarUrl: r.avatarUrl,
       // `field` is the creator's first interest, and a creator who has listed
       // none has no field. Empty string rather than a placeholder: the card
       // renders "field · N pieces", and inventing a category for somebody is

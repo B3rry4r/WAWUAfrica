@@ -123,7 +123,7 @@ function guardLocked(content: ContentPiece): ContentPiece {
  */
 export async function enrichCreatorIdentities(items: ContentPiece[]): Promise<ContentPiece[]> {
   const uniqueIds = Array.from(new Set(items.map((i) => i.creator.wawuId)));
-  const summaries = new Map<string, { isPro: boolean; handle: string | null }>();
+  const summaries = new Map<string, { isPro: boolean; handle: string | null; avatarUrl: string | null }>();
   await Promise.all(
     uniqueIds.map(async (id) => {
       try {
@@ -136,7 +136,16 @@ export async function enrichCreatorIdentities(items: ContentPiece[]): Promise<Co
   return items.map((item) => {
     const summary = summaries.get(item.creator.wawuId);
     if (!summary?.handle) return item;
-    return { ...item, creator: { ...item.creator, fullName: summary.handle, handle: summary.handle, isPro: summary.isPro } };
+    return {
+      ...item,
+      creator: {
+        ...item.creator,
+        fullName: summary.handle,
+        handle: summary.handle,
+        isPro: summary.isPro,
+        avatarUrl: summary.avatarUrl,
+      },
+    };
   });
 }
 
@@ -190,20 +199,26 @@ export async function getFeaturedContent(): Promise<ContentPiece[]> {
  * whole content-detail load rather than risk silently showing the wrong
  * split.
  */
-async function getCreatorSummary(creatorWawuId: string): Promise<{ isPro: boolean; handle: string | null }> {
+async function getCreatorSummary(
+  creatorWawuId: string,
+): Promise<{ isPro: boolean; handle: string | null; avatarUrl: string | null }> {
   try {
     // Genuinely public (PublicUserProfileController) — not the guarded
     // /users/:wawuId/public-profile route, so this also works for
     // getFeaturedContent()'s anonymous landing-page callers, who have no
-    // session token to send at all.
-    const profile = await apiFetch<{ tier: "basic" | "pro" | "pro_max"; handle: string | null }>(
-      `/api/hub/users/public/${creatorWawuId}`,
-    );
-    return { isPro: profile.tier === "pro", handle: profile.handle };
+    // session token to send at all. The real response carries the full
+    // CreatorProfile (see UserProfileService#getPublicProfile), including
+    // avatarUrl; only tier/handle/avatarUrl are used here.
+    const profile = await apiFetch<{
+      tier: "basic" | "pro" | "pro_max";
+      handle: string | null;
+      avatarUrl: string | null;
+    }>(`/api/hub/users/public/${creatorWawuId}`);
+    return { isPro: profile.tier === "pro", handle: profile.handle, avatarUrl: profile.avatarUrl ?? null };
   } catch (e) {
     if (!isMockModeError(e)) throw e;
     // SEAM: GET /api/hub/users/:wawuId/public-profile
-    return { isPro: false, handle: null };
+    return { isPro: false, handle: null, avatarUrl: null };
   }
 }
 
@@ -222,6 +237,7 @@ export async function getContent(id: string): Promise<ContentDetailResponse> {
       content.creator.fullName = summary.handle;
       content.creator.handle = summary.handle;
     }
+    content.creator.avatarUrl = summary.avatarUrl;
     return { content };
   } catch (e) {
     if (!isMockModeError(e)) throw e;

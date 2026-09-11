@@ -22,7 +22,7 @@ export function TipSheet({
 }: {
   open: boolean;
   onClose: () => void;
-  creator: { wawuId: string; name: string } | null;
+  creator: { wawuId: string; name: string; avatarUrl?: string | null } | null;
 }) {
   const [amount, setAmount] = useState<number | null>(null);
   /** What they typed, kept as text so a half-typed number is not reformatted. */
@@ -60,7 +60,7 @@ export function TipSheet({
       {!creator ? null : phase === "choose" ? (
         <div className="flex flex-col gap-[16px]">
           <div className="flex items-center gap-[10px]">
-            <Avatar initial={creator.name.charAt(0)} size={36} />
+            <Avatar src={creator.avatarUrl} initial={creator.name.charAt(0)} size={36} />
             <span className="text-[15px] font-semibold text-[var(--text-primary)]">Tip {creator.name}</span>
           </div>
           <div className="grid grid-cols-2 gap-[10px]">

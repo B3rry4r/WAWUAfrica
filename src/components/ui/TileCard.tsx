@@ -93,7 +93,7 @@ const STACKED_ICON_SIZE: Record<TileCardSize, string> = {
   // Mobile stays compact (4 tiles to a row); desktop gets real room (8 in one
   // row, plenty of width per tile), so this is the one size in the map that
   // carries its own `dt:` step rather than a single fixed figure.
-  sm: "h-12 w-12 dt:h-20 dt:w-20",
+  sm: "h-16 w-16 dt:h-24 dt:w-24",
   md: "h-28 w-28",
   lg: "h-32 w-32",
 };
@@ -120,10 +120,12 @@ export function TileCard({
     // not a badge sitting inside one.
     const stackedShell = [
       "flex shrink-0 flex-col items-center gap-1 text-center",
-      // "sm" fills its grid cell rather than claiming a fixed width — it's
-      // the size a caller reaches for when it owns the column tracks (a
-      // grid of icon tiles), not a horizontally scrolling row.
-      size === "sm" ? "w-full" : size === "lg" ? "w-[160px] dt:w-[175px]" : "w-full",
+      // "sm" fills its grid cell on mobile (the caller owns a 4-col grid
+      // there), but sizes to its own content on desktop, where the caller
+      // switches to a centered flex row and a `w-full` tile would stretch
+      // to fill it, spreading every tile across the whole row instead of
+      // sitting close together.
+      size === "sm" ? "w-full dt:w-auto" : size === "lg" ? "w-[160px] dt:w-[175px]" : "w-full",
       selected ? "outline outline-2 outline-offset-4 outline-[var(--accent)]" : "",
       disabled ? "brightness-[0.45]" : "transition-transform duration-200 hover:scale-[1.05]",
       className,

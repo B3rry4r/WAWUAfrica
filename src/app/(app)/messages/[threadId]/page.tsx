@@ -76,7 +76,7 @@ export default function DmThreadPage() {
       <header className="sticky top-0 z-40 flex items-center gap-[11px] border-b border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-[12px_16px_10px]">
         <ProfileBackButton compact />
         <div className="flex min-w-0 flex-1 items-center gap-[10px]">
-          <Avatar initial={first} size={34} />
+          <Avatar src={summary.creatorAvatarUrl} initial={first} size={34} />
           <div className="flex min-w-0 flex-1 flex-col gap-px">
             {/* No verification badge here. It used to render a hardcoded
                 `verified_user` tick beside every name in every thread, which

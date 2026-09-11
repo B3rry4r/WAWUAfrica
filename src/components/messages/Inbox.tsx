@@ -142,7 +142,7 @@ export function Inbox() {
               }`}
             >
               <div className="flex gap-[12px]">
-                <Avatar initials={t.buyerInitials} size={40} />
+                <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={40} />
                 <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
                   <div className="flex items-center gap-[8px]">
                     <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">
@@ -192,7 +192,7 @@ export function Inbox() {
                 t.unread ? "opacity-100" : "opacity-70"
               }`}
             >
-              <Avatar initials={t.buyerInitials} size={40} />
+              <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={40} />
               <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
                 <div className="flex items-center gap-[8px]">
                   <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">{t.buyerName}</span>

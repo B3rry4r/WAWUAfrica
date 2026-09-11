@@ -433,7 +433,7 @@ export function CreatorDashboard() {
               {urgentThread ? (
                 <>
                   <div className="flex items-center gap-[11px]">
-                    <Avatar initial={urgentThread.buyerInitials} size={38} />
+                    <Avatar src={urgentThread.buyerAvatarUrl} initial={urgentThread.buyerInitials} size={38} />
                     <div className="flex flex-1 min-w-0 flex-col gap-[2px]">
                       <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
                         {urgentThread.buyerName}

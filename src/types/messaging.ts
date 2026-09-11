@@ -23,6 +23,8 @@ export interface Thread {
   id: string;
   buyerName: string;
   buyerInitials: string;
+  /** Real photo, from DirectMessage's server-joined `otherParty`. Null is normal. */
+  buyerAvatarUrl?: string | null;
   preview: string;
   price: number;
   /** True once the buyer has opened it (starts the 24h window). */
@@ -65,6 +67,8 @@ export interface ThreadDetail {
   id: string;
   buyerName: string;
   buyerInitials: string;
+  /** Real photo, from DirectMessage's server-joined `otherParty`. Null is normal. */
+  buyerAvatarUrl?: string | null;
   location?: string;
   /** e.g. "22h ago". */
   askedAgo: string;

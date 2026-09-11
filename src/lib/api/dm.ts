@@ -6,15 +6,16 @@ import { getMockDmThread, getMockDmThreads, sendMockPaidDm, type DmSendResult } 
 
 /**
  * Wire shape of DirectMessage as returned by the real backend
- * (/workspace/projects/WAWU-Hub-API/src/direct-message — prisma model is the
- * wire shape verbatim, see src/common/types/direct-message.type.ts). This is
- * the FAN side: `senderWawuId` is always the signed-in caller here.
+ * (/workspace/projects/WAWU-Hub-API/src/direct-message — see
+ * src/common/types/direct-message.type.ts). This is the FAN side:
+ * `senderWawuId` is always the signed-in caller here.
  *
- * GAP: the row carries only `creatorWawuId` — no creator name/handle/avatar.
- * There is no profile-join on this endpoint and no bulk creator-lookup route
- * in DirectMessage's contract. DmThreadSummary.creatorName/creatorHandle are
- * synthesized below as placeholders (see `creatorDisplay`) until a real
- * profile source is wired in from the caller side or the backend adds one.
+ * `otherParty` is the creator's real identity, batch-joined server-side
+ * (direct-message.type.ts's additive `otherParty` field) — `getDmThreads()`
+ * reads it off /dm/threads, `getDmThread()` off /dm/:id. It is `null` only
+ * when the lookup genuinely found nothing (an id WAWU ID and UserProfile
+ * both have no record of), which `creatorDisplay` below still falls back to
+ * a placeholder for.
  */
 interface RawDirectMessage {
   id: string;
@@ -28,6 +29,7 @@ interface RawDirectMessage {
   respondedAt: string | null;
   responseText: string | null;
   flutterwaveTxRef: string;
+  otherParty: { wawuId: string; name: string; handle: string | null; avatarUrl: string | null } | null;
 }
 
 /** HH:MM in 24h, or a short weekday/date for older messages — matches the mock's display style. */
@@ -52,20 +54,29 @@ function formatDeadline(iso: string): string {
 }
 
 /**
- * GAP: no creator profile available on the DM row (see RawDirectMessage
- * doc comment) — placeholder until a real name/handle source is wired in.
+ * The creator's real name/handle now come from `otherParty` (see
+ * RawDirectMessage's doc comment). Falls back to a placeholder only in the
+ * genuine edge case where the server-side lookup found nothing.
  */
-function creatorDisplay(creatorWawuId: string): { creatorName: string; creatorHandle: string } {
-  return { creatorName: "Creator", creatorHandle: creatorWawuId };
+function creatorDisplay(
+  dm: RawDirectMessage,
+): { creatorName: string; creatorHandle: string; creatorAvatarUrl: string | null } {
+  const other = dm.otherParty;
+  return {
+    creatorName: other?.name || other?.handle || "Creator",
+    creatorHandle: other?.handle || dm.creatorWawuId,
+    creatorAvatarUrl: other?.avatarUrl ?? null,
+  };
 }
 
 function toDmThreadSummary(dm: RawDirectMessage): DmThreadSummary {
-  const { creatorName, creatorHandle } = creatorDisplay(dm.creatorWawuId);
+  const { creatorName, creatorHandle, creatorAvatarUrl } = creatorDisplay(dm);
   return {
     id: dm.id,
     creatorWawuId: dm.creatorWawuId,
     creatorName,
     creatorHandle,
+    creatorAvatarUrl,
     snippet: dm.responseText ?? dm.text,
     lastAt: formatWhen(dm.respondedAt ?? dm.sentAt),
     // GAP: DirectMessage has no read/unread flag for the sender — the

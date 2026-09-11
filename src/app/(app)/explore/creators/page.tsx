@@ -68,6 +68,8 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
             key={creator.wawuId}
             wawuId={creator.wawuId}
             name={creator.name}
+            handle={creator.handle}
+            avatarUrl={creator.avatarUrl}
             field={creator.field}
             pieceCount={creator.pieceCount}
             verification={creator.verification}
@@ -93,13 +95,15 @@ export default async function CreatorsPage({ searchParams }: { searchParams: { c
 interface CreatorRowProps {
   wawuId: string;
   name: string;
+  handle: string | null;
+  avatarUrl: string | null;
   field: string;
   pieceCount: number;
   verification?: VerificationLevel;
   following: boolean;
 }
 
-function CreatorRow({ wawuId, name, field, pieceCount, verification, following }: CreatorRowProps) {
+function CreatorRow({ wawuId, name, handle, avatarUrl, field, pieceCount, verification, following }: CreatorRowProps) {
   return (
     // The row navigates via a stretched overlay link rather than wrapping its
     // contents: FollowButton must stay outside the link, or tapping Follow
@@ -112,11 +116,11 @@ function CreatorRow({ wawuId, name, field, pieceCount, verification, following }
         aria-label={`${name}, ${field}`}
         className="absolute inset-0 rounded-[var(--radius-card)] no-underline"
       />
-      <Avatar initial={name.charAt(0)} size={52} />
+      <Avatar src={avatarUrl} initial={name.charAt(0)} size={52} />
       <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-[6px]">
           <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-semibold text-[var(--text-primary)]">
-            {name}
+            {handle ? `@${handle}` : name}
           </span>
           {verification && <VerificationBadge tier={verification} size={15} />}
         </div>

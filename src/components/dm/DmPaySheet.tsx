@@ -20,6 +20,7 @@ export interface DmCreator {
   wawuId: string;
   name: string;
   handle: string;
+  avatarUrl?: string | null;
   dmPrice: number;
   /**
    * Hours this creator has to reply before the payment is refunded. Shown
@@ -122,7 +123,7 @@ export function DmPaySheet({
       ) : phase === "compose" ? (
         <div className="flex flex-col gap-[16px]">
           <div className="flex items-center gap-[10px]">
-            <Avatar initial={creator.name.charAt(0)} size={36} />
+            <Avatar src={creator.avatarUrl} initial={creator.name.charAt(0)} size={36} />
             <span className="flex items-center gap-[6px] text-[15px] font-semibold text-[var(--text-primary)]">
               {creator.name}
               <VerificationBadge tier={creator.verification ?? "basic"} size={15} />

@@ -41,7 +41,7 @@ export default async function ProfessionalDetailPage({
 
       <div className="mx-auto flex w-full max-w-[680px] flex-col gap-[18px] p-[14px_16px_96px] xl:p-[26px]">
         <div className="flex items-start gap-[14px]">
-          <Avatar initial={pro.name.charAt(0)} size={64} />
+          <Avatar src={pro.avatarUrl} initial={pro.name.charAt(0)} size={64} />
           <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
             <span className="flex items-center gap-[7px]">
               <span className="truncate text-[19px] font-bold text-[var(--text-primary)]">
@@ -64,6 +64,7 @@ export default async function ProfessionalDetailPage({
             wawuId: pro.wawuId,
             name: pro.name,
             handle: pro.handle ?? pro.wawuId,
+            avatarUrl: pro.avatarUrl,
             dmPrice: pro.dmPrice ?? 0,
             dmResponseHours: pro.dmResponseHours,
             verification: pro.verification,
