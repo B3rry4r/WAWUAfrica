@@ -115,9 +115,9 @@ export function TileCard({
   className = "",
 }: TileCardProps) {
   if (layout === "stacked") {
-    // No card shell on purpose: "remove the containers, the icons should be
-    // big and bold, the title shows below" — the icon itself is the tile,
-    // not a badge sitting inside one.
+    // No box around the icon, no shell around the tile: "remove the
+    // containers, just icons and text" — the icon itself is the tile, title
+    // in plain flow below it.
     const stackedShell = [
       "flex shrink-0 flex-col items-center gap-1 text-center",
       // "sm" fills its grid cell on mobile (the caller owns a 4-col grid

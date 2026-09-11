@@ -468,8 +468,13 @@ export async function LandingContent() {
             an icon and its own label, reading as scattered rather than as
             one row. Flex with a fixed gap sizes each tile to its own content
             instead, so the row reads as a group.
+
+            No card, no outer panel: bare icons, close together. A boxed
+            version of this (per-icon border, plus a panel around the whole
+            grid) was tried and asked back out — "remove the containers,
+            just icons and text... let them be close, not spaced between".
           */}
-          <div className="mt-6 grid grid-cols-4 gap-x-2 gap-y-7 dt:mt-6 dt:flex dt:flex-row dt:flex-wrap dt:justify-center dt:gap-x-10 dt:gap-y-8">
+          <div className="mx-auto mt-4 grid grid-cols-4 place-items-center gap-x-0.5 gap-y-0.5 dt:mt-4 dt:flex dt:flex-row dt:flex-wrap dt:justify-center dt:gap-x-2 dt:gap-y-2">
             {ORDERED_QUICK_SERVICES.map((service) => (
               <TileCard
                 key={service.brand}
