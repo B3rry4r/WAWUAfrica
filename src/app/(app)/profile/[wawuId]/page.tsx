@@ -221,6 +221,8 @@ function FullHeader({ profile, following, onToggleFollow }: { profile: CreatorPr
         name={profile.name}
         handle={profile.handle}
         bio={profile.bio}
+        avatarUrl={profile.avatarUrl}
+        coverUrl={profile.coverUrl}
         verification={profile.verification}
         tier={profile.plan}
         stats={[
@@ -250,7 +252,7 @@ function CompactHeader({ profile, following, onToggleFollow }: { profile: Creato
       ].join(" ")}
     >
       <ProfileBackButton compact />
-      <Avatar initial={profile.name.charAt(0)} size={34} />
+      <Avatar src={profile.avatarUrl} initial={profile.name.charAt(0)} size={34} />
       <span className="min-w-0 flex-1 truncate text-[14.5px] font-semibold text-text-primary">
         {profile.name}
       </span>
@@ -509,7 +511,7 @@ function SocialPill({ icon, label, href }: { icon: SocialName; label: string; hr
       rel="noopener noreferrer"
       className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[14px] text-[13px] font-semibold text-text-secondary no-underline transition-colors hover:border-strong hover:text-text-primary"
     >
-      <SocialIcon name={icon} size={15} />
+      <SocialIcon name={icon} size={15} brand />
       {label}
     </a>
   );

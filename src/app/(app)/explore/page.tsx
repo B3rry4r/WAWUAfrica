@@ -59,6 +59,23 @@ export default async function ExplorePage() {
           </div>
         </section>
 
+        {/*
+          Professionals, promoted up from the bottom of the page. It used to
+          sit last, below Learn and Shop, which read as "not surfaced at all"
+          when the only way to find it was scrolling past everything else —
+          right after Browse is the first thing most people see.
+        */}
+        <section className="flex flex-col gap-[11px]">
+          <div className="flex items-center gap-[10px] px-[2px]">
+            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Professionals</span>
+            <Link href="/professionals" className={seeAll}>See all</Link>
+          </div>
+          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+            <ListRow title="Find a professional" subtitle="Lawyers, accountants, doctors and more. Vetted before they are listed" icon="BriefcaseBusiness" href="/professionals" />
+            <ListRow title="Offer your own services" subtitle="Get listed in your field and be paid for your time" icon="IdCard" href="/professionals/apply" />
+          </div>
+        </section>
+
         {/* Creator discovery — design D10's "Creators to watch" row. Desktop
             only: below xl this content lives on /explore/creators instead. */}
         <section className="hidden flex-col gap-[14px] xl:flex">
@@ -113,17 +130,6 @@ export default async function ExplorePage() {
           <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
             <ListRow title="Gear for what you make" subtitle="Cameras, mics, lights, laptops. Checked before we stock them" icon="ShoppingBag" href="/shop" />
             <ListRow title="My orders" subtitle="What you bought, and where it has got to" icon="Package" href="/shop/orders" />
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-[11px]">
-          <div className="flex items-center gap-[10px] px-[2px]">
-            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Professionals</span>
-            <Link href="/professionals" className={seeAll}>See all</Link>
-          </div>
-          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Find a professional" subtitle="Lawyers, accountants, doctors and more. Vetted before they are listed" icon="BriefcaseBusiness" href="/professionals" />
-            <ListRow title="Offer your own services" subtitle="Get listed in your field and be paid for your time" icon="IdCard" href="/professionals/apply" />
           </div>
         </section>
 

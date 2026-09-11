@@ -53,14 +53,35 @@ export function ProfileHeader({
     <header className={cn("border-b border-[var(--border-hairline)] bg-[var(--surface-card)]", className)}>
       <div className="relative h-[132px] bg-gradient-to-br from-[var(--accent-deep)] to-[var(--accent)]">
         {coverUrl && (
+          // Absolutely positioned, not a plain in-flow block: a positioned
+          // sibling (the scrim below) always paints after non-positioned
+          // in-flow content regardless of DOM order, so a plain <img> here
+          // would be permanently hidden under the scrim no matter which one
+          // comes first in markup.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+          <img src={coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/90 to-transparent" />
+        {/*
+          Not `from-[var(--surface-page)]/90`: Tailwind can only apply an
+          opacity modifier to an arbitrary color when the token itself is
+          raw RGB channels, and this one is a hex string. That combination
+          silently fails to generate a utility at all, so `--tw-gradient-from`
+          / `-to` were left unset here and this div was inheriting them from
+          the cover's own `bg-gradient-to-br` sibling above, which just
+          repainted the container's gradient over the photo instead of the
+          intended fade. `color-mix` resolves the alpha without touching
+          Tailwind's opacity-modifier machinery.
+        */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[color-mix(in_srgb,var(--surface-page)_90%,transparent)] to-transparent" />
       </div>
 
       <div className="relative -mt-[38px] px-[18px] pb-[18px]">
-        <Avatar initial={(name || "?")[0]} size={84} />
+        <Avatar
+          src={avatarUrl}
+          initial={(name || "?")[0]}
+          size={84}
+          className="ring-4 ring-[var(--surface-card)]"
+        />
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <h1 className="text-[21px] font-bold leading-[var(--leading-tight)] text-[var(--text-primary)]">

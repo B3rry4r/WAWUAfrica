@@ -41,11 +41,16 @@ button, input, textarea, select { font-family: inherit; }
 @keyframes wawuFadeUp { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
 @keyframes wawuSheetIn { from { transform: translateY(100%) } to { transform: none } }
 @keyframes wawuSpin { to { transform: rotate(360deg) } }
-@keyframes wawuMarquee { to { transform: translateX(-50%) } }
 @keyframes wawuMarqueeRev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
 @keyframes wawuFloat { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-9px) } }
 /* Top-of-screen notification: drops in from above the viewport edge. */
 @keyframes wawuToastIn { from { opacity: 0; transform: translateY(-14px) } to { opacity: 1; transform: translateY(0) } }
+/* Hero art crossfade: two images (creators, professionals) trading places on
+   a loop. Held flat for most of the cycle, crossfading only across the
+   45%-55% stretch, so the swap reads as a fade rather than a flicker. B is
+   exactly A's inverse so the pair always sums to one image fully visible. */
+@keyframes wawuHeroFadeA { 0%, 45% { opacity: 1 } 55%, 100% { opacity: 0 } }
+@keyframes wawuHeroFadeB { 0%, 45% { opacity: 0 } 55%, 100% { opacity: 1 } }
 @keyframes wawuNotifPulse {
   0%, 100% { opacity: 0.45; transform: translateY(3px) scale(0.985) }
   10%, 30% { opacity: 1; transform: none }

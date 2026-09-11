@@ -149,7 +149,7 @@ export default function SettingsPage() {
         ) : (
           <>
             <div className="flex items-center gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px_14px]">
-              <Avatar initial={profile.name.charAt(0)} size={52} />
+              <Avatar src={profile.avatarUrl} initial={profile.name.charAt(0)} size={52} />
               <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
                 <span className="text-[17px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">{profile.name}</span>
                 <span className="text-[12.5px] text-[var(--text-muted)]">{profile.email}</span>
