@@ -97,17 +97,21 @@ export function HomeFeed() {
             })}
           </div>
           {/*
-            Reachable whether or not the tab is currently showing — a control
-            that only lived ON the TGIF tab would vanish the moment somebody
-            used it to hide TGIF, with no way back short of clearing
-            localStorage by hand.
+            Desktop only. Mobile's answer to "where do I turn this off" is the
+            TGIF row in Settings (TgifSetting, next to Sound) — a bare icon
+            sitting in the tab row was the very thing reported as not where an
+            account preference belongs. Desktop keeps this because desktop
+            Settings has no slot to add one to: its category list is a closed
+            set matching an approved design (SettingsDesktopShared.tsx), the
+            same reason Sound's own settings row is mobile-only there and
+            desktop gets SoundFab instead.
           */}
           <button
             type="button"
             onClick={() => setTgifHidden(!tgifHidden)}
             aria-pressed={!tgifHidden}
             title={tgifHidden ? "Show TGIF on Home" : "Hide TGIF from Home"}
-            className="mb-[8px] shrink-0 rounded-full p-[6px] text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary active:bg-surface-press xl:mb-0"
+            className="hidden shrink-0 rounded-full p-[6px] text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary active:bg-surface-press xl:grid"
           >
             <Icon name={tgifHidden ? "EyeOff" : "Eye"} size={16} strokeWidth={2} color="currentColor" />
             <span className="sr-only">{tgifHidden ? "Show TGIF on Home" : "Hide TGIF from Home"}</span>

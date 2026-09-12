@@ -345,11 +345,24 @@ export async function rateContent(id: string, rating: number): Promise<void> {
   }
 }
 
-/** Wire shape of Comment (prisma model is the wire shape). */
+/**
+ * Wire shape of Comment. `author` is resolved server-side from
+ * `authorWawuId` (CommentService.lookupAuthors) and attached on `list()`
+ * only — `create()`'s response omits it, since the poster is always the
+ * caller themselves and needs no lookup.
+ */
+export interface ContentCommentAuthor {
+  wawuId: string;
+  name: string;
+  handle: string | null;
+  avatarUrl: string | null;
+}
+
 export interface ContentComment {
   id: string;
   contentId: string;
   authorWawuId: string;
+  author?: ContentCommentAuthor;
   text: string;
   replyToId: string | null;
   likes: number;

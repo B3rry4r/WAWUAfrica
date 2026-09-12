@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { TierBadge } from "@/components/ui/TierBadge";
 import { ListRow } from "@/components/ui/ListRow";
 import { SoundSetting } from "@/components/layout/SoundToggle";
+import { TgifSetting } from "@/components/tgif/TgifSetting";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { SettingsFooterActions } from "@/components/shared/SettingsFooterActions";
@@ -190,6 +191,21 @@ export default function SettingsPage() {
               </span>
               <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
                 <SoundSetting />
+              </div>
+            </section>
+
+            {/*
+              Same reasoning as Sound above: a preference belongs in Settings,
+              not as an icon somebody has to notice on Home first. Phone only,
+              also matching Sound — desktop's own control sits in the Home
+              tab row, next to where the tabs it affects live.
+            */}
+            <section className="flex flex-col gap-[8px] xl:hidden">
+              <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                Home feed
+              </span>
+              <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+                <TgifSetting />
               </div>
             </section>
 
