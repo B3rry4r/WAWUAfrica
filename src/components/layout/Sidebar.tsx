@@ -122,7 +122,6 @@ export function Sidebar() {
 
   const dashboardActive = pathname === "/creator";
 
-  const shopActive = pathname.startsWith('/shop');
   const servicesActive = pathname.startsWith('/services');
 
   const eventsActive = pathname.startsWith('/events');
@@ -165,20 +164,13 @@ export function Sidebar() {
         reason nobody could find them.
       */}
       {/*
-        Shop is not one of the five locked bottom-bar slots either, so mobile
-        reaches it through Explore. It sits ABOVE Services here because it is
-        the one people arrive intending to use — somebody shopping for a
-        microphone knows that before they open the app.
+        Shop is pulled off the live surface for now (product-owner
+        instruction, 12 Sep 2026) — same as the Explore section and the
+        landing page's services grid. Removing the row rather than showing
+        it disabled: nothing here is a link somebody could dead-click, and a
+        row that is simply not there needs no explaining. Restore it, in
+        place, above Services, when Shop reopens.
       */}
-      <Link href="/shop" className={navRowClass(shopActive)}>
-        <Icon
-          name="ShoppingBag"
-          size={20}
-          color={shopActive ? "var(--accent)" : "var(--text-secondary)"}
-          strokeWidth={shopActive ? 2.4 : 2}
-        />
-        Shop
-      </Link>
 
       <Link href="/services" className={navRowClass(servicesActive)}>
         <Icon

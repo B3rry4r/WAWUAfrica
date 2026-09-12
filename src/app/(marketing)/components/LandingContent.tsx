@@ -76,6 +76,10 @@ const QUICK_SERVICES: {
     icon: "ShoppingBag",
     iconImageSrc: "/icons/services/shop.png",
     href: "/shop",
+    // Pulled off the live surface for now (product-owner instruction, 12 Sep
+    // 2026) — same treatment as Bills Payment/Loans/BNPL/Pensions/Telemedicine
+    // below. See ShopLayout, which gates the routes themselves the same way.
+    soon: true,
     bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]",
   },
   {
