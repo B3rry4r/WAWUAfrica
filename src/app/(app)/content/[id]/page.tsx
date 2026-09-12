@@ -81,16 +81,22 @@ export default function ContentDetailPage() {
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
-  const loadComments = useCallback((contentId: string) => {
+  const loadComments = useCallback((contentId: string, creatorWawuId: string) => {
     getComments(contentId)
       .then((rows) =>
         setComments(
           rows.map((c) => ({
-            name: c.authorWawuId,
+            // `author` is resolved server-side now (CommentService
+            // .lookupAuthors) — this used to render the bare `authorWawuId`
+            // (a UUID) as the name, with nothing to fall back to.
+            name: c.author?.name || c.author?.handle || "A WAWU user",
+            avatarUrl: c.author?.avatarUrl ?? null,
             time: relativeTime(c.createdAt),
             text: c.text,
             likes: c.likes,
-            author: false,
+            // Was hardcoded `false` — every comment, including the creator's
+            // own, rendered with no "Author" badge at all.
+            author: c.authorWawuId === creatorWawuId,
           })),
         ),
       )
@@ -105,7 +111,7 @@ export default function ContentDetailPage() {
     getContent(params.id)
       .then(async (res) => {
         setContent(res.content);
-        loadComments(res.content.id);
+        loadComments(res.content.id, res.content.creator.wawuId);
         try {
           setFollowing(await fetchIsFollowing(res.content.creator.wawuId));
         } catch {
@@ -173,7 +179,14 @@ export default function ContentDetailPage() {
     const text = draft.trim();
     if (!text || !content) return;
     const isCreator = user?.wawuId === content.creator.wawuId;
-    const optimistic = { name: user?.fullName ?? "You", time: "now", text, likes: 0, author: isCreator };
+    const optimistic = {
+      name: user?.fullName ?? "You",
+      avatarUrl: user?.avatarUrl ?? null,
+      time: "now",
+      text,
+      likes: 0,
+      author: isCreator,
+    };
 
     setComments((prev) => [optimistic, ...prev]);
     setContent((prev) => (prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev));
@@ -790,9 +803,7 @@ function Comments({
       <h2 className="m-0 text-[17px] font-bold tracking-[-0.015em]">{content.commentCount} comments</h2>
       {comments.map((c, i) => (
         <div key={`${c.name}-${c.time}-${i}`} className="flex gap-3">
-          <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-tag text-[13px] font-semibold text-text-secondary">
-            {c.name.charAt(0)}
-          </span>
+          <Avatar src={c.avatarUrl} initial={c.name.charAt(0)} size={34} />
           <div className="min-w-0 flex-1 flex-col gap-1">
             <div className="flex items-center gap-2">
               <span className="text-[13.5px] font-semibold">{c.name}</span>
