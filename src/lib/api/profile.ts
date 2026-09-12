@@ -196,17 +196,30 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
  * GET /api/hub/creators/:wawuId/follow — the caller's real follow state.
  * This used to read local mock state only, so the follow button was wrong on
  * any new device or after clearing storage.
+ *
+ * In-flight calls for the same creator are coalesced: FollowButton now asks
+ * for itself on mount, and a grid of creators mounts a button per row, so
+ * without this every row fired its own GET on a page that already fetched
+ * the list once.
  */
+const followingInFlight = new Map<string, Promise<boolean>>();
+
 export async function isFollowing(wawuId: string): Promise<boolean> {
-  try {
-    const res = await apiFetch<{ following: boolean }>(`/api/hub/creators/${wawuId}/follow`, { authed: true });
-    setMockProfileFollowing(wawuId, res.following);
-    return res.following;
-  } catch (e) {
-    if (!isMockModeError(e)) throw e;
-    // SEAM: replace with GET /api/hub/creators/:wawuId/follow
-    return getMockProfileFollowing(wawuId);
-  }
+  const pending = followingInFlight.get(wawuId);
+  if (pending) return pending;
+  const run = (async () => {
+    try {
+      const res = await apiFetch<{ following: boolean }>(`/api/hub/creators/${wawuId}/follow`, { authed: true });
+      setMockProfileFollowing(wawuId, res.following);
+      return res.following;
+    } catch (e) {
+      if (!isMockModeError(e)) throw e;
+      // SEAM: replace with GET /api/hub/creators/:wawuId/follow
+      return getMockProfileFollowing(wawuId);
+    }
+  })().finally(() => followingInFlight.delete(wawuId));
+  followingInFlight.set(wawuId, run);
+  return run;
 }
 
 /**

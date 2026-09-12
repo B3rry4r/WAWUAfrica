@@ -4,6 +4,10 @@ export interface MockComment {
   text: string;
   likes: number;
   author: boolean;
+  /** Server comment id — undefined only on the optimistic row before the POST settles. */
+  id?: string;
+  /** Whether the signed-in caller liked this comment. Defaults to false. */
+  likedByMe?: boolean;
 }
 
 /** Stand-in comment thread until comments are served by the backend. */

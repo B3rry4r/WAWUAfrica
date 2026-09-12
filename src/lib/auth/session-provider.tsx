@@ -27,6 +27,13 @@ interface SessionContextValue {
   setAccountType: (type: AccountType) => void;
   setInterests: (interests: string[]) => void;
   /**
+   * Patches the signed-in user in memory AND in localStorage (avatarUrl,
+   * fullName, interests, …). The profile editor uses this so the header
+   * avatar and name update the moment a save succeeds — without it the
+   * header kept the snapshot captured at sign-in for the whole session.
+   */
+  updateUser: (patch: Partial<SessionUser>) => void;
+  /**
    * Applies the creator state the SERVER confirmed (paid tier, KYC, slots).
    * Onboarding used to flip the upload gate by mutating the dev-only mock
    * session store, which granted creator access locally whatever the backend
@@ -93,6 +100,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateUser = useCallback((patch: Partial<SessionUser>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next: SessionUser = { ...prev, ...patch };
+      sessionStorage.setUser(next);
+      return next;
+    });
+  }, []);
+
   const setCreatorState = useCallback((creator: CreatorState) => {
     setUser((prev) => {
       if (!prev) return prev;
@@ -125,10 +141,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       signOut,
       setAccountType,
       setInterests,
+      updateUser,
       setCreatorState,
       clearCreatorState,
     }),
-    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests, setCreatorState, clearCreatorState],
+    [user, accountType, hydrated, signInUser, signOut, setAccountType, setInterests, updateUser, setCreatorState, clearCreatorState],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

@@ -170,11 +170,20 @@ export function PaidMessagesSettings() {
       });
       setSaveState("saved");
       reloadCreatorState();
-      setTimeout(() => setSaveState("idle"), 2000);
     } catch {
       setSaveState("error");
     }
   };
+
+  // A "Saved" that vanished two seconds after the tap read as a failure to
+  // people who looked back at the screen. It stays up until the creator
+  // changes something, then it is the pending state again — the same dirty
+  // lifecycle as any other form's saved acknowledgement.
+  useEffect(() => {
+    if (saveState !== "saved") return;
+    setSaveState("idle");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price, enabled, windowHours]);
 
   // Skeleton until the SERVER has answered whether this account is a creator
   // (`resolved` covers session hydration too). Waiting on hydration alone let

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { TipSheet } from "@/components/dm/TipSheet";
-import { getContent, initiateUnlock, verifyUnlock, setContentSaved, rateContent, postComment, getComments } from "@/lib/api/content";
+import { getContent, initiateUnlock, verifyUnlock, setContentSaved, rateContent, postComment, getComments, setCommentLiked } from "@/lib/api/content";
 import { relativeTime } from "@/lib/earnings-display";
 import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
 import type { CheckoutResult } from "@/lib/flutterwave";
@@ -91,6 +91,8 @@ export default function ContentDetailPage() {
             text: c.text,
             likes: c.likes,
             author: false,
+            id: c.id,
+            likedByMe: c.likedByMe ?? false,
           })),
         ),
       )
@@ -173,7 +175,7 @@ export default function ContentDetailPage() {
     const text = draft.trim();
     if (!text || !content) return;
     const isCreator = user?.wawuId === content.creator.wawuId;
-    const optimistic = { name: user?.fullName ?? "You", time: "now", text, likes: 0, author: isCreator };
+    const optimistic = { name: user?.fullName ?? "You", time: "now", text, likes: 0, author: isCreator, id: `c-${Date.now()}`, likedByMe: false };
 
     setComments((prev) => [optimistic, ...prev]);
     setContent((prev) => (prev ? { ...prev, commentCount: prev.commentCount + 1 } : prev));
@@ -197,6 +199,35 @@ export default function ContentDetailPage() {
     setDraft(`@${name} `);
     commentInputRef.current?.focus();
   };
+
+  const toggleLike = useCallback(
+    (comment: MockComment) => {
+      // One anonymous id (a server comment id, or the client-generated one on
+      // an optimistic row) is the only thing that lets the toggle find its row
+      // again to flip back on failure.
+      if (!comment.id || !content) return;
+      const likedNow = !comment.likedByMe;
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === comment.id
+            ? { ...c, likedByMe: likedNow, likes: Math.max(0, c.likes + (likedNow ? 1 : -1)) }
+            : c,
+        ),
+      );
+      setCommentLiked(content.id, comment.id, likedNow).catch(() => {
+        setComments((prev) =>
+          prev.map((c) =>
+            c.id === comment.id
+              ? { ...c, likedByMe: !likedNow, likes: Math.max(0, c.likes + (likedNow ? -1 : 1)) }
+              : c,
+          ),
+        );
+        setCommentError("That like did not go through. Please try again.");
+        setTimeout(() => setCommentError(null), 2600);
+      });
+    },
+    [content],
+  );
 
   // Opens the review dialog only — no charge is started yet. The user must
   // then tap the dialog's own "Pay" button (chargeUnlock) to authorize the
@@ -328,6 +359,7 @@ export default function ContentDetailPage() {
               onSubmit={submitComment}
               replyTo={replyTo}
               onReply={startReply}
+              onLike={toggleLike}
               inputRef={commentInputRef}
             />
             {commentError ? (
@@ -774,6 +806,7 @@ function Comments({
   onSubmit,
   replyTo,
   onReply,
+  onLike,
   inputRef,
 }: {
   content: ContentPiece;
@@ -783,6 +816,7 @@ function Comments({
   onSubmit: (e: FormEvent) => void;
   replyTo: string | null;
   onReply: (name: string) => void;
+  onLike: (comment: MockComment) => void;
   inputRef: RefObject<HTMLInputElement>;
 }) {
   return (
@@ -803,10 +837,26 @@ function Comments({
             </div>
             <p className="m-0 mt-1 text-[14px] leading-relaxed text-text-secondary">{c.text}</p>
             <div className="mt-1.5 flex items-center gap-3">
-              <span className="flex items-center gap-1 text-[12.5px] font-semibold text-text-muted">
-                <Icon name="Heart" size={14} color="var(--text-muted)" />
+              {/* The like is now a real toggle — optimistic in the parent
+                  (toggleLike), persisted via POST/DELETE. It used to be an
+                  inert span, so nobody could like a comment at all. */}
+              <button
+                type="button"
+                onClick={() => onLike(c)}
+                aria-pressed={c.likedByMe ?? false}
+                aria-label={c.likedByMe ? "Unlike this comment" : "Like this comment"}
+                className={`flex cursor-pointer items-center gap-1 text-[12.5px] font-semibold transition-colors ${
+                  c.likedByMe ? "text-accent" : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <Icon
+                  name="Heart"
+                  size={14}
+                  color={c.likedByMe ? "var(--accent)" : "var(--text-muted)"}
+                  fill={c.likedByMe ? "var(--accent)" : "none"}
+                />
                 {c.likes}
-              </span>
+              </button>
               <button type="button" onClick={() => onReply(c.name)} className="text-[12.5px] font-semibold text-text-muted hover:text-accent-hover">
                 Reply
               </button>
