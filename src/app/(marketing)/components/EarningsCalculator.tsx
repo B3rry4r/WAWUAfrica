@@ -3,8 +3,12 @@
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 
-/** ₦4.5M / ₦54M / ₦900k style compact naira, per the moodboard's example results. */
+/** ₦4.5M / ₦54M / ₦900k / ₦10.8B style compact naira, per the moodboard's example results. */
 function compactNaira(n: number): string {
+  if (n >= 1_000_000_000) {
+    const b = n / 1_000_000_000;
+    return `₦${b >= 100 ? Math.round(b) : b.toFixed(1).replace(/\.0$/, "")}B`;
+  }
   if (n >= 1_000_000) {
     const m = n / 1_000_000;
     return `₦${m >= 100 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, "")}M`;
