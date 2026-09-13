@@ -3,6 +3,7 @@ import type { VerificationLevel } from "@/types/account";
 import { EXPLORE_CATEGORIES } from "@/types/explore";
 import { apiFetch, isMockModeError } from "./client";
 import { getMockCategories, getMockCreators, toggleMockFollow } from "./mocks/explore";
+import { setMockProfileFollowing } from "./mocks/profile";
 
 /**
  * Categories are a static, app-defined taxonomy (design-fixed list of 11),
@@ -103,6 +104,10 @@ export async function toggleFollow(wawuId: string, currentlyFollowing: boolean):
       method: currentlyFollowing ? "DELETE" : "POST",
       authed: true,
     });
+    // Keep the shared mock store in lockstep with a real write, so the
+    // server-rendered explore rows and any other surface reading the local
+    // state don't disagree with the follow that just happened.
+    setMockProfileFollowing(wawuId, res.following);
     return res.following;
   } catch (e) {
     if (!isMockModeError(e)) throw e;

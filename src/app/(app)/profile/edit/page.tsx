@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { OwnProfile, OwnProfileDraft } from "@/types/verification";
 import { getOwnProfile, saveProfile } from "@/lib/api/verification";
+import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { FilePicker } from "@/components/ui/FilePicker";
@@ -30,6 +31,7 @@ const INTEREST_OPTIONS = CATEGORIES.map((c) => ({ value: c.id, label: c.name }))
 
 export default function EditProfilePage() {
   const router = useRouter();
+  const { updateUser } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -75,10 +77,15 @@ export default function EditProfilePage() {
     setSaving(true);
     setSaveError(null);
     try {
-      await saveProfile({
+      const saved = await saveProfile({
         ...draft,
         handle: draft.handle.trim().replace(/^@/, ""),
       });
+      // The header's avatar and name come from the session snapshot, which is
+      // otherwise frozen at sign-in — patch it so a just-saved picture shows
+      // up in the top bar (and thread avatar lists) without waiting for the
+      // next sign-in.
+      updateUser({ fullName: saved.name, avatarUrl: saved.avatarUrl, interests: saved.interests });
       router.push("/profile");
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "That didn't save. Try again.");

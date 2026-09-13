@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
@@ -131,89 +132,98 @@ export function Inbox() {
           </Link>
         ) : null}
 
-        {urgent.map((t) => {
-          const timeLeft = t.expiresAt ?? "";
-          const critical = timeLeft.startsWith("1h");
-          return (
-            <div
-              key={t.id}
-              className={`flex flex-col gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border ${
-                critical ? "border-[rgba(255,92,92,0.32)]" : "border-[rgba(255,183,3,0.28)]"
-              }`}
-            >
-              <div className="flex gap-[12px]">
-                <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={40} />
-                <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
-                  <div className="flex items-center gap-[8px]">
-                    <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">
-                      {t.buyerName}
-                    </span>
-                    <span
-                      className={`text-[15px] font-bold [font-feature-settings:var(--font-feature-tabular)] ${
-                        critical ? "text-[var(--danger)]" : "text-[var(--warning)]"
-                      }`}
-                    >
-                      {timeLeft}
-                    </span>
-                  </div>
-                  <span className="text-[13.5px] leading-[1.45] text-[var(--text-primary)]">{t.preview}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-[10px] pt-[12px] border-t border-t-[var(--border-hairline)]">
-                <span
-                  className={`flex-1 text-[12.5px] font-semibold ${
-                    critical ? "text-[var(--danger)]" : "text-[var(--text-secondary)]"
+        {urgent.length === 0 && answered.length === 0 ? (
+          <EmptyState
+            title="No messages yet"
+            caption="Paid questions from fans land here, with their deadline to answer."
+          />
+        ) : (
+          <>
+            {urgent.map((t) => {
+              const timeLeft = t.expiresAt ?? "";
+              const critical = timeLeft.startsWith("1h");
+              return (
+                <div
+                  key={t.id}
+                  className={`flex flex-col gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border ${
+                    critical ? "border-[rgba(255,92,92,0.32)]" : "border-[rgba(255,183,3,0.28)]"
                   }`}
                 >
-                  {/* The real 24h deadline off the thread. This used to print
-                      one of two hardcoded times regardless of the message. */}
-                  {t.expiresAt ? `Respond by ${formatDeadline(t.expiresAt)}` : "Awaiting your reply"}
-                </span>
-                <span className="text-[12.5px] font-bold [font-feature-settings:var(--font-feature-tabular)]">
-                  {formatNaira(earnOn(t.price))} to earn
-                </span>
-              </div>
-              {/* No reply composer on mobile yet — the only working reply
-                  flow is the desktop three-pane inbox (see QuestionsDesktop's
-                  doc comment: "mobile has no creator-side thread/reply
-                  view"). A "Reply now" button here used to render with no
-                  destination (routerTo was a literal no-op) — removed rather
-                  than shipping a control that does nothing when tapped. */}
-            </div>
-          );
-        })}
-
-        {answered.map((t) => {
-          const refunded = t.status === "refunded";
-          return (
-            <div
-              key={t.id}
-              className={`flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] ${
-                t.unread ? "opacity-100" : "opacity-70"
-              }`}
-            >
-              <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={40} />
-              <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
-                <div className="flex items-center gap-[8px]">
-                  <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">{t.buyerName}</span>
-                  <StatusPill kind={refunded ? "info" : "success"} size="xs">
-                    {refunded ? "Refunded" : "Answered"}
-                  </StatusPill>
+                  <div className="flex gap-[12px]">
+                    <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={40} />
+                    <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+                      <div className="flex items-center gap-[8px]">
+                        <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">
+                          {t.buyerName}
+                        </span>
+                        <span
+                          className={`text-[15px] font-bold [font-feature-settings:var(--font-feature-tabular)] ${
+                            critical ? "text-[var(--danger)]" : "text-[var(--warning)]"
+                          }`}
+                        >
+                          {timeLeft}
+                        </span>
+                      </div>
+                      <span className="text-[13.5px] leading-[1.45] text-[var(--text-primary)]">{t.preview}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-[10px] pt-[12px] border-t border-t-[var(--border-hairline)]">
+                    <span
+                      className={`flex-1 text-[12.5px] font-semibold ${
+                        critical ? "text-[var(--danger)]" : "text-[var(--text-secondary)]"
+                      }`}
+                    >
+                      {/* The real 24h deadline off the thread. This used to print
+                          one of two hardcoded times regardless of the message. */}
+                      {t.expiresAt ? `Respond by ${formatDeadline(t.expiresAt)}` : "Awaiting your reply"}
+                    </span>
+                    <span className="text-[12.5px] font-bold [font-feature-settings:var(--font-feature-tabular)]">
+                      {formatNaira(earnOn(t.price))} to earn
+                    </span>
+                  </div>
+                  {/* No reply composer on mobile yet — the only working reply
+                      flow is the desktop three-pane inbox (see QuestionsDesktop's
+                      doc comment: "mobile has no creator-side thread/reply
+                      view"). A "Reply now" button here used to render with no
+                      destination (routerTo was a literal no-op) — removed rather
+                      than shipping a control that does nothing when tapped. */}
                 </div>
-                <span
-                  className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
+              );
+            })}
+
+            {answered.map((t) => {
+              const refunded = t.status === "refunded";
+              return (
+                <div
+                  key={t.id}
+                  className={`flex gap-[12px] p-[15px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] ${
+                    t.unread ? "opacity-100" : "opacity-70"
+                  }`}
                 >
-                  {t.preview}
-                </span>
-                <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-                  {refunded
-                    ? "Missed the window · earned nothing"
-                    : `Earned ${formatNaira(earnOn(t.price))}${t.repliedIn ? ` · replied in ${t.repliedIn}` : ""}`}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+                  <Avatar src={t.buyerAvatarUrl} initials={t.buyerInitials} size={40} />
+                  <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+                    <div className="flex items-center gap-[8px]">
+                      <span className="flex-1 text-[14.5px] font-semibold text-[var(--text-primary)]">{t.buyerName}</span>
+                      <StatusPill kind={refunded ? "info" : "success"} size="xs">
+                        {refunded ? "Refunded" : "Answered"}
+                      </StatusPill>
+                    </div>
+                    <span
+                      className="text-[13px] text-[var(--text-secondary)] whitespace-nowrap overflow-hidden text-ellipsis"
+                    >
+                      {t.preview}
+                    </span>
+                    <span className="text-[12px] text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
+                      {refunded
+                        ? "Missed the window · earned nothing"
+                        : `Earned ${formatNaira(earnOn(t.price))}${t.repliedIn ? ` · replied in ${t.repliedIn}` : ""}`}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
     </div>
   );

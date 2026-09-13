@@ -48,6 +48,11 @@ export async function saveMockOwnProfile(draft: OwnProfileDraft): Promise<OwnPro
   MOCK_OWN_PROFILE.bio = draft.bio;
   MOCK_OWN_PROFILE.interests = [...draft.interests];
   MOCK_OWN_PROFILE.socials = { ...draft.socials };
+  // The avatar/cover survive the save in mock mode too. Without this a real
+  // FilePicker upload vanished the moment the edit page read its OWN profile
+  // back — and the header avatar patch (updateUser) had null to work with.
+  MOCK_OWN_PROFILE.avatarUrl = draft.avatarUrl;
+  MOCK_OWN_PROFILE.coverUrl = draft.coverUrl;
   return { ...MOCK_OWN_PROFILE, socials: { ...MOCK_OWN_PROFILE.socials } };
 }
 

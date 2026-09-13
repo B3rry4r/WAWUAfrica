@@ -3,11 +3,47 @@ import { delay } from "../client";
 
 /**
  * Mock follow state shared across every surface (explore rows, profile headers).
- * Seed matches the explore mock so Follow buttons agree everywhere.
+ * Persisted under its own localStorage key so it survives a reload — the seed
+ * alone reset on every page load, so a profile the user stopped following
+ * yesterday was back to "Following" this morning, and the two call sites
+ * rendering the same profile drifted apart. Hydrated once at module load on
+ * the client; `wawu-zainab` stays in the seed because the explore mock's
+ * own creator rows hardcode her row, so a fresh profile still has one
+ * credible follow to demo with.
  */
-export const MOCK_PROFILE_FOLLOWING = new Set(["wawu-zainab"]);
+const FOLLOW_STORAGE_KEY = "wawu-web-following";
 
-// SEAM: replace with GET /api/hub/creators/:wawuId/following
+function readStoredFollowing(): Set<string> {
+  const seed = new Set(["wawu-zainab"]);
+  if (typeof window === "undefined") return seed;
+  try {
+    const raw = window.localStorage.getItem(FOLLOW_STORAGE_KEY);
+    if (!raw) return seed;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return seed;
+    parsed.forEach((id) => {
+      if (typeof id === "string") seed.add(id);
+    });
+    return seed;
+  } catch {
+    // Corrupt/unavailable storage — behave as a fresh profile rather than throw.
+    return seed;
+  }
+}
+
+export const MOCK_PROFILE_FOLLOWING: Set<string> = readStoredFollowing();
+
+function persistFollowing(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(FOLLOW_STORAGE_KEY, JSON.stringify([...MOCK_PROFILE_FOLLOWING]));
+  } catch {
+    // Storage unavailable (private-mode quota, etc.) — the in-memory set still
+    // keeps this session consistent; it just won't survive the reload.
+  }
+}
+
+// SEAM: replace with GET /api/hub/creators/:wawuId/follow
 export async function getMockProfileFollowing(wawuId: string): Promise<boolean> {
   await delay(80);
   return MOCK_PROFILE_FOLLOWING.has(wawuId);
@@ -18,22 +54,27 @@ export async function toggleMockProfileFollow(wawuId: string): Promise<boolean> 
   await delay(150);
   if (MOCK_PROFILE_FOLLOWING.has(wawuId)) {
     MOCK_PROFILE_FOLLOWING.delete(wawuId);
+    persistFollowing();
     return false;
   }
   MOCK_PROFILE_FOLLOWING.add(wawuId);
+  persistFollowing();
   return true;
 }
 
 /**
  * Sync point for a REAL POST/DELETE /api/hub/creators/:wawuId/follow write
  * (see profile.ts toggleFollowProfile) — keeps this local state consistent
- * after a real write succeeds, since isFollowing has no real backend
- * equivalent to re-check against (follow-relationship.controller.ts only
- * exposes the two write endpoints, no GET).
+ * after a real write succeeds, so a caller that later drops into mock mode
+ * (backend unreachable) still remembers what a real write last set. The real
+ * read this mirrors, GET /api/hub/creators/:wawuId/follow, does exist
+ * (follow-relationship.controller.ts) and is what isFollowing() calls first;
+ * this local set is only ever consulted on that call's mock-mode fallback.
  */
 export function setMockProfileFollowing(wawuId: string, following: boolean): void {
   if (following) MOCK_PROFILE_FOLLOWING.add(wawuId);
   else MOCK_PROFILE_FOLLOWING.delete(wawuId);
+  persistFollowing();
 }
 
 export const MOCK_PROFILES: Record<string, CreatorProfile> = {

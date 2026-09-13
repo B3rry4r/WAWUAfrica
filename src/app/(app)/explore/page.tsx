@@ -118,20 +118,15 @@ export default async function ExplorePage() {
         </section>
 
         {/*
-          Shop lives here for the same reason Events and Services do: the
-          bottom bar is locked at five slots and this is not one of them, so
-          Explore is its mobile home. The desktop rail links it directly.
+          Shop is pulled off the live surface for now (product-owner
+          instruction, 12 Sep 2026) — same reason it's `soon` on the landing
+          page's services grid and ShopLayout gates the routes themselves.
+          Held back entirely rather than shown disabled: this section is a
+          list of links, and there is no "disabled row" treatment established
+          anywhere else in the app to reuse for one (unlike the services grid's
+          TileCard, which already has one). Restore this section, in place,
+          when Shop reopens.
         */}
-        <section className="flex flex-col gap-[11px]">
-          <div className="flex items-center gap-[10px] px-[2px]">
-            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Shop</span>
-            <Link href="/shop" className={seeAll}>See all</Link>
-          </div>
-          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
-            <ListRow title="Gear for what you make" subtitle="Cameras, mics, lights, laptops. Checked before we stock them" icon="ShoppingBag" href="/shop" />
-            <ListRow title="My orders" subtitle="What you bought, and where it has got to" icon="Package" href="/shop/orders" />
-          </div>
-        </section>
 
       </div>
     </div>

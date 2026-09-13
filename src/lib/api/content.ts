@@ -367,6 +367,8 @@ export interface ContentComment {
   replyToId: string | null;
   likes: number;
   createdAt: string;
+  /** The caller's own like on this comment, when the backend returns it. */
+  likedByMe?: boolean;
 }
 
 /** GET /api/hub/content/:id/comments */
@@ -384,5 +386,22 @@ export async function postComment(
     method: "POST",
     authed: true,
     body: replyToId ? { text, replyToId } : { text },
+  });
+}
+
+/**
+ * POST/DELETE /api/hub/content/:id/comments/:commentId/like — like/unlike a
+ * comment. The heart used to be a decorative span with no handler; this is
+ * the call it now makes. No mock fallback, deliberately: comments themselves
+ * don't exist in mock mode (getComments/postComment have none either), so
+ * there is no local like state to fall back to. Whether this endpoint exists
+ * on the backend is tracked in BACKEND_FIXES.md — the client calls it
+ * regardless, so the moment the route ships the button works with no frontend
+ * change.
+ */
+export async function setCommentLiked(contentId: string, commentId: string, liked: boolean): Promise<void> {
+  await apiFetch(`/api/hub/content/${contentId}/comments/${commentId}/like`, {
+    method: liked ? "POST" : "DELETE",
+    authed: true,
   });
 }
