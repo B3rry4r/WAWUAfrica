@@ -1,17 +1,27 @@
 # Backend fixes required by frontend bugs
 
 This is the backend side of the 7-bug frontend pass (`fix/profile-explore-ui-fixes`).
-The backend repo (WAWU-Hub-API) is not available in this workspace, so nothing
-here is code — it is the exact contract the frontend now expects, written so the
-backend can be changed to match without another frontend round-trip.
+It was written when the backend repo (WAWU-Hub-API) was not available in this
+workspace — nothing in it was code, just the exact contract the frontend
+expected. All three items below have since been built against the real
+backend and merged; kept here as the record of what was asked for and what
+actually shipped, rather than deleted.
 
-Contract target: `docs/02_TECHNICAL_CONTEXT.md`. Every item below is either a
-missing endpoint, a DTO limit that rejects the backend's own output, or a
-persistence gap surfaced by adding mock mode.
+Contract target: `docs/02_TECHNICAL_CONTEXT.md`.
 
 ---
 
-## 1. Comment like — endpoint absent (Bug 1)
+## 1. Comment like — RESOLVED
+
+Built: `POST/DELETE /content/:id/comments/:commentId/like` (comment.controller.ts),
+backed by a `CommentLike` join table (mirrors `SavedItem`'s shape — unique on
+`(userWawuId, commentId)`, which is what makes both routes idempotent under
+concurrency without a read-then-write race). Response is `{ likes, likedByMe }`,
+always the server's post-call truth. `GET /content/:id/comments` now also
+resolves `likedByMe` per comment for the authed requester (comment.service.ts
+`list()`). No frontend change was needed beyond what this branch already sent.
+
+## 1 (original). Comment like — endpoint absent (Bug 1)
 
 The content-comment heart was a decorative `<span>` with no handler. It is now a
 real toggle and calls a like endpoint that does not exist yet. The frontend will
@@ -43,7 +53,16 @@ The client maps this into its `ContentComment` wire shape today (defaults false
 when absent), so missing it only means hearts can't re-render correctly after
 reload in authed sessions.
 
-## 2. Community image — DTO rejects the backend's own presign URL (Bug 2)
+## 2. Community image — RESOLVED
+
+`@MaxLength(500)` removed from `imageUrl` on both `create-community.dto.ts` and
+`update-community.dto.ts` (Option 1 below, in its most consistent form: no
+other asset-URL field in this backend caps length at all —
+`CreateContentDto.previewAssetUrl`/`fullAssetUrl`, `CreateEventDto.bannerUrl`
+— so this field was the one inconsistent outlier, not the norm). `@IsUrl()`
+still validates it is a real link either way.
+
+## 2 (original). Community image — DTO rejects the backend's own presign URL (Bug 2)
 
 `CreateCommunity` uploads through the standard presign flow
 (`src/lib/api/uploads.ts`, folder `community/image`), then sends the returned
@@ -69,7 +88,16 @@ output**. Frontend masks are out — the fix must be real.
 Option 2 is the durable one — it stops the same signed-URL overflow from
 recurring on feedback/patch endpoints later.
 
-## 3. Follow relationship — read endpoint unverifiable (Bug 3)
+## 3. Follow relationship — RESOLVED (no backend change needed)
+
+Verified directly against `follow-relationship.controller.ts`: the GET
+exists (`@Get()` → `{ following: boolean }`, exactly what
+`profile.ts isFollowing()` already calls). `mocks/profile.ts`'s "no GET"
+comment was simply wrong, not describing a real gap — corrected in place
+rather than deleted, since `setMockProfileFollowing` is still the right
+sync point for `isFollowing()`'s mock-mode fallback.
+
+## 3 (original). Follow relationship — read endpoint unverifiable (Bug 3)
 
 Persisting follows across reload exposed that the frontend cannot prove the real
 read exists. Two files disagree:

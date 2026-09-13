@@ -65,9 +65,11 @@ export async function toggleMockProfileFollow(wawuId: string): Promise<boolean> 
 /**
  * Sync point for a REAL POST/DELETE /api/hub/creators/:wawuId/follow write
  * (see profile.ts toggleFollowProfile) — keeps this local state consistent
- * after a real write succeeds, since isFollowing has no real backend
- * equivalent to re-check against (follow-relationship.controller.ts only
- * exposes the two write endpoints, no GET).
+ * after a real write succeeds, so a caller that later drops into mock mode
+ * (backend unreachable) still remembers what a real write last set. The real
+ * read this mirrors, GET /api/hub/creators/:wawuId/follow, does exist
+ * (follow-relationship.controller.ts) and is what isFollowing() calls first;
+ * this local set is only ever consulted on that call's mock-mode fallback.
  */
 export function setMockProfileFollowing(wawuId: string, following: boolean): void {
   if (following) MOCK_PROFILE_FOLLOWING.add(wawuId);
