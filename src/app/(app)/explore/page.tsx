@@ -76,6 +76,25 @@ export default async function ExplorePage() {
           </div>
         </section>
 
+        {/*
+          Services is not a bottom-bar slot (locked at five, CLAUDE.md), so
+          mobile's only path to it is this row. It was silently dropped from
+          this page at some point, leaving the ExploreEvents comment below
+          claiming a route that no longer existed anywhere, and the whole
+          /services sub-tree (Bills Payment, Legal, Loans, Pensions) unreachable
+          on mobile.
+        */}
+        <section className="flex flex-col gap-[11px]">
+          <div className="flex items-center gap-[10px] px-[2px]">
+            <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Services</span>
+            <Link href="/services" className={seeAll}>See all</Link>
+          </div>
+          <div className="flex flex-col rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[4px]">
+            <ListRow title="Bills Payment" subtitle="Airtime, data, electricity and cable" icon="Zap" href="/services/pay" />
+            <ListRow title="Legal" subtitle="Register a business or book a lawyer" icon="Scale" href="/services/legal" />
+          </div>
+        </section>
+
         {/* Creator discovery — design D10's "Creators to watch" row. Desktop
             only: below xl this content lives on /explore/creators instead. */}
         <section className="hidden flex-col gap-[14px] xl:flex">
