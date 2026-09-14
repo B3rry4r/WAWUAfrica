@@ -52,6 +52,24 @@ function iconFor(category: BillCategory): IconName {
   return CATEGORY_ICON[code] ?? "Receipt";
 }
 
+/** Plain words for a status the customer never chose and should not have to decode. */
+function billStatusLabel(status: BillRecord["status"]): string {
+  switch (status) {
+    case "processing":
+      return "Delivering";
+    case "delivered":
+      return "Delivered";
+    case "failed":
+      return "Refund owed";
+    case "refunded":
+      return "Refunded";
+    case "paid":
+      return "Processing";
+    default:
+      return status;
+  }
+}
+
 export default function PayPage() {
   const { user } = useSession();
   // Catalogue status. This tool lives at a static route, which Next resolves
@@ -241,17 +259,29 @@ export default function PayPage() {
   }
 
   if (receipt) {
+    // Flutterwave confirms the top-up asynchronously, so a successful checkout
+    // usually comes back "processing", not "delivered" yet. Saying "delivered"
+    // here regardless of that would tell the customer a top-up landed before
+    // it actually has, the same gap the backend fix on this flow closed.
+    const isDelivered = receipt.status === "delivered";
     return (
       <div className="mx-auto flex w-full flex-col gap-[18px] p-[16px_16px_96px] xl:max-w-[900px] xl:gap-[22px] xl:p-[30px_28px_64px]">
         <ProfileBackButton />
         <div className="flex flex-col items-center gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-card)] p-[26px] text-center">
           <span className="grid h-[54px] w-[54px] place-items-center rounded-full bg-[var(--decor-tint)]">
-            <Icon name="Check" size={26} color="var(--accent)" strokeWidth={2.4} />
+            <Icon name={isDelivered ? "Check" : "Clock"} size={26} color="var(--accent)" strokeWidth={2.4} />
           </span>
-          <span className="text-[19px] font-bold text-[var(--text-primary)]">Payment delivered</span>
+          <span className="text-[19px] font-bold text-[var(--text-primary)]">
+            {isDelivered ? "Payment delivered" : "Payment received, delivering now"}
+          </span>
           <span className="text-[14px] text-[var(--text-secondary)]">
             {formatNaira(receipt.amount)} to {receipt.billerName} for {receipt.customerRef}
           </span>
+          {!isDelivered ? (
+            <span className="text-[12.5px] text-[var(--text-muted)]">
+              Your payment went through and this usually lands within a few minutes. You do not need to pay again.
+            </span>
+          ) : null}
           {receipt.providerReference ? (
             <span className="text-[12.5px] text-[var(--text-muted)]">Reference {receipt.providerReference}</span>
           ) : null}
@@ -458,7 +488,7 @@ export default function PayPage() {
                 <span className="flex flex-col items-end">
                   <span className="text-[14px] font-semibold text-[var(--text-primary)]">{formatNaira(h.amount)}</span>
                   <span className={`text-[12px] ${h.status === "delivered" ? "text-[var(--accent)]" : "text-[var(--text-muted)]"}`}>
-                    {h.status}
+                    {billStatusLabel(h.status)}
                   </span>
                 </span>
               </div>

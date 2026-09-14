@@ -66,7 +66,13 @@ export interface BillRecord {
   customerRef: string;
   amount: number;
   fee: number;
-  status: "pending" | "paid" | "delivered" | "failed" | "refunded";
+  /**
+   * "processing" means the biller accepted the request but the top-up is not
+   * confirmed yet. Flutterwave's Bills API settles asynchronously, so this is
+   * a normal resting state, not an error, and can still resolve to
+   * "delivered" or "failed" once the backend hears back.
+   */
+  status: "pending" | "paid" | "processing" | "delivered" | "failed" | "refunded";
   providerReference: string | null;
   failureReason: string | null;
   createdAt: string;
