@@ -229,27 +229,17 @@ export default function PayPage() {
     }
   }
 
-  /*
-    ── BILLS PAYMENT IS SWITCHED OFF ──────────────────────────────────────
-    Turned off on the product owner's instruction, 5 Sep 2026. Off HERE, in
-    the code, rather than by flipping the catalogue row: this route is static
-    and Next resolves it ahead of /services/[id], so anybody arriving with the
-    URL rather than through a card would still have walked into a live form
-    that takes money.
-
-    Nothing below is deleted. The flow is finished and works; it is waiting,
-    not abandoned. Delete this constant and the branch under it to put it
-    back, and the catalogue's own `live` check takes over again as before.
-  */
-  const SWITCHED_OFF = true;
-
-  if (SWITCHED_OFF || live === false) {
+  // Bills Payment was switched off here (product owner, 5 Sep 2026) pending
+  // the backend fix for the delivery-confirmation bug it was paused for. That
+  // fix has since shipped (bill-payment.service.ts now waits for Flutterwave
+  // to actually confirm a top-up instead of assuming it), so the catalogue's
+  // own `live` check is back to being the only gate on this route.
+  if (live === false) {
     return (
       <ServiceComingSoon
         name="Bills Payment"
         icon="Zap"
-        headline="Bills payment is paused"
-        note="Airtime, data, electricity and cable are paused for now. Nothing you start here would go through, so the form is off until it is back."
+        note="We are finishing the partner rollout. It opens here first, and nothing is charged until it does."
       />
     );
   }
