@@ -126,9 +126,14 @@ export function AppHeader() {
       >
         <Avatar src={user?.avatarUrl} initial={(user?.fullName ?? "?").charAt(0)} size={34} />
       </Link>
+      {/*
+        A shortcut TO Explore, shown everywhere else. On Explore itself it was
+        a link to the page already open, a dead click a creator would tap and
+        watch do nothing.
+      */}
       {!resolved ? (
         <Skeleton variant="circle" className="h-9 w-9 shrink-0" />
-      ) : isCreator ? (
+      ) : isCreator && !pathname.startsWith("/explore") ? (
         <Link
           href="/explore"
           aria-label="Browse"
