@@ -1,5 +1,5 @@
 /**
- * Role -> Category -> Specialization taxonomy.
+ * Role -> TaxonomyCategory -> Specialization taxonomy.
  *
  * Source of truth: section C1 of `wawuafrica-build/BUILD-BRIEF.md`. Labels here
  * are transcribed verbatim from that section, including its own capitalisation
@@ -43,7 +43,7 @@
  */
 
 export type SpecializationSlug = string;
-export type CategoryId = string;
+export type TaxonomyCategoryId = string;
 export type SpecializationId = string;
 
 /**
@@ -69,13 +69,13 @@ export interface Specialization {
   /** Stable slug, shared by every placement of the same job title. */
   readonly slug: SpecializationSlug;
   readonly label: string;
-  readonly categoryId: CategoryId;
+  readonly categoryId: TaxonomyCategoryId;
   readonly categoryLabel: string;
   readonly role: TaxonomyRole;
 }
 
-export interface Category {
-  readonly id: CategoryId;
+export interface TaxonomyCategory {
+  readonly id: TaxonomyCategoryId;
   readonly label: string;
   readonly role: TaxonomyRole;
   readonly specializations: readonly Specialization[];
@@ -735,10 +735,10 @@ const RAW_PROFESSIONAL: readonly RawCategory[] = [
 /* Derivation                                                                 */
 /* -------------------------------------------------------------------------- */
 
-function buildCategories(raw: readonly RawCategory[], role: TaxonomyRole): readonly Category[] {
+function buildCategories(raw: readonly RawCategory[], role: TaxonomyRole): readonly TaxonomyCategory[] {
   return Object.freeze(
     raw.map(([categoryId, categoryLabel, specs]) =>
-      Object.freeze<Category>({
+      Object.freeze<TaxonomyCategory>({
         id: categoryId,
         label: categoryLabel,
         role,
@@ -769,13 +769,13 @@ export const ROLES: readonly RoleInfo[] = Object.freeze([
  * Categories per categorised role, in brief order. Keyed by `TaxonomyRole`, so
  * there is no `.buyer` key to read by mistake.
  */
-export const CATEGORIES_BY_ROLE: Readonly<Record<TaxonomyRole, readonly Category[]>> = Object.freeze({
+export const CATEGORIES_BY_ROLE: Readonly<Record<TaxonomyRole, readonly TaxonomyCategory[]>> = Object.freeze({
   creator: buildCategories(RAW_CREATOR, "creator"),
   professional: buildCategories(RAW_PROFESSIONAL, "professional"),
 });
 
 /** Every category, creator first then professional, each in brief order. */
-export const CATEGORIES: readonly Category[] = Object.freeze([
+export const CATEGORIES: readonly TaxonomyCategory[] = Object.freeze([
   ...CATEGORIES_BY_ROLE.creator,
   ...CATEGORIES_BY_ROLE.professional,
 ]);
@@ -792,7 +792,7 @@ export const SPECIALIZATIONS: readonly Specialization[] = Object.freeze(
 /* Indexes, built once at module load so no call site re-derives them          */
 /* -------------------------------------------------------------------------- */
 
-const CATEGORY_BY_ID = new Map<string, Category>(CATEGORIES.map((c) => [c.id, c]));
+const CATEGORY_BY_ID = new Map<string, TaxonomyCategory>(CATEGORIES.map((c) => [c.id, c]));
 const SPECIALIZATION_BY_ID = new Map<string, Specialization>(SPECIALIZATIONS.map((s) => [s.id, s]));
 
 const PLACEMENTS_BY_SLUG = ((): ReadonlyMap<string, readonly Specialization[]> => {
@@ -832,7 +832,7 @@ export const CROSS_LISTED_SLUG_COUNT = [...PLACEMENTS_BY_SLUG.values()].filter(
 /* Lookups                                                                     */
 /* -------------------------------------------------------------------------- */
 
-const EMPTY_CATEGORIES: readonly Category[] = Object.freeze([]);
+const EMPTY_CATEGORIES: readonly TaxonomyCategory[] = Object.freeze([]);
 const EMPTY_SPECIALIZATIONS: readonly Specialization[] = Object.freeze([]);
 
 export function roleHasCategories(role: Role): role is TaxonomyRole {
@@ -843,11 +843,11 @@ export function getRole(id: string): RoleInfo | undefined {
   return ROLES.find((role) => role.id === id);
 }
 
-export function categoriesForRole(role: Role): readonly Category[] {
+export function categoriesForRole(role: Role): readonly TaxonomyCategory[] {
   return roleHasCategories(role) ? CATEGORIES_BY_ROLE[role] : EMPTY_CATEGORIES;
 }
 
-export function getCategory(id: string): Category | undefined {
+export function getCategory(id: string): TaxonomyCategory | undefined {
   return CATEGORY_BY_ID.get(id);
 }
 

@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { FocusedFlowShell } from "@/components/layout/FocusedFlowShell";
 
 /**
- * Route group for single-purpose flow screens — /kyc, /onboarding,
- * /create/new, /subscription — that intentionally sit outside `(app)`
+ * Route group for single-purpose flow screens — /kyc, /onboarding and
+ * /create/new — that intentionally sit outside `(app)`
  * because they own their own local FlowHeader/back-button navigation and
  * must never get the mobile BottomNav or global AppHeader. A route group's
  * parentheses don't affect the URL, so this changes none of those paths.

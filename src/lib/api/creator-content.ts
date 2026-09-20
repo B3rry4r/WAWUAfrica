@@ -168,15 +168,21 @@ export const contentApi: ContentApi = {
       existing = null;
     }
 
-    if (existing) {
-      const firstUpload = !existing.some((i) => i.status === "live");
-      if (firstUpload && item.price > 0) {
-        throw new ApiError("Your first upload has to go out at ₦0. Publish this one at no charge, then price everything after it.", 400);
-      }
+    // Every listing carries a price (brief B2), so a price is REQUIRED rather
+    // than a first-upload exception. This used to reject a priced first upload
+    // outright, which after the wizard stopped offering a ₦0 option would have
+    // failed every single publish before the request was even made.
+    if (item.price <= 0) {
+      throw new ApiError("Set a price above ₦0 before publishing.", 400);
+    }
 
+    if (existing) {
       const inUse = existing.filter((i) => i.status !== "rejected").length;
       if (inUse >= creator.slotsTotal) {
-        throw new ApiError("All upload slots are in use. Take a piece down, or move up to Pro for more room.", 409);
+        throw new ApiError(
+          "All 5 slots are in use. Take a piece down to make room for this one.",
+          409,
+        );
       }
     }
 

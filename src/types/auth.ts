@@ -65,23 +65,25 @@ export interface OtpVerifyPayload {
 /**
  * Creator state. Null on user accounts.
  *
- * The two gates are INDEPENDENT and do different jobs:
- *   - `subscriptionPaid` unlocks uploading and creator tools
- *   - `kyc === "approved"` unlocks receiving earnings
+ * There is ONE gate: `kyc === "approved"` unlocks receiving earnings.
+ * Uploading is not gated at all — listing is free. `kyc === "pending"` is a
+ * normal state, not an edge case: most new creators live there for their
+ * first few days. They can upload, publish and sell; they just cannot be paid
+ * out yet.
  *
- * `subscriptionPaid && kyc === "pending"` is a normal state, not an edge case —
- * most new creators live there for their first few days. They can upload,
- * publish and sell; they just cannot be paid out yet.
- *
- * Derive gates via `creatorGates()` in `@/lib/auth/gates`. Never re-check these
- * fields inline in a component.
+ * Derive gates via `creatorGates()` in `@/lib/auth/gates`. Never re-check
+ * these fields inline in a component.
  */
 export interface CreatorState {
+  /**
+   * Still sent by the backend and still what the revenue split keys off
+   * (85/15 standard, 90/10 Pro). NOT a purchasable plan any more and never
+   * rendered as a badge or a tier name — subscriptions are gone.
+   */
   tier: CreatorTier;
-  subscriptionPaid: boolean;
   kyc: KycStatus;
   slotsUsed: number;
-  /** Basic 3, Pro 7. Derived from tier — never hardcode per screen. */
+  /** Flat cap for every account. See MAX_ITEMS_PER_ACCOUNT in gates.ts. */
   slotsTotal: number;
   /** Creator-set price per message. 0 when DMs are off. */
   dmPrice: number;
@@ -96,7 +98,7 @@ export interface SessionUser {
   email: string;
   accountType: AccountType;
   interests: string[];
-  /** Profile credibility ladder. Separate from creator KYC and paid tier. */
+  /** Profile credibility ladder. Separate from creator KYC. */
   verification: VerificationLevel;
   creator: CreatorState | null;
   /**

@@ -9,7 +9,6 @@ import { earningsApi } from "@/lib/api/earnings";
 import { getEvgScore } from "@/lib/api/profile";
 import { earningsStreamRows, saleSourceLabel, saleAmountDisplay, relativeTime } from "@/lib/earnings-display";
 import type { EarningsSummary } from "@/types/earnings";
-import { PLANS } from "@/types/subscription";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { HeldPayoutNote, VerificationBanner } from "@/components/dashboard/VerificationAsk";
 import { ListRow } from "@/components/ui/ListRow";
@@ -18,7 +17,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { FlowHeader } from "@/components/layout/FlowHeader";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitPercent, formatNaira } from "@/lib/format";
 
 interface StreamRow {
   icon: IconName;
@@ -79,7 +78,7 @@ export function EarningsDashboard() {
   }
 
   // A blank page is not a gate. Somebody arriving here from a stale link is
-  // told what this is and given the way in, the same way /subscription does.
+  // told what this is and given the way in.
   if (!gates.isCreator) {
     return (
       <div>
@@ -113,9 +112,7 @@ export function EarningsDashboard() {
     );
   }
 
-  const tier = gates.tier ?? "basic";
-  const tierLabel = PLANS[tier].name;
-  const keep = PLANS[tier].split;
+  const keep = creatorSplitPercent();
   const earned = approved ? earnings.payable + earnings.held : earnings.held;
 
   // Real per-stream figures and real recent sales, both from the same
@@ -142,7 +139,6 @@ export function EarningsDashboard() {
     dm: "MessageCircle",
     tip: "HandCoins",
     community_credits: "Ticket",
-    subscription: "Crown",
   };
   const recent = earnings.recentSales.map((sale) => ({
     // Keyed by the sale's own id: several sales share one source label, and
@@ -191,7 +187,7 @@ export function EarningsDashboard() {
                 <span
                   className="inline-flex items-center h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] text-[11.5px] font-bold"
                 >
-                  {keep}/{100 - keep} on {tierLabel}
+                  {keep}/{100 - keep}
                 </span>
               </>
             ) : (

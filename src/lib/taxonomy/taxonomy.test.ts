@@ -1,5 +1,5 @@
 /**
- * Tests for the Role -> Category -> Specialization taxonomy.
+ * Tests for the Role -> TaxonomyCategory -> Specialization taxonomy.
  *
  * There is no test runner configured in this repo (no vitest, no jest, no
  * ts-node) and no existing test file to match a convention against, so this

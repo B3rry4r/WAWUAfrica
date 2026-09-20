@@ -13,7 +13,6 @@ import { formatNaira } from "@/lib/format";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { ListRow } from "@/components/ui/ListRow";
 import { Icon } from "@/components/ui/Icon";
@@ -100,7 +99,7 @@ export default function OwnProfilePage() {
 
   return (
     <div className="flex flex-col gap-[18px] px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[760px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
-      <IdentityBlock profile={profile} isCreator={isCreator} tier={gates.tier ?? profile.plan} />
+      <IdentityBlock profile={profile} isCreator={isCreator} />
       {isCreator && <CreatorDashboardCard profile={profile} />}
       <VerificationProgressCard tier={currentLevel?.tier ?? profile.verification} nextTier={nextLevel?.tier} />
 
@@ -124,7 +123,6 @@ export default function OwnProfilePage() {
             {/* The wallet is where the money actually is, and where it
                 leaves from. Earnings is the record of what was sold. */}
             <ListRow title="Wallet" subtitle="Your balance, and withdrawals" icon="Wallet" href="/wallet" />
-            <ListRow title="Subscription" icon="BadgeCheck" href="/subscription" />
             {/* Two different systems, and this screen used to list only the
                 second one under the bare title "Verification" — so a creator
                 who had just submitted KYC came here, tapped it, and landed on
@@ -175,7 +173,7 @@ export default function OwnProfilePage() {
   );
 }
 
-function IdentityBlock({ profile, isCreator, tier }: { profile: OwnProfile; isCreator: boolean; tier: CreatorTier }) {
+function IdentityBlock({ profile, isCreator }: { profile: OwnProfile; isCreator: boolean }) {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
@@ -187,15 +185,7 @@ function IdentityBlock({ profile, isCreator, tier }: { profile: OwnProfile; isCr
           </div>
           <span className="text-[13px] text-text-muted">
             @{profile.handle}
-            {isCreator && (
-              <>
-                {" · "}
-                {/* Live tier first: GET own-profile only reads creator state
-                    when its own accountType says "creator", so profile.plan
-                    is a stale "basic" whenever those two disagree. */}
-                <TierBadge tier={tier} />
-              </>
-            )}
+            {isCreator ? " · Creator" : null}
           </span>
         </div>
         {/* Shares /profile/{handle}, the username they chose, not the id. */}
@@ -232,7 +222,7 @@ function CreatorDashboardCard({ profile }: { profile: OwnProfile }) {
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="text-[15.5px] font-semibold text-text-primary">Creator dashboard</span>
-            <span className="text-[12.5px] text-text-secondary">Earnings, content, inbox, tier</span>
+            <span className="text-[12.5px] text-text-secondary">Earnings, content, inbox</span>
           </div>
           <Icon name="ChevronRight" size={17} color="var(--accent)" strokeWidth={2.2} />
         </div>

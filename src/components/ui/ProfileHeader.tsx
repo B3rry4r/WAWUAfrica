@@ -2,10 +2,9 @@
 import { Avatar } from "./Avatar";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
-import { TierBadge } from "./TierBadge";
 import { VerificationBadge } from "./VerificationBadge";
 import { cn } from "@/lib/cn";
-import type { CreatorTier, VerificationLevel } from "@/types/account";
+import type { VerificationLevel } from "@/types/account";
 
 export interface ProfileStat {
   label: string;
@@ -14,7 +13,6 @@ export interface ProfileStat {
 
 /**
  * Shared by the fan-facing creator profile and the user's own profile.
- * `tier` is the paid subscription (purple Basic / gold Pro), null for non-creators.
  * `verification` is the separate credibility ladder. Two different systems —
  * never collapse them.
  */
@@ -25,7 +23,6 @@ export function ProfileHeader({
   avatarUrl,
   coverUrl,
   verification = "basic",
-  tier = null,
   stats = [],
   primaryLabel,
   onPrimary,
@@ -40,7 +37,6 @@ export function ProfileHeader({
   avatarUrl?: string | null;
   coverUrl?: string | null;
   verification?: VerificationLevel;
-  tier?: CreatorTier | null;
   stats?: ProfileStat[];
   primaryLabel?: string;
   onPrimary?: () => void;
@@ -88,7 +84,6 @@ export function ProfileHeader({
             {name}
           </h1>
           <VerificationBadge tier={verification} />
-          {tier && <TierBadge tier={tier} />}
         </div>
 
         {handle && <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">@{handle}</p>}

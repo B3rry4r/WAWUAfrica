@@ -10,7 +10,6 @@ import { fetchUnreadDmCount } from "@/lib/api/dm";
 import { formatCredits, formatNaira } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
@@ -265,9 +264,9 @@ export function Sidebar() {
         ) : isCreator ? (
           <>
             <div className="flex items-center gap-[10px]">
-              <TierBadge tier={gates.tier ?? "basic"} />
+              <Icon name="Upload" size={16} color="var(--accent)" strokeWidth={2.2} />
               <span className="flex-1 text-[12px] text-text-muted">
-                {gates.slotsUsed} of {gates.slotsTotal} slots
+                {gates.slotsUsed} of {gates.slotsTotal} listings used
               </span>
             </div>
             {profile ? (

@@ -10,7 +10,7 @@ import { creatorGates } from "./gates";
 import { useCreatorState } from "./use-creator-state";
 import { useSession } from "./session-provider";
 
-export type CreatorSetupStepId = "subscription" | "dm" | "profile" | "community" | "kyc" | "upload";
+export type CreatorSetupStepId = "dm" | "profile" | "community" | "kyc" | "upload";
 
 /**
  * Three states, never a checkbox. `waiting` is for work the creator has
@@ -58,17 +58,22 @@ export interface CreatorSetupResult {
 }
 
 /**
- * The post-payment setup story, assembled entirely from live data.
+ * The setup story, assembled entirely from live data.
  *
  * Every step's completion is read from the same endpoints the rest of the app
- * reads — the creator's live CreatorState (subscription, DM price/toggle, KYC
- * status), their real profile (GET /users/me), the communities they actually
- * host, and their real content library. Nothing here is a local checkbox: a
- * creator who set their DM price on another device, or last month, opens this
- * and sees it already ticked.
+ * reads — the creator's live CreatorState (DM price/toggle, KYC status), their
+ * real profile (GET /users/me), the communities they actually host, and their
+ * real content library. Nothing here is a local checkbox: a creator who set
+ * their DM price on another device, or last month, opens this and sees it
+ * already ticked.
  *
- * Gate values come from creatorGates() only — this never re-checks
- * `subscriptionPaid` or `kyc` itself.
+ * There used to be a "Your subscription" step at the head of this list,
+ * linking to /subscription. Subscriptions are gone, so the step described a
+ * gate that no longer exists and pointed at a screen that no longer exists.
+ * The checklist is five steps now, not six.
+ *
+ * Gate values come from creatorGates() only — this never re-checks `kyc`
+ * itself.
  */
 export function useCreatorSetup(): CreatorSetupResult {
   const { user } = useSession();
@@ -178,19 +183,6 @@ export function useCreatorSetup(): CreatorSetupResult {
 
     return [
       {
-        id: "subscription",
-        title: "Your subscription",
-        body: "This is the gate that unlocks uploading and every creator tool. It is already paid.",
-        detail: gates.canUpload
-          ? `Active on ${gates.tier === "pro" ? "Pro" : "Basic"} · ${gates.slotsTotal} upload slots`
-          : "Not active. Uploading and hosting are closed until it is",
-        state: gates.canUpload ? "done" : "todo",
-        icon: "BadgeCheck",
-        href: "/subscription",
-        cta: gates.canUpload ? "Manage" : "Choose a tier",
-        optional: false,
-      },
-      {
         id: "dm",
         title: "Price your paid messages",
         body: "Fans pay to ask you one question, and you answer inside 24 hours. You set the price. There is no range and no ceiling.",
@@ -246,7 +238,7 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "upload",
         title: "Publish your first piece",
-        body: "Your first upload goes out at ₦0. That is a rule on our side, not a setting. Everything after it you price yourself.",
+        body: "You price every piece yourself, in naira. You keep 85% of each sale.",
         detail:
           published > 0
             ? published === 1
@@ -288,9 +280,6 @@ export function useCreatorSetup(): CreatorSetupResult {
       },
     ];
   }, [
-    gates.canUpload,
-    gates.tier,
-    gates.slotsTotal,
     gates.dmEnabled,
     gates.dmPrice,
     gates.kycStatus,

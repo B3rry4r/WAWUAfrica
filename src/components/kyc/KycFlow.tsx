@@ -58,7 +58,7 @@ export function KycFlow() {
    * said "You have not started verification yet". Refreshing the live state
    * on success is what makes the submission visible everywhere else.
    */
-  const { creator, resolved: creatorResolved, reload: reloadCreatorState } = useCreatorState();
+  const { reload: reloadCreatorState } = useCreatorState();
   const [view, setView] = useState<View>("loading");
   const [step, setStep] = useState<Step>(1);
   const [docUploaded, setDocUploaded] = useState(false);
@@ -149,42 +149,13 @@ export function KycFlow() {
     );
   }
 
-  // An unpaid creator is not an error and not a form.
+  // There is no longer a step before this one.
   //
-  // Verification is the gate on getting PAID, and paying for a plan is the
-  // gate on earning anything to be paid. Handing somebody the ID form before
-  // they have a subscription asks for a BVN, a NIN and a bank account to
-  // unlock a payout that cannot exist yet — and their submission would sit in
-  // the review queue ahead of creators who are actually selling.
-  //
-  // So: say what verification is for, and send them to the step that comes
-  // first. Not a dead end, and not a Try again button.
-  if (creatorResolved && creator && !creator.subscriptionPaid) {
-    return (
-      <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] m-0">
-        <FlowHeader title="Verify your identity" />
-        <div className="flex-1 pt-[20px] px-[20px] pb-[32px] flex flex-col gap-[16px]">
-          <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px]">
-            <span className="text-[16px] font-semibold text-[var(--text-primary)]">
-              Pick a plan first
-            </span>
-            <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
-              Verification is what releases your money to your bank account. It is the
-              second of two steps, and the first is a plan, which is what lets you
-              upload and start earning in the first place.
-            </p>
-            <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">
-              Once you are on a plan, come back here with your ID and bank details. It is
-              reviewed by a person, usually in 1 to 3 days.
-            </p>
-          </div>
-          <Button href="/onboarding" full>
-            Choose a plan
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // This used to hold an unpaid creator on a "pick a plan first" screen: a
+  // subscription was the gate on uploading, so asking for a BVN, a NIN and a
+  // bank account before it was asking to unlock a payout that could not exist
+  // yet. Subscriptions are gone and uploading is free, so verification is the
+  // first and only gate, and every creator can start it straight away.
 
   if (view === "load-error") {
     return (

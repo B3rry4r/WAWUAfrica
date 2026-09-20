@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { messagingApi } from "@/lib/api/messaging";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
-import { PLANS } from "@/types/subscription";
 import type { PenaltyKind } from "@/types/messaging";
 import { NairaInput } from "@/components/ui/NairaInput";
 import { ChoiceChips } from "@/components/ui/ChoiceChips";
@@ -14,7 +13,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Feedback";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitPercent, formatNaira } from "@/lib/format";
 
 const penalties: PenaltyKind[] = ["none", "warned", "disabled7", "disabled30"];
 
@@ -127,9 +126,7 @@ export function PaidMessagesSettings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gates.isCreator]);
 
-  const tier = gates.tier ?? "basic";
-  const tierLabel = PLANS[tier].name;
-  const keep = PLANS[tier].split;
+  const keep = creatorSplitPercent();
   /** Never set: nothing to price, nothing to earn, nothing to state. */
   const priceSet = price !== null && price > 0;
   const dmEarn = priceSet ? Math.round((price * keep) / 100) : null;
@@ -404,12 +401,12 @@ export function PaidMessagesSettings() {
               {dmEarn !== null && price !== null ? (
                 <>
                   You earn <span className="text-[var(--text-primary)] font-semibold">{formatNaira(dmEarn)}</span> of
-                  every {formatNaira(price)}, {keep}% on {tierLabel}.
+                  every {formatNaira(price)}, which is {keep}%.
                 </>
               ) : (
                 <>
                   You keep <span className="text-[var(--text-primary)] font-semibold">{keep}%</span> of whatever you
-                  charge, on {tierLabel}. Set a price above and this shows the exact figure.
+                  charge. Set a price above and this shows the exact figure.
                 </>
               )}
             </span>
@@ -552,7 +549,7 @@ export function PaidMessagesSettings() {
               <div className="flex flex-col gap-[11px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
                 <span className="text-[14px] font-semibold text-[var(--text-primary)]">Nothing else changed</span>
                 <span className="text-[13px] leading-[1.5] text-[var(--text-secondary)]">
-                  Your content stays live and keeps selling. Your tier and community hosting are untouched.
+                  Your content stays live and keeps selling. Community hosting is untouched.
                 </span>
               </div>
             )}

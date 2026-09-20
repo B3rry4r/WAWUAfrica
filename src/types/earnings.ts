@@ -9,7 +9,13 @@
  * read them (grepped before removing).
  */
 export type EarningsStream = "content" | "tips" | "dm" | "community_credits";
-export type EarningsSaleSource = "content" | "tip" | "dm" | "community_credits" | "subscription";
+/**
+ * `subscription` was a member here, mirroring the backend enum. Creator
+ * subscriptions were removed from the product and no receipt for one was ever
+ * taken, so no row can carry it. Both lookups that read this union fall back
+ * ("Earning" / a generic icon) if the wire ever sends an unknown source.
+ */
+export type EarningsSaleSource = "content" | "tip" | "dm" | "community_credits";
 
 export interface EarningsStreamBreakdownEntry {
   stream: EarningsStream;

@@ -24,7 +24,6 @@ const OWN_HEADER_ROUTES = [
   "/content",
   "/purchases",
   "/services",
-  "/subscription",
   "/create/new",
   // Only the create flow, never /communities or /communities/[id] — this list
   // is prefix-matched, and those two keep the global header.

@@ -5,14 +5,13 @@ import Link from "next/link";
 import { messagingApi } from "@/lib/api/messaging";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
-import { PLANS } from "@/types/subscription";
 import type { MessagingState } from "@/types/messaging";
 import { Avatar } from "@/components/ui/Avatar";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitPercent, formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
 /** "4:12 pm today" / "9:40 am tomorrow" / "14 Aug, 4:12 pm" from a real ISO deadline. */
@@ -68,7 +67,7 @@ export function Inbox() {
   // it. An unset price now says so, and links to the screen that fixes it.
   const price = gates.dmPrice;
   const priceSet = price > 0;
-  const keep = PLANS[gates.tier ?? "basic"].split;
+  const keep = creatorSplitPercent();
   /**
    * What the creator keeps on ONE thread, off that thread's own amount.
    * Thread.price is the figure snapshotted when the buyer paid — a price

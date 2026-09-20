@@ -5,13 +5,12 @@ import type { ReactNode } from "react";
 import { messagingApi } from "@/lib/api/messaging";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
-import { PLANS } from "@/types/subscription";
 import type { ThreadDetail } from "@/types/messaging";
 import { Avatar } from "@/components/ui/Avatar";
 import { ErrorState, EmptyState, Skeleton } from "@/components/ui/Feedback";
 import { ThreePaneLayout } from "@/components/layout/ThreePaneLayout";
 import { QuestionDetail } from "./QuestionDetail";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitPercent, formatNaira } from "@/lib/format";
 
 function statusRank(status: ThreadDetail["status"]): number {
   return status === "awaiting" ? 0 : status === "answered" ? 1 : 2;
@@ -75,7 +74,7 @@ export function QuestionsDesktop() {
 
   const sorted = useMemo(() => (threads ? sortThreads(threads) : []), [threads]);
   const selected = sorted.find((t) => t.id === selectedId) ?? null;
-  const keep = PLANS[gates.tier ?? "basic"].split;
+  const keep = creatorSplitPercent();
   const earnFor = useCallback((price: number) => Math.round((price * keep) / 100), [keep]);
 
   const handleReply = useCallback(

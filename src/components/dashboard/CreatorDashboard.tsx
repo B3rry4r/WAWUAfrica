@@ -15,11 +15,9 @@ import { messagingApi } from "@/lib/api/messaging";
 import { contentApi } from "@/lib/api/creator-content";
 import type { MessagingState } from "@/types/messaging";
 import type { ContentItem } from "@/types/content";
-import { PLANS } from "@/types/subscription";
 import type { ContentType } from "@/types/content";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitPercent, formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { StatBlock } from "@/components/ui/StatBlock";
@@ -133,17 +131,14 @@ export function CreatorDashboard() {
 
   // A settled `!creator` is a genuine non-creator, and blank is the wrong
   // answer for them: it lasts forever. They get told what this is and how to
-  // get in, the same as /subscription and /create already did.
+  // get in, the same as /create already did.
   if (!creator) {
     return <CreatorOnly />;
   }
 
   const tier = gates.tier ?? creator.tier;
   const approved = gates.canEarn;
-  const keep = PLANS[tier].split;
-  // PLANS[tier].name, not a two-way ternary: the old one predated Pro Max
-  // and labelled every Pro Max creator "Basic".
-  const tierLabel = PLANS[tier].name;
+  const keep = creatorSplitPercent();
   const slotsLeft = gates.slotsRemaining;
   const earned = earnings ? (approved ? earnings.payable + earnings.held : earnings.held) : null;
   // Real per-stream figures from the same response as the total above, so
@@ -198,7 +193,7 @@ export function CreatorDashboard() {
       ...streamRows.map((s) => [s.label, s.stream === "community_credits" ? `${s.amount} credits` : String(s.amount)]),
       [],
       ["Earned this month", earned !== null ? String(earned) : ""],
-      ["Revenue split", `${keep}/${100 - keep} (${tierLabel})`],
+      ["Revenue split", `${keep}/${100 - keep}`],
       ["Payout status", approved ? "Payable to your verified bank account" : "Held, not payable yet"],
     ];
     const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -216,7 +211,7 @@ export function CreatorDashboard() {
   return (
     <div>
       <div className="xl:hidden">
-        <FlowHeader title="Creator dashboard" right={<TierBadge tier={tier} />} />
+        <FlowHeader title="Creator dashboard" />
       </div>
 
       {/* D6 desktop-only sticky page header — suppresses the global DesktopHeader
@@ -281,7 +276,7 @@ export function CreatorDashboard() {
             <span
               className="inline-flex items-center h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] text-[11.5px] font-bold"
             >
-              {keep}/{100 - keep} on {tierLabel}
+              {keep}/{100 - keep} split
             </span>
           </div>
           {/* The way out lives in the card that states the problem — the copy
@@ -293,7 +288,7 @@ export function CreatorDashboard() {
 
         <div className="flex gap-[12px]">
           <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-            <StatBlock value={`${creator.slotsUsed} / ${creator.slotsTotal}`} label="Upload slots" align="start" size="md" />
+            <StatBlock value={`${gates.slotsUsed} / ${gates.slotsTotal}`} label="Listings used" align="start" size="md" />
           </div>
           <div className="flex-1 p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
             <StatBlock value={evg !== null ? evg.toLocaleString("en-NG") : "-"} label="EVG score" align="start" size="md" />

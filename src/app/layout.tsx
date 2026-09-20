@@ -21,7 +21,7 @@ const SITE = "https://wawuafrica.com";
 // on every share card, which is about as user-visible as copy gets.
 const TITLE = "WAWUAfrica: get paid for what you know";
 const DESCRIPTION =
-  "Publish your work, price it in naira, and keep up to 90% of what you earn. Courses, videos, audio and PDFs, plus the business services African creators actually need.";
+  "Publish your work, price it in naira, and keep 85% of what you earn. Courses, videos, audio and PDFs, plus the business services African creators actually need.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? SITE),

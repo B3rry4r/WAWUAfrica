@@ -12,7 +12,6 @@ import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
 import { RequireAuth } from "./RequireAuth";
-import { RequirePaidCreator } from "./RequirePaidCreator";
 
 interface AppShellProps {
   children: ReactNode;
@@ -37,8 +36,8 @@ interface AppShellProps {
  * place that decision gets made; no per-route changes are needed for a
  * screen to pick up the desktop shell.
  *
- * AMBIGUITY RESOLVED: 4 of the 17 desktop frames (D9 Subscription, D11
- * Product detail, D12 Learn, D13 Services) are drawn without a sidebar in
+ * AMBIGUITY RESOLVED: 4 of the 17 desktop frames (D9, D11 Product detail,
+ * D12 Learn, D13 Services) are drawn without a sidebar in
  * the design file — just a header. Treated as a drawing omission, not a
  * distinct "focused" layout: every (app) route gets the persistent
  * Sidebar + DesktopHeader here, unconditionally, the same way mobile's
@@ -120,9 +119,7 @@ function FullShell({ children, header }: { children: ReactNode; header: boolean 
             </>
           ) : null}
           <main className="pb-[96px] xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pb-0">
-            <RequireAuth>
-              <RequirePaidCreator>{children}</RequirePaidCreator>
-            </RequireAuth>
+            <RequireAuth>{children}</RequireAuth>
           </main>
         </div>
       </div>

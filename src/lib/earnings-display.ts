@@ -62,7 +62,6 @@ const SALE_LABELS: Record<EarningsSaleSource, string> = {
   tip: "Tip received",
   dm: "Paid message",
   community_credits: "Community credits",
-  subscription: "Subscription",
 };
 
 export function saleSourceLabel(source: EarningsSaleSource): string {

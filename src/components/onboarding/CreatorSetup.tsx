@@ -69,18 +69,18 @@ export function CreatorSetup() {
 
         <div className="flex flex-col gap-[10px]">
           <h2 className="m-0 text-[22px] font-bold leading-[1.2] tracking-[-0.03em] text-text-primary xl:hidden">
-            Six things, none of them urgent
+            Five things, none of them urgent
           </h2>
           <p className="m-0 text-[13.5px] leading-[1.5] text-text-secondary">
-            Your subscription already unlocked uploading. The rest is what turns an empty creator account into one people
-            can find, pay and talk to. Do them in any order, stop whenever, come back whenever.
+            Uploading is already open to you, and it costs nothing. The rest is what turns an empty creator account
+            into one people can find, pay and talk to. Do them in any order, stop whenever, come back whenever.
           </p>
         </div>
 
         <CreatorSetupChecklist />
 
-        {/* The two gates, restated where somebody who skipped the payment
-            screen will still meet them. Never a wall — see CreatorSetupChecklist. */}
+        {/* Restated where somebody who skipped the onboarding screen will
+            still meet it. Never a wall — see CreatorSetupChecklist. */}
         <div className="flex flex-col gap-[13px] rounded-card border border-hairline bg-card p-[16px]">
           <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Two separate things</span>
           <div className="flex gap-[12px]">
@@ -88,8 +88,8 @@ export function CreatorSetup() {
               <Icon name="Check" size={16} strokeWidth={2.6} color="var(--success)" />
             </span>
             <span className="flex-1 text-[13.5px] leading-[1.45] text-text-secondary">
-              <span className="font-semibold text-text-primary">Uploading is unlocked.</span> Your subscription did that.
-              Publish, price and sell from today.
+              <span className="font-semibold text-text-primary">Uploading is open.</span> It costs nothing and there is
+              no plan to buy. Publish, price and sell from today.
             </span>
           </div>
           <div className="flex gap-[12px]">

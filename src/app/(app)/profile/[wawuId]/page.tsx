@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { PLANS } from "@/types/subscription";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -13,7 +12,6 @@ import { CommunityImage } from "@/components/ui/CommunityImage";
 import { PriceChip } from "@/components/ui/PriceChip";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { StatBlock } from "@/components/ui/StatBlock";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { VerificationBadge } from "@/components/ui/VerificationBadge";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -164,7 +162,6 @@ function DesktopIdentity({ profile, following, onToggleFollow }: { profile: Crea
             <div className="flex items-center gap-[9px]">
               <span className="text-[26px] font-bold tracking-[-0.025em] text-text-primary">{profile.name}</span>
               <VerificationBadge tier={profile.verification} size={20} />
-              <TierBadge tier={profile.plan} />
             </div>
             {metaParts.length > 0 && <span className="text-[14px] text-text-secondary">{metaParts.join(" · ")}</span>}
           </div>
@@ -224,7 +221,6 @@ function FullHeader({ profile, following, onToggleFollow }: { profile: CreatorPr
         avatarUrl={profile.avatarUrl}
         coverUrl={profile.coverUrl}
         verification={profile.verification}
-        tier={profile.plan}
         stats={[
           { value: profile.stats.followers, label: "Followers" },
           { value: String(profile.stats.pieces), label: profile.stats.piecesLabel },
@@ -430,7 +426,6 @@ function AboutTab({ profile }: { profile: CreatorProfile }) {
         <SectionLabel>Verified as</SectionLabel>
         <div className="flex flex-col gap-[9px] rounded-[var(--radius-card)] border border-hairline bg-card px-4 py-[15px]">
           <BadgeRow icon={<Icon name="Award" size={18} color="var(--accent)" strokeWidth={2.2} />} text={VERIFY_LABELS[profile.verification]} />
-          <BadgeRow icon={<Icon name="Crown" size={18} color="var(--brand-yellow)" strokeWidth={2.2} />} text={`${PLANS[profile.plan].name} creator`} />
         </div>
       </div>
 

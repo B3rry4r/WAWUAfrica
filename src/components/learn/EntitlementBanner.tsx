@@ -1,15 +1,19 @@
 import type { LearnEntitlement } from "@/types/learn";
-import { PLANS } from "@/types/subscription";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { Icon } from "@/components/ui/Icon";
 
 /**
  * Free-course entitlement banner. "compact" is the landing-page row; "full" is
  * the bigger card on the all-courses screen with progress dots. Never a Naira
- * value — this is a subscription-tier perk (count of slots), not a purchase.
+ * value — this is a count of slots, not a purchase.
+ *
+ * The counts come from the server (GET learn entitlement) and are shown as it
+ * reports them. Nothing here names a plan any more: subscriptions are gone, so
+ * "comes with your Basic tier" and the tier badge went with them. FLAGGED: the
+ * backend still derives these totals from `tier`, which is no longer something
+ * anybody can buy.
  */
 export function EntitlementBanner({ entitlement, variant = "compact" }: { entitlement: LearnEntitlement; variant?: "compact" | "full" }) {
-  const { freeCoursesTotal, freeCoursesRemaining, tier, isCreator } = entitlement;
+  const { freeCoursesTotal, freeCoursesRemaining, isCreator } = entitlement;
 
   if (!isCreator || freeCoursesTotal === 0) {
     return (
@@ -19,7 +23,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">No course claimed yet</span>
-          <span className="text-[12.5px] text-[var(--text-secondary)]">Courses at no charge come with a creator subscription.</span>
+          <span className="text-[12.5px] text-[var(--text-secondary)]">Courses at no charge come with a creator account.</span>
         </div>
       </div>
     );
@@ -29,7 +33,7 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
     return (
       <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--border-decor)] bg-[var(--surface-elevated)] p-4">
         <div className="flex items-center gap-2.5">
-          <TierBadge tier={tier} />
+          <Icon name="GraduationCap" size={17} color="var(--accent)" strokeWidth={2.2} />
           <span className="flex-1 text-[12.5px] text-[var(--text-muted)]">Your entitlement</span>
         </div>
         <div className="flex items-baseline gap-2">
@@ -49,9 +53,9 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
           ))}
         </div>
         <span className="text-[12.5px] text-[var(--text-muted)]">
-          {tier === "pro"
-            ? "Pick any course in the catalogue. They do not expire while Pro is active."
-            : "Basic carries one, spend it on something you will finish."}
+          {freeCoursesTotal > 1
+            ? "Pick any course in the catalogue. They do not expire."
+            : "One to spend, so pick something you will finish."}
         </span>
       </div>
     );
@@ -64,9 +68,8 @@ export function EntitlementBanner({ entitlement, variant = "compact" }: { entitl
         <span className="text-[14px] font-semibold text-[var(--text-primary)]">
           {freeCoursesRemaining} included course{freeCoursesRemaining === 1 ? "" : "s"} available
         </span>
-        <span className="text-[12.5px] text-[var(--text-secondary)]">Comes with your {PLANS[tier].name} tier</span>
+        <span className="text-[12.5px] text-[var(--text-secondary)]">Comes with your creator account</span>
       </div>
-      <TierBadge tier={tier} />
     </div>
   );
 }

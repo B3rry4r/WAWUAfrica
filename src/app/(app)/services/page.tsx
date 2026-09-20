@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getServices, getOtherApplications } from "@/lib/api/services";
 import type { PartnerService, ServiceApplication } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TierBadge, TileCard } from "@/components/ui";
+import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TileCard } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
@@ -136,8 +136,7 @@ export default function ServicesPage() {
 
         <section className="flex flex-col gap-[11px]">
           <div className="flex items-center gap-[8px] px-[2px]">
-            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Coming with Pro</span>
-            <TierBadge tier="pro" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Coming soon</span>
           </div>
           <div className="flex flex-col gap-[10px]">
             {coming.map((s) => (

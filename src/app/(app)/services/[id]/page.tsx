@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import type { PartnerService } from "@/types/services";
 import { getService, notifyComingSoon } from "@/lib/api/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ComingSoonPill, ErrorState, Icon, TierBadge } from "@/components/ui";
+import { Button, ComingSoonPill, ErrorState, Icon } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 
 export default function ComingSoonServicePage() {
@@ -112,8 +112,7 @@ export default function ComingSoonServicePage() {
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
             <span className="flex items-center gap-[7px] text-[14px] font-semibold text-[var(--text-primary)]">
-              Pro members first
-              <TierBadge tier="pro" />
+              Not open yet
             </span>
             <span className="text-[12.5px] text-[var(--text-secondary)]">{service.comingNote}</span>
           </div>
@@ -177,8 +176,7 @@ export default function ComingSoonServicePage() {
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-[3px] text-left">
               <span className="flex items-center gap-[7px] text-[14.5px] font-semibold text-[var(--text-primary)]">
-                Pro members first
-                <TierBadge tier="pro" />
+                Not open yet
               </span>
               <span className="text-[13px] text-[var(--text-secondary)]">{service.comingNote}</span>
             </div>

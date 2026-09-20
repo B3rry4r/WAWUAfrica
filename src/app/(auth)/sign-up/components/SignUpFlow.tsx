@@ -6,8 +6,6 @@ import { checkReferralCode, claimReferralCode, getSignupState, type ReferralCode
 import { describeError } from "@/lib/api/errors";
 import { PhoneInput } from "@/components/ui";
 import { referralStorage } from "@/lib/auth/referral-storage";
-import { formatNaira } from "@/lib/format";
-import { PLANS } from "@/types/subscription";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -148,8 +146,8 @@ export function SignUpFlow() {
     try {
       const check = await checkReferralCode(code);
       setReferralCheck(check);
-      // Remembered so the subscription step can price with it without asking
-      // for the same code a second time.
+      // Remembered against the account as well as the browser: it is the
+      // invitation that opens a closed signup, not a discount on anything.
       referralStorage.set(check.code);
       // A valid code is the invitation, so it opens the closed option too.
       if (userSignupOpen === false) setUserSignupOpen(true);
@@ -232,13 +230,13 @@ export function SignUpFlow() {
   const onFinishInterests = () => {
     if (interests.length < INTERESTS_MIN) return;
     persistInterests(interests);
-    // Creators go straight into onboarding (tier -> payment -> KYC).
-    // Users land on the feed.
+    // Creators go straight into onboarding, which is now a free opt-in
+    // rather than a tier picker and a payment. Users land on the feed.
     router.push(otpState?.accountType === "creator" ? "/onboarding" : "/home");
   };
 
   // A creator's sign-up is two steps, not three: they skip interests and go
-  // to the plan. Counting to three would promise a step that never arrives.
+  // to onboarding. Counting to three would promise a step that never arrives.
   const totalSteps = accountType === "creator" ? 2 : 3;
   const stepLabel =
     step === "otp" ? `Step 2 of ${totalSteps}` : step === "interests" ? "Step 3 of 3" : `Step 1 of ${totalSteps}`;
@@ -309,7 +307,7 @@ export function SignUpFlow() {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="text-[17px] font-semibold text-text-primary">I&apos;m here to discover</span>
-                    <StatusPill kind="neutral">No subscription</StatusPill>
+                    <StatusPill kind="neutral">No charge</StatusPill>
                   </span>
                   <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
                     Browse and unlock content, message creators, join communities, shop the marketplace.
@@ -346,8 +344,8 @@ export function SignUpFlow() {
               <span className="min-w-0 flex-1">
                 <span className="block text-[17px] font-semibold text-text-primary">I want to create and earn</span>
                 <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
-                  Everything above, plus upload and price your work, paid DMs, host communities, list your services
-                  as a professional, and keep 85%, 90% on Pro.
+                  Everything above, plus upload and price your work, paid DMs, host communities, and list your
+                  services as a professional. Joining costs nothing, and you keep 85% of what you earn.
                 </span>
               </span>
             </span>
@@ -356,11 +354,10 @@ export function SignUpFlow() {
           {/*
             The referral code.
 
-            It does two jobs, which is why it sits on this step rather than
-            beside a price: it is the invitation that opens the discover
-            account while regular signup is closed, AND the discount carried
-            forward to whatever plan they buy. Applying it here means somebody
-            who was sent a code never has to find where to type it later.
+            It is the invitation that opens the discover account while regular
+            signup is closed. It used to ALSO carry a discount forward to
+            whatever plan somebody bought; there are no plans any more, so the
+            percentage is not shown here and a code is simply accepted or not.
           */}
           <div className="flex flex-col gap-2 rounded-card border border-hairline bg-card p-4">
             <span className="text-[13.5px] font-semibold text-text-primary">Have a referral code?</span>
@@ -389,17 +386,7 @@ export function SignUpFlow() {
             {referralCheck ? (
               <span className="flex items-start gap-1.5 text-[12.5px] leading-[1.45] text-success">
                 <Icon name="Check" size={14} color="var(--success)" strokeWidth={2.6} className="mt-0.5 shrink-0" />
-                {referralCheck.discountPercent > 0 ? (
-                  <span>
-                    {referralCheck.discountPercent}% off {PLANS[referralCheck.tier].name} -{" "}
-                    <s className="text-text-muted">{formatNaira(referralCheck.originalPriceNaira)}</s>{" "}
-                    <span className="font-semibold text-text-primary">{formatNaira(referralCheck.priceNaira)}</span>
-                  </span>
-                ) : (
-                  // A 0% code is an invitation, not a discount. Saying "0% off"
-                  // would read as a broken code rather than an open door.
-                  <span>Code accepted. You can create your account.</span>
-                )}
+                <span>Code accepted. You can create your account.</span>
               </span>
             ) : null}
             {referralError ? (

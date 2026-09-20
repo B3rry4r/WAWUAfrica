@@ -186,8 +186,6 @@ function actionHrefFor(n: AppNotification): string {
     case "credits_low":
     case "trial_ending":
       return "/communities?topup=1";
-    case "subscription_renewal":
-      return "/subscription";
     case "content_published":
     case "content_rejected":
       return "/create/library";

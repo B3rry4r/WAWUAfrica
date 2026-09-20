@@ -1,9 +1,14 @@
 /**
  * Notification kinds. The design file (WAWU Notifications Search.dc.html)
  * is the source of truth: its two list screens show 11 kinds and the batch
- * header claims "Twelve kinds of news". The 12th — `trial_ending` — is
- * derived from the WAWU Credits trial (7 days, docs/01_SPEC.md §3) so the
- * fan-side of the credits system is covered alongside the fan-side refund.
+ * header claims "Twelve kinds of news". `trial_ending` is derived from the
+ * WAWU Credits trial (7 days, docs/01_SPEC.md §3) so the fan-side of the
+ * credits system is covered alongside the fan-side refund.
+ *
+ * `subscription_renewal` (creator tier renewal/billing) was removed with
+ * subscriptions: nothing renews and nothing is billed, so the notification had
+ * no screen to open. A `kind` this frontend does not know still falls through
+ * actionHrefFor's default rather than breaking the list.
  *
  * 1. dm_deadline            — reply before the 24h window closes (urgent, action)
  * 2. sale                   — content sold (money)
@@ -13,10 +18,9 @@
  * 6. dm_refunded            — fan refunded, creator missed the window (money)
  * 7. credits_low            — credits balance low (a COUNT, never naira)
  * 8. content_rejected       — content not approved, slot returned
- * 9. subscription_renewal   — creator tier renewal/billing
- * 10. new_follower          — new follower
- * 11. tip_received          — tip received (money)
- * 12. trial_ending          — credits trial ending/ended (count, fan-side)
+ * 9. new_follower          — new follower
+ * 10. tip_received          — tip received (money)
+ * 11. trial_ending          — credits trial ending/ended (count, fan-side)
  */
 export type NotificationKind =
   | "dm_deadline"
@@ -27,7 +31,6 @@ export type NotificationKind =
   | "dm_refunded"
   | "credits_low"
   | "content_rejected"
-  | "subscription_renewal"
   | "new_follower"
   | "tip_received"
   | "trial_ending";

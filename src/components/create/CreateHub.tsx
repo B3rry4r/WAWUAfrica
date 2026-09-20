@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { PLANS } from "@/types/subscription";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CONTENT_TYPE_META, PUBLISHABLE_CONTENT_TYPES, type ContentType } from "@/types/content";
-import { Button, Icon, Sheet, TierBadge } from "@/components/ui";
+import { Button, Icon, Sheet } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
-import { formatNaira } from "@/lib/format";
 
 const typeIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -20,10 +18,8 @@ const typeIcons: Record<ContentType, IconName> = {
 
 export interface CreateHubProps {
   slotsUsed: number;
+  /** The flat per-account cap. See MAX_ITEMS_PER_ACCOUNT in gates.ts. */
   slotsTotal: number;
-  tier: "basic" | "pro" | "pro_max";
-  proPrice: number;
-  proSlots: number;
 }
 
 const eyebrow = "text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]";
@@ -50,7 +46,7 @@ const eyebrow = "text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--t
  *    and at `dt` the page becomes a real two-column layout with the slot
  *    state and the CTA in a rail rather than a stretched footer bar.
  */
-export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: CreateHubProps) {
+export function CreateHub({ slotsUsed, slotsTotal }: CreateHubProps) {
   const router = useRouter();
   const slotsLeft = Math.max(0, slotsTotal - slotsUsed);
   const slotsFull = slotsLeft === 0;
@@ -108,8 +104,8 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
       </div>
       <span className="text-[12.5px] leading-[1.45] text-text-muted">
         {slotsFull
-          ? "Every slot is in use. Take something down, or move up a tier for more room."
-          : `${slotsLeft} still open on ${PLANS[tier].name}. Taking a piece down returns its slot.`}
+          ? "Every slot is in use. Take something down to open one up."
+          : `${slotsLeft} still open. Taking a piece down returns its slot.`}
       </span>
       <Link
         href="/create/library"
@@ -172,7 +168,7 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
                   onClick={() => setUpsellOpen(true)}
                   className="border-none bg-transparent p-0 text-[12.5px] font-semibold text-accent underline underline-offset-2 hover:text-text-primary"
                 >
-                  See your options
+                  See what to do
                 </button>
               </span>
             </div>
@@ -240,20 +236,6 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
           {slotsCard}
           {cta}
           {communityCard}
-          {tier !== "pro" ? (
-            <div className="flex flex-col gap-[10px] rounded-card border border-decor bg-elevated p-[18px]">
-              <div className="flex items-center gap-[10px]">
-                <TierBadge tier="pro" />
-                <span className="flex-1 text-[12.5px] text-text-muted">{formatNaira(proPrice)} a year</span>
-              </div>
-              <span className="text-[13px] leading-[1.45] text-text-secondary">
-                {proSlots} upload slots instead of {slotsTotal}, and you keep 90% instead of 85%.
-              </span>
-              <Button size="sm" variant="secondary" href="/subscription">
-                Compare plans
-              </Button>
-            </div>
-          ) : null}
         </aside>
       </div>
 
@@ -262,7 +244,7 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
         open={upsellOpen}
         onClose={() => setUpsellOpen(false)}
         title={`All ${slotsTotal} slots are in use`}
-        caption="Take a piece down to open a slot, or move up a tier for more room."
+        caption="Every account can list up to this many items. Take a piece down to open a slot."
       >
         <div className="flex flex-col gap-[16px]">
           <div className="flex flex-col gap-[9px] rounded-input border border-hairline bg-card px-[16px] py-[15px]">
@@ -277,41 +259,9 @@ export function CreateHub({ slotsUsed, slotsTotal, tier, proPrice, proSlots }: C
             </div>
           </div>
 
-          {tier !== "pro" ? (
-            <div className="flex flex-col gap-[14px] rounded-card border border-decor bg-elevated p-[18px]">
-              <div className="flex items-center gap-[10px]">
-                <TierBadge tier="pro" />
-                <span className="flex-1 text-[13px] text-text-muted">{formatNaira(proPrice)} a year</span>
-              </div>
-              <div className="flex flex-col gap-[9px]">
-                <span className="flex items-center gap-[9px] text-[13.5px] text-text-secondary">
-                  <Icon name="Check" size={15} strokeWidth={2.4} color="var(--accent)" />
-                  {proSlots} uploads instead of {slotsTotal}
-                </span>
-                <span className="flex items-center gap-[9px] text-[13.5px] font-semibold text-text-primary">
-                  <Icon name="Check" size={15} strokeWidth={2.4} color="var(--accent)" />
-                  Keep 90% instead of 85%
-                </span>
-                <span className="flex items-center gap-[9px] text-[13.5px] text-text-secondary">
-                  <Icon name="Check" size={15} strokeWidth={2.4} color="var(--accent)" />
-                  Private communities and 3 courses included
-                </span>
-              </div>
-            </div>
-          ) : null}
-
           <div className="flex flex-col gap-[10px]">
-            {tier !== "pro" ? (
-              <Button full size="lg" onClick={() => router.push("/subscription")}>
-                Upgrade to Pro
-              </Button>
-            ) : null}
-            <Button
-              full
-              variant={tier === "pro" ? "primary" : "secondary"}
-              onClick={() => router.push("/create/library")}
-            >
-              Take something down instead
+            <Button full size="lg" onClick={() => router.push("/create/library")}>
+              Take something down
             </Button>
           </div>
           <span className="self-center text-center text-[12px] text-text-muted">

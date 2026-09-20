@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { creatorSplitRate } from "@/lib/format";
 
 /** ₦4.5M / ₦54M / ₦900k / ₦10.8B style compact naira, per the moodboard's example results. */
 function compactNaira(n: number): string {
@@ -18,15 +19,17 @@ function compactNaira(n: number): string {
 }
 
 export function EarningsCalculator() {
-  const [pro, setPro] = useState(true);
   const [followers, setFollowers] = useState(1000);
   const [price, setPrice] = useState(5000);
 
+  // The rate comes from creatorSplitRate() rather than a literal, so this
+  // marketing figure cannot drift away from what the app actually pays. It
+  // previously defaulted to the Pro rate, meaning the first number a visitor
+  // ever saw was 90% of their imagined revenue, which nobody was on.
   const { monthly, yearly } = useMemo(() => {
-    const rate = pro ? 0.9 : 0.85;
-    const monthly = followers * price * rate;
+    const monthly = followers * price * creatorSplitRate();
     return { monthly, yearly: monthly * 12 };
-  }, [pro, followers, price]);
+  }, [followers, price]);
 
   return (
     <div className="flex flex-col gap-5 rounded-card border border-hairline bg-card p-5 dt:p-6">
@@ -38,23 +41,15 @@ export function EarningsCalculator() {
           <span className="text-[15px] font-semibold text-text-primary">Earnings Calculator</span>
           <span className="text-[12px] text-text-muted">See what you could earn</span>
         </span>
-        <div className="ml-auto flex gap-1 rounded-full border border-hairline bg-tag p-1">
-          {[
-            { label: "85%", active: !pro, on: () => setPro(false) },
-            { label: "90%", active: pro, on: () => setPro(true) },
-          ].map((opt) => (
-            <button
-              key={opt.label}
-              type="button"
-              onClick={opt.on}
-              className={`h-[28px] rounded-full px-3 text-[12px] font-bold transition-colors ${
-                opt.active ? "bg-accent text-on-accent" : "text-text-secondary hover:bg-state-hover active:bg-state-press"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/*
+          The 85% / 90% toggle is gone with the Pro plan that sold the better
+          rate. Leaving it would have been an interactive control on a public
+          marketing page inviting a visitor to pick a split they can no longer
+          get, and then quoting them a yearly figure based on it.
+        */}
+        <span className="ml-auto rounded-full border border-hairline bg-tag px-3 py-1 text-[12px] font-bold text-text-secondary">
+          You keep 85%
+        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-5 dt:grid-cols-2">
@@ -82,7 +77,7 @@ export function EarningsCalculator() {
         </div>
 
         <div className="flex flex-col gap-2.5">
-          <span className="text-[12.5px] font-semibold text-text-secondary">Avg Subscription Price</span>
+          <span className="text-[12.5px] font-semibold text-text-secondary">Avg Sale Price</span>
           <div className="flex h-[46px] items-center gap-1.5 rounded-input border border-hairline bg-input px-3.5">
             <span className="text-[14px] text-text-muted">₦</span>
             <span className="text-[16px] font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
@@ -98,7 +93,7 @@ export function EarningsCalculator() {
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
             className="h-5 w-full cursor-pointer [accent-color:var(--accent)]"
-            aria-label="Average subscription price"
+            aria-label="Average sale price"
           />
           <div className="flex justify-between text-[10.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
             <span>₦500</span>
@@ -123,7 +118,7 @@ export function EarningsCalculator() {
       </div>
 
       <p className="m-0 border-t border-hairline pt-4 text-[12px] leading-relaxed text-text-muted">
-        <span className="font-semibold text-text-secondary">How it works:</span> WAWUAfrica takes 10-15%. You keep 85-90% of
+        <span className="font-semibold text-text-secondary">How it works:</span> WAWUAfrica takes 15%. You keep 85% of
         everything you earn. Best in Africa.
       </p>
     </div>

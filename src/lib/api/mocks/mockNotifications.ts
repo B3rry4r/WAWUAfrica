@@ -91,16 +91,6 @@ export const mockNotifications: NotificationsResponse = {
       createdAt: minutesAgo(3 * 24 * 60),
     },
     {
-      id: "n-subscription-renewal",
-      kind: "subscription_renewal",
-      title: "Pro renews in 7 days",
-      body: `${formatNaira(18999)} on card ending 4412`,
-      tone: "neutral",
-      amount: 18999,
-      read: true,
-      createdAt: minutesAgo(3 * 24 * 60),
-    },
-    {
       id: "n-follower",
       kind: "new_follower",
       title: "Chidi Umeh followed you",
