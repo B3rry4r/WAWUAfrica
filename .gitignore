@@ -14,3 +14,10 @@ tsconfig.tsbuildinfo
 
 # scratch distDir used by the measurement harness
 .next-verify/
+
+# Claude Code local settings (personal, not team-wide)
+.claude/settings.local.json
+
+# Python bytecode from the verification-harness gate scripts
+__pycache__/
+*.pyc
