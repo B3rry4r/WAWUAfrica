@@ -214,6 +214,91 @@ because it would all key off that enum.
 
 ---
 
+## D6b. Three side effects of the teardown that change what users get
+
+These fell out of removing subscriptions rather than being asked for. Each is
+recorded because a user could notice it.
+
+**1. Free-course entitlement collapses to 1, not 0.** `LearnEntitlement` gave
+free courses on a ladder (Basic 1, Pro 2, Pro Max 3). It is now a flat 1 for
+every creator. The principle is the same one used for storage in D2: an
+entitlement with no tier left to derive from collapses to the FLOOR everybody
+already had, not to zero and not to the top of the ladder. Zero was the
+alternative and would have quietly taken something away from every creator.
+This is NOT the same rule as B2's "no free content" - that governs what a
+creator PUBLISHES, and a course WAWU gives a creator access to is not a listing
+they sell. **Open question:** the brief does not mention free courses at all,
+so if the number should be 0 now, say so.
+
+**2. Community messaging costs MORE than it did.** A paid creator used to get
+free sends in open rooms, as a subscription entitlement. That entitlement is
+gone, so a non-host creator now spends 1 credit per message like everyone else.
+This is the one change in the whole teardown that takes value away rather than
+giving it: it was a paid perk, and there is no longer a payment to attach it
+to. It also restores the host's 90% share on those spends, which previously
+did not exist because the send was free.
+
+**3. Private communities are now open to every creator.** Hosting required a
+live subscription, and a PRIVATE community additionally required Pro or Pro
+Max. Both were subscription entitlements. Keeping either would have been a door
+with no key, because there is nothing left to buy that opens it. Creator
+account type is now the only gate, still enforced by `CreatorAccountGuard`.
+
+## D6c. One gate was NARROWED, and the bug it protected against lost its recovery path
+
+`CreatorStateService.getState` used to accept an existing `CreatorSubscription`
+row as evidence that an account was a creator, for the case where
+`UserProfile.accountType` had been lost during signup. That table is gone and
+nothing replaces the evidence, so `accountType === 'creator'` is now the only
+test.
+
+This narrows who is recognised as a creator and never widens it, so it is safe
+in the direction that matters. But the fallback existed because the
+lost-accountType bug was real, and that bug now has no recovery path through
+the API: an affected account cannot be repaired except in the database.
+Flagged rather than worked around, because inventing a new fallback would be
+inventing a second definition of "is a creator", which is how the first one
+drifted.
+
+## D6d. Test status, reported as what ran rather than what passed
+
+A1c: "Report what ran, not what you hoped ran. An unrun check is reported as
+unrun. Silence reads as a pass."
+
+**RAN and passed:**
+- Backend `npm run build` - exit 0.
+- Backend `npx tsc --noEmit -p tsconfig.json` - exit 0. This matters separately:
+  `nest build` EXCLUDES `*.spec.ts`, so a green build says nothing about
+  whether the test files still compile. They had about fifty errors of their
+  own that the build never saw.
+- Backend DB-free suites - 12 suites, 146 tests passed, 1 skipped.
+- Backend `npx jest src/account-purge` - 4 passed. This is the account-deletion
+  drift guard and it needs no Postgres, so it is real evidence.
+- Frontend `npm run typecheck`, `check:copy`, `check:tgif`, `check:qr` - all 0.
+- Frontend gates - 20 failures against a 21 baseline, so no new failure was
+  introduced by the teardown.
+- Taxonomy self-tests - 47 passed.
+
+**NOT RUN - no Postgres in this environment.** Nothing is listening on
+127.0.0.1:5432, and these suites boot a real Nest app whose PrismaService opens
+a connection on module init:
+- every `*.contract.spec.ts` (the wire-shape contracts)
+- `src/common/tests/protected-registry.regression.spec.ts`
+- `src/common/tests/route-shadowing.regression.spec.ts`
+
+The last two are worth naming because they are NOT called `contract.spec` and
+so slip through the obvious ignore pattern. Running the DB-free set with
+`--testPathIgnorePatterns "contract.spec"` sweeps them in and produces 21
+failures that look like regressions and are only an absent database. They were
+verified by typecheck only. **Run `npm run test:contract` against a real
+Postgres before trusting any of this.**
+
+**NOT RUN - no browser.** `frontend-surface-build` Phase 5 (measure computed
+values in a real browser at every breakpoint) and the `qa-audit` render pass
+have not happened. Every layout, contrast and interaction-state claim in the
+exit criteria is therefore still unverified. Nothing here should be read as
+design conformance.
+
 ## D6. Gate findings are fixed at the root, not baselined away
 
 **Chosen.** The `forks` gate failures (`FlutterwaveConfig` declared in 3 files,
