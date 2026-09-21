@@ -311,28 +311,56 @@ with Playwright already pointed at it. I accepted two limits without testing
 them, which is the same failure as reporting an unrun check as a pass, only
 with the sign flipped. Both now run.
 
-**RAN, against a real database - and it is NOT green.** With Postgres up, the
-migrations applied and `mock-wawu-id` running on :4001:
+**RAN, against a real database. GREEN.**
 
 ```
-Test Suites: 32 failed, 45 passed, 77 total
-Tests:      219 failed, 3 skipped, 995 passed, 1217 total
+Test Suites: 77 passed, 77 total
+Tests:       3 skipped, 1214 passed, 1217 total     npm run test:contract -> exit 0
 ```
 
-The migration itself is verified: all four tables dropped, `CreatorState` down
-to exactly its six remaining columns, both enums gone.
+Verified on two consecutive full runs without reseeding in between, which
+matters because the suite mutates a shared database in place.
 
-The 219 failures are test-FIXTURE drift, not broken behaviour, and they are
-being fixed. Two shapes: setup failures where a fixture updates a
-`CreatorState` row its own setup no longer creates
-(`direct-message.contract.spec.ts:132` and friends), and 403s where a 2xx is
-expected, because fixtures used to establish "this account is a creator" by
-inserting a `CreatorSubscription` row and that table is gone (see D6c).
+The migration is verified too: applied cleanly, all four tables dropped,
+`CreatorState` down to exactly its six remaining columns, both enums gone.
 
-**This is the thing to take seriously.** The backend teardown was reported as
-verified on the strength of `npm run build` and `tsc --noEmit`. Both pass.
-Neither exercises a single line of behaviour. A green compile said nothing
-about whether 219 contract assertions still held, and they did not.
+**MY DIAGNOSIS OF THE FIRST RUN WAS WRONG, and the real cause is worth more
+than the fix.** The first run showed 219 failures across 32 suites and I called
+it fixture drift from the teardown. It was not. **The database had migrations
+applied but had never been seeded.** `UserProfile` = 1 row, `CreatorState` = 0,
+`ContentPiece` = 0, `Community` = 0. The contract suites read three fixed
+accounts out of `prisma/seed.ts`, so the dominant errors were
+`creatorState.findUniqueOrThrow()` (62) and `creatorState.update()` (46)
+against rows that had never existed. Running `npm run db:seed` took it from 219
+failures to 2 with no code change at all.
+
+The 56 "403 where a 2xx was expected" resolved the same way, and that is the
+part I had most wrong: I read them as the D6c gate narrowing biting, i.e. as
+`accountType === 'creator'` failing on accounts that had lost creator-ness.
+They were failing on accounts that had no `UserProfile` row whatsoever.
+`CreatorStateService.getState` was correct throughout.
+
+**OPERATIONAL GOTCHA, deliberately not "fixed".** `npm run test:contract` does
+NOT run `db:seed`, and no spec seeds on demand. A fresh database fails exactly
+this way every time, and the failure looks like 219 broken assertions rather
+than an empty table. Adding an automatic seed hook changes the harness's
+contract, so it is recorded here instead. **Seed before you run.**
+
+**The lesson stands even though the diagnosis did not.** The teardown was
+reported as verified on `npm run build` and `tsc --noEmit`. Both pass; neither
+executes a line of behaviour. That it turned out to be an unseeded database
+rather than 219 real regressions was luck, not evidence.
+
+**Two test files were edited, both stale subscription-era constants, neither
+weakened:**
+- `creator-state.contract.spec.ts` expected `slotsTotal: 6` (the old
+  tier-derived allowance) while the same suite asserted 5 elsewhere. Corrected
+  to 5.
+- `search-response.contract.spec.ts` asserted `zainab.tier === 'pro'`, which is
+  now unsatisfiable because `tier` is off the `CreatorProfile` interface. It
+  now asserts `tier` is `undefined` (so a resurrected plan field fails) plus
+  the handle match the test was actually meant to prove. Assertion count went
+  up. No test was deleted.
 
 **STILL NOT RUN - the full Phase 5 measurement pass.** Screenshots now exist
 for the changed routes at 390px and 1280px, with horizontal overflow measured
