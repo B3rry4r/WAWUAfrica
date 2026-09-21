@@ -1,11 +1,5 @@
 import Link from "next/link";
-import type { ProfileTab } from "@/types/profile";
-
-const TABS: { id: ProfileTab; label: string }[] = [
-  { id: "content", label: "Content" },
-  { id: "community", label: "Community" },
-  { id: "about", label: "About" },
-];
+import { PROFILE_TABS, type ProfileTab } from "@/types/profile";
 
 /**
  * Profile tab bar. Active tab gets the accent underline.
@@ -19,27 +13,33 @@ const TABS: { id: ProfileTab; label: string }[] = [
  * and has no approved spec for this gap yet.
  */
 export function ProfileTabs({
-  wawuId,
+  basePath,
   active,
   compact = false,
 }: {
-  wawuId: string;
+  /**
+   * Where the tab links point. The owner's profile lives at /profile and
+   * everybody else's at /profile/:wawuId, and the tab bar has to work on
+   * both: hard-coding /profile/:wawuId sent the owner to their own public
+   * URL and lost the Edit controls.
+   */
+  basePath: string;
   active: ProfileTab;
   compact?: boolean;
 }) {
   return (
     <div
       className={[
-        "flex gap-[22px] border-b border-[var(--border-hairline)] p-[12px_18px_0]",
+        "wawu-no-scrollbar flex gap-[22px] overflow-x-auto border-b border-[var(--border-hairline)] p-[12px_18px_0]",
         compact ? "" : "mt-[14px] xl:mt-0",
       ].join(" ")}
     >
-      {TABS.map((tab) => {
+      {PROFILE_TABS.map((tab) => {
         const on = tab.id === active;
         return (
           <Link
             key={tab.id}
-            href={`/profile/${wawuId}?tab=${tab.id}`}
+            href={`${basePath}?tab=${tab.id}`}
             className={[
               "relative whitespace-nowrap pb-3 text-[14px] no-underline",
               // Unselected branch only: the active tab already sits at

@@ -68,8 +68,10 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
     icon: "ShoppingBag",
     iconImageSrc: "/icons/services/shop.png",
     href: "/shop",
-    // Pulled off the live surface for now (product-owner instruction, 12 Sep
-    // 2026). See ShopLayout, which gates the routes themselves the same way.
+    // Not open (product-owner instruction, 12 Sep 2026). This is not a note
+    // about something unbuilt: `soon` is the flag every surface reads to dim
+    // the tile and drop its link, and ShopLayout gates the routes themselves
+    // on the same decision.
     soon: true,
   },
   {
@@ -123,10 +125,10 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
 ]);
 
 /**
- * Open services lead, "coming soon" ones trail - asked for once the grid
- * stopped captioning them and started just dimming them instead: a dimmed
- * tile among live ones needs its position to carry some of what the caption
- * used to say. `sort` is stable, so within each group the order above holds.
+ * Open services lead and closed ones trail - asked for once the grid stopped
+ * captioning them and started just dimming them instead: a dimmed tile among
+ * live ones needs its position to carry some of what the caption used to say.
+ * `sort` is stable, so within each group the order above holds.
  */
 export function orderedServices(
   isOpen: (s: PlatformService) => boolean = (s) => !s.soon,

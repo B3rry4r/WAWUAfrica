@@ -9,9 +9,19 @@ import { formatNaira } from "@/lib/format";
 import { apiFetch, apiFetchPaginated, isMockModeError, ApiError, mockRequest } from "./client";
 import { sessionStorage } from "@/lib/auth/session-storage";
 
+/*
+  The creator's own library, for the fixture build.
+
+  `previewAssetUrl` used to be absent here, so every card on the owner's
+  profile and in /create/library drew the hatched "no cover" placeholder and
+  the picture-led design could not be reviewed. The files in
+  public/mock/content are stock photographs (Lorem Picsum, serving Unsplash
+  images), reached only through the mock-mode fallback.
+*/
 export const libraryItems: ContentItem[] = [
   {
     id: "c1",
+    previewAssetUrl: "/mock/content/w1.jpg",
     type: "course",
     title: "CAC in 7 days",
     meta: `Course · ${formatNaira(2500)} · 34 sold`,
@@ -22,6 +32,7 @@ export const libraryItems: ContentItem[] = [
   },
   {
     id: "c2",
+    previewAssetUrl: "/mock/content/w2.jpg",
     type: "video",
     title: "Pricing for market stalls",
     meta: `Video · ${formatNaira(0)} · 1,204 views`,
@@ -32,6 +43,7 @@ export const libraryItems: ContentItem[] = [
   },
   {
     id: "c3",
+    previewAssetUrl: "/mock/content/w3.jpg",
     type: "pdf",
     title: "The trader's playbook",
     meta: `PDF · ${formatNaira(1500)} · submitted today`,
@@ -40,6 +52,7 @@ export const libraryItems: ContentItem[] = [
   },
   {
     id: "c4",
+    previewAssetUrl: "/mock/content/w4.jpg",
     type: "pdf",
     title: "Market survey 2024",
     meta: "PDF",

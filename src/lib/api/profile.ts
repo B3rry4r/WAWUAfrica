@@ -144,12 +144,23 @@ function formatFollowerCount(n: number): string {
  *    external apps (CLAUDE.md); Hub API never carries their product data.
  */
 export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile> {
-  const [real, content] = await Promise.all([
-    apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
-      authed: true,
-    }),
-    getCreatorContent(wawuId),
-  ]);
+  let real: RealPublicCreatorProfile;
+  let content: CreatorProfile["content"];
+  try {
+    [real, content] = await Promise.all([
+      apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
+        authed: true,
+      }),
+      getCreatorContent(wawuId),
+    ]);
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/users/:wawuId/public-profile
+    // Without this a fixture build could not open ANY visited profile, which
+    // is the half of build brief C2's one-template rule that actually sells.
+    const { mockCreatorProfile } = await import("./mocks/creator-profile");
+    return mockCreatorProfile(wawuId);
+  }
   return {
     wawuId: real.wawuUserId,
     name: real.handle ?? "WAWU creator",

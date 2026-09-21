@@ -13,6 +13,7 @@ export { Callout } from "./Callout";
 export type { CalloutTone } from "./Callout";
 export { ComingSoonPill } from "./ComingSoonPill";
 export { CommunityImage } from "./CommunityImage";
+export { ContentThumb } from "./ContentThumb";
 export { CreditCount } from "./CreditCount";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
