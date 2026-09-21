@@ -211,3 +211,41 @@ export async function cancelEvent(eventId: string, reason: string): Promise<Canc
     return cancelMockEvent(eventId, reason);
   }
 }
+
+/**
+ * The cheapest ticket on each of several events, for the price line the
+ * calendar's cards carry.
+ *
+ * ── THIS IS A CLIENT-SIDE STAND-IN FOR A MISSING WIRE FIELD ─────────────────
+ * The approved Events design prices every card on the calendar. `WawuEvent`,
+ * which is what GET /events returns, carries NO price: money lives on the
+ * ticket TYPES hanging off an event, one call per event. So a list of N cards
+ * costs N extra calls, which is why this is capped at the handful of cards
+ * that actually show a price rather than run over a whole page of results.
+ *
+ * The fix is a backend one: a `priceFromNaira` (null when nothing is on sale)
+ * on the list view, computed where the tiers already are. Until then this is
+ * the honest version - a real price read from the real tiers, not a number
+ * invented to fill the design.
+ *
+ * A failure is not a zero. An event whose tiers could not be read comes back
+ * `null`, and a null renders as no price line at all rather than as free.
+ */
+export async function lowestTicketPrices(eventIds: readonly string[]): Promise<Record<string, number | null>> {
+  const entries = await Promise.all(
+    eventIds.map(async (id): Promise<[string, number | null]> => {
+      try {
+        const types = await listTicketTypes(id);
+        const onSale = types.filter((t) => !t.soldOut);
+        const pool = onSale.length > 0 ? onSale : types;
+        if (pool.length === 0) return [id, null];
+        return [id, Math.min(...pool.map((t) => t.priceNaira))];
+      } catch {
+        // A card without a price is a card without a price. Guessing one here
+        // would put a number under a title that nobody can buy at.
+        return [id, null];
+      }
+    }),
+  );
+  return Object.fromEntries(entries);
+}

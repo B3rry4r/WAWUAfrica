@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { eventTimeLine, hasEnded, isThisWeek } from "@/lib/event-date";
-import type { WawuEvent } from "@/types/events";
-import { Icon } from "@/components/ui";
+import { formatNaira } from "@/lib/format";
+import { EVENT_CATEGORY_LABEL, EVENT_FORMAT_LABEL, type WawuEvent } from "@/types/events";
+import { Icon, MediaCard } from "@/components/ui";
 import { EventDateBlock, EventFormatPill, EventTypePill, ThisWeekPill } from "./EventPrimitives";
 import { GoingButton } from "./GoingButton";
 
@@ -12,9 +13,19 @@ interface EventCardProps {
   /**
    * "row" is the standard calendar card. "featured" is the admin-pinned card
    * at the top of the list. "compact" is the narrow one used in a related-
-   * events strip. One component, three props — never a fork.
+   * events strip. "hero" and "tile" are the two picture-led cards the
+   * approved Events design draws: the full-bleed card at the top of Discover
+   * and the pair in the Trending grid under it. One component, five props -
+   * never a fork.
    */
-  variant?: "row" | "featured" | "compact";
+  variant?: "row" | "featured" | "compact" | "hero" | "tile";
+  /**
+   * The cheapest ticket on this event, for the price line the design puts on
+   * a tile. NOT on `WawuEvent`: it is read separately from the ticket types
+   * (lowestTicketPrices in lib/api/event-tickets). Null or undefined means
+   * "no price to show", never ₦0.
+   */
+  priceFromNaira?: number | null;
   onGoingChange?: (next: { userGoing: boolean; goingCount: number }) => void;
   onGoingError?: (error: unknown) => void;
 }
@@ -25,8 +36,12 @@ interface EventCardProps {
  * which were two near-identical copies of the same card; here they are one
  * component with a `variant`.
  *
- * There is no price line and no ticket affordance on this card, and there was
- * none on the old one either. The only action is Going.
+ * PRICE. The row/featured/compact cards carry no price, as the old ones did
+ * not. The "tile" the approved design draws in the Trending grid DOES, and
+ * that is the build brief B2 reversal: events sell tickets now. The number is
+ * passed in (`priceFromNaira`) because it is not on the event's own wire
+ * shape. `goingCount` is still an interest signal and is never shown as a
+ * count of sales.
  *
  * The whole card is a link, but Going is a BUTTON and a button may not live
  * inside an anchor — nesting interactive content is invalid HTML and leaves
@@ -34,9 +49,79 @@ interface EventCardProps {
  * absolutely-positioned overlay and Going sits above it on its own layer,
  * which keeps "click anywhere to open" without the nesting.
  */
-export function EventCard({ event, variant = "row", onGoingChange, onGoingError }: EventCardProps) {
+export function EventCard({
+  event,
+  variant = "row",
+  priceFromNaira,
+  onGoingChange,
+  onGoingError,
+}: EventCardProps) {
   const past = hasEnded(event);
   const href = `/events/${event.id}`;
+
+  /*
+    The two picture-led cards are MediaCard with different props, not cards of
+    their own: `linkMode="overlay"` is what lets the save toggle sit on the
+    picture without a button ending up inside an anchor.
+  */
+  if (variant === "hero" || variant === "tile") {
+    const hero = variant === "hero";
+    // Nothing to signal about an event that has already happened: the row card
+    // drops Going for a past event too, and an interest toggle on a finished
+    // date is a control that cannot mean anything.
+    const saveControl = past ? null : (
+      <GoingButton
+        eventId={event.id}
+        going={event.userGoing}
+        count={event.goingCount}
+        shape={hero ? "bookmark" : "heart"}
+        chrome="bare"
+        tone={hero ? "media" : "default"}
+        onChange={onGoingChange}
+        onError={onGoingError}
+      />
+    );
+
+    const priced = typeof priceFromNaira === "number" ? formatNaira(priceFromNaira) : null;
+
+    return (
+      <MediaCard
+        href={href}
+        linkMode="overlay"
+        variant={hero ? "overlay" : "stacked"}
+        size={hero ? "lg" : "md"}
+        /* The hero is a WIDE card, and wider still once the desktop shell
+           gives it a thousand pixels: a 5:4 box there is a 800px-tall
+           photograph, which is the stretched-phone look this project keeps
+           being told off for. */
+        aspect={hero ? "aspect-[10/7] xl:aspect-[21/8]" : "aspect-[16/10]"}
+        imageUrl={event.bannerUrl}
+        fallback={<Icon name="CalendarDays" size={hero ? 40 : 28} color="rgba(255,255,255,0.5)" />}
+        badge={<EventDateBlock startsAt={event.startsAt} size={hero ? "lg" : "sm"} dim={past} />}
+        corner={hero ? saveControl ?? undefined : undefined}
+        title={event.name}
+        captionIcon={hero ? (event.format === "online" ? "Video" : "MapPin") : undefined}
+        caption={hero ? event.location : `${EVENT_CATEGORY_LABEL[event.category]} · ${event.location}`}
+        tags={hero ? [EVENT_CATEGORY_LABEL[event.category], EVENT_FORMAT_LABEL[event.format]] : undefined}
+        action={
+          hero || (priced === null && !saveControl) ? undefined : (
+            <span className="flex items-center justify-between gap-[8px]">
+              {/* No price line rather than a made-up one: an event with no
+                  tiers on sale, or tiers we could not read, shows nothing
+                  here. ₦0 would be a claim about what a seat costs. */}
+              {priced === null ? null : (
+                <span className="min-w-0 truncate text-[15px] font-bold text-[var(--text-primary)] [font-feature-settings:var(--font-feature-tabular)]">
+                  {priced}
+                </span>
+              )}
+              {saveControl ? <span className="ml-auto shrink-0">{saveControl}</span> : null}
+            </span>
+          )
+        }
+        className={past ? "opacity-70" : ""}
+      />
+    );
+  }
 
   if (variant === "compact") {
     return (

@@ -69,10 +69,21 @@ export function MyEventsList() {
           <h1 className="text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[26px]">
             My submissions
           </h1>
+          {/* The calendar screen used to carry this link and now matches its
+              design, which has no room for one. This is where "My Events"
+              lands from there, so the tickets a person is holding stay one
+              tap from the same place. */}
           <p className="m-0 max-w-[62ch] text-[13px] leading-[1.5] text-[var(--text-secondary)] xl:text-[14px]">
             Everything you have sent in, at every stage. An admin reads each one before it reaches the calendar.
           </p>
         </div>
+        <Link
+          href="/tickets"
+          className="inline-flex shrink-0 items-center gap-[7px] text-[13.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+        >
+          <Icon name="Ticket" size={16} color="currentColor" />
+          My tickets
+        </Link>
         <Button href="/events/new" icon="Plus" size="sm">
           Submit an event
         </Button>
