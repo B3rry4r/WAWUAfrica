@@ -1,53 +1,65 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listProfessionals } from "@/lib/api/professionals";
-import { CATEGORIES } from "@/lib/categories";
-import { formatNaira } from "@/lib/format";
-import type { ProfessionalListing } from "@/types/professional";
-import { Avatar, Icon, Skeleton, VerificationBadge } from "@/components/ui";
+import { Icon, type IconName } from "@/components/ui";
 
 /**
- * Professional Services (build brief C4, item 7).
+ * Professional Services, built to the reference
+ * (refs/target-explore-desktop-structure.jpg).
  *
- * A rail of real practitioners rather than the two text rows this section
- * used to be. The price is the DM price, which is what a buyer actually pays
- * to start: "they pay to send the first message" is the whole model, so the
- * figure belongs on the card and not two screens in.
+ * WHAT THE REFERENCE DRAWS, and what I got wrong first time. Four ROW cards
+ * across: an icon tile on the left, a title with a two-line description, and
+ * a chevron. They are ENTRY POINTS into the professional side of the
+ * platform, not a rail of individual practitioners with their rates on. I
+ * built the rail of practitioners; the reference asks for the four doors.
  *
- * A professional with paid messaging switched off shows no figure at all.
- * There is no default price to fall back on and inventing one would be
- * quoting somebody else's rate for them.
+ * Each one goes somewhere real. "Business Support" is the partner services
+ * catalogue (registration, finance, insurance) and "Legal Services" is the
+ * legal tool, both of which exist; neither is a new screen invented to fill
+ * a fourth slot.
  */
-function categoryName(id: string): string {
-  return CATEGORIES.find((c) => c.id === id)?.name ?? id.replace(/_/g, " ");
+interface Door {
+  title: string;
+  caption: string;
+  icon: IconName;
+  href: string;
 }
 
+const DOORS: readonly Door[] = [
+  {
+    title: "Find a professional",
+    caption: "Lawyers, accountants, marketers and more",
+    icon: "BriefcaseBusiness",
+    href: "/professionals",
+  },
+  {
+    title: "Offer your services",
+    caption: "Get listed in your field and start earning",
+    icon: "IdCard",
+    href: "/professionals/apply",
+  },
+  {
+    title: "Business support",
+    caption: "Register, finance, insurance and more",
+    icon: "ChartNoAxesColumn",
+    href: "/services",
+  },
+  {
+    title: "Legal services",
+    caption: "Contracts, IP, business registration",
+    icon: "Scale",
+    href: "/services/legal",
+  },
+];
+
 export function ProfessionalsRail() {
-  const [pros, setPros] = useState<ProfessionalListing[] | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    listProfessionals()
-      .then((rows) => alive && setPros(rows.slice(0, 8)))
-      // The section keeps its heading and its "See all" link. A directory
-      // that will not preview is not a reason to hide the directory.
-      .catch(() => alive && setPros([]));
-    return () => {
-      alive = false;
-    };
-  }, []);
-
   return (
     <section className="flex flex-col gap-[12px]">
       <div className="flex items-end justify-between gap-3 px-[2px]">
-        <div className="flex flex-col gap-[3px]">
-          <h2 className="m-0 text-[17px] font-bold tracking-[-0.015em] text-[var(--text-primary)] dt:text-[20px]">
+        <div className="flex flex-col gap-[2px]">
+          <h2 className="m-0 text-[18px] font-bold tracking-[-0.02em] text-[var(--text-primary)] dt:text-[21px]">
             Professional services
           </h2>
           <p className="m-0 text-[12.5px] text-[var(--text-muted)]">
-            Lawyers, accountants, doctors and more. Vetted before they are listed
+            Access trusted professionals to support your creative and business journey
           </p>
         </div>
         <Link
@@ -58,51 +70,28 @@ export function ProfessionalsRail() {
         </Link>
       </div>
 
-      {!pros ? (
-        <Skeleton variant="row" />
-      ) : pros.length === 0 ? (
-        <Link
-          href="/professionals"
-          className="flex items-center gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:border-strong hover:bg-surface-hover"
-        >
-          <Icon name="BriefcaseBusiness" size={18} color="var(--accent)" strokeWidth={2} />
-          <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">
-            Browse the full directory
-          </span>
-          <Icon name="ChevronRight" size={16} color="var(--text-muted)" />
-        </Link>
-      ) : (
-        <div className="-mx-[16px] px-[16px] xl:mx-0 xl:px-0">
-          <div className="wawu-no-scrollbar flex gap-[12px] overflow-x-auto pb-[4px]">
-            {pros.map((p) => (
-              <Link
-                key={p.id}
-                href={`/professionals/${p.id}`}
-                className="flex w-[200px] shrink-0 flex-col gap-[9px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline transition-colors hover:border-strong hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]"
-              >
-                <Avatar src={p.avatarUrl} initial={p.name.charAt(0)} size={46} />
-                <span className="flex items-center gap-[6px]">
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[var(--text-primary)]">
-                    {p.handle ? `@${p.handle}` : p.name}
-                  </span>
-                  {p.verification ? <VerificationBadge tier={p.verification} size={14} /> : null}
-                </span>
-                <span className="truncate text-[12px] text-[var(--text-muted)]">
-                  {categoryName(p.category)}
-                </span>
-                <span className="line-clamp-2 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-                  {p.headline}
-                </span>
-                {p.dmEnabled && p.dmPrice !== null ? (
-                  <span className="mt-auto text-[12.5px] font-semibold text-[var(--accent)]">
-                    {formatNaira(p.dmPrice)} to message
-                  </span>
-                ) : null}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 dt:grid-cols-4">
+        {DOORS.map((d) => (
+          <Link
+            key={d.title}
+            href={d.href}
+            className="flex items-center gap-[11px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[13px] no-underline transition-colors hover:border-strong hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]"
+          >
+            <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-input bg-[var(--accent-tint)]">
+              <Icon name={d.icon} size={18} color="var(--accent)" strokeWidth={1.9} />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+              <span className="truncate text-[13.5px] font-semibold text-[var(--text-primary)]">
+                {d.title}
+              </span>
+              <span className="line-clamp-2 text-[11.5px] leading-[1.35] text-[var(--text-muted)]">
+                {d.caption}
+              </span>
+            </span>
+            <Icon name="ChevronRight" size={16} color="var(--text-muted)" className="shrink-0" />
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }

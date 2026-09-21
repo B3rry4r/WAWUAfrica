@@ -1,36 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { listEvents } from "@/lib/api/events";
-import { eventDateParts, eventTimeLine } from "@/lib/event-date";
-import type { WawuEvent } from "@/types/events";
-import { Icon, Skeleton } from "@/components/ui";
+import { eventDateParts } from "@/lib/event-date";
+import { EVENT_CATEGORY_LABEL, type WawuEvent } from "@/types/events";
+import { Icon, MediaCard, Skeleton, EmptyState } from "@/components/ui";
+import { Rail } from "./Rail";
 
 /**
- * Events, on Explore.
+ * Upcoming Events, built to the reference
+ * (refs/target-explore-desktop-structure.jpg).
+ *
+ * WHAT THE REFERENCE DRAWS. A slider of picture cards. The photograph is the
+ * top of the card with a DATE BLOCK overlaid top-left (month over day) and a
+ * save control top-right; the body underneath carries the title, the venue
+ * with a pin, and two small tags. Not the three text rows in a bordered box
+ * this used to be.
  *
  * WHY HERE. The bottom bar is locked at five slots for every account type and
- * the Create FAB is creator-only (CLAUDE.md § Navigation) — an event is
- * neither creator-gated nor a nav slot, so Explore is the honest home: it is
- * the "everything else WAWU can do" surface, it is a slot on both the mobile
- * bar and the desktop rail, and Services already reaches its own sub-tree from
- * exactly here.
+ * the Create FAB is creator-only (CLAUDE.md, Navigation) - an event is
+ * neither creator-gated nor a nav slot, so Explore is the honest home.
  *
- * This fetches on the client rather than in Explore's server component
+ * Fetches on the client rather than in Explore's server component
  * deliberately: /api/hub/events is an authenticated read and the bearer token
  * lives in localStorage, so a server-side call would go out unauthenticated.
  *
- * Prices are NOT on these rows, and that is a deliberate limit rather than
+ * Prices are NOT on these cards, and that is a limit of the call rather than
  * the old "events never have money" rule, which stopped being true on
- * 29 Aug 2026. The list endpoint returns `WawuEvent`, and money lives on the
- * ticket TYPES hanging off an event (see ./event-tickets.ts), which this call
- * does not fetch. Rendering "from N" here would mean either a second request
- * per row or a figure picked from nothing. The event's own screen shows what
- * a ticket costs, which is where somebody is deciding to buy one.
- *
- * `goingCount` is an interest signal and never a count of sales, so it is
- * never presented as one.
+ * 29 Aug 2026. The list endpoint returns `WawuEvent`; money lives on the
+ * ticket TYPES hanging off an event, which this call does not fetch. The
+ * event's own screen shows what a ticket costs, which is where somebody is
+ * deciding to buy one. `goingCount` is an interest signal and never a count
+ * of sales, so it is never presented as one.
  */
 export function ExploreEvents() {
   const [events, setEvents] = useState<WawuEvent[] | null>(null);
@@ -38,13 +39,11 @@ export function ExploreEvents() {
 
   useEffect(() => {
     let active = true;
-    listEvents({ view: "upcoming", perPage: 3 })
+    listEvents({ view: "upcoming", perPage: 10 })
       .then((page) => {
         if (active) setEvents(page.events);
       })
       .catch(() => {
-        // The section falls back to its two links. A failed preview is not
-        // worth taking the route to Events off the screen.
         if (active) setFailed(true);
       });
     return () => {
@@ -52,96 +51,77 @@ export function ExploreEvents() {
     };
   }, []);
 
-  return (
-    <section className="flex flex-col gap-[11px]">
-      <div className="flex items-center gap-[10px] px-[2px]">
-        <span className="flex-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
-          Events
-        </span>
-        <Link
-          href="/events"
-          className="text-[12.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
-        >
-          See all
-        </Link>
-      </div>
+  if (events === null && !failed) {
+    return (
+      <Rail title="Upcoming events" caption="Find and attend events, concerts, workshops and more">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[248px] w-[236px] shrink-0 rounded-card" />
+        ))}
+      </Rail>
+    );
+  }
 
-      <div className="flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[12px] xl:p-[16px]">
-        {events === null && !failed ? (
-          <div className="flex flex-col gap-[8px]">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-[52px] rounded-input" />
-            ))}
-          </div>
-        ) : events && events.length > 0 ? (
-          <div className="flex flex-col gap-[4px] xl:grid xl:grid-cols-3 xl:gap-[12px]">
-            {events.map((event) => (
-              <EventRow key={event.id} event={event} />
-            ))}
-          </div>
-        ) : failed ? (
-          /*
+  if (failed || !events || events.length === 0) {
+    return (
+      <Rail
+        title="Upcoming events"
+        caption="Find and attend events, concerts, workshops and more"
+        seeAllHref="/events"
+      >
+        <div className="w-full">
+          {/*
             A FAILED FETCH IS NOT AN EMPTY CALENDAR.
 
             Both branches used to render the same sentence, so a reader whose
-            request had just failed was told there were no events on. That is a
-            statement about the product made from a network error, and it is
-            the kind nobody reports: it looks like an answer.
-          */
-          <p className="m-0 px-[6px] py-[8px] text-[13px] leading-[1.5] text-[var(--text-secondary)]">
-            We could not load the calendar just now. Browse it below and it will try again.
-          </p>
-        ) : (
-          <p className="m-0 px-[6px] py-[8px] text-[13px] leading-[1.5] text-[var(--text-secondary)]">
-            Nothing on the calendar right now. Workshops, summits and meetups show up here once an admin approves
-            them.
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center gap-[8px] border-t border-[var(--border-hairline)] pt-[10px]">
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[var(--text-secondary)] no-underline hover:text-text-primary"
-          >
-            <Icon name="CalendarDays" size={15} color="currentColor" />
-            Browse the calendar
-          </Link>
-          <span className="flex-1" />
-          <Link
-            href="/events/new"
-            className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
-          >
-            <Icon name="Plus" size={15} strokeWidth={2.2} color="currentColor" />
-            Submit an event
-          </Link>
+            request had just failed was told there were no events on. That is
+            a statement about the product made from a network error, and it
+            is the kind nobody reports: it looks like an answer.
+          */}
+          <EmptyState
+            icon="CalendarDays"
+            title={failed ? "We could not load the calendar" : "Nothing on the calendar yet"}
+            caption={
+              failed
+                ? "Browse it directly and it will try again."
+                : "Workshops, summits and meetups appear here once an admin approves them."
+            }
+            action={failed ? "Browse the calendar" : "Submit an event"}
+            actionHref={failed ? "/events" : "/events/new"}
+          />
         </div>
-      </div>
-    </section>
-  );
-}
+      </Rail>
+    );
+  }
 
-function EventRow({ event }: { event: WawuEvent }) {
-  const { month, day } = eventDateParts(event.startsAt);
   return (
-    <Link
-      href={`/events/${event.id}`}
-      className="flex items-center gap-[12px] rounded-input px-[6px] py-[8px] no-underline hover:bg-surface-hover active:bg-surface-press xl:items-start xl:px-[8px]"
+    <Rail
+      title="Upcoming events"
+      caption="Find and attend events, concerts, workshops and more"
+      seeAllHref="/events"
     >
-      <span className="flex h-[42px] w-[42px] shrink-0 flex-col items-center justify-center rounded-[var(--radius-input)] bg-[var(--accent)] text-[var(--text-on-accent)]">
-        <span className="text-[9px] font-semibold uppercase tracking-[0.08em] opacity-80">{month}</span>
-        <span className="text-[16px] font-bold leading-none">{day}</span>
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-        <span className="line-clamp-1 text-[14px] font-semibold text-[var(--text-primary)] xl:line-clamp-2">
-          {event.name}
-        </span>
-        <span className="truncate text-[12px] text-[var(--text-muted)]">
-          {event.location} · {eventTimeLine(event)}
-        </span>
-      </span>
-      <span className="shrink-0 xl:hidden">
-        <Icon name="ChevronRight" size={16} color="var(--text-muted)" />
-      </span>
-    </Link>
+      {events.map((e) => {
+        const { month, day } = eventDateParts(e.startsAt);
+        return (
+          <MediaCard
+            key={e.id}
+            variant="stacked"
+            href={`/events/${e.id}`}
+            imageUrl={e.bannerUrl}
+            aspect="aspect-[16/10]"
+            className="w-[236px] bg-[var(--surface-card)]"
+            fallback={<Icon name="CalendarDays" size={34} color="rgba(255,255,255,0.5)" />}
+            badge={
+              <span className="flex h-[46px] w-[42px] flex-col items-center justify-center rounded-[10px] bg-[var(--accent)] text-[var(--text-on-accent)]">
+                <span className="text-[9px] font-bold uppercase tracking-[0.08em] opacity-85">{month}</span>
+                <span className="text-[17px] font-bold leading-none">{day}</span>
+              </span>
+            }
+            title={e.name}
+            caption={e.location}
+            tags={[EVENT_CATEGORY_LABEL[e.category], e.format === "online" ? "Online" : "In person"]}
+          />
+        );
+      })}
+    </Rail>
   );
 }

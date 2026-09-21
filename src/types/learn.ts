@@ -18,6 +18,14 @@ export interface LearnCourse {
   whatItCovers: string[];
   /** The real per-course handoff URL (backend field) — never guess this from the id. */
   externalHostUrl: string;
+  /**
+   * Course artwork. Optional because the backend's LearnCourse model has no
+   * image column: a configured build gets `undefined` here and the card
+   * falls back to a brand panel rather than a broken image. The fixtures
+   * carry one so the rail can be reviewed against the Explore reference,
+   * which draws Learning & Growth as picture cards.
+   */
+  imageUrl?: string | null;
 }
 
 export interface Playbook {

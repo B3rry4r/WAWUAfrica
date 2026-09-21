@@ -7,7 +7,8 @@ import { getCreators } from "@/lib/api/explore";
 import { listProfessionals } from "@/lib/api/professionals";
 import { eventDateParts } from "@/lib/event-date";
 import { orderedServices } from "@/lib/platform-services";
-import { Avatar, Icon, Skeleton, VerificationBadge } from "@/components/ui";
+import { Avatar, MediaCard, Skeleton, VerificationBadge } from "@/components/ui";
+import { Rail } from "./Rail";
 import type { VerificationLevel } from "@/types/account";
 
 /**
@@ -137,69 +138,61 @@ export function FeaturedThisWeek() {
     };
   }, []);
 
-  if (!cards) return <Skeleton variant="row" />;
+  if (!cards)
+    return (
+      <Rail title="Featured this week" caption="Creators, professionals, events and services">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="aspect-[3/4] w-[168px] shrink-0 rounded-card dt:w-[188px]" />
+        ))}
+      </Rail>
+    );
   // Nothing featured is not an error and not an empty box: the section simply
   // is not on the page that week.
   if (cards.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-[12px]">
-      <div className="flex items-end justify-between gap-3 px-[2px]">
-        <div className="flex flex-col gap-[3px]">
-          <h2 className="m-0 text-[17px] font-bold tracking-[-0.015em] text-[var(--text-primary)] dt:text-[20px]">
-            Featured this week
-          </h2>
-          <p className="m-0 text-[12.5px] text-[var(--text-muted)]">
-            Creators, professionals, events and services
-          </p>
-        </div>
-      </div>
-
-      <div className="-mx-[16px] px-[16px] xl:mx-0 xl:px-0">
-        <div className="wawu-no-scrollbar flex gap-[12px] overflow-x-auto pb-[4px]">
-          {cards.map((c) => (
-            <Link
-              key={c.key}
-              href={c.href}
-              className="flex w-[216px] shrink-0 flex-col gap-[10px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline transition-colors hover:border-strong hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]"
-            >
-              {c.bannerUrl ? (
+    <Rail title="Featured this week" caption="Creators, professionals, events and services">
+      {cards.map((c) => (
+        <div key={c.key} className="relative w-[168px] shrink-0 dt:w-[188px]">
+          <MediaCard
+            href={c.href}
+            imageUrl={c.bannerUrl ?? c.avatarUrl}
+            aspect="aspect-[3/4]"
+            className="w-full"
+            fallback={
+              c.iconImageSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={c.bannerUrl}
-                  alt=""
-                  className="h-[92px] w-full rounded-[var(--radius-input)] object-cover"
-                />
-              ) : c.iconImageSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={c.iconImageSrc} alt="" className="h-[52px] w-[52px] object-contain" />
+                <img src={c.iconImageSrc} alt="" className="h-[64px] w-[64px] object-contain" />
               ) : (
-                <Avatar src={c.avatarUrl ?? null} initial={c.title.replace("@", "").charAt(0)} size={52} />
-              )}
-
-              <span className="flex flex-col gap-[3px]">
-                <span className="text-[10.5px] font-bold uppercase tracking-[0.07em] text-[var(--text-muted)]">
-                  {KIND_LABEL[c.kind]}
-                </span>
-                <span className="flex items-center gap-[6px]">
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[var(--text-primary)]">
-                    {c.title}
-                  </span>
-                  {c.verification ? <VerificationBadge tier={c.verification} size={14} /> : null}
-                </span>
-                <span className="line-clamp-2 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-                  {c.caption}
-                </span>
+                <Avatar src={null} initial={c.title.replace("@", "").charAt(0)} size={60} />
+              )
+            }
+            badge={
+              <span className="inline-flex items-center rounded-full bg-[rgba(11,10,13,0.72)] px-[8px] py-[3px] text-[10px] font-bold uppercase tracking-[0.06em] text-white backdrop-blur-sm">
+                {KIND_LABEL[c.kind]}
               </span>
-
-              <span className="mt-auto inline-flex items-center gap-[5px] text-[12.5px] font-semibold text-[var(--accent)]">
-                {c.cta}
-                <Icon name="ArrowRight" size={13} strokeWidth={2.2} />
-              </span>
-            </Link>
-          ))}
+            }
+            title={c.title}
+            titleBadge={c.verification ? <VerificationBadge tier={c.verification} size={14} /> : undefined}
+            caption={c.caption}
+            action={<span className="block h-[32px]" />}
+          />
+          {/*
+            The action sits outside MediaCard's link for the same reason the
+            creator card's Follow does: a button nested in an anchor navigates
+            instead of acting. Here it is a second link rather than a button,
+            so it stays a real, keyboard-reachable destination.
+          */}
+          <Link
+            href={c.href}
+            tabIndex={-1}
+            aria-hidden
+            className="absolute inset-x-[11px] bottom-[11px] inline-flex h-[32px] items-center justify-center rounded-full bg-[var(--accent)] px-[12px] text-[12.5px] font-semibold text-[var(--text-on-accent)] no-underline transition-colors hover:bg-[var(--accent-hover)]"
+          >
+            {c.cta}
+          </Link>
         </div>
-      </div>
-    </section>
+      ))}
+    </Rail>
   );
 }

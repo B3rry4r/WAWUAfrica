@@ -26,6 +26,8 @@ export { Icon } from "./Icon";
 export type { IconName } from "./Icon";
 export { Input } from "./Input";
 export { ListRow } from "./ListRow";
+export { MediaCard } from "./MediaCard";
+export type { MediaCardProps, MediaCardVariant } from "./MediaCard";
 export { NairaInput } from "./NairaInput";
 export { PhoneInput, fullPhoneNumber, splitPhoneNumber, DIAL_CODES, DEFAULT_DIAL_CODE } from "./PhoneInput";
 export { PriceChip } from "./PriceChip";

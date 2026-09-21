@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { getCategories, getCreators } from "@/lib/api/explore";
+import { getCreators } from "@/lib/api/explore";
 import { getCourses } from "@/lib/api/learn";
 import { orderedServices } from "@/lib/platform-services";
-import { ICON_GRID, ChoiceChips, TileCard } from "@/components/ui";
-import type { IconName } from "@/components/ui/Icon";
-import { CategoryFilterAside } from "./_components/CategoryFilterAside";
+import { EmptyState, ICON_GRID, TileCard } from "@/components/ui";
+import { CategoryTiles } from "./_components/CategoryTiles";
 import { CreatorGridCard } from "./_components/CreatorGridCard";
+import { Rail } from "./_components/Rail";
 import { ExploreEvents } from "./_components/ExploreEvents";
 import { ExploreHero } from "./_components/ExploreHero";
 import { FeaturedThisWeek } from "./_components/FeaturedThisWeek";
@@ -63,132 +63,108 @@ export default async function ExplorePage() {
     browse screen for the entire app 500'd because a list of courses was
     unavailable. Each read now degrades its own section.
   */
-  const [categoriesRes, coursesRes, creatorsRes] = await Promise.allSettled([
-    getCategories(),
+  const [coursesRes, creatorsRes] = await Promise.allSettled([
     getCourses(),
     getCreators(),
   ]);
-  const categories = categoriesRes.status === "fulfilled" ? categoriesRes.value : [];
   const learnCourses = coursesRes.status === "fulfilled" ? coursesRes.value : [];
   const creators = creatorsRes.status === "fulfilled" ? creatorsRes.value : [];
 
   const services = orderedServices();
 
   return (
-    // Below xl: single-column mobile stack. At xl (design D10): the categories
-    // move into a permanent content-area filter aside next to this main
-    // column - a second aside, not the app Sidebar.
-    <div className="flex flex-col gap-[18px] p-[14px_16px_96px] xl:flex-row xl:items-start xl:gap-10 xl:p-[26px]">
-      <CategoryFilterAside />
+    // One column, full width. There used to be a permanent left-hand aside
+    // listing all twenty-five categories beside this; the reference puts the
+    // categories in a single row of tiles at the top and gives every section
+    // the whole width, which is the only way a five-card slider fits.
+    <div className="flex flex-col gap-[22px] p-[14px_16px_96px] xl:gap-7 xl:p-[26px]">
+      <ExploreHero />
 
-      <div className="flex min-w-0 flex-1 flex-col gap-[22px] xl:gap-7">
-        <ExploreHero />
+      <CategoryTiles />
 
-        {/*
-          Category chips, per C4 item 2. The aside carries the same categories
-          on desktop, so the rail is mobile-only: two copies of one filter on
-          one screen is the drift the aside was built to end.
-        */}
-        {categories.length > 0 ? (
-        <section className="flex flex-col gap-[8px] xl:hidden">
-          <span className="px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">
-            Browse
-          </span>
-          <ChoiceChips
-            ariaLabel="Browse by category"
-            scroll
-            value={null}
-            options={[
-              { value: "all", label: "All", href: "/explore/categories" },
-              ...categories.map((c) => ({
-                value: c.id as string,
-                label: c.name,
-                icon: c.icon as IconName,
-                href: `/explore/categories?category=${c.id}`,
-              })),
-            ]}
+      {/*
+        The service grid, C4 item 3: "icon tiles, restrained palette,
+        responsive grid, NOT full-width stacked rows". Same list and same
+        treatment as /services and the landing page: one list, three surfaces.
+      */}
+      <section className="flex flex-col gap-[12px]">
+        <div className="flex items-end justify-between gap-3 px-[2px]">
+          <h2 className="m-0 text-[18px] font-bold tracking-[-0.02em] text-[var(--text-primary)] dt:text-[21px]">
+            Everything WAWU can do
+          </h2>
+          <Link href="/services" className={seeAll}>
+            See all
+          </Link>
+        </div>
+        <div className={ICON_GRID}>
+          {services.map((s) => (
+            <TileCard
+              key={s.brand}
+              layout="stacked"
+              size="sm"
+              title={s.brand}
+              icon={s.icon}
+              iconImageSrc={s.iconImageSrc}
+              {...(s.soon || !s.href ? { disabled: true } : { href: s.href })}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/*
+        Featured Creators, C4 item 4: a SLIDER, as the reference draws it,
+        not a 2x2 grid. It was also `hidden xl:flex` before this rebuild, so
+        on a phone Explore showed no creators at all.
+      */}
+      {creators.length > 0 ? (
+        <Rail
+          title="Featured creators"
+          caption="Discover amazing talent across Africa and beyond"
+          seeAllHref="/explore/creators"
+        >
+          {creators.map((creator) => (
+            <CreatorGridCard key={creator.wawuId} creator={creator} />
+          ))}
+        </Rail>
+      ) : (
+        <section className="flex flex-col gap-[12px]">
+          <h2 className="m-0 px-[2px] text-[18px] font-bold tracking-[-0.02em] text-[var(--text-primary)] dt:text-[21px]">
+            Featured creators
+          </h2>
+          {/*
+            A real empty state, not a hidden section. Hiding it meant a
+            deployment with no creators showed an Explore page with a hole in
+            it and no explanation, which reads as a broken screen.
+          */}
+          <EmptyState
+            icon="UserRoundSearch"
+            title="No creators to feature yet"
+            caption="As people publish their first pieces they appear here. Be one of them."
+            action="Start creating"
+            actionHref="/create"
           />
         </section>
-        ) : null}
+      )}
 
-        {/*
-          The service grid, C4 item 3: "icon tiles, restrained palette,
-          responsive grid, NOT full-width stacked rows". Same list and same
-          treatment as /services and the landing page - one list, three
-          surfaces, no third rendering of it here.
-        */}
-        <section className="flex flex-col gap-[12px]">
-          <div className="flex items-end justify-between gap-3 px-[2px]">
-            <h2 className="m-0 text-[17px] font-bold tracking-[-0.015em] text-[var(--text-primary)] dt:text-[20px]">
-              Everything WAWU can do
-            </h2>
-            <Link href="/services" className={seeAll}>
-              See all
-            </Link>
-          </div>
-          <div className={ICON_GRID}>
-            {services.map((s) => (
-              <TileCard
-                key={s.brand}
-                layout="stacked"
-                size="sm"
-                title={s.brand}
-                icon={s.icon}
-                iconImageSrc={s.iconImageSrc}
-                {...(s.soon || !s.href ? { disabled: true } : { href: s.href })}
-              />
-            ))}
-          </div>
-        </section>
+      <FeaturedThisWeek />
 
-        {/*
-          Featured Creators, C4 item 4.
+      {/* Events lives here, not in the nav. The bottom bar is locked at five
+          slots for everyone and Create is a creator-only FAB - an event is
+          neither, so Explore is its home, the same way Services reaches its
+          own sub-tree from here on mobile. */}
+      <ExploreEvents />
 
-          This used to be `hidden xl:flex` - on a phone, the screen most people
-          actually open, Explore showed no creators at all. The grid is one
-          column of cards on mobile and four on desktop instead.
-        */}
-        {creators.length > 0 ? (
-          <section className="flex flex-col gap-[12px]">
-            <div className="flex items-end justify-between gap-3 px-[2px]">
-              <div className="flex flex-col gap-[3px]">
-                <h2 className="m-0 text-[17px] font-bold tracking-[-0.015em] text-[var(--text-primary)] dt:text-[20px]">
-                  Featured creators
-                </h2>
-                <p className="m-0 text-[12.5px] text-[var(--text-muted)]">Earning on WAWU now</p>
-              </div>
-              <Link href="/explore/creators" className={seeAll}>
-                See all
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-[12px] sm:grid-cols-3 xl:grid-cols-4">
-              {creators.slice(0, 4).map((creator) => (
-                <CreatorGridCard key={creator.wawuId} creator={creator} />
-              ))}
-            </div>
-          </section>
-        ) : null}
+      <ProfessionalsRail />
 
-        <FeaturedThisWeek />
+      {learnCourses.length > 0 ? <LearningRail courses={learnCourses} /> : null}
 
-        {/* Events lives here, not in the nav. The bottom bar is locked at five
-            slots for everyone and Create is a creator-only FAB - an event is
-            neither, so Explore is its home, the same way Services reaches its
-            own sub-tree from here on mobile. */}
-        <ExploreEvents />
-
-        <ProfessionalsRail />
-
-        {learnCourses.length > 0 ? <LearningRail courses={learnCourses} /> : null}
-
-        {/*
-          Shop is pulled off the live surface for now (product-owner
-          instruction, 12 Sep 2026). It is not missing from this page: it is in
-          the service grid above, dimmed and unclickable like every other
-          service that is not open, which is the treatment C10 needs anyway -
-          the entry point is visible from here whether or not it is open today.
-        */}
-      </div>
+      {/*
+        Shop is pulled off the live surface for now (product-owner
+        instruction, 12 Sep 2026). It is not missing from this page: it is in
+        the service grid above, dimmed and unclickable like every other
+        service that is not open, which is the treatment C10 needs anyway -
+        the entry point is visible from here whether or not it is open today.
+      */}
     </div>
   );
 }
