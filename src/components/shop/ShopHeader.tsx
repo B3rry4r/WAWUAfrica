@@ -28,15 +28,15 @@ export function ShopHeader({ title }: { title: string }) {
   const { cart } = useWowCart();
   const pathname = usePathname();
   const count = cart?.itemCount ?? 0;
-  const atRoot = pathname === "/shop";
   const onCart = pathname.startsWith("/shop/wow");
 
   return (
     <div className="flex items-center gap-[12px]">
-      {/* The shop's own front page is not reached from anywhere inside the
-          shop, so a back control there would point at whatever came before —
-          which is what the sidebar and bottom bar are already for. */}
-      {!atRoot ? <ProfileBackButton compact /> : null}
+      {/* Every screen in here, the front page included, carries the back
+          control the approved reference draws. /shop is not a bottom-bar
+          slot: people arrive from the services hub, a search result or a
+          shared link, so "back" always has somewhere real to go. */}
+      <ProfileBackButton compact />
 
       <h1 className="min-w-0 flex-1 truncate text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[26px]">
         {title}
@@ -54,12 +54,14 @@ export function ShopHeader({ title }: { title: string }) {
         <Link
           href="/shop/wow"
           aria-label={count > 0 ? `WOW cart, ${count} item${count === 1 ? "" : "s"}` : "WOW cart"}
-          className="relative inline-flex h-[38px] shrink-0 items-center gap-[7px] rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)] px-[14px] text-[13px] font-bold text-[var(--text-primary)] no-underline hover:border-[var(--accent)]"
+          className="relative inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center gap-[7px] rounded-full border border-[var(--border-hairline)] bg-[var(--surface-card)] text-[13px] font-bold text-[var(--text-primary)] no-underline hover:border-[var(--accent)] xl:w-auto xl:px-[14px]"
         >
-          <Icon name="ShoppingCart" size={16} color="currentColor" strokeWidth={2.3} />
-          WOW
+          <Icon name="ShoppingCart" size={17} color="currentColor" strokeWidth={2.3} />
+          {/* The reference header carries a bare cart glyph; the name only
+              earns its space where there is room for it. */}
+          <span className="hidden xl:inline">WOW</span>
           {count > 0 ? (
-            <span className="grid h-[19px] min-w-[19px] place-items-center rounded-full bg-[var(--accent)] px-[5px] text-[11px] font-bold text-[var(--text-on-accent)]">
+            <span className="absolute -right-[3px] -top-[3px] grid h-[19px] min-w-[19px] place-items-center rounded-full bg-[var(--accent)] px-[5px] text-[11px] font-bold text-[var(--text-on-accent)] xl:static xl:right-auto xl:top-auto">
               {count}
             </span>
           ) : null}

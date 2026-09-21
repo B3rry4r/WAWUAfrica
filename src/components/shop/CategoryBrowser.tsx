@@ -30,6 +30,10 @@ export function CategoryBrowser({ category }: { category: ProductCategory | null
   const params = useSearchParams();
   const initialMax = params.get("max");
   const picksOnly = params.get("picks") === "1";
+  // The marketplace front page hands its search term over in the URL rather
+  // than running a second product query of its own. Without this the field
+  // there navigated here and the term was silently dropped.
+  const initialSearch = params.get("search") ?? "";
 
   const { add, addingId } = useWowCart();
   const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -37,8 +41,8 @@ export function CategoryBrowser({ category }: { category: ProductCategory | null
   const [maxPriceNaira, setMaxPriceNaira] = useState<number | null>(
     initialMax ? Number(initialMax) : null,
   );
-  const [search, setSearch] = useState("");
-  const [term, setTerm] = useState("");
+  const [search, setSearch] = useState(initialSearch);
+  const [term, setTerm] = useState(initialSearch);
 
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState<unknown>(null);
