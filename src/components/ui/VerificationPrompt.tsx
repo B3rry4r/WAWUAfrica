@@ -12,6 +12,7 @@ import {
   type VerificationKind,
   type VerificationOffer,
   type VerificationState,
+  tickOf,
 } from "@/types/verification";
 
 /**
@@ -70,7 +71,7 @@ export function VerificationPrompt({ variant = "banner", className }: Verificati
     };
   }, []);
 
-  const missing = (state?.offers ?? []).filter((o) => !state?.verification[o.kind].verified);
+  const missing = (state?.offers ?? []).filter((o) => !tickOf(state?.verification, o.kind).verified);
   if (!state || missing.length === 0) return null;
 
   return (

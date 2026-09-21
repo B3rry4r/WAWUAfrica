@@ -62,8 +62,39 @@ export const NO_VERIFICATION: VerificationState = {
 };
 
 /** True when this account holds at least one of the two ticks. */
+/**
+ * ONE safe way to read a single tick. Every call site uses it.
+ *
+ * WHY THIS EXISTS, and it is not defensive-programming taste. `VerificationState`
+ * says both ticks are always present, and on the wire they are. A SESSION is
+ * different: it is JSON written to localStorage by whatever build was deployed
+ * when the person last signed in. Anybody signed in before the two-tick
+ * release has a stored user with no `verification` at all, or a half-written
+ * one, and the type system cannot see that because the data predates the type.
+ *
+ * `v?.[kind].verified` is NOT enough and that exact line crashed /create in
+ * production: the `?.` guards `v` being null, then `.verified` is read off
+ * `v[kind]`, which is undefined on a stored session that never had the field.
+ * "Cannot read properties of undefined (reading 'verified')".
+ *
+ * So an absent or malformed tick reads as NOT VERIFIED, which is both the safe
+ * answer and the honest one: we cannot prove a tick from data that does not
+ * contain it. Same rule `toVerificationState` follows on the API boundary.
+ */
+export function tickOf(
+  v: VerificationState | null | undefined,
+  kind: VerificationKind,
+): TickState {
+  const tick = v?.[kind];
+  if (!tick || typeof tick !== "object") return { verified: false, expiresAt: null };
+  return {
+    verified: tick.verified === true,
+    expiresAt: typeof tick.expiresAt === "string" ? tick.expiresAt : null,
+  };
+}
+
 export function hasAnyTick(v: VerificationState | null | undefined): boolean {
-  return !!v && (v.creator.verified || v.professional.verified);
+  return VERIFICATION_KINDS.some((kind) => tickOf(v, kind).verified);
 }
 
 /**

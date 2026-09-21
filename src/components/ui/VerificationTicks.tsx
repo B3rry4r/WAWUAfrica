@@ -3,6 +3,7 @@ import { cn } from "@/lib/cn";
 import {
   VERIFICATION_KINDS,
   VERIFICATION_SHORT_LABELS,
+  tickOf,
   type VerificationKind,
   type VerificationState,
 } from "@/types/verification";
@@ -67,7 +68,7 @@ export interface VerificationTicksProps {
  * which is the exact confusion the old `basic` rung caused.
  */
 export function VerificationTicks({ verification, size = "sm", className }: VerificationTicksProps) {
-  const held = VERIFICATION_KINDS.filter((kind) => verification?.[kind].verified);
+  const held = VERIFICATION_KINDS.filter((kind) => tickOf(verification, kind).verified);
   if (held.length === 0) return null;
 
   return (

@@ -6,6 +6,7 @@ import {
   VERIFICATION_BENEFITS,
   VERIFICATION_LABELS,
   type VerificationKind,
+  tickOf,
 } from "@/types/verification";
 import { getVerificationOverview, purchaseVerification } from "@/lib/api/verification";
 import { describeError } from "@/lib/api/errors";
@@ -95,7 +96,9 @@ export default function VerificationPage() {
     );
   }
 
-  const held = (kind: VerificationKind) => overview.verification[kind];
+  // Through tickOf, not a raw index: a response missing a tick must render as
+  // "not verified", never throw. See tickOf's doc comment.
+  const held = (kind: VerificationKind) => tickOf(overview.verification, kind);
 
   return (
     <div className="flex flex-col gap-5 px-4 pb-24 pt-4 xl:mx-auto xl:w-full xl:max-w-[700px] xl:gap-6 xl:px-0 xl:pb-16 xl:pt-8">
