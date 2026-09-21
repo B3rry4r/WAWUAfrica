@@ -1,4 +1,4 @@
-import type { VerificationLevel } from "./account";
+import type { VerificationState } from "./verification";
 
 /**
  * Content model, mirroring docs/02_TECHNICAL_CONTEXT.md §2.1.
@@ -20,7 +20,7 @@ export interface CreatorProfile {
   avatarUrl?: string | null;
   headline?: string;
   location?: string;
-  verificationLevel: VerificationLevel;
+  verification: VerificationState;
   isPro?: boolean;
 }
 

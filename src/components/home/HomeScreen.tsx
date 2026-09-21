@@ -5,6 +5,7 @@ import { ContentCard } from "@/components/content/ContentCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { VerificationPrompt } from "@/components/ui/VerificationPrompt";
 import { HomeRightRail } from "@/components/shared/HomeRightRail";
 import { HomeOverview } from "@/components/home/HomeOverview";
 import { getFeed } from "@/lib/api/content";
@@ -137,6 +138,14 @@ export function HomeScreen() {
         </div>
 
         <div className="flex flex-col gap-4 px-4 pb-8 pt-4 xl:px-[26px] xl:pt-[22px]">
+          {/*
+            The verification ask, on the screen people open most. It has no
+            dismiss on purpose (build brief B1 asks for a persistent,
+            recurring prompt) and it removes itself the moment the tick is
+            bought. It renders nothing for an account with nothing to buy,
+            so a buyer never sees it.
+          */}
+          <VerificationPrompt />
           {/*
             Home and TGIF are both checked BEFORE the feed's own loading and
             error states, because neither needs the feed. The devotional reads

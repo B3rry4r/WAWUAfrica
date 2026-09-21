@@ -1,5 +1,6 @@
 import type { CreatorDiscovery, ExploreCategory, ExploreCategoryId } from "@/types/explore";
-import type { VerificationLevel } from "@/types/account";
+import type { VerificationState } from "@/types/verification";
+import { toVerificationState } from "./verification";
 import { EXPLORE_CATEGORIES } from "@/types/explore";
 import { apiFetch, isMockModeError } from "./client";
 import { getMockCategories, getMockCreators, toggleMockFollow } from "./mocks/explore";
@@ -24,7 +25,8 @@ interface RealCreatorDiscoveryItem {
   avatarUrl: string | null;
   field: string | null;
   pieceCount: number;
-  verification: VerificationLevel;
+  /** Two-tick contract. Normalized through toVerificationState, never read raw. */
+  verification?: unknown;
   following: boolean;
 }
 
@@ -72,7 +74,7 @@ export async function getCreators(category?: ExploreCategoryId): Promise<Creator
       // worse than the separator looking bare.
       field: r.field ?? "",
       pieceCount: r.pieceCount,
-      verification: r.verification,
+      verification: toVerificationState(r.verification),
       following: r.following,
     }));
   } catch (e) {

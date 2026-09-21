@@ -720,8 +720,8 @@ function PendingState({ submission }: { submission: KycSubmission | null }) {
         {/* Where to look afterwards. The old screen said "we will notify you"
             and nothing else, so a creator who closed it had no idea the status
             was readable anywhere — and the nearest thing they could find,
-            Profile → Verification, is the public badge ladder, a different
-            system entirely. */}
+            Profile → Verification, is where the two paid ticks are bought,
+            a different system entirely. */}
         <span className="text-[12.5px] leading-[1.5] text-[var(--text-muted)]">
           Check back any time from Profile → Identity verification, or from the notice at the top of your creator
           dashboard.

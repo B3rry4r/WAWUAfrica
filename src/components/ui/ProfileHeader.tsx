@@ -2,9 +2,9 @@
 import { Avatar } from "./Avatar";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
-import { VerificationBadge } from "./VerificationBadge";
+import { VerificationTicks } from "./VerificationTicks";
 import { cn } from "@/lib/cn";
-import type { VerificationLevel } from "@/types/account";
+import type { VerificationState } from "@/types/verification";
 
 export interface ProfileStat {
   label: string;
@@ -13,8 +13,8 @@ export interface ProfileStat {
 
 /**
  * Shared by the fan-facing creator profile and the user's own profile.
- * `verification` is the separate credibility ladder. Two different systems —
- * never collapse them.
+ * `verification` carries the two paid ticks; creator KYC is a different
+ * system entirely (it gates earning) and the two are never collapsed.
  */
 export function ProfileHeader({
   name,
@@ -22,7 +22,7 @@ export function ProfileHeader({
   bio,
   avatarUrl,
   coverUrl,
-  verification = "basic",
+  verification,
   stats = [],
   primaryLabel,
   onPrimary,
@@ -36,7 +36,7 @@ export function ProfileHeader({
   bio?: string;
   avatarUrl?: string | null;
   coverUrl?: string | null;
-  verification?: VerificationLevel;
+  verification?: VerificationState;
   stats?: ProfileStat[];
   primaryLabel?: string;
   onPrimary?: () => void;
@@ -83,7 +83,7 @@ export function ProfileHeader({
           <h1 className="text-[21px] font-bold leading-[var(--leading-tight)] text-[var(--text-primary)]">
             {name}
           </h1>
-          <VerificationBadge tier={verification} />
+          <VerificationTicks verification={verification} size="md" />
         </div>
 
         {handle && <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">@{handle}</p>}

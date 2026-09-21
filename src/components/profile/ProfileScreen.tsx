@@ -22,7 +22,8 @@ import {
   Skeleton,
   SocialIcon,
   StatusPill,
-  VerificationBadge,
+  VerificationTicks,
+  VerificationPrompt,
   type SocialName,
 } from "@/components/ui";
 import { FollowButton } from "@/components/shared/FollowButton";
@@ -113,6 +114,13 @@ export function ProfileScreen({ view, isOwner, tab, basePath, following = false 
 
       <div className="flex flex-col gap-[20px] px-[16px] pt-[18px] xl:flex-row xl:items-start xl:gap-[26px] xl:px-[26px]">
         <div className="flex min-w-0 flex-1 flex-col gap-[20px]">
+          {/*
+            Owner only, and persistent (build brief B1). A visitor is never
+            asked to verify somebody else's profile, and the owner keeps
+            seeing it on every visit until they hold every tick offered to
+            them. It renders nothing once they do.
+          */}
+          {isOwner ? <VerificationPrompt /> : null}
           <TabBody
             view={view}
             isOwner={isOwner}
@@ -237,7 +245,7 @@ function ProfileIdentity({
                 <h1 className="m-0 truncate text-[22px] font-bold tracking-[-0.025em] text-[var(--text-primary)] xl:text-[27px]">
                   {view.name}
                 </h1>
-                <VerificationBadge tier={view.verification} size={19} />
+                <VerificationTicks verification={view.verification} size="md" />
               </div>
               <span className="text-[13.5px] text-[var(--text-muted)]">@{view.handle || view.wawuId}</span>
               {professionalHeadline ?? view.roleLine ? (

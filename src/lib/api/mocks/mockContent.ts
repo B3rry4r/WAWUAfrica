@@ -1,4 +1,5 @@
 import type { ContentPiece, CreatorProfile, ContentDetailResponse } from "@/types/content";
+import { mockVerification } from "./verification";
 
 const adaeze: CreatorProfile = {
   wawuId: "wawu_adaeze",
@@ -6,7 +7,8 @@ const adaeze: CreatorProfile = {
   handle: "adaeze",
   headline: "Business Strategist",
   location: "Enugu",
-  verificationLevel: "certified_professional",
+  // Both ticks, same person as MOCK_PROFILES["wawu-adaeze"].
+  verification: mockVerification(["creator", "professional"]),
 };
 
 const zainab: CreatorProfile = {
@@ -15,7 +17,7 @@ const zainab: CreatorProfile = {
   handle: "zainab",
   headline: "Agribusiness Trainer",
   location: "Kano",
-  verificationLevel: "verified_business",
+  verification: mockVerification(["professional"]),
 };
 
 const musa: CreatorProfile = {
@@ -24,7 +26,7 @@ const musa: CreatorProfile = {
   handle: "musa",
   headline: "Welder and trainer",
   location: "Kaduna",
-  verificationLevel: "verified_user",
+  verification: mockVerification(["creator"]),
 };
 
 const tolu: CreatorProfile = {
@@ -33,7 +35,7 @@ const tolu: CreatorProfile = {
   handle: "tolu",
   headline: "Producer",
   location: "Lagos",
-  verificationLevel: "verified_user",
+  verification: mockVerification(["creator"]),
 };
 
 const chidi: CreatorProfile = {
@@ -42,7 +44,7 @@ const chidi: CreatorProfile = {
   handle: "chidi",
   headline: "Artist",
   location: "Nsukka",
-  verificationLevel: "verified_user",
+  verification: mockVerification(["creator"]),
 };
 
 const ifeanyi: CreatorProfile = {
@@ -51,7 +53,7 @@ const ifeanyi: CreatorProfile = {
   handle: "ifeanyi",
   headline: "Fashion Designer",
   location: "Aba",
-  verificationLevel: "verified_business",
+  verification: mockVerification(["professional"]),
 };
 
 /**

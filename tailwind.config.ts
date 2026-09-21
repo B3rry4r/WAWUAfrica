@@ -80,6 +80,13 @@ const config: Config = {
         "info-tint": "var(--info-tint)",
         locked: "var(--locked)",
         "locked-veil": "var(--locked-veil)",
+
+        // VERIFICATION — the two paid ticks (build brief B1). See tokens.css
+        // for why neither of them is --accent or --success.
+        "verify-creator": "var(--verify-creator)",
+        "verify-creator-tint": "var(--verify-creator-tint)",
+        "verify-professional": "var(--verify-professional)",
+        "verify-professional-tint": "var(--verify-professional-tint)",
       },
       borderColor: {
         hairline: "var(--border-hairline)",
@@ -91,6 +98,8 @@ const config: Config = {
         success: "var(--border-success)",
         warning: "var(--border-warning)",
         danger: "var(--border-danger)",
+        "verify-creator": "var(--verify-creator-border)",
+        "verify-professional": "var(--verify-professional-border)",
       },
       borderRadius: {
         chip: "var(--radius-chip)",

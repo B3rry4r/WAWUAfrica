@@ -1,130 +1,206 @@
-import type { AccountType, CreatorTier, VerificationLevel } from "@/types/account";
+import type { AccountType, CreatorTier } from "@/types/account";
 import type {
   OwnProfile,
   OwnProfileDraft,
-  VerificationLadderStatus,
-  VerificationLevelEntry,
-  VerificationSubmission,
-  VerificationSubmissionStatus,
+  TickState,
+  VerificationKind,
+  VerificationOffer,
+  VerificationOverview,
+  VerificationState,
 } from "@/types/verification";
+import { NO_VERIFICATION } from "@/types/verification";
 import { apiFetch, isMockModeError } from "./client";
+import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSession } from "@/lib/flutterwave";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import { getMockOwnProfile, saveMockOwnProfile } from "./mocks/verification";
+import { VERIFICATION_OFFERS } from "@/lib/verification-offers";
 
 /**
- * Hub API wire shapes — verification-submission.service.ts /
- * verification-submission.controller.ts (`@Controller('verification')`,
- * mounted under the global `api/hub` prefix). Owns the submission/review
- * workflow only; the badge *tier* itself is WAWU ID's own `verificationTier`
- * JWT claim (see auth.ts's mapVerificationTier) — this is a genuinely
- * different resource from kyc.ts's KycSubmission, per CLAUDE.md.
+ * The two-tick verification model, end to end.
+ *
+ * WHAT WAS HERE BEFORE: a five-rung credibility ladder
+ * (basic/verified_user/verified_business/certified_professional/trusted_partner)
+ * with a document-upload application per rung, GET /api/hub/verification/ladder
+ * and POST /api/hub/verification/submissions behind it. Build brief B1
+ * deleted that product. There are now exactly TWO verifications, they are
+ * independent of each other, and both are bought rather than applied for.
+ *
+ * Everything on the wire follows the shared contract the Hub backend and
+ * WAWU ID implement too: `verification: { creator: TickState, professional:
+ * TickState }` wherever a user appears.
  */
-interface HubVerificationSubmission {
-  id: string;
-  wawuUserId: string;
-  tier: VerificationLevel;
-  documents: string[];
-  status: "pending" | "approved" | "rejected";
-  submittedAt: string;
-  reviewedAt: string | null;
-  rejectionReason: string | null;
-}
 
-/** GET /api/hub/verification/ladder entry — derived, not its own table. */
-interface HubVerificationLadderEntry {
-  tier: VerificationLevel;
-  achieved: boolean;
-  currentTier: boolean;
-  submission: HubVerificationSubmission | null;
-}
-
-const SUBMISSION_STATUS_MAP: Record<HubVerificationSubmission["status"], VerificationSubmissionStatus> = {
-  pending: "in_review",
-  approved: "approved",
-  rejected: "rejected",
-};
+// ── the one derivation ───────────────────────────────────────────────────────
 
 /**
- * Static per-tier "why this level" copy. The real ladder endpoint returns
- * only {tier, achieved, currentTier, submission} — no descriptive text — so
- * this supplies the wording for every rung.
+ * Normalizes whatever a backend hands us into a VerificationState.
  *
- * COPY RULE: every rung describes a BADGE APPLICATION made on this screen.
- * None of it may describe what creator KYC collects.
+ * This is the ONLY place in the web client that turns wire data into ticks.
+ * Two reasons it is tolerant rather than strict:
  *
- * `verified_user` used to read "Government ID submitted and approved by
- * hand." — an exact description of the KYC identity check (BVN/NIN + ID
- * document + payout bank, POST /api/hub/kyc). Creators who had just finished
- * KYC read that rung as a promise that their submission counted towards it,
- * came here expecting to see it move, and saw an unchanged ladder. The two
- * systems are independent by product rule (CLAUDE.md) and the copy now says
- * so out loud on the rung that caused the confusion.
+ *  1. Rollout. The Hub and WAWU ID ship the new field on their own schedule,
+ *     and the migration is deliberately expand-only (the old
+ *     `verification_tier` column is not dropped). A response that predates
+ *     the new field must render as "no tick", not crash a list of creators.
+ *  2. `verified` is SERVER-computed from the expiry. The client never
+ *     compares `expiresAt` to the device clock — a phone with a wrong date
+ *     would otherwise draw a lapsed tick, or hide a live one.
+ *
+ * Anything unrecognised means no tick. Never the other way round: inventing a
+ * credential is worse than missing one.
  */
-const TIER_COPY: Record<VerificationLevel, string> = {
-  basic: "Phone and email confirmed. Every account starts here.",
-  verified_user:
-    "Apply with photo ID so buyers can see a real, named person is behind this account. Not the same as the KYC identity check that unlocks getting paid.",
-  verified_business:
-    "Apply with your business registration, plus a website or active socials in the same trading name.",
-  certified_professional:
-    "Apply with a current professional qualification or practising licence, confirmed by the body that issued it.",
-  trusted_partner: "Awarded by the WAWU partnerships team under a signed partnership agreement.",
-};
-
-/** Mirrors VERIFICATION_TIER_VALUES (verification-submission's DTO-side copy of the frozen Prisma enum). */
-const TIER_ORDER: VerificationLevel[] = [
-  "basic",
-  "verified_user",
-  "verified_business",
-  "certified_professional",
-  "trusted_partner",
-];
-
-function formatSubmissionDate(iso: string | null): string | undefined {
-  if (!iso) return undefined;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return undefined;
-  return d.toLocaleDateString("en-NG", { day: "numeric", month: "long" });
-}
-
-function fromHubSubmission(hub: HubVerificationSubmission): VerificationSubmission {
+export function toVerificationState(raw: unknown): VerificationState {
+  if (typeof raw !== "object" || raw === null) return NO_VERIFICATION;
+  const bag = raw as Record<string, unknown>;
   return {
-    tier: hub.tier,
-    status: SUBMISSION_STATUS_MAP[hub.status],
-    submittedAt: formatSubmissionDate(hub.submittedAt),
-    reviewedAt: formatSubmissionDate(hub.reviewedAt),
-    reason: hub.rejectionReason ?? undefined,
+    creator: toTickState(bag.creator),
+    professional: toTickState(bag.professional),
   };
 }
 
-/**
- * The real ladder only tells us achieved/currentTier per rank — the
- * frontend's four-state status (done/yours/next/locked) is derived here:
- * the caller's own tier is "yours", every achieved rank below it is "done",
- * the rank immediately above it is "next", everything further out is
- * "locked".
- */
-function fromHubLadder(entries: HubVerificationLadderEntry[]): VerificationLevelEntry[] {
-  const currentRank = entries.findIndex((e) => e.currentTier);
-  return entries.map((e) => {
-    const rank = TIER_ORDER.indexOf(e.tier);
-    const status: VerificationLadderStatus = e.currentTier
-      ? "yours"
-      : e.achieved
-        ? "done"
-        : rank === currentRank + 1
-          ? "next"
-          : "locked";
-    return {
-      tier: e.tier,
-      status,
-      copy: TIER_COPY[e.tier],
-      // The endpoint already returns the caller's own submission per rung —
-      // it was being dropped here, so a rung with an application in review
-      // rendered identically to one never applied for ("Start", no state).
-      submission: e.submission ? fromHubSubmission(e.submission) : undefined,
-    };
-  });
+function toTickState(raw: unknown): TickState {
+  if (typeof raw !== "object" || raw === null) return { verified: false, expiresAt: null };
+  const bag = raw as Record<string, unknown>;
+  return {
+    verified: bag.verified === true,
+    expiresAt: typeof bag.expiresAt === "string" ? bag.expiresAt : null,
+  };
 }
+
+// ── buying a tick ────────────────────────────────────────────────────────────
+
+/** GET /api/hub/verification — the caller's own ticks plus the price list. */
+interface HubVerificationOverviewResponse {
+  verification: unknown;
+  offers: Array<{ kind: string; price: number; periodMonths: number }>;
+}
+
+interface HubVerificationCheckoutResponse {
+  flutterwaveConfig: {
+    txRef: string;
+    amount: number;
+    currency: "NGN";
+    publicKey: string;
+  };
+}
+
+function toOffers(raw: HubVerificationOverviewResponse["offers"]): VerificationOffer[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((o) => o && (o.kind === "creator" || o.kind === "professional"))
+    .map((o) => ({
+      kind: o.kind as VerificationKind,
+      price: Number(o.price),
+      periodMonths: Number(o.periodMonths) || 12,
+    }))
+    .filter((o) => Number.isFinite(o.price) && o.price > 0);
+}
+
+/**
+ * The caller's own verification and what they can buy.
+ *
+ * The PRICE comes from here and only from here. No component may hold a naira
+ * figure for verification: what it costs is the backend's to change, and a
+ * price baked into a screen means a release of this app every time it moves.
+ */
+export async function getVerificationOverview(): Promise<VerificationOverview> {
+  try {
+    const res = await apiFetch<HubVerificationOverviewResponse>("/api/hub/verification", { authed: true });
+    return { verification: toVerificationState(res.verification), offers: toOffers(res.offers) };
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/verification
+    //
+    // No backend configured. The published price list stands in for the
+    // server's offers, and the caller's own ticks come from the fixture
+    // profile, so every screen in a fixture build agrees about who is
+    // verified.
+    const me = await getMockOwnProfile();
+    return { verification: me.verification, offers: VERIFICATION_OFFERS.map((o) => ({ ...o })) };
+  }
+}
+
+/** One year from today, ISO. Used only by the no-backend path above. */
+function oneYearOut(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString();
+}
+
+export type VerificationPurchaseResult =
+  | { result: "success"; verification: VerificationState }
+  | { result: "cancelled" }
+  | { result: "payment_failed" }
+  | { result: "verify_failed" };
+
+/**
+ * Buys one tick. The same three-step sequence every other paid flow here uses
+ * (src/lib/flutterwave.ts): init on our backend, collect the card on
+ * Flutterwave's own surface, then have the SERVER re-verify the real
+ * transaction id before it grants anything. A client-side callback is never
+ * trusted, which matters more here than usual: the thing being granted is a
+ * credential other people rely on.
+ *
+ * The two are bought independently. Somebody who holds one and buys the other
+ * ends up holding both, and nothing here overwrites the tick they already had
+ * - the server returns the full state back and that is what we store.
+ */
+export async function purchaseVerification(kind: VerificationKind): Promise<VerificationPurchaseResult> {
+  try {
+    const init = await apiFetch<HubVerificationCheckoutResponse>("/api/hub/verification/purchase", {
+      method: "POST",
+      authed: true,
+      body: { kind },
+    });
+
+    const customer = checkoutCustomerFromSession(sessionStorage.getUser());
+    if (!customer) return { result: "payment_failed" };
+
+    const charge = await openFlutterwaveCheckout(
+      init.flutterwaveConfig,
+      customer,
+      {
+        title: kind === "creator" ? "Creator verification" : "Professional verification",
+        description: "One year of verification on WAWU",
+      },
+      {
+        verifyPath: "/api/hub/verification/purchase/verify",
+        successPath: "/profile/verification",
+        label: "Your verification",
+      },
+    );
+
+    // Past this line the money HAS moved. "Try again" would take a second
+    // payment, so a failure here gets its own result the screen renders
+    // differently.
+    try {
+      const done = await apiFetch<{ verification: unknown }>("/api/hub/verification/purchase/verify", {
+        method: "POST",
+        authed: true,
+        body: { transaction_id: charge.transaction_id, tx_ref: charge.tx_ref },
+      });
+      return { result: "success", verification: toVerificationState(done.verification) };
+    } catch {
+      return { result: "verify_failed" };
+    }
+  } catch (e) {
+    if (isFlutterwaveCancelled(e)) return { result: "cancelled" };
+    if (!isMockModeError(e)) return { result: "payment_failed" };
+    // SEAM: replace with POST /api/hub/verification/purchase [+ /verify]
+    //
+    // No backend configured, so nothing is charged and nothing is stored.
+    // The granted state is returned so the screen can show what a real
+    // purchase looks like; it lasts until the page is reloaded, because the
+    // only thing that can actually hold a tick is the server.
+    const me = await getMockOwnProfile();
+    return {
+      result: "success",
+      verification: { ...me.verification, [kind]: { verified: true, expiresAt: oneYearOut() } },
+    };
+  }
+}
+
+// ── the caller's own profile ─────────────────────────────────────────────────
 
 /**
  * GET /api/hub/users/me response — UserProfile columns merged with the
@@ -134,15 +210,20 @@ function fromHubLadder(entries: HubVerificationLadderEntry[]): VerificationLevel
  * this module actually reads are declared — `fullName` does not exist here
  * (WAWU ID splits it into firstName/lastName; the combined `fullName` only
  * comes back from WAWU ID's own /auth/login response, see auth.ts).
+ *
+ * Named apart from auth.ts's narrower HubMeResponse on purpose: two
+ * interfaces with the same name in two files is exactly what the `forks`
+ * gate calls a second truth waiting to drift.
  */
-interface HubMeResponse {
+interface HubUserProfileResponse {
   wawuUserId: string;
   email: string | null;
   firstName: string;
   /** Optional: WAWU ID only started storing it when sign-up split the name. */
   middleName?: string | null;
   lastName: string;
-  verificationTier: string;
+  /** The two-tick contract. Absent on an instance that has not shipped it yet. */
+  verification?: unknown;
   accountType: AccountType | null;
   handle: string | null;
   bio: string | null;
@@ -159,7 +240,7 @@ interface HubMeResponse {
   coverUrl: string | null;
 }
 
-/** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubMeResponse doc comment) — never invent one. */
+/** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubUserProfileResponse doc comment) — never invent one. */
 interface UpdateUserProfileBody {
   firstName?: string;
   middleName?: string;
@@ -199,16 +280,6 @@ interface HubCreditsForProfile {
 }
 
 /**
- * WAWU ID's verificationTier is a 6-value union; local copy of auth.ts's
- * mapVerificationTier (not exported there) — folds the admin/partner-only
- * 'official' tier onto 'trusted_partner', same reasoning as auth.ts.
- */
-function mapVerificationTier(tier: string): VerificationLevel {
-  if (tier === "official") return "trusted_partner";
-  return (TIER_ORDER as string[]).includes(tier) ? (tier as VerificationLevel) : "basic";
-}
-
-/**
  * Assembles the real OwnProfile from every endpoint that genuinely has a
  * piece of it: GET /api/hub/users/me (identity/handle/bio/interests/socials,
  * always) plus, for creator accounts only, GET /api/hub/creator/state
@@ -229,7 +300,7 @@ function mapVerificationTier(tier: string): VerificationLevel {
  */
 export async function getOwnProfile(): Promise<OwnProfile> {
   try {
-    const me = await apiFetch<HubMeResponse>("/api/hub/users/me", { authed: true });
+    const me = await apiFetch<HubUserProfileResponse>("/api/hub/users/me", { authed: true });
     const accountType: AccountType = me.accountType ?? "user";
     const name =
       [me.firstName, me.middleName, me.lastName].filter(Boolean).join(" ").trim() ||
@@ -269,7 +340,7 @@ export async function getOwnProfile(): Promise<OwnProfile> {
       email: me.email ?? "",
       bio: me.bio ?? "",
       accountType,
-      verification: mapVerificationTier(me.verificationTier),
+      verification: toVerificationState(me.verification),
       plan,
       stats: { published, sales: undefined, followers: undefined },
       interests: me.interests ?? [],
@@ -348,61 +419,4 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
     // SEAM: replace with PATCH /api/hub/users/me
     return saveMockOwnProfile(draft);
   }
-}
-
-export async function getVerificationLadder(): Promise<VerificationLevelEntry[]> {
-  const entries = await apiFetch<HubVerificationLadderEntry[]>("/api/hub/verification/ladder", {
-    authed: true,
-  });
-  return fromHubLadder(entries);
-}
-
-export async function getVerificationSubmissions(): Promise<VerificationSubmission[]> {
-  const submissions = await apiFetch<HubVerificationSubmission[]>("/api/hub/verification/submissions", {
-    authed: true,
-  });
-  return submissions.map(fromHubSubmission);
-}
-
-/**
- * `documents` defaults to `[]` so existing call sites (which don't yet
- * collect real document URLs — see VerificationApplyForm's `uploaded`
- * state, local filenames only) keep compiling unchanged. An empty array
- * makes the real POST 400 (ArrayNotEmpty on the Hub's
- * CreateVerificationSubmissionDto) — that real rejection now propagates to
- * the caller as a real error rather than being masked by a mock fallback.
- */
-export async function submitVerification(
-  tier: VerificationLevel,
-  documents: string[] = [],
-): Promise<VerificationSubmission> {
-  const hub = await apiFetch<HubVerificationSubmission>("/api/hub/verification/submissions", {
-    method: "POST",
-    authed: true,
-    body: { tier, documents },
-  });
-  return fromHubSubmission(hub);
-}
-
-/**
- * The real endpoint resubmits a specific submission by id
- * (`POST /api/hub/verification/submissions/:id/resubmit`), not by tier —
- * unlike this function's existing tier-only signature. Looks up the
- * caller's own rejected submission for that tier first. `documents`
- * defaults to `[]` for the same call-site-compat reason as submitVerification.
- */
-export async function resubmitVerification(
-  tier: VerificationLevel,
-  documents: string[] = [],
-): Promise<VerificationSubmission> {
-  const mine = await apiFetch<HubVerificationSubmission[]>("/api/hub/verification/submissions", {
-    authed: true,
-  });
-  const target = mine.find((s) => s.tier === tier && s.status === "rejected");
-  if (!target) throw new Error(`No rejected ${tier} submission to resubmit`);
-  const hub = await apiFetch<HubVerificationSubmission>(
-    `/api/hub/verification/submissions/${target.id}/resubmit`,
-    { method: "POST", authed: true, body: { documents } },
-  );
-  return fromHubSubmission(hub);
 }

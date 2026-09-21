@@ -78,13 +78,13 @@ export default function DmThreadPage() {
         <div className="flex min-w-0 flex-1 items-center gap-[10px]">
           <Avatar src={summary.creatorAvatarUrl} initial={first} size={34} />
           <div className="flex min-w-0 flex-1 flex-col gap-px">
-            {/* No verification badge here. It used to render a hardcoded
-                `verified_user` tick beside every name in every thread, which
-                asserted a public trust level nobody had earned — DmThreadSummary
-                carries no verification field at all (see src/lib/api/dm.ts,
-                where even creatorName is a placeholder), so there was no data
-                behind it. Restore a badge only when the thread wire shape
-                actually carries the creator's ladder tier. */}
+            {/* No tick here. It used to render a hardcoded tick beside every
+                name in every thread, which asserted a paid credential nobody
+                had bought — DmThreadSummary carries no `verification` field at
+                all (see src/lib/api/dm.ts, where even creatorName is a
+                placeholder), so there was no data behind it. Draw ticks here
+                once the thread wire shape carries the contract's
+                `verification: VerificationState`. */}
             <span className="flex items-center gap-[6px] text-[15px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
               {summary.creatorName}
             </span>

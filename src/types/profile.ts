@@ -1,4 +1,5 @@
-import type { CreatorTier, VerificationLevel } from "./account";
+import type { CreatorTier } from "./account";
+import type { VerificationState } from "./verification";
 
 /**
  * No "shop" tab. Buying happened in WAWUBasket and WAWUBeauty, which are no
@@ -74,7 +75,7 @@ export interface ProfileView {
   name: string;
   handle: string;
   bio: string;
-  verification: VerificationLevel;
+  verification: VerificationState;
   avatarUrl?: string | null;
   coverUrl?: string | null;
   /** "Chief Steward, WAWU" in the reference. The creator's own headline. */
@@ -145,8 +146,8 @@ export interface CreatorProfile {
   name: string;
   handle: string;
   bio: string;
-  /** WAWU ID verification ladder — not creator KYC, not the paid tier. */
-  verification: VerificationLevel;
+  /** The two paid ticks. Not creator KYC, which is the earning gate. */
+  verification: VerificationState;
   plan: CreatorTier;
   stats: ProfileStats;
   dmEnabled: boolean;

@@ -26,11 +26,13 @@ import { Button, FilePicker, Icon, Input, PhoneInput, fullPhoneNumber, splitPhon
 /**
  * Submit an event, or edit one you already submitted.
  *
- * ── OPEN TO EVERY SIGNED-IN ACCOUNT ──────────────────────────────────────────
- * There is no creator gate on this form and there must not be one. An event
- * costs no upload slot and earns nobody anything, so there is nothing for a
- * paid subscription to unlock — the moderation queue is the gate. Do not wrap
- * this in `creatorGates()`.
+ * ── VERIFIED ACCOUNTS ONLY, AND NOT BY THIS FILE ─────────────────────────────
+ * Hosting is verified-only (build brief B3). That rule is enforced by the
+ * SERVER, and explained to an ineligible visitor by HostEventGate on
+ * /events/new — not here, and not by a `creatorGates()` check. Do not add
+ * one: KYC is the earning gate and has nothing to do with hosting. If the
+ * server refuses this submit, describeError below renders the server's own
+ * sentence rather than a guess at why.
  *
  * ── STILL NO MONEY FIELDS, FOR A DIFFERENT REASON NOW ────────────────────────
  * Tickets exist (29 Aug 2026), but they are NOT set up here. This form runs

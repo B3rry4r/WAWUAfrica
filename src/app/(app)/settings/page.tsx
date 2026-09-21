@@ -72,7 +72,7 @@ export default function SettingsPage() {
           rows: [
             { title: "Profile", subtitle: profile.handle ? `@${profile.handle}` : undefined, icon: "CircleUser", href: "/profile" },
             { title: "Edit profile", icon: "UserRound", href: "/profile/edit" },
-            { title: "Verification", subtitle: "Badge and ladder", icon: "ShieldCheck", href: "/profile/verification" },
+            { title: "Verification", subtitle: "Your creator and professional ticks", icon: "ShieldCheck", href: "/profile/verification" },
           ],
         },
         ...(isCreator
@@ -81,7 +81,7 @@ export default function SettingsPage() {
                 title: "Creator",
                 rows: [
                   // The KYC gate had no entry anywhere in Settings. The only
-                  // row with "Verification" on it is the badge ladder above,
+                  // row with "Verification" on it is the paid ticks above,
                   // which is a separate system — so a creator looking for
                   // their submitted ID and payout account found either
                   // nothing or the wrong screen.

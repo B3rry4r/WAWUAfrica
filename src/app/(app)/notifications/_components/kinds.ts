@@ -90,8 +90,8 @@ export function actionHrefFor(n: AppNotification): string {
     case "content_rejected":
       return "/create/library";
     // KYC is the creator EARNING gate (BVN/NIN, ID document, payout bank) and
-    // it lives at /kyc. /profile/verification is the public badge ladder — a
-    // different system with a different table and different endpoints — so
+    // it lives at /kyc. /profile/verification is where the two paid ticks
+    // are bought — a different system, different endpoints — so
     // this sent every "your payout verification changed" notification to a
     // screen that says nothing about KYC at all.
     case "kyc_verified":

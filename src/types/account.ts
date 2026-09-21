@@ -20,10 +20,14 @@ export type CreatorTier = "basic" | "pro" | "pro_max";
 /** Manual review. Unlocks receiving earnings. The only creator gate. */
 export type KycStatus = "not_started" | "pending" | "approved" | "rejected";
 
-/** Profile credibility ladder. Separate from creator KYC. */
-export type VerificationLevel =
-  | "basic"
-  | "verified_user"
-  | "verified_business"
-  | "certified_professional"
-  | "trusted_partner";
+// REMOVED: VerificationLevel.
+//
+// The five-rung credibility ladder (basic / verified_user /
+// verified_business / certified_professional / trusted_partner, plus WAWU
+// ID's admin-only `official`) is gone as a product surface. Build brief B1
+// replaced it with exactly TWO independent paid verifications, and the shape
+// that carries them is VerificationState in ./verification.ts.
+//
+// Do not reintroduce an ordered union here. The whole point of the new model
+// is that the two ticks do not rank against each other: an account can hold
+// both, and neither one outranks the other.

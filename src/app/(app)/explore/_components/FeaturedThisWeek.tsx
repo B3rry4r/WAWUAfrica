@@ -7,9 +7,9 @@ import { getCreators } from "@/lib/api/explore";
 import { listProfessionals } from "@/lib/api/professionals";
 import { eventDateParts } from "@/lib/event-date";
 import { orderedServices } from "@/lib/platform-services";
-import { Avatar, MediaCard, Skeleton, VerificationBadge } from "@/components/ui";
+import { Avatar, MediaCard, Skeleton, VerificationTicks } from "@/components/ui";
 import { Rail } from "./Rail";
-import type { VerificationLevel } from "@/types/account";
+import type { VerificationState } from "@/types/verification";
 
 /**
  * Featured This Week (build brief C4, item 5).
@@ -46,7 +46,7 @@ interface FeaturedCard {
   avatarUrl?: string | null;
   bannerUrl?: string | null;
   iconImageSrc?: string;
-  verification?: VerificationLevel;
+  verification?: VerificationState;
   cta: string;
 }
 
@@ -173,7 +173,7 @@ export function FeaturedThisWeek() {
               </span>
             }
             title={c.title}
-            titleBadge={c.verification ? <VerificationBadge tier={c.verification} size={14} /> : undefined}
+            titleBadge={<VerificationTicks verification={c.verification} size="xs" />}
             caption={c.caption}
             action={<span className="block h-[32px]" />}
           />

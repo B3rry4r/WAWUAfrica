@@ -1,6 +1,7 @@
 import type { ProfessionalListing } from "@/types/professional";
 import type { CategoryId } from "@/lib/categories";
 import { delay } from "../client";
+import { mockVerification } from "./verification";
 
 /**
  * The professional directory, for the fixture build.
@@ -32,7 +33,7 @@ const LISTINGS: ProfessionalListing[] = [
     category: "business_entrepreneurship" as CategoryId,
     headline: "Business strategist, 15 years with small traders",
     services: ["Business registration", "Growth planning", "Pitch review"],
-    verification: "certified_professional",
+    verification: mockVerification(["professional"]),
     pieceCount: 4,
     dmEnabled: true,
     dmPrice: 5000,
@@ -47,7 +48,7 @@ const LISTINGS: ProfessionalListing[] = [
     category: "finance" as CategoryId,
     headline: "Chartered accountant for shops and market traders",
     services: ["Bookkeeping", "Tax filing", "Payroll"],
-    verification: "certified_professional",
+    verification: mockVerification(["professional"]),
     pieceCount: 6,
     dmEnabled: true,
     dmPrice: 7500,
@@ -62,7 +63,7 @@ const LISTINGS: ProfessionalListing[] = [
     category: "agriculture_food" as CategoryId,
     headline: "Agribusiness trainer, post-harvest and pricing",
     services: ["Storage planning", "Pricing", "Cooperative setup"],
-    verification: "verified_business",
+    verification: mockVerification(["professional"]),
     pieceCount: 3,
     // Listed, but not taking paid messages. The profile has to render this
     // without inventing a rate for somebody who has not set one.

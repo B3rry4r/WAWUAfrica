@@ -6,7 +6,7 @@ import { CREDENTIAL_LABEL, isRegulatedCategory } from "@/types/professional";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import { VerificationTicks } from "@/components/ui/VerificationTicks";
 import { ProfessionalContact } from "@/components/professionals/ProfessionalContact";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +47,7 @@ export default async function ProfessionalDetailPage({
               <span className="truncate text-[19px] font-bold text-[var(--text-primary)]">
                 {pro.name}
               </span>
-              <VerificationBadge tier={pro.verification} size={17} />
+              <VerificationTicks verification={pro.verification} size="md" />
             </span>
             <span className="text-[14px] text-[var(--text-secondary)]">{pro.headline}</span>
             <Link

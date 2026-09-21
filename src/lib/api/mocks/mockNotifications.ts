@@ -40,7 +40,7 @@ export const mockNotifications: NotificationsResponse = {
       id: "n-verify-reminder",
       kind: "verify_reminder",
       title: "Your account is not verified yet",
-      body: "Verified creators carry the purple tick on their profile and on every card they appear on. Send your ID to start.",
+      body: "A verified account carries its tick everywhere it appears, and only verified accounts can host events. Creator or professional, it is a yearly payment.",
       tone: "info",
       actionLabel: "Get verified",
       actionHref: "/profile/verification",

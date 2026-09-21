@@ -19,6 +19,7 @@ import type { ContentPiece, ContentType } from "@/types/content";
 import type { Purchase } from "@/types/purchase";
 import type { ServiceApplication } from "@/types/services";
 import type { DmThreadSummary } from "@/types/dm";
+import { NO_VERIFICATION } from "@/types/verification";
 
 const FILTERS: Array<{ id: ContentType | "all"; label: string }> = [
   { id: "all", label: "All" },
@@ -167,15 +168,18 @@ function purchaseToContentPiece(p: Purchase): ContentPiece {
     accessType: p.price === 0 ? "free" : "paid",
     price: p.price,
     creator: {
-      // A purchase row carries a display name only — no creator wawuId and no
-      // verification level (see the wire shape in src/lib/api/purchases.ts).
+      // A purchase row carries a display name only — no creator wawuId and
+      // no verification (see the wire shape in src/lib/api/purchases.ts).
       // ContentCard never links to the creator, so the id stays empty rather
-      // than reusing the display name as one, and "basic" renders no badge at
-      // all (VerificationBadge) rather than claiming a level we don't know.
+      // than reusing the display name as one, and NO_VERIFICATION renders no
+      // tick rather than claiming one we cannot back.
+      //
+      // SEAM: GET /api/hub/purchases (a purchase row carries no creator
+      // `verification`, so there are no ticks to draw on this card).
       wawuId: "",
       fullName: p.creatorName,
       handle: p.creatorName,
-      verificationLevel: "basic",
+      verification: NO_VERIFICATION,
     },
     views: 0,
     commentCount: 0,

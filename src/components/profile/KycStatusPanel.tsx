@@ -11,19 +11,19 @@ import type { KycStatus } from "@/types/account";
 
 /**
  * The creator's KYC (identity check) state, shown as its OWN block —
- * deliberately separate from the badge ladder it sits next to.
+ * deliberately separate from the two paid ticks it sits next to.
  *
  * Why this exists: /profile/verification is the one screen in the app called
- * "Verification", and it read only the badge ladder. A creator who had just
+ * "Verification", and it read only the public badge. A creator who had just
  * submitted their ID, bank details and BVN/NIN through /kyc came here, saw an
- * unchanged ladder, and concluded the submission had not gone through — it had.
+ * unchanged screen, and concluded the submission had not gone through — it had.
  *
  * These are two independent systems and MUST NOT be collapsed (CLAUDE.md; the
  * Prisma comment on KycSubmission says the same thing):
  *   - KYC          → the earning gate. Manual review. Unlocks getting paid.
- *   - Badge ladder → a public trust badge. Changes nothing about payouts.
+ *   - The ticks  → paid, public credentials. Change nothing about payouts.
  * So this panel names its own gate, states its own status, and points at its
- * own route (/kyc). It never touches the ladder and the ladder never touches it.
+ * own route (/kyc). It never touches the ticks and the ticks never touch it.
  *
  * Creator accounts only: a plain user has no CreatorState row, no KYC
  * submission, and nothing to say here. `resolved` gates the fork so somebody
@@ -79,7 +79,7 @@ export function KycStatusPanel({ className = "" }: { className?: string }) {
         </div>
         <p className="m-0 text-[13.5px] leading-[1.55] text-text-secondary">
           Your ID and bank details, reviewed by hand. This is the step that lets us pay out what you earn. It is
-          not a badge. It never appears on your profile, and it does not move you up the ladder below.
+          not a tick. It never appears on your profile, and buying a tick below does nothing for it.
         </p>
       </div>
 
@@ -103,7 +103,7 @@ export function KycStatusPanel({ className = "" }: { className?: string }) {
 
       {/*
         The rule off the bottom of this block is what visually separates the
-        earning gate from the badge ladder below it. It belongs to this panel,
+        earning gate from the paid ticks below it. It belongs to this panel,
         not to the page: a plain user renders nothing here, and a divider
         floating under the page title with nothing above it looked like a bug.
       */}

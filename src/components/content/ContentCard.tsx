@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { PriceChip } from "@/components/ui/PriceChip";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import { VerificationTicks } from "@/components/ui/VerificationTicks";
 import type { IconName } from "@/components/ui/Icon";
 import type { ContentPiece, ContentState, ContentType } from "@/types/content";
 import { ContentThumb } from "@/components/ui/ContentThumb";
@@ -73,7 +73,7 @@ export function ContentCard({ content, state, ratio = "4 / 3", href, authorRow =
           <Avatar src={content.creator.avatarUrl} initial={content.creator.fullName} size={36} />
           <div className="flex min-w-0 flex-1 items-center gap-1.5">
             <span className="truncate text-[14.5px] font-semibold text-text-primary">{content.creator.fullName}</span>
-            <VerificationBadge tier={content.creator.verificationLevel} size={16} />
+            <VerificationTicks verification={content.creator.verification} size="sm" />
             <span className="shrink-0 text-[12.5px] text-text-muted">· {timeAgo(content.createdAt)}</span>
           </div>
           <Icon name="Ellipsis" size={18} color="var(--text-muted)" />

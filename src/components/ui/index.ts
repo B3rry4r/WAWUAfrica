@@ -46,4 +46,7 @@ export type { TaxonomyPickerProps, TaxonomyPickerSelect } from "./TaxonomyPicker
 export { StatusPill } from "./StatusPill";
 export { Toast } from "./Toast";
 export type { ToastKind, ToastProps } from "./Toast";
-export { VerificationBadge } from "./VerificationBadge";
+export { VerificationTicks } from "./VerificationTicks";
+export type { VerificationTickSize, VerificationTicksProps } from "./VerificationTicks";
+export { VerificationPrompt } from "./VerificationPrompt";
+export type { VerificationPromptProps } from "./VerificationPrompt";

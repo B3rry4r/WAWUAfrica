@@ -1,4 +1,5 @@
-import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "./account";
+import type { AccountType, CreatorTier, KycStatus } from "./account";
+import type { VerificationState } from "./verification";
 
 export interface SignUpIdentity {
   /**
@@ -98,8 +99,8 @@ export interface SessionUser {
   email: string;
   accountType: AccountType;
   interests: string[];
-  /** Profile credibility ladder. Separate from creator KYC. */
-  verification: VerificationLevel;
+  /** The two paid ticks. Separate from creator KYC, which gates earning. */
+  verification: VerificationState;
   creator: CreatorState | null;
   /**
    * Null through sign-up/OTP (no photo exists yet for a brand-new account)
