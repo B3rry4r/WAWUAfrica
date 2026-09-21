@@ -28,7 +28,7 @@ import {
 } from "@/components/ui";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { ProfileActions } from "@/components/profile/ProfileActions";
-import { ShareProfileButton, storeLinkPath } from "@/components/profile/ShareProfileButton";
+import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { ProfileCrossSell } from "@/components/profile/ProfileCrossSell";
 
@@ -176,19 +176,6 @@ function ProfileIdentity({
       ? specs.map((s) => s.label)
       : view.specializations;
 
-  /*
-    C2: "store link occupying the website field when the user has no external
-    site". Everybody has a store; not everybody has a site of their own.
-  */
-  // The label reads `wawu/<handle>`, so the href is /wawu/<handle>: the
-  // public store route (build brief C3), not the signed-in profile route,
-  // which is where this used to point and where a logged-out visitor
-  // following it would have been bounced to /sign-in.
-  const storePath = storeLinkPath(view.handle || view.wawuId);
-  const link = view.website
-    ? { label: view.website.replace(/^https?:\/\//, ""), href: view.website, external: true }
-    : { label: `wawu/${view.handle || view.wawuId}`, href: storePath, external: false };
-
   return (
     <header className="flex flex-col">
       {/* Cover. An account with none gets the brand gradient, not a gap. */}
@@ -268,25 +255,29 @@ function ProfileIdentity({
         <div className="flex flex-wrap items-center gap-x-[16px] gap-y-[7px]">
           {view.location ? <MetaItem icon="MapPin" text={view.location} /> : null}
           {view.memberSince ? <MetaItem icon="Calendar" text={`On WAWU since ${view.memberSince}`} /> : null}
-          {link.external ? (
+          {view.website ? (
             <a
-              href={link.href}
+              href={view.website}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-[6px] text-[12.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
             >
               <Icon name="Link" size={14} strokeWidth={2} />
-              {link.label}
+              {view.website.replace(/^https?:\/\//, "")}
             </a>
-          ) : (
-            <Link
-              href={link.href}
-              className="inline-flex items-center gap-[6px] text-[12.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
-            >
-              <Icon name="Store" size={14} strokeWidth={2} />
-              {link.label}
-            </Link>
-          )}
+          ) : null}
+          {/*
+            THE STORE LINK ALWAYS SHOWS, AND ALWAYS WITH SOMETHING TO PRESS.
+
+            It used to be an either/or with the website: a creator who had
+            entered a site of their own never saw their own store link at
+            all, and one who had not saw it as a bare anchor behind a shop
+            glyph with no way to take it. Both are the same mistake, which is
+            treating the store link as decoration. It is the thing a creator
+            sends people, so it is always here and it always carries a copy
+            control (build brief C3, and the product owner on 21 Sep 2026).
+          */}
+          <ShareProfileButton handle={view.handle || view.wawuId} display="inline" />
         </div>
 
         {/* Specialization chips with an add affordance, per C2. The "+" is the
@@ -573,7 +564,9 @@ function ContentCardRow({ item }: { item: ProfileView["content"][number] }) {
         />
         <span className="absolute right-[8px] top-[8px]">
           {item.status === "pending" ? (
-            <StatusPill kind="warning">In review</StatusPill>
+            // Over the creator's own thumbnail, so it needs an opaque
+            // plate: the tint alone vanished on a bright picture.
+            <StatusPill kind="warning" onMedia>In review</StatusPill>
           ) : (
             <PriceChip amount={item.price} label="PPV" free={item.price === 0} tone="plain" size="sm" />
           )}

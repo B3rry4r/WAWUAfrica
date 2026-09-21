@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
-import { StorageMeter } from "./StorageMeter";
 import { isCancelled, uploadFile, UploadError, type UploadFolder, type UploadedFile } from "@/lib/api/uploads";
 
 function humanSize(bytes: number): string {
@@ -12,17 +11,19 @@ function humanSize(bytes: number): string {
   return `${bytes} B`;
 }
 
-/**
- * The destinations where a capacity bar is worth the space: the ones a
- * creator returns to and genuinely fills. Compliance uploads are excluded —
- * see `showStorage`.
- */
-const DEFAULT_SHOWS_STORAGE = new Set<UploadFolder>([
-  "content/preview",
-  "content/full",
-  "community/image",
-  "community/message",
-]);
+/*
+  NO CAPACITY BAR UNDER THE PICKER.
+
+  There used to be one on every content and community upload: "130MB of 2GB
+  used" over a progress track. Product owner, 21 Sep 2026, scribbled across
+  it on the video step: "Remove this."
+
+  It earned its space nowhere. A creator is capped at five listings, so the
+  ceiling that actually binds is the slot count, which the Create hub already
+  states. The bar measured a limit almost nobody reaches, and it did it on
+  step one of four, before a file had even been chosen, which is exactly
+  where an upload flow should be asking for one thing only.
+*/
 
 export interface FilePickerProps {
   /** Where the object is stored. Must be one the backend allows. */
@@ -38,16 +39,6 @@ export interface FilePickerProps {
   /** Offers a camera capture on mobile (used by KYC ID capture). */
   capture?: boolean;
   disabled?: boolean;
-  /**
-   * Shows how much of the account's storage is left, under the picker.
-   *
-   * On by default for the destinations a creator fills up — content and
-   * community media. Off for one-off compliance documents (a KYC ID, a CAC
-   * certificate): those are a few hundred KB against a 2GB ceiling, and a
-   * capacity bar next to "photograph your ID" reads as an obstacle in a flow
-   * that already makes people nervous.
-   */
-  showStorage?: boolean;
 }
 
 /**
@@ -69,7 +60,6 @@ export function FilePicker({
   onCleared,
   capture = false,
   disabled = false,
-  showStorage,
 }: FilePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null);
@@ -79,7 +69,6 @@ export function FilePicker({
   // showing a total that is one file out of date.
   const [uploadCount, setUploadCount] = useState(0);
 
-  const withMeter = showStorage ?? DEFAULT_SHOWS_STORAGE.has(folder);
 
   const choose = () => {
     if (disabled || progress !== null) return;
@@ -226,7 +215,6 @@ export function FilePicker({
         </div>
       ) : null}
 
-      {withMeter ? <StorageMeter refreshKey={uploadCount} className="pt-[2px]" /> : null}
     </div>
   );
 }

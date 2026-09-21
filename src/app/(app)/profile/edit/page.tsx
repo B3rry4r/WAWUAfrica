@@ -223,27 +223,61 @@ export default function EditProfilePage() {
             </label>
 
             <section className="flex flex-col gap-[10px]">
-              <span className="text-[13px] font-semibold text-text-secondary">Interests</span>
+              <div className="flex items-baseline justify-between gap-[10px]">
+                <span className="text-[13px] font-semibold text-text-secondary">Interests</span>
+                {/* 25 rows is a long way to scroll to find out whether you
+                    picked anything, so the count is stated at the top. */}
+                <span className="text-[12px] text-text-muted">
+                  {draft.interests.length === 0 ? "None picked" : `${draft.interests.length} picked`}
+                </span>
+              </div>
               <span className="text-[12px] leading-[1.45] text-text-muted">
                 These decide where you show up when someone browses Explore.
               </span>
-              <div className="flex flex-wrap gap-2">
+              {/*
+                A GRID OF ROWS, NOT A CLOUD OF PILLS.
+
+                These 25 categories were a `flex-wrap` of rounded pills. The
+                labels run from "Legal Services" to "Social Impact &
+                Community Development", so every line broke at a different
+                place and the block landed as a ragged wall with holes in it.
+                Product owner, 21 Sep 2026: "this interest style is
+                scattered".
+
+                Equal-width cells on a fixed column count fix that: the left
+                edges line up, the rows line up, and the eye can go down the
+                list instead of hunting across it. One column on a phone
+                because the longest labels do not fit two, two from `sm` up.
+                The tick sits in a reserved box on every row, selected or
+                not, so choosing one does not shift the text beside it.
+              */}
+              <div className="grid grid-cols-1 gap-[8px] sm:grid-cols-2">
                 {INTEREST_OPTIONS.map(({ value, label }) => {
                   const active = draft.interests.includes(value);
                   return (
                     <button
                       key={value}
                       type="button"
+                      aria-pressed={active}
                       onClick={() => toggleInterest(value)}
                       className={[
-                        "inline-flex h-8 cursor-pointer items-center gap-[6px] rounded-full border px-[13px] text-[12.5px]",
+                        "flex min-h-[42px] w-full cursor-pointer items-center gap-[10px] rounded-[var(--radius-input)] border px-[12px] py-[8px] text-left text-[13px] leading-[1.35]",
                         active
                           ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-accent"
                           : "border-hairline bg-tag font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
                       ].join(" ")}
                     >
-                      {label}
-                      {active && <Icon name="X" size={12} color="var(--accent)" strokeWidth={2.4} />}
+                      <span
+                        className={[
+                          "grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[6px] border",
+                          active ? "border-accent bg-accent" : "border-strong",
+                        ].join(" ")}
+                      >
+                        {active ? (
+                          <Icon name="Check" size={12} color="var(--text-on-accent)" strokeWidth={3} />
+                        ) : null}
+                      </span>
+                      <span className="min-w-0 flex-1">{label}</span>
                     </button>
                   );
                 })}
