@@ -92,10 +92,34 @@ export interface VerificationOffer {
   periodMonths: number;
 }
 
+/** A tick this caller cannot buy yet, and the server's sentence saying why. */
+export interface VerificationUnavailable {
+  kind: VerificationKind;
+  /**
+   * The SERVER's wording, never ours. It is the sentence that turns a dead
+   * end into a next step ("register as a creator first"), and build brief B3
+   * requires that explanation rather than a control that silently vanishes.
+   */
+  reason: string;
+}
+
 /** The caller's own verification, plus what they can buy. */
 export interface VerificationOverview {
   verification: VerificationState;
+  /**
+   * Only the ticks this caller may actually purchase. The Hub decides: the
+   * creator tick needs a creator account, the professional tick needs an
+   * approved professional profile, so a buyer account gets an empty list.
+   * Every consumer relies on that (VerificationPrompt shows nothing when this
+   * is empty), so never widen it to "all ticks" on the client.
+   */
   offers: VerificationOffer[];
+  /**
+   * The rest, with the server's reason. Lets the purchase screen explain
+   * itself instead of rendering an empty state at somebody who is one step
+   * away from being able to buy.
+   */
+  unavailable: VerificationUnavailable[];
 }
 
 export interface OwnProfileStats {

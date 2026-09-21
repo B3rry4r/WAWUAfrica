@@ -6,6 +6,7 @@ import type {
   VerificationKind,
   VerificationOffer,
   VerificationOverview,
+  VerificationUnavailable,
   VerificationState,
 } from "@/types/verification";
 import { NO_VERIFICATION } from "@/types/verification";
@@ -69,10 +70,25 @@ function toTickState(raw: unknown): TickState {
 
 // ── buying a tick ────────────────────────────────────────────────────────────
 
-/** GET /api/hub/verification — the caller's own ticks plus the price list. */
+/**
+ * GET /api/hub/verification/me - the caller's own ticks, the price list and
+ * what they are eligible to buy.
+ *
+ * The path and the shape are the Hub's, verified against its controller and
+ * its generated contract/openapi.json, NOT invented here. An earlier cut of
+ * this file called `GET /api/hub/verification` and expected `{ verification,
+ * offers }`; the Hub serves neither, so every call 404'd. Change this only
+ * alongside the Hub.
+ */
 interface HubVerificationOverviewResponse {
   verification: unknown;
-  offers: Array<{ kind: string; price: number; periodMonths: number }>;
+  pricing?: { creator?: number; professional?: number; termMonths?: number };
+  eligibility?: Array<{
+    kind: string;
+    allowed: boolean;
+    priceNgn: number;
+    reason: string | null;
+  }>;
 }
 
 interface HubVerificationCheckoutResponse {
@@ -84,16 +100,43 @@ interface HubVerificationCheckoutResponse {
   };
 }
 
-function toOffers(raw: HubVerificationOverviewResponse["offers"]): VerificationOffer[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((o) => o && (o.kind === "creator" || o.kind === "professional"))
-    .map((o) => ({
-      kind: o.kind as VerificationKind,
-      price: Number(o.price),
-      periodMonths: Number(o.periodMonths) || 12,
-    }))
-    .filter((o) => Number.isFinite(o.price) && o.price > 0);
+function isKind(k: string): k is VerificationKind {
+  return k === "creator" || k === "professional";
+}
+
+/**
+ * Splits the Hub's `eligibility` rows into what this caller can buy and what
+ * they cannot, keeping the server's reason for the second group.
+ *
+ * `offers` carries ONLY allowed rows. That is load-bearing: VerificationPrompt
+ * renders nothing when the list is empty, which is how a buyer account avoids
+ * being nagged to buy a tick it is not eligible for in the first place.
+ */
+function splitEligibility(
+  raw: HubVerificationOverviewResponse["eligibility"],
+  termMonths: number,
+): { offers: VerificationOffer[]; unavailable: VerificationUnavailable[] } {
+  if (!Array.isArray(raw)) return { offers: [], unavailable: [] };
+  const offers: VerificationOffer[] = [];
+  const unavailable: VerificationUnavailable[] = [];
+  for (const row of raw) {
+    if (!row || !isKind(row.kind)) continue;
+    if (row.allowed) {
+      const price = Number(row.priceNgn);
+      // A tick with no usable price is not an offer. Showing a Buy button
+      // over a missing figure is how somebody gets charged an amount nobody
+      // displayed.
+      if (Number.isFinite(price) && price > 0) {
+        offers.push({ kind: row.kind, price, periodMonths: termMonths });
+      }
+      continue;
+    }
+    unavailable.push({
+      kind: row.kind,
+      reason: row.reason ?? "This tick is not available on your account yet.",
+    });
+  }
+  return { offers, unavailable };
 }
 
 /**
@@ -105,18 +148,20 @@ function toOffers(raw: HubVerificationOverviewResponse["offers"]): VerificationO
  */
 export async function getVerificationOverview(): Promise<VerificationOverview> {
   try {
-    const res = await apiFetch<HubVerificationOverviewResponse>("/api/hub/verification", { authed: true });
-    return { verification: toVerificationState(res.verification), offers: toOffers(res.offers) };
+    const res = await apiFetch<HubVerificationOverviewResponse>("/api/hub/verification/me", { authed: true });
+    const termMonths = Number(res.pricing?.termMonths) || 12;
+    const { offers, unavailable } = splitEligibility(res.eligibility, termMonths);
+    return { verification: toVerificationState(res.verification), offers, unavailable };
   } catch (e) {
     if (!isMockModeError(e)) throw e;
-    // SEAM: replace with GET /api/hub/verification
+    // SEAM: replace with GET /api/hub/verification/me
     //
     // No backend configured. The published price list stands in for the
     // server's offers, and the caller's own ticks come from the fixture
     // profile, so every screen in a fixture build agrees about who is
     // verified.
     const me = await getMockOwnProfile();
-    return { verification: me.verification, offers: VERIFICATION_OFFERS.map((o) => ({ ...o })) };
+    return { verification: me.verification, offers: VERIFICATION_OFFERS.map((o) => ({ ...o })), unavailable: [] };
   }
 }
 

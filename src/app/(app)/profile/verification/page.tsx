@@ -156,11 +156,29 @@ export default function VerificationPage() {
           </p>
         )}
 
+        {/*
+          Not an empty state. Build brief B3: where somebody cannot do the
+          thing, say what would change that. The SERVER's reason is preferred
+          over ours whenever it sent one, because it knows which of the two
+          conditions this account actually fails (no creator account, or no
+          approved professional profile); the fallback sentence only covers
+          the case where it sent none.
+        */}
         {overview.offers.length === 0 && (
-          <p className="m-0 rounded-[var(--radius-card)] border border-hairline bg-card p-4 text-[13px] leading-[1.5] text-text-muted">
-            There is nothing for this account to buy yet. Verification is for creator and professional accounts. Add a
-            creator or professional profile first and it will appear here.
-          </p>
+          <div className="flex flex-col gap-[8px] rounded-[var(--radius-card)] border border-hairline bg-card p-4">
+            {overview.unavailable.length > 0 ? (
+              overview.unavailable.map((u) => (
+                <p key={u.kind} className="m-0 text-[13px] leading-[1.5] text-text-secondary">
+                  <span className="font-semibold text-text-primary">{VERIFICATION_LABELS[u.kind]}:</span> {u.reason}
+                </p>
+              ))
+            ) : (
+              <p className="m-0 text-[13px] leading-[1.5] text-text-muted">
+                There is nothing for this account to buy yet. Verification is for creator and professional accounts.
+                Add a creator or professional profile first and it will appear here.
+              </p>
+            )}
+          </div>
         )}
 
         {overview.offers.map((offer) => (
