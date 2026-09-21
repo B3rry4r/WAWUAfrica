@@ -71,6 +71,8 @@ function toView(p: OwnProfile, content: ProfileContentItem[]): ProfileView {
     avatarUrl: p.avatarUrl,
     coverUrl: p.coverUrl,
     website: p.socials.website,
+    company: p.company,
+    experience: p.experience,
     // `interests` is the older free-text list the profile editor writes;
     // ProfileScreen resolves C1 ids where they are ids and renders the rest
     // as typed, so both shapes survive the taxonomy migration.

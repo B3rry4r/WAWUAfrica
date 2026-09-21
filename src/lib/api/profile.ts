@@ -1,4 +1,9 @@
-import type { CreatorProfile, ProfileContentItem, ProfileView } from "@/types/profile";
+import type {
+  CreatorProfile,
+  ProfileContentItem,
+  ProfileExperience,
+  ProfileView,
+} from "@/types/profile";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
 import { ApiError, apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import { getCreators } from "./explore";
@@ -109,6 +114,13 @@ interface RealPublicCreatorProfile {
   facebookUrl: string | null;
   linkedinUrl: string | null;
   websiteUrl: string | null;
+  company: string | null;
+  /**
+   * The roles on this profile, ordered by the server: current first, then
+   * newest first. Never re-sorted here, because a second ordering is a second
+   * thing that can disagree with the next client.
+   */
+  experience?: ProfileExperience[];
   avatarUrl: string | null;
   coverUrl: string | null;
   tier: "basic" | "pro" | "pro_max";
@@ -248,6 +260,10 @@ function toCreatorProfile(
       linkedin: real.linkedinUrl ?? undefined,
       website: real.websiteUrl ?? undefined,
     },
+    company: real.company ?? undefined,
+    // `?? []` because an older Hub that predates the column sends nothing,
+    // and an absent list is "no roles", not a crash in the header.
+    experience: real.experience ?? [],
     content,
     communities: [],
     products: [],
@@ -399,6 +415,8 @@ export function toProfileView(p: CreatorProfile): ProfileView {
     location: p.location,
     memberSince: p.memberSince,
     website: p.socials.website,
+    company: p.company,
+    experience: p.experience,
     // The public aggregate has no separate headline field; `categories[0]` is
     // what the directory shows under a name, so it is the role line here too
     // rather than a second invented one.

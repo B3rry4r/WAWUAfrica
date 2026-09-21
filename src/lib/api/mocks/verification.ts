@@ -1,4 +1,5 @@
 import type { OwnProfile, OwnProfileDraft, VerificationKind, VerificationState } from "@/types/verification";
+import type { ProfileExperience } from "@/types/profile";
 import { delay } from "../client";
 
 /** One fixed date, so fixtures do not shift under a snapshot. */
@@ -52,6 +53,47 @@ export const MOCK_OWN_PROFILE: OwnProfile = {
   plan: "basic",
   stats: { published: 4, sales: 86, followers: "2.4k" },
   interests: ["Agriculture", "Business", "Trade"],
+  company: "WAWU Africa",
+  /*
+    Three roles, chosen to exercise the three cases the header has to draw
+    rather than to look full: one CURRENT role with no end date, one finished
+    role that started LATER than the current one (so a single sort on
+    startedOn would put it in the wrong place), and one with no location and
+    no description at all.
+  */
+  experience: [
+    {
+      id: "exp-1",
+      title: "Chief Steward",
+      company: "WAWU Africa",
+      location: "Lagos, Nigeria",
+      startedOn: "2023-03",
+      endedOn: null,
+      current: true,
+      description:
+        "Building a creator economy for Africa and beyond. Empowering creators, businesses and communities through technology, opportunity and ownership.",
+    },
+    {
+      id: "exp-2",
+      title: "Business Development Lead",
+      company: "Sahel Trading Co",
+      location: "Abuja, Nigeria",
+      startedOn: "2019-06",
+      endedOn: "2023-02",
+      current: false,
+      description: "Took 40 market traders through CAC registration and into their first wholesale contracts.",
+    },
+    {
+      id: "exp-3",
+      title: "Bookkeeper",
+      company: "Okonkwo & Sons",
+      location: null,
+      startedOn: "2016-01",
+      endedOn: "2019-05",
+      current: false,
+      description: null,
+    },
+  ],
   socials: { instagram: "amara.okafor", whatsapp: "08012345678" },
   avatarUrl: null,
   coverUrl: null,
@@ -82,6 +124,7 @@ export async function saveMockOwnProfile(draft: OwnProfileDraft): Promise<OwnPro
   MOCK_OWN_PROFILE.handle = draft.handle;
   MOCK_OWN_PROFILE.bio = draft.bio;
   MOCK_OWN_PROFILE.interests = [...draft.interests];
+  MOCK_OWN_PROFILE.company = draft.company;
   MOCK_OWN_PROFILE.socials = { ...draft.socials };
   // The avatar/cover survive the save in mock mode too. Without this a real
   // FilePicker upload vanished the moment the edit page read its OWN profile
@@ -104,3 +147,78 @@ export async function saveMockOwnProfile(draft: OwnProfileDraft): Promise<OwnPro
  * is the published price of a real product, so it lives in config
  * (src/lib/verification-offers.ts) where a component can never reach past it.
  */
+
+/* ------------------------- the experience list -------------------------- */
+
+/**
+ * The mock side of the three experience calls.
+ *
+ * These mutate MOCK_OWN_PROFILE in place, like saveMockOwnProfile above, so
+ * a row added on the edit screen is still there when the profile reads itself
+ * back. They keep the SERVER'S ordering rule rather than appending: current
+ * role first, then newest first. A mock that ordered differently from the API
+ * would make the list look wrong in mock mode and right in production, which
+ * is the one direction a fixture must never fail in.
+ */
+function sortExperience(rows: ProfileExperience[]): ProfileExperience[] {
+  return [...rows].sort((a, b) => {
+    if (a.current !== b.current) return a.current ? -1 : 1;
+    return b.startedOn.localeCompare(a.startedOn);
+  });
+}
+
+export async function addMockExperience(draft: {
+  title: string;
+  company: string;
+  location?: string | null;
+  startedOn: string;
+  endedOn?: string | null;
+  description?: string | null;
+}): Promise<ProfileExperience> {
+  await delay(350);
+  const row: ProfileExperience = {
+    id: `exp-${Date.now()}`,
+    title: draft.title,
+    company: draft.company,
+    location: draft.location ?? null,
+    startedOn: draft.startedOn,
+    endedOn: draft.endedOn ?? null,
+    current: !draft.endedOn,
+    description: draft.description ?? null,
+  };
+  MOCK_OWN_PROFILE.experience = sortExperience([...MOCK_OWN_PROFILE.experience, row]);
+  return { ...row };
+}
+
+export async function editMockExperience(
+  id: string,
+  draft: Partial<{
+    title: string;
+    company: string;
+    location: string | null;
+    startedOn: string;
+    endedOn: string | null;
+    description: string | null;
+  }>,
+): Promise<ProfileExperience> {
+  await delay(350);
+  const existing = MOCK_OWN_PROFILE.experience.find((r) => r.id === id);
+  if (!existing) throw new Error("Experience not found");
+  const next: ProfileExperience = {
+    ...existing,
+    ...draft,
+    // Derived on the server, so derived here too rather than taken from the
+    // patch: a mock that let a caller set `current` directly would allow the
+    // contradictory state the schema exists to prevent.
+    current:
+      draft.endedOn !== undefined ? draft.endedOn === null : existing.current,
+  };
+  MOCK_OWN_PROFILE.experience = sortExperience(
+    MOCK_OWN_PROFILE.experience.map((r) => (r.id === id ? next : r)),
+  );
+  return { ...next };
+}
+
+export function removeMockExperience(id: string): void {
+  MOCK_OWN_PROFILE.experience = MOCK_OWN_PROFILE.experience.filter((r) => r.id !== id);
+}

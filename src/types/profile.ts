@@ -70,6 +70,31 @@ export function profileTabsFor(has: {
  * cannot answer is optional and is left out rather than defaulted, because a
  * zero on a profile is a claim ("0 followers") and an absent number is not.
  */
+/**
+ * One role on somebody's profile.
+ *
+ * `startedOn` and `endedOn` are MONTHS ("2023-03"), never full dates: the
+ * backend's column is a real date pinned to the first of the month, and the
+ * wire format is deliberately narrower so no client has to decide what a day
+ * component was supposed to mean.
+ *
+ * `current` is served, not re-derived here. It is `endedOn === null` on the
+ * server, and a second implementation in the client is a second thing that
+ * can disagree.
+ */
+export interface ProfileExperience {
+  id: string;
+  title: string;
+  company: string;
+  location: string | null;
+  /** "YYYY-MM". */
+  startedOn: string;
+  /** "YYYY-MM", or null when this is the role they hold now. */
+  endedOn: string | null;
+  current: boolean;
+  description: string | null;
+}
+
 export interface ProfileView {
   wawuId: string;
   name: string;
@@ -82,8 +107,16 @@ export interface ProfileView {
   roleLine?: string;
   location?: string;
   memberSince?: string;
-  /** Their own site. When absent, the store link takes this slot (C2). */
+  /** Their own site. The store link sits beside it, never instead of it. */
   website?: string;
+  /** The organisation they are part of, beside the location in the header. */
+  company?: string;
+  /**
+   * Their roles, newest first with the current one at the top. Ordered by the
+   * server; a client that re-sorts will eventually sort differently from the
+   * next client.
+   */
+  experience: ProfileExperience[];
   /** C1 specialization ids, or the older free-text interests. */
   specializations: string[];
   socials: CreatorProfile["socials"];
@@ -169,6 +202,8 @@ export interface CreatorProfile {
   location?: string;
   memberSince?: string;
   replyTime?: string;
+  company?: string;
+  experience: ProfileExperience[];
   categories: string[];
   socials: {
     instagram?: string;
