@@ -17,6 +17,8 @@ import type { IconName } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { CATEGORIES } from "@/lib/categories";
+import { ExperienceEditor } from "@/components/profile/ExperienceEditor";
+import type { ProfileExperience } from "@/types/profile";
 
 /**
  * The chips a person picks here are what Explore filters creators by, so they
@@ -38,6 +40,14 @@ export default function EditProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   // Stored as one string, but edited as dial code + number.
   const [waDialCode, setWaDialCode] = useState(DEFAULT_DIAL_CODE);
+  /*
+    Held OUTSIDE `draft` on purpose. Every field in the draft goes up in one
+    PATCH when Save is pressed; roles are written one at a time by their own
+    requests. Putting them in the same object would invite a future change to
+    send the whole list along with the form and reintroduce exactly the
+    lost-update problem the separate endpoints avoid.
+  */
+  const [experience, setExperience] = useState<ProfileExperience[]>([]);
   const [draft, setDraft] = useState<OwnProfileDraft>({
     firstName: "",
     middleName: "",
@@ -45,6 +55,7 @@ export default function EditProfilePage() {
     name: "",
     handle: "",
     bio: "",
+    company: "",
     interests: [],
     socials: { instagram: "", whatsapp: "", x: "", tiktok: "", youtube: "", facebook: "", linkedin: "", website: "" },
     avatarUrl: null,
@@ -56,7 +67,8 @@ export default function EditProfilePage() {
     getOwnProfile()
       .then((p: OwnProfile) => {
         if (!active) return;
-        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, interests: [...p.interests], socials: { ...p.socials }, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl });
+        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, company: p.company ?? "", interests: [...p.interests], socials: { ...p.socials }, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl });
+        setExperience(p.experience);
         setLoading(false);
       })
       .catch(() => active && (setLoadError(true), setLoading(false)));
@@ -211,6 +223,13 @@ export default function EditProfilePage() {
               icon="AtSign"
               hint="This is your profile link on WAWU"
             />
+            <Input
+              label="Company"
+              value={draft.company ?? ""}
+              onChange={(e) => setDraft((d) => ({ ...d, company: e.target.value }))}
+              icon="Building2"
+              hint="Where you work now. It shows beside your location."
+            />
             <label className="flex flex-col gap-2">
               <span className="text-[13px] font-semibold text-text-secondary">Bio</span>
               <textarea
@@ -246,12 +265,25 @@ export default function EditProfilePage() {
 
                 Equal-width cells on a fixed column count fix that: the left
                 edges line up, the rows line up, and the eye can go down the
-                list instead of hunting across it. One column on a phone
-                because the longest labels do not fit two, two from `sm` up.
-                The tick sits in a reserved box on every row, selected or
-                not, so choosing one does not shift the text beside it.
+                list instead of hunting across it.
+
+                TWO COLUMNS ON A PHONE, NOT ONE. The first attempt at this
+                gave each category its own full-width row, which lined
+                everything up and turned 25 options into 25 rows of scrolling:
+                "if you lay out these pills on one long screen like this you
+                are very stupid". Two columns halves that to 13 rows, which
+                fits in about a screen and a half instead of four. The type
+                steps down and a label is allowed to take two lines, so
+                "Social Impact & Community Development" wraps inside its cell
+                rather than setting the width for all 25.
+
+                `items-stretch` (the grid default) keeps every cell in a row
+                the same height whether its label wrapped or not, so the
+                two columns stay level. The tick sits in a reserved box on
+                every cell, selected or not, so choosing one does not shift
+                the text beside it.
               */}
-              <div className="grid grid-cols-1 gap-[8px] sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-[8px] xl:grid-cols-3">
                 {INTEREST_OPTIONS.map(({ value, label }) => {
                   const active = draft.interests.includes(value);
                   return (
@@ -261,7 +293,7 @@ export default function EditProfilePage() {
                       aria-pressed={active}
                       onClick={() => toggleInterest(value)}
                       className={[
-                        "flex min-h-[42px] w-full cursor-pointer items-center gap-[10px] rounded-[var(--radius-input)] border px-[12px] py-[8px] text-left text-[13px] leading-[1.35]",
+                        "flex min-h-[44px] w-full cursor-pointer items-center gap-[8px] rounded-[var(--radius-input)] border px-[10px] py-[7px] text-left text-[11.5px] leading-[1.3] xl:text-[12.5px]",
                         active
                           ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-accent"
                           : "border-hairline bg-tag font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
@@ -269,12 +301,12 @@ export default function EditProfilePage() {
                     >
                       <span
                         className={[
-                          "grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[6px] border",
+                          "grid h-[16px] w-[16px] shrink-0 place-items-center rounded-[5px] border",
                           active ? "border-accent bg-accent" : "border-strong",
                         ].join(" ")}
                       >
                         {active ? (
-                          <Icon name="Check" size={12} color="var(--text-on-accent)" strokeWidth={3} />
+                          <Icon name="Check" size={11} color="var(--text-on-accent)" strokeWidth={3} />
                         ) : null}
                       </span>
                       <span className="min-w-0 flex-1">{label}</span>
@@ -283,6 +315,8 @@ export default function EditProfilePage() {
                 })}
               </div>
             </section>
+
+            <ExperienceEditor experience={experience} onChange={setExperience} />
 
             <section className="flex flex-col gap-[10px]">
               <span className="text-[13px] font-semibold text-text-secondary">Socials</span>

@@ -31,6 +31,7 @@ import { ProfileActions } from "@/components/profile/ProfileActions";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { ProfileCrossSell } from "@/components/profile/ProfileCrossSell";
+import { ExperienceSection } from "@/components/profile/ExperienceSection";
 
 /**
  * THE profile screen. One template, owner and visitor alike.
@@ -254,6 +255,7 @@ function ProfileIdentity({
 
         <div className="flex flex-wrap items-center gap-x-[16px] gap-y-[7px]">
           {view.location ? <MetaItem icon="MapPin" text={view.location} /> : null}
+          {view.company ? <MetaItem icon="Building2" text={view.company} /> : null}
           {view.memberSince ? <MetaItem icon="Calendar" text={`On WAWU since ${view.memberSince}`} /> : null}
           {view.website ? (
             <a
@@ -367,7 +369,7 @@ function ProfileOwnerActions({
   );
 }
 
-function MetaItem({ icon, text }: { icon: "MapPin" | "Calendar"; text: string }) {
+function MetaItem({ icon, text }: { icon: "MapPin" | "Calendar" | "Building2"; text: string }) {
   return (
     <span className="inline-flex items-center gap-[6px] text-[12.5px] text-[var(--text-muted)]">
       <Icon name={icon} size={14} strokeWidth={2} />
@@ -471,6 +473,13 @@ function OverviewTab({
         <ProfessionalStanding listings={services} />
       ) : null}
 
+      {/*
+        UNDER Featured, not above it.
+
+        Somebody lands here deciding whether to buy or to pay for a message.
+        The work answers that; the history backs it up. Putting a job list
+        above the shelf would lead with the CV on a screen that is a shop.
+      */}
       {featured.length > 0 ? (
         <section className="flex flex-col gap-[12px]">
           <SectionHead title="Featured" href={`${isOwner ? "/create/library" : ""}` || undefined} />
@@ -493,6 +502,8 @@ function OverviewTab({
           actionHref={isOwner ? "/create/content" : "/explore/creators"}
         />
       )}
+
+      <ExperienceSection experience={view.experience} isOwner={isOwner} />
 
       {view.communities.length > 0 ? (
         <section className="flex flex-col gap-[12px]">

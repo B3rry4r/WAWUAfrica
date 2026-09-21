@@ -98,6 +98,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     replyTime: "Usually replies within 6 hours",
     categories: ["Business", "Trade", "Finance"],
     socials: { instagram: "adaezeokonkwo", website: "adaezeokonkwo.com" },
+    experience: [],
     content: [
       { id: "adaeze-cac7", title: "CAC in 7 days", kindLabel: "Course · 6 lessons", price: 2500, locked: true },
       { id: "adaeze-pricing", title: "Stall pricing", kindLabel: "Video · 12 min", price: 0, locked: false },
@@ -126,6 +127,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     dmResponseHours: 72,
     categories: ["Agriculture"],
     socials: {},
+    experience: [],
     content: [],
     communities: [],
     products: [],
@@ -146,6 +148,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     replyTime: "Usually replies within 2 hours",
     categories: ["Finance", "Business"],
     socials: { website: "funmiadeyemi.com" },
+    experience: [],
     content: [
       { id: "funmi-basics", title: "Bookkeeping basics", kindLabel: "Course · 10 lessons", price: 1500, locked: true },
       { id: "funmi-tax", title: "TVA in plain words", kindLabel: "Video · 9 min", price: 0, locked: false },
@@ -169,6 +172,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     replyTime: "Usually replies within 1 day",
     categories: ["Agriculture", "Trade"],
     socials: { instagram: "zainabagro" },
+    experience: [],
     content: [
       { id: "zainab-drip", title: "Drip farming setup", kindLabel: "Video · 14 min", price: 1000, locked: true },
       { id: "zainab-plan", title: "Seasonal planting plan", kindLabel: "PDF · 6 pages", price: 0, locked: false },
@@ -192,6 +196,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     replyTime: "Usually replies within 3 days",
     categories: ["Trade", "Career"],
     socials: {},
+    experience: [],
     content: [{ id: "musa-weld", title: "First welds", kindLabel: "Video · 11 min", price: 0, locked: false }],
     communities: [],
     products: [],
@@ -212,6 +217,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     replyTime: "Usually replies within 4 hours",
     categories: ["Creative arts", "Trade"],
     socials: { instagram: "ifeanyi.aba" },
+    experience: [],
     content: [
       { id: "ifeanyi-pattern", title: "Pattern drafting 101", kindLabel: "Course · 8 lessons", price: 3000, locked: true },
       { id: "ifeanyi-finish", title: "Clean finishing", kindLabel: "Video · 18 min", price: 0, locked: false },

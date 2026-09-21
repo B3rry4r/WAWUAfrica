@@ -1,4 +1,5 @@
 import type { AccountType, CreatorTier } from "./account";
+import type { ProfileExperience } from "./profile";
 
 /**
  * ONE tick.
@@ -186,6 +187,16 @@ export interface OwnProfile {
   plan: CreatorTier;
   stats: OwnProfileStats;
   interests: string[];
+  /** The organisation they are part of, beside the location in the header. */
+  company?: string;
+  /**
+   * Their own roles, newest first with the current one at the top.
+   *
+   * It rides on the profile read rather than having its own fetch: the header
+   * renders it on first paint, and a second request for a list that is almost
+   * always under ten rows buys nothing.
+   */
+  experience: ProfileExperience[];
   /**
    * Where a creator can be reached. Every one of these is a bare handle now,
    * with or without the "@": the API expands youtube, facebook and linkedin
@@ -223,6 +234,12 @@ export interface OwnProfileDraft {
   handle: string;
   bio: string;
   interests: string[];
+  /**
+   * Saved with the rest of the form, unlike `experience`, which is a list of
+   * rows each written by its own request. A single text field has nothing to
+   * gain from that and would only add a second way to fail a save.
+   */
+  company?: string;
   /**
    * Where a creator can be reached. Every one of these is a bare handle now,
    * with or without the "@": the API expands youtube, facebook and linkedin

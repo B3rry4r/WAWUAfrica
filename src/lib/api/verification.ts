@@ -1,4 +1,5 @@
 import type { AccountType, CreatorTier } from "@/types/account";
+import type { ProfileExperience } from "@/types/profile";
 import type {
   OwnProfile,
   OwnProfileDraft,
@@ -281,6 +282,9 @@ interface HubUserProfileResponse {
   facebookUrl: string | null;
   linkedinUrl: string | null;
   websiteUrl: string | null;
+  company?: string | null;
+  /** Server-ordered: current role first, then newest first. Never re-sorted. */
+  experience?: ProfileExperience[];
   avatarUrl: string | null;
   coverUrl: string | null;
 }
@@ -293,6 +297,7 @@ interface UpdateUserProfileBody {
   interests?: string[];
   bio?: string;
   handle?: string;
+  company?: string;
   instagramHandle?: string;
   whatsappHandle?: string;
   xHandle?: string;
@@ -389,6 +394,10 @@ export async function getOwnProfile(): Promise<OwnProfile> {
       plan,
       stats: { published, sales: undefined, followers: undefined },
       interests: me.interests ?? [],
+      company: me.company ?? undefined,
+      // `?? []` because a Hub that predates the column sends nothing, and an
+      // absent list means "no roles", not a header that cannot render.
+      experience: me.experience ?? [],
       socials: {
         instagram: me.instagramHandle ?? undefined,
         whatsapp: me.whatsappHandle ?? undefined,
@@ -435,6 +444,9 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
         interests: draft.interests,
         bio: draft.bio,
         handle: draft.handle,
+        // Free text, so it is sent even when empty and clears the field.
+        // The URL fields below are the exception, not this.
+        company: draft.company ?? "",
         instagramHandle: draft.socials.instagram ?? "",
         whatsappHandle: draft.socials.whatsapp ?? "",
         xHandle: draft.socials.x ?? "",
@@ -463,5 +475,77 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
     if (!isMockModeError(e)) throw e;
     // SEAM: replace with PATCH /api/hub/users/me
     return saveMockOwnProfile(draft);
+  }
+}
+
+/* ------------------------- the experience list -------------------------- */
+
+/**
+ * One role, added, changed or removed.
+ *
+ * These are three requests rather than part of `saveProfile` because each row
+ * is edited on its own: sending the whole list back on every save would make
+ * "delete the third one" a read-modify-write, and two open tabs would lose
+ * each other's rows. The server owns the ordering and the id, so each call
+ * returns the saved row rather than the caller reconstructing it.
+ *
+ * `startedOn` and `endedOn` are MONTHS ("2023-03"). The API rejects anything
+ * else, deliberately: a day component on a job history is a number somebody
+ * invented.
+ */
+export interface ExperienceDraft {
+  title: string;
+  company: string;
+  location?: string | null;
+  startedOn: string;
+  /** Omit or null for the role they hold now. */
+  endedOn?: string | null;
+  description?: string | null;
+}
+
+export async function addExperience(draft: ExperienceDraft): Promise<ProfileExperience> {
+  try {
+    return await apiFetch<ProfileExperience>("/api/hub/users/me/experience", {
+      method: "POST",
+      authed: true,
+      body: draft,
+    });
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with POST /api/hub/users/me/experience
+    const { addMockExperience } = await import("./mocks/verification");
+    return addMockExperience(draft);
+  }
+}
+
+export async function editExperience(
+  id: string,
+  draft: Partial<ExperienceDraft>,
+): Promise<ProfileExperience> {
+  try {
+    return await apiFetch<ProfileExperience>(`/api/hub/users/me/experience/${id}`, {
+      method: "PATCH",
+      authed: true,
+      body: draft,
+    });
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with PATCH /api/hub/users/me/experience/:id
+    const { editMockExperience } = await import("./mocks/verification");
+    return editMockExperience(id, draft);
+  }
+}
+
+export async function removeExperience(id: string): Promise<void> {
+  try {
+    await apiFetch<unknown>(`/api/hub/users/me/experience/${id}`, {
+      method: "DELETE",
+      authed: true,
+    });
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with DELETE /api/hub/users/me/experience/:id
+    const { removeMockExperience } = await import("./mocks/verification");
+    removeMockExperience(id);
   }
 }

@@ -72,6 +72,7 @@ export async function getMockCreatorProfile(wawuId: string): Promise<CreatorProf
     // every fixture creator would say more than the fixtures know.
     coverUrl: c.avatarUrl,
     socials: { instagram: c.handle ?? undefined, website: undefined },
+    experience: [],
     content: libraryItems
       .filter((i) => i.status !== "rejected")
       .map((i) => ({
