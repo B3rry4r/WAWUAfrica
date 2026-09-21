@@ -191,6 +191,18 @@ export interface TileCardProps {
    * Do not use it to decorate a catalogue.
    */
   iconTone?: TileIconTone;
+  /**
+   * `layout="tile"` only: let the subtitle wrap to two lines instead of
+   * truncating to one.
+   *
+   * The Services design puts a two-line description BESIDE the icon, not
+   * under it. `tile` is the right shape for that (icon left, text right) but
+   * its subtitle truncates, which is correct for a twelve-item catalogue
+   * where the line is a hint, and wrong here where the line is the service's
+   * actual description. Product owner, 21 Sep 2026: "that is not the design,
+   * the two line description is beside the icon".
+   */
+  subtitleLines?: 1 | 2;
   size?: TileCardSize;
   className?: string;
 }
@@ -219,6 +231,7 @@ export function TileCard({
   gradientClass,
   chevron = false,
   iconTone = "accent",
+  subtitleLines = 1,
   size = "md",
   className = "",
 }: TileCardProps) {
@@ -303,7 +316,9 @@ export function TileCard({
       these fit a desktop row-and-a-half instead of a page and a half.
     */
     const tileShell = [
-      "group flex w-full items-center gap-[11px] rounded-card border p-[13px] text-left",
+      `group w-full rounded-card border p-[13px] text-left ${
+        subtitleLines === 2 ? "flex flex-col gap-[8px]" : "flex items-center gap-[11px]"
+      }`,
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
       selected
         ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
@@ -313,6 +328,44 @@ export function TileCard({
         : "cursor-pointer transition-colors duration-150 hover:border-[var(--border-strong)] hover:bg-[var(--surface-elevated)]",
       className,
     ].join(" ");
+
+    if (subtitleLines === 2) {
+      const iconBadge = iconImageSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={iconImageSrc} alt="" className="h-[30px] w-[30px] shrink-0 rounded-input object-contain" />
+      ) : icon ? (
+        <span
+          className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-input ${ICON_TONE[iconTone].badge}`}
+        >
+          <Icon name={icon} size={17} color={ICON_TONE[iconTone].color} strokeWidth={1.9} />
+        </span>
+      ) : null;
+      const stackBody = (
+        <>
+          <span className="flex w-full items-center gap-[9px]">
+            {iconBadge}
+            <span className="min-w-0 flex-1 text-[12px] font-medium leading-tight text-text-primary">{title}</span>
+            {chevron ? <Icon name="ChevronRight" size={15} color="var(--text-muted)" className="shrink-0" /> : null}
+          </span>
+          {subtitle ? (
+            <span className="line-clamp-2 text-[10.5px] leading-[1.3] text-text-secondary">{subtitle}</span>
+          ) : null}
+        </>
+      );
+      if (disabled) return <div className={tileShell}>{stackBody}</div>;
+      if (href) {
+        return (
+          <Link href={href} className={`${tileShell} no-underline`}>
+            {stackBody}
+          </Link>
+        );
+      }
+      return (
+        <button type="button" onClick={onClick} className={tileShell}>
+          {stackBody}
+        </button>
+      );
+    }
 
     const tileBody = (
       <>
@@ -329,7 +382,7 @@ export function TileCard({
         <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
           <span className="block truncate text-[12.5px] font-medium leading-tight text-text-primary">{title}</span>
           {subtitle ? (
-            <span className="block truncate text-[11.5px] leading-tight text-text-secondary">{subtitle}</span>
+            <span className="block truncate text-[11.5px] leading-[1.35] text-text-secondary">{subtitle}</span>
           ) : null}
           {meta ? (
             <span className="block truncate text-[11.5px] font-semibold leading-tight text-accent">{meta}</span>

@@ -16,7 +16,6 @@ import {
   Input,
   ListRow,
   SectionHeader,
-  Sheet,
   Skeleton,
   TileCard,
 } from "@/components/ui";
@@ -33,8 +32,6 @@ const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text
 
 /** Chip value: a real group, or the "everything" chip the design draws first. */
 type GroupFilter = ServiceGroup | "all";
-/** The filter sheet's second question. */
-type Availability = "all" | "open";
 
 /**
  * One service, as a DESCRIPTIVE CARD.
@@ -64,14 +61,27 @@ function ServiceCard({ s, open }: { s: PlatformService; open: boolean }) {
   // broken rather than as open.
   const href = s.href ?? (s.slug ? `/services/${s.slug}` : undefined);
   return (
+    /*
+      `tile`, not `action`: the design puts the icon on the LEFT with the
+      two-line description beside it, and `action` stacks them vertically,
+      which made every card tall enough that eight of them became a page of
+      scrolling and left Bills Payment looking odd beside it. Product owner,
+      21 Sep 2026: "the services cards are too huge... the two line
+      description is beside the icon".
+
+      No "Coming soon" text either, by the same instruction: it added a third
+      line to some cards and not others, so a tidy grid came out ragged. A
+      closed service is already unmistakable - `disabled` dims the whole card
+      and drops its link - and its detail screen says so in full.
+    */
     <TileCard
-      layout="action"
+      layout="tile"
+      subtitleLines={2}
       title={s.brand}
       subtitle={s.blurb}
       icon={s.icon}
       iconImageSrc={s.iconImageSrc}
-      {...(open ? {} : { meta: "Coming soon" })}
-      {...(open && href ? { href } : { disabled: true })}
+      {...(open && href ? { href, chevron: true } : { disabled: true })}
     />
   );
 }
@@ -90,13 +100,9 @@ function ServiceCard({ s, open }: { s: PlatformService; open: boolean }) {
 function ServicesHero({
   query,
   onQuery,
-  onOpenFilters,
-  filtered,
 }: {
   query: string;
   onQuery: (v: string) => void;
-  onOpenFilters: () => void;
-  filtered: boolean;
 }) {
   return (
     <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-[var(--accent-deep)]">
@@ -127,20 +133,6 @@ function ServicesHero({
             onChange={(e) => onQuery(e.target.value)}
             className="min-w-0 flex-1"
           />
-          <button
-            type="button"
-            onClick={onOpenFilters}
-            aria-label="Filter services"
-            className={[
-              "grid h-[52px] w-[52px] shrink-0 place-items-center rounded-input border bg-[var(--surface-input)] transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
-              filtered
-                ? "border-[var(--border-selected)] text-[var(--accent)]"
-                : "border-[var(--border-hairline)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]",
-            ].join(" ")}
-          >
-            <Icon name="SlidersHorizontal" size={19} strokeWidth={2} />
-          </button>
         </div>
       </div>
     </section>
@@ -220,8 +212,6 @@ export default function ServicesPage() {
   const [applications, setApplications] = useState<ServiceApplication[]>([]);
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<GroupFilter>("all");
-  const [availability, setAvailability] = useState<Availability>("all");
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -305,13 +295,12 @@ export default function ServicesPage() {
     const q = query.trim().toLowerCase();
     return ordered.filter((s) => {
       if (group !== "all" && s.group !== group) return false;
-      if (availability === "open" && !isOpen(s)) return false;
       if (!q) return true;
       return `${s.brand} ${s.label} ${s.blurb}`.toLowerCase().includes(q);
     });
-  }, [ordered, group, availability, query, isOpen]);
+  }, [ordered, group, query, isOpen]);
 
-  const filtered = group !== "all" || availability !== "all" || query.trim().length > 0;
+  const filtered = group !== "all" || query.trim().length > 0;
   const featured =
     applications.find((a) => a.status === "under_review" || a.status === "pending") ?? applications[0] ?? null;
 
@@ -339,8 +328,6 @@ export default function ServicesPage() {
       <ServicesHero
         query={query}
         onQuery={setQuery}
-        onOpenFilters={() => setFiltersOpen(true)}
-        filtered={filtered}
       />
 
       {/* One scrolling line, never a wrapping wall of pills (brief C5). */}
@@ -368,7 +355,6 @@ export default function ServicesPage() {
           onAction={() => {
             setQuery("");
             setGroup("all");
-            setAvailability("all");
           }}
         />
       )}
@@ -462,55 +448,6 @@ export default function ServicesPage() {
         rather than a bespoke toggle, so the sheet uses the same control the
         rail does.
       */}
-      <Sheet
-        open={filtersOpen}
-        onClose={() => setFiltersOpen(false)}
-        title="Filter services"
-        caption="Narrow the list down to what you are looking for."
-        desktop="modal"
-      >
-        <div className="flex flex-col gap-[18px]">
-          <div className="flex flex-col gap-[10px]">
-            <span className={eyebrow}>Kind</span>
-            <ChoiceChips
-              ariaLabel="Filter services by kind"
-              value={group}
-              onSelect={(v) => setGroup(v)}
-              options={groupOptions}
-            />
-          </div>
-
-          <div className="flex flex-col gap-[10px]">
-            <span className={eyebrow}>Availability</span>
-            <ChoiceChips
-              ariaLabel="Filter services by availability"
-              value={availability}
-              onSelect={(v) => setAvailability(v)}
-              options={[
-                { value: "all" as Availability, label: "Everything" },
-                { value: "open" as Availability, label: "Open now" },
-              ]}
-            />
-          </div>
-
-          <div className="flex gap-[10px]">
-            <Button
-              variant="secondary"
-              full
-              onClick={() => {
-                setQuery("");
-                setGroup("all");
-                setAvailability("all");
-              }}
-            >
-              Clear
-            </Button>
-            <Button full onClick={() => setFiltersOpen(false)}>
-              Show {visible.length} {visible.length === 1 ? "service" : "services"}
-            </Button>
-          </div>
-        </div>
-      </Sheet>
     </>
   );
 }
