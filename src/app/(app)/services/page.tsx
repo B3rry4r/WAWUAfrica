@@ -132,8 +132,25 @@ export default function ServicesPage() {
   const statusOf = (slug?: string) =>
     slug ? services.find((c) => (c.slug ?? c.id) === slug)?.status : undefined;
   const isOpen = (s: PlatformService) => {
+    /*
+      `soon` WINS. The catalogue can CLOSE a service, never open one.
+
+      This had it backwards and the bug was visible: PLATFORM_SERVICES marks
+      Pensions and Loans `soon: true`, the partner catalogue returns both as
+      `live`, and because the catalogue was consulted first they rendered as
+      open and tappable on /services while the landing page and Explore, which
+      read `soon` directly, still showed them as coming soon. Three surfaces,
+      two answers, from the one list that exists to stop exactly that.
+
+      The two flags are not the same question. `soon` is OUR product decision
+      about whether a service is launched at all; catalogue `status` is the
+      PARTNER's answer about whether their side is up right now. A partner
+      being ready cannot launch a product we have not launched, so `soon` is
+      checked first and short-circuits.
+    */
+    if (s.soon) return false;
     const catalogue = statusOf(s.slug);
-    return catalogue ? catalogue === "live" : !s.soon;
+    return catalogue ? catalogue === "live" : true;
   };
   const ordered = orderedServices(isOpen);
   const live = ordered.filter(isOpen);
