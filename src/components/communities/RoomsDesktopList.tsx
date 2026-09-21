@@ -53,7 +53,7 @@ export function RoomsDesktopList({
         title="You haven't joined any"
         caption={
           canHost
-            ? "Join a community to see its room here, or host one of your own. You keep 90% of every credit spent in it."
+            ? "Join a community to see its room here, or host one of your own. You keep 85% of every credit spent in it."
             : "Join a community from the app to see its room here, reading costs nothing, sending costs one credit."
         }
         action={canHost ? "Start a community" : undefined}

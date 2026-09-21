@@ -75,8 +75,8 @@ export function verificationCopy(status: KycStatus): VerificationCopy | null {
  * had been turned down that somebody was still looking at them.
  *
  * Deliberately says "Identity" nowhere and "badge" nowhere: callers pair it
- * with a row title. Never use it to label the public verification ladder —
- * that is a different system (VerificationSubmission, /profile/verification).
+ * with a row title. Never use it to label the two paid verification ticks —
+ * that is a different system (/profile/verification).
  */
 export const KYC_STATUS_LABEL: Record<KycStatus, string> = {
   not_started: "Not started",

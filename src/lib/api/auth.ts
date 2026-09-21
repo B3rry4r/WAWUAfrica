@@ -9,7 +9,9 @@ import type {
   NewPasswordPayload,
   SessionUser,
 } from "@/types/auth";
-import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "@/types/account";
+import type { AccountType, CreatorTier, KycStatus } from "@/types/account";
+import { NO_VERIFICATION } from "@/types/verification";
+import { toVerificationState } from "./verification";
 import { MAX_ITEMS_PER_ACCOUNT } from "@/lib/auth/gates";
 import { apiFetch, ApiError, delay, isMockModeError } from "@/lib/api/client";
 import { WAWU_ID_BASE } from "@/lib/api/config";
@@ -49,9 +51,23 @@ interface WawuIdUser {
   state: string | null;
   gender: string | null;
   occupation: string | null;
-  /** 6-value union on WAWU ID; the frontend's VerificationLevel is a 5-value subset — see mapVerificationTier. */
-  verificationTier: string;
-  trustScore: number;
+  /**
+   * The two-tick contract, the same shape WAWU ID, the Hub and this app all
+   * carry. Optional because the migration is expand-only and an instance
+   * that has not shipped the columns yet still answers /auth/login — a
+   * response without it renders as no tick, never as a crash.
+   */
+  verification?: unknown;
+  /**
+   * DEAD, both of them. `verificationTier` was the five-rung ladder and
+   * `trustScore` its score; both are gone as product surfaces and neither is
+   * read anywhere in this app any more. They are declared so the shape
+   * matches what the wire still sends during the expand phase, and so the
+   * next person greps them and finds this note instead of wiring them back
+   * to a badge.
+   */
+  verificationTier?: string;
+  trustScore?: number;
   status: string;
 }
 
@@ -91,6 +107,13 @@ interface HubMeResponse {
   accountType: AccountType | null;
   interests: string[];
   avatarUrl: string | null;
+  /**
+   * The two-tick contract, as the Hub sees it. Preferred over WAWU ID's copy
+   * on sign-in: the Hub is where a purchase lands, so it is the one that has
+   * seen the most recent grant. Optional, because the migration is
+   * expand-only and an instance may not carry it yet.
+   */
+  verification?: unknown;
 }
 
 interface HubCreatorStateResponse {
@@ -120,30 +143,14 @@ function toWawuIdGender(gender: SignUpPayload["gender"]): string | undefined {
   return gender === "male" || gender === "female" ? gender : undefined;
 }
 
-const KNOWN_VERIFICATION_LEVELS: readonly VerificationLevel[] = [
-  "basic",
-  "verified_user",
-  "verified_business",
-  "certified_professional",
-  "trusted_partner",
-];
-
-/**
- * WAWU ID's verificationTier is a 6-value union; the frontend's
- * VerificationLevel (src/types/account.ts) has 5 — it is missing 'official'
- * (an admin/partner-provisioned tier, see WAWU-ID auth.service.ts
- * updateVerificationTier's ALLOWED list). Adding 'official' to the frontend
- * union would require also updating three exhaustive
- * Record<VerificationLevel, ...> maps outside this task's file scope
- * (VERIFY_TIER_LABELS, VerificationBadge's colorClass, VerificationApplyForm's
- * REQUIREMENTS) — out of scope for this pass. Folding 'official' onto the
- * existing top tier ('trusted_partner') is the narrower, in-scope choice.
- * Revisit if 'official' WAWU ID accounts become reachable in the web app.
+/*
+ * REMOVED: KNOWN_VERIFICATION_LEVELS / mapVerificationTier.
+ *
+ * They folded WAWU ID's 6-value verificationTier onto the frontend's 5-value
+ * ladder. There is no ladder. `toVerificationState` (src/lib/api/verification.ts)
+ * is now the single derivation in this repo, it reads the two-tick contract
+ * directly, and nothing maps a tier to anything.
  */
-function mapVerificationTier(tier: string): VerificationLevel {
-  if (tier === "official") return "trusted_partner";
-  return (KNOWN_VERIFICATION_LEVELS as string[]).includes(tier) ? (tier as VerificationLevel) : "basic";
-}
 
 function toCreatorState(state: HubCreatorStateResponse): CreatorState {
   return {
@@ -243,7 +250,7 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       email: result.user.email ?? payload.email,
       accountType: payload.accountType,
       interests: [],
-      verification: mapVerificationTier(result.user.verificationTier),
+      verification: toVerificationState(result.user.verification),
       creator: null,
       avatarUrl: null,
     };
@@ -257,7 +264,7 @@ export async function signUp(payload: SignUpPayload): Promise<AuthResponse> {
       email: payload.email,
       accountType: payload.accountType,
       interests: [],
-      verification: "basic",
+      verification: NO_VERIFICATION,
       creator: null,
       avatarUrl: null,
     };
@@ -285,7 +292,7 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
       email: result.user.email ?? payload.email,
       accountType: "user",
       interests: [],
-      verification: mapVerificationTier(result.user.verificationTier),
+      verification: toVerificationState(result.user.verification),
       creator: null,
       avatarUrl: null,
     };
@@ -299,7 +306,7 @@ export async function verifyOtp(payload: OtpVerifyPayload): Promise<AuthResponse
       email: payload.email,
       accountType: "user",
       interests: [],
-      verification: "basic",
+      verification: NO_VERIFICATION,
       creator: null,
       avatarUrl: null,
     };
@@ -375,7 +382,9 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       email: result.user.email ?? payload.email,
       accountType,
       interests: me.interests ?? [],
-      verification: mapVerificationTier(result.user.verificationTier),
+      // The Hub's answer when it has one, WAWU ID's otherwise. Both carry the
+      // same contract; only one of them is written to when a tick is bought.
+      verification: toVerificationState(me.verification ?? result.user.verification),
       creator,
       avatarUrl: me.avatarUrl ?? null,
     };
@@ -390,7 +399,7 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       email: payload.email,
       accountType: sessionStorage.getAccountType() ?? "user",
       interests: [],
-      verification: "basic",
+      verification: NO_VERIFICATION,
       creator: null,
       avatarUrl: null,
     };

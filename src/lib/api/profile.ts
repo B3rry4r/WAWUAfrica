@@ -2,6 +2,7 @@ import type { CreatorProfile, ProfileContentItem, ProfileView } from "@/types/pr
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
 import { ApiError, apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import { getCreators } from "./explore";
+import { toVerificationState } from "./verification";
 import {
   getMockProfileFollowing,
   isMockCommunityJoined,
@@ -114,6 +115,8 @@ interface RealPublicCreatorProfile {
   dmEnabled: boolean;
   dmPrice: number | null;
   dmResponseHours?: number;
+  /** Two-tick contract. Read through toVerificationState, never raw. */
+  verification?: unknown;
   evgScore: number;
   contentCount: number;
   followerCount: number;
@@ -137,8 +140,10 @@ function formatFollowerCount(n: number): string {
  *    `handle`. WAWU ID's firstName/lastName is only readable for the
  *    CALLER's own session (via /me claims), never for another user being
  *    viewed. Falls back to `handle` (or the raw wawuId if even that is unset).
- *  - `verification`: the WAWU ID verification ladder for another user isn't
- *    exposed by this or any other endpoint. Defaults to "basic".
+ *  - `verification`: the two ticks. REAL now, when the backend sends them —
+ *    the public-profile aggregate is the one read that can answer this for
+ *    somebody else. An instance that has not shipped the columns yet sends
+ *    nothing, and nothing renders no tick (never a tick we cannot back).
  *  - `dmEnabled` / `dmPrice`: now REAL. These used to be hardcoded
  *    `false`/`0` because the public-profile aggregate did not select them and
  *    no other endpoint exposed another user's DM settings — so every creator
@@ -216,7 +221,7 @@ function toCreatorProfile(
     // "WAWU creator" fallback name two lines up — same bug, one line lower.
     handle: real.handle ?? "",
     bio: real.bio ?? "",
-    verification: "basic",
+    verification: toVerificationState(real.verification),
     plan: real.tier,
     stats: {
       followers: formatFollowerCount(real.followerCount),

@@ -1,5 +1,5 @@
 import type { CategoryId } from "@/lib/categories";
-import type { VerificationLevel } from "./account";
+import type { VerificationState } from "./verification";
 
 /**
  * What a professional offers their credential as evidence of.
@@ -45,7 +45,7 @@ export interface ProfessionalListing {
   category: CategoryId;
   headline: string;
   services: string[];
-  verification: VerificationLevel;
+  verification: VerificationState;
   pieceCount: number;
   /** Whether they can be paid-messaged right now. */
   dmEnabled: boolean;

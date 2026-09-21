@@ -1,13 +1,16 @@
 /**
  * Notification kinds. The design file (WAWU Notifications Search.dc.html)
  * is the source of truth: its two list screens show 11 kinds and the batch
- * header claims "Twelve kinds of news". `trial_ending` is derived from the
- * WAWU Credits trial (7 days, docs/01_SPEC.md §3) so the fan-side of the
- * credits system is covered alongside the fan-side refund.
+ * header claims "Twelve kinds of news".
  *
- * `subscription_renewal` (creator tier renewal/billing) was removed with
- * subscriptions: nothing renews and nothing is billed, so the notification had
- * no screen to open. A `kind` this frontend does not know still falls through
+ * Two kinds have been removed since that design was drawn, both because the
+ * thing they reported stopped existing:
+ *   - `subscription_renewal` (creator tier renewal/billing) went with
+ *     subscriptions: nothing renews and nothing is billed.
+ *   - `trial_ending` went with the 7-day WAWU Credits trial, removed on the
+ *     product owner's instruction, 21 Sep 2026. There is no trial to end, so
+ *     a notification warning that one is ending would be a lie with a Buy
+ *     button on it. A `kind` this frontend does not know still falls through
  * actionHrefFor's default rather than breaking the list.
  *
  * 1. dm_deadline            — reply before the 24h window closes (urgent, action)
@@ -20,7 +23,6 @@
  * 8. content_rejected       — content not approved, slot returned
  * 9. new_follower          — new follower
  * 10. tip_received          — tip received (money)
- * 11. trial_ending          — credits trial ending/ended (count, fan-side)
  *
  * Build brief C8 adds the two kinds that are not a report of a transaction:
  * 12. campaign               — an admin-composed announcement or promotion,
@@ -44,7 +46,6 @@ export type NotificationKind =
   | "content_rejected"
   | "new_follower"
   | "tip_received"
-  | "trial_ending"
   | "campaign"
   | "verify_reminder";
 

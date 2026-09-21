@@ -1,5 +1,6 @@
 import type { CreatorProfile } from "@/types/profile";
 import { delay } from "../client";
+import { mockVerification } from "./verification";
 
 /**
  * Mock follow state shared across every surface (explore rows, profile headers).
@@ -83,7 +84,10 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     name: "Adaeze Okonkwo",
     handle: "adaezeokonkwo",
     bio: "I turn market traders into registered businesses. CAC, pricing, bookkeeping, plain and practical.",
-    verification: "certified_professional",
+    // Holds BOTH ticks. Deliberate: somebody who paid for both shows both,
+    // and a fixture set where that never happens is a fixture set that never
+    // tests it.
+    verification: mockVerification(["creator", "professional"]),
     plan: "pro",
     stats: { followers: "2.4k", piecesLabel: "Pieces", pieces: 4, evg: 1240 },
     dmEnabled: true,
@@ -114,7 +118,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     name: "Chidi Umeh",
     handle: "chidiumeh",
     bio: "New creator sharing what I learn about local farming and food markets.",
-    verification: "basic",
+    verification: mockVerification([]),
     plan: "basic",
     stats: { followers: "12", piecesLabel: "Pieces", pieces: 0, evg: 4 },
     dmEnabled: false,
@@ -131,7 +135,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     name: "Funmi Adeyemi",
     handle: "funmiadeyemi",
     bio: "Accountant. Small-business books, taxes, and the numbers that keep you afloat.",
-    verification: "certified_professional",
+    verification: mockVerification(["professional"]),
     plan: "basic",
     stats: { followers: "980", piecesLabel: "Pieces", pieces: 6, evg: 820 },
     dmEnabled: true,
@@ -154,7 +158,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     name: "Zainab Bello",
     handle: "zainabbello",
     bio: "Agribusiness trainer. From plot to profit, drip farming, records, and market timing.",
-    verification: "verified_business",
+    verification: mockVerification(["professional"]),
     plan: "basic",
     stats: { followers: "1.6k", piecesLabel: "Pieces", pieces: 3, evg: 540 },
     dmEnabled: true,
@@ -177,7 +181,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     name: "Musa Danladi",
     handle: "musadanladi",
     bio: "Welder and trainer. Teaching the trade that feeds the whole block.",
-    verification: "basic",
+    verification: mockVerification([]),
     plan: "basic",
     stats: { followers: "410", piecesLabel: "Pieces", pieces: 3, evg: 210 },
     dmEnabled: false,
@@ -197,7 +201,7 @@ export const MOCK_PROFILES: Record<string, CreatorProfile> = {
     name: "Ifeanyi Nwosu",
     handle: "ifeanyinwosu",
     bio: "Fashion designer. Patterns, finishing, and turning a customer's idea into a sale.",
-    verification: "verified_business",
+    verification: mockVerification(["professional"]),
     plan: "pro",
     stats: { followers: "3.1k", piecesLabel: "Pieces", pieces: 5, evg: 1980 },
     dmEnabled: true,

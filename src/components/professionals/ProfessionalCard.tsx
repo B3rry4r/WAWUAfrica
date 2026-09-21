@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import { VerificationTicks } from "@/components/ui/VerificationTicks";
 import { formatNaira } from "@/lib/format";
 import { CATEGORIES } from "@/lib/categories";
 import type { ProfessionalListing } from "@/types/professional";
@@ -43,7 +43,7 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalListing }) {
             <span className="truncate text-[15px] font-semibold text-[var(--text-primary)]">
               {pro.name}
             </span>
-            <VerificationBadge tier={pro.verification} size={15} />
+            <VerificationTicks verification={pro.verification} size="sm" />
           </span>
           <span className="truncate text-[13px] text-[var(--text-secondary)]">
             {pro.headline}

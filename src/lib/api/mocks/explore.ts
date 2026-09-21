@@ -2,6 +2,7 @@ import type { ExploreCategoryId } from "@/types/explore";
 import { EXPLORE_CATEGORIES } from "@/types/explore";
 import { delay } from "../client";
 import { MOCK_PROFILE_FOLLOWING, toggleMockProfileFollow } from "./profile";
+import { mockVerification } from "./verification";
 
 /*
   FIXTURE PHOTOGRAPHS.
@@ -29,7 +30,7 @@ const creators = [
     avatarUrl: "/mock/creators/p1.jpg",
     field: "Business Strategist",
     pieceCount: 4,
-    verification: "certified_professional" as const,
+    verification: mockVerification(["creator", "professional"]),
     following: false,
     category: "business_entrepreneurship" as ExploreCategoryId,
   },
@@ -40,7 +41,7 @@ const creators = [
     avatarUrl: "/mock/creators/p2.jpg",
     field: "Accountant",
     pieceCount: 6,
-    verification: "certified_professional" as const,
+    verification: mockVerification(["professional"]),
     following: false,
     category: "finance" as ExploreCategoryId,
   },
@@ -51,7 +52,7 @@ const creators = [
     avatarUrl: "/mock/creators/p3.jpg",
     field: "Agribusiness Trainer",
     pieceCount: 3,
-    verification: "verified_business" as const,
+    verification: mockVerification(["professional"]),
     following: true,
     category: "agriculture_food" as ExploreCategoryId,
   },
@@ -62,6 +63,7 @@ const creators = [
     avatarUrl: "/mock/creators/p4.jpg",
     field: "Welder and trainer",
     pieceCount: 3,
+    verification: mockVerification([]),
     following: false,
     category: "trade_commerce" as ExploreCategoryId,
   },
@@ -72,7 +74,7 @@ const creators = [
     avatarUrl: "/mock/creators/p5.jpg",
     field: "Fashion Designer",
     pieceCount: 5,
-    verification: "verified_business" as const,
+    verification: mockVerification(["professional"]),
     following: false,
     category: "entertainment_creative" as ExploreCategoryId,
   },

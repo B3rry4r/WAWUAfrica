@@ -1,5 +1,5 @@
 import type { CreatorDiscovery } from "@/types/explore";
-import { Avatar, MediaCard, VerificationBadge } from "@/components/ui";
+import { Avatar, MediaCard, VerificationTicks } from "@/components/ui";
 import { FollowButton } from "@/components/shared/FollowButton";
 
 /**
@@ -32,9 +32,7 @@ export function CreatorGridCard({ creator }: { creator: CreatorDiscovery }) {
         className="w-full"
         fallback={<Avatar src={null} initial={creator.name.charAt(0)} size={64} />}
         title={display}
-        titleBadge={
-          creator.verification ? <VerificationBadge tier={creator.verification} size={14} /> : undefined
-        }
+        titleBadge={<VerificationTicks verification={creator.verification} size="xs" />}
         caption={creator.field || undefined}
         // The Follow pill's own space, reserved inside the scrim so the name
         // and role are never pushed behind the button laid over them.

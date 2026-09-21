@@ -54,7 +54,7 @@ export async function getMockCreatorProfile(wawuId: string): Promise<CreatorProf
     name: c.name,
     handle: c.handle ?? "",
     bio: BIOS[c.wawuId] ?? "",
-    verification: c.verification ?? "basic",
+    verification: c.verification,
     plan: "basic",
     stats: {
       followers: "2.4k",

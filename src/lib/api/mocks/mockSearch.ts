@@ -1,14 +1,15 @@
 import type { SearchResponse, SearchResults } from "@/types/search";
 import type { ContentPiece } from "@/types/content";
 import { mockContent } from "./mockContent";
+import { mockVerification } from "./verification";
 
 const searchContent = mockContent.filter((c) => c.accessType === "free" || c.title.includes("book") || c.title.toLowerCase().includes("book"));
 
 // SEAM: replace with GET /api/hub/search/suggested-creators
 export const mockSearchCreators = [
-  { wawuId: "wawu_funmi", fullName: "Funmi Adeyemi", headline: "Accountant", location: "Lagos", verificationLevel: "certified_professional" as const, pieceCount: 6 },
-  { wawuId: "wawu_adaeze", fullName: "Adaeze Okonkwo", headline: "Business Strategist", location: "Enugu", verificationLevel: "certified_professional" as const, pieceCount: 4 },
-  { wawuId: "wawu_musa", fullName: "Musa Danladi", headline: "Welder and trainer", location: "Kaduna", verificationLevel: "verified_user" as const, pieceCount: 3 },
+  { wawuId: "wawu_funmi", fullName: "Funmi Adeyemi", headline: "Accountant", location: "Lagos", verification: mockVerification(["professional"]), pieceCount: 6 },
+  { wawuId: "wawu_adaeze", fullName: "Adaeze Okonkwo", headline: "Business Strategist", location: "Enugu", verification: mockVerification(["creator", "professional"]), pieceCount: 4 },
+  { wawuId: "wawu_musa", fullName: "Musa Danladi", headline: "Welder and trainer", location: "Kaduna", verification: mockVerification(["creator"]), pieceCount: 3 },
 ];
 
 // SEAM: replace with GET /api/hub/search/suggested-communities

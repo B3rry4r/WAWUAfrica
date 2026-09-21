@@ -77,6 +77,22 @@ export const TILE_GRID =
 export const ICON_GRID =
   "grid grid-cols-4 items-start gap-x-[6px] gap-y-[18px] sm:grid-cols-6 dt:grid-cols-8";
 
+export type TileIconTone = "accent" | "aqua" | "lime" | "coral" | "yellow";
+
+/**
+ * Badge fill and glyph colour per tone. The fill is derived from the same
+ * token as the glyph with color-mix rather than being a second hardcoded
+ * value, so a token change moves both together and no raw hex appears here
+ * (CLAUDE.md, and the `hardcoded_signals` gate).
+ */
+const ICON_TONE: Record<TileIconTone, { badge: string; color: string }> = {
+  accent: { badge: "bg-[var(--accent-tint)]", color: "var(--accent)" },
+  aqua: { badge: "bg-[color-mix(in_srgb,var(--brand-aqua)_16%,transparent)]", color: "var(--brand-aqua)" },
+  lime: { badge: "bg-[color-mix(in_srgb,var(--brand-lime)_16%,transparent)]", color: "var(--brand-lime)" },
+  coral: { badge: "bg-[color-mix(in_srgb,var(--brand-coral)_16%,transparent)]", color: "var(--brand-coral)" },
+  yellow: { badge: "bg-[color-mix(in_srgb,var(--brand-yellow)_16%,transparent)]", color: "var(--brand-yellow)" },
+};
+
 export type TileCardSize = "sm" | "md" | "lg";
 
 const SIZE: Record<TileCardSize, string> = {
@@ -112,6 +128,15 @@ export interface TileCardProps {
    * and be the actual slides, the write-ups below them" — after the gradient
    * version read as a wall of mismatched colours once every card carried a
    * supplied icon rather than a single lucide glyph.
+   * "action": the Create-hub action card. A card shell like "tile", but
+   * VERTICAL: coloured icon badge on top, title under it, and a subtitle that
+   * WRAPS to two lines instead of truncating. Use it for a short set of
+   * distinct acts where the one line under the title is load-bearing copy
+   * rather than a hint - on the Create hub the Event card's line is what
+   * tells an unverified creator they need a tick, and "Needs a veri..." says
+   * nothing. "tile" keeps its single truncated line: it is for catalogues of
+   * twelve, where the subtitle is a hint and vertical cards would double the
+   * page height.
    * "tile": the restrained grid card from build brief A5/C6. A neutral
    * surface, a hairline border, one small accent-tinted icon and a short
    * label. It replaces "overlay" everywhere a grid is a LIST OF CHOICES
@@ -120,7 +145,7 @@ export interface TileCardProps {
    * Height comes from the content, so a row of them stays a row instead of
    * stretching down a desktop page.
    */
-  layout?: "overlay" | "stacked" | "tile";
+  layout?: "overlay" | "stacked" | "tile" | "action";
   href?: string;
   onClick?: () => void;
   /** Greys the card and drops the link — for a service that is not open yet. */
@@ -137,6 +162,23 @@ export interface TileCardProps {
    * on the "apply to be listed" and "offer your services" rebuilds.
    */
   chevron?: boolean;
+  /**
+   * `layout="tile"` only: which brand token tints the icon badge. Defaults to
+   * the accent, which is what every existing caller gets.
+   *
+   * This is NOT the multi-colour block tile build brief A5 throws out. That
+   * one coloured the whole CARD, and the colour was `index % 7` - it carried
+   * no meaning, so twelve services read as twelve unrelated products. Here
+   * the card stays neutral and only the 34px glyph badge takes colour, and
+   * the caller chooses it per ITEM rather than per position, so the same
+   * thing is the same colour every time you see it.
+   *
+   * Added for the Create hub, where refs/target-home-mobile.jpg's action row
+   * is the reference: dark cards, one brightly coloured icon each. Use it
+   * where a short list of DIFFERENT ACTS needs telling apart at a glance.
+   * Do not use it to decorate a catalogue.
+   */
+  iconTone?: TileIconTone;
   size?: TileCardSize;
   className?: string;
 }
@@ -164,9 +206,76 @@ export function TileCard({
   index = 0,
   gradientClass,
   chevron = false,
+  iconTone = "accent",
   size = "md",
   className = "",
 }: TileCardProps) {
+  if (layout === "action") {
+    /*
+      refs/target-home-mobile.jpg's action row is the reference: a dark card,
+      one brightly coloured icon, a bold title, a short line under it.
+
+      Two deliberate differences from "tile", both forced by measurement
+      rather than taste. The icon leads from ABOVE instead of the left, which
+      hands the full card width to the text; and the subtitle wraps to two
+      lines instead of truncating. At 390px a two-column grid leaves a tile
+      about 170px wide, of which the horizontal "tile" layout spends 34px on
+      the icon badge and 16px on the chevron - the remaining ~80px truncated
+      every subtitle on the Create hub, including the one that exists to tell
+      an unverified creator they need a tick.
+
+      Still inside build brief A5: the CARD is neutral, only the glyph badge
+      takes colour. See `iconTone`.
+    */
+    const actionShell = [
+      "group flex w-full flex-col items-start gap-[10px] rounded-card border p-[14px] text-left",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
+      selected
+        ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
+        : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
+      disabled
+        ? "opacity-50"
+        : "cursor-pointer transition-colors duration-150 hover:border-[var(--border-strong)] hover:bg-[var(--surface-elevated)]",
+      className,
+    ].join(" ");
+
+    const actionBody = (
+      <>
+        {iconImageSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={iconImageSrc} alt="" className="h-[38px] w-[38px] shrink-0 rounded-input object-contain" />
+        ) : icon ? (
+          <span
+            className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-input ${ICON_TONE[iconTone].badge}`}
+          >
+            <Icon name={icon} size={20} color={ICON_TONE[iconTone].color} strokeWidth={1.9} />
+          </span>
+        ) : null}
+        <span className="flex min-w-0 flex-col gap-[3px]">
+          <span className="text-[14.5px] font-bold leading-tight tracking-[-0.01em] text-text-primary">{title}</span>
+          {subtitle ? (
+            <span className="text-[12px] leading-[1.35] text-text-secondary">{subtitle}</span>
+          ) : null}
+          {meta ? <span className="text-[12px] font-semibold leading-[1.35] text-accent">{meta}</span> : null}
+        </span>
+      </>
+    );
+
+    if (disabled) return <div className={actionShell}>{actionBody}</div>;
+    if (href) {
+      return (
+        <Link href={href} className={`${actionShell} no-underline`}>
+          {actionBody}
+        </Link>
+      );
+    }
+    return (
+      <button type="button" onClick={onClick} className={actionShell}>
+        {actionBody}
+      </button>
+    );
+  }
+
   if (layout === "tile") {
     /*
       The restrained grid card (build brief A5, C6).
@@ -199,8 +308,10 @@ export function TileCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={iconImageSrc} alt="" className="h-[34px] w-[34px] shrink-0 rounded-input object-contain" />
         ) : icon ? (
-          <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-input bg-[var(--accent-tint)]">
-            <Icon name={icon} size={18} color="var(--accent)" strokeWidth={1.9} />
+          <span
+            className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-input ${ICON_TONE[iconTone].badge}`}
+          >
+            <Icon name={icon} size={18} color={ICON_TONE[iconTone].color} strokeWidth={1.9} />
           </span>
         ) : null}
         <span className="flex min-w-0 flex-1 flex-col gap-[2px]">

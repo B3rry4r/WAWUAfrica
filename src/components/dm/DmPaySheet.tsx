@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sendPaidDm } from "@/lib/api/dm";
 import { formatNaira } from "@/lib/format";
-import { Avatar, Button, Icon, Sheet, VerificationBadge } from "@/components/ui";
-import type { VerificationLevel } from "@/types/account";
+import { Avatar, Button, Icon, Sheet, VerificationTicks } from "@/components/ui";
+import type { VerificationState } from "@/types/verification";
 
 /**
  * "failure" means nothing was charged. "unconfirmed" is the opposite case:
@@ -29,14 +29,13 @@ export interface DmCreator {
    */
   dmResponseHours?: number;
   /**
-   * The creator's rung on the PUBLIC verification ladder (VerificationSubmission,
-   * /api/hub/verification/*) — never their KYC status, which is private to them
-   * and gates payouts, not trust. This sheet used to render a hardcoded
-   * `verified_user` tick beside every creator's name, so an unverified creator
-   * was shown to a fan, at the moment they were about to pay, as verified.
-   * Omitted defaults to "basic", which renders no badge at all.
+   * The creator's PUBLIC ticks, never their KYC status, which is private to
+   * them and gates payouts rather than trust. This sheet used to render a
+   * hardcoded tick beside every creator's name, so an unverified creator was
+   * shown to a fan, at the moment they were about to pay, as verified.
+   * Omitted renders no tick at all, which is the honest default.
    */
-  verification?: VerificationLevel;
+  verification?: VerificationState;
 }
 
 /** "24 hours" / "3 days" — never a bare hour count once past a day. */
@@ -126,7 +125,7 @@ export function DmPaySheet({
             <Avatar src={creator.avatarUrl} initial={creator.name.charAt(0)} size={36} />
             <span className="flex items-center gap-[6px] text-[15px] font-semibold text-[var(--text-primary)]">
               {creator.name}
-              <VerificationBadge tier={creator.verification ?? "basic"} size={15} />
+              <VerificationTicks verification={creator.verification} size="sm" />
             </span>
           </div>
           <textarea

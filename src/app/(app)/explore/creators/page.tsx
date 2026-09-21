@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { ExploreCategoryId } from "@/types/explore";
 import { CATEGORY_IDS, categoryName, isCategoryId } from "@/lib/categories";
-import type { VerificationLevel } from "@/types/account";
+import type { VerificationState } from "@/types/verification";
 import { getCreators } from "@/lib/api/explore";
 import { Icon } from "@/components/ui/Icon";
 import { Avatar } from "@/components/ui/Avatar";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import { VerificationTicks } from "@/components/ui/VerificationTicks";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { CategoryFilterAside } from "../_components/CategoryFilterAside";
@@ -99,7 +99,7 @@ interface CreatorRowProps {
   avatarUrl: string | null;
   field: string;
   pieceCount: number;
-  verification?: VerificationLevel;
+  verification: VerificationState;
   following: boolean;
 }
 
@@ -122,7 +122,7 @@ function CreatorRow({ wawuId, name, handle, avatarUrl, field, pieceCount, verifi
           <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-semibold text-[var(--text-primary)]">
             {handle ? `@${handle}` : name}
           </span>
-          {verification && <VerificationBadge tier={verification} size={15} />}
+          <VerificationTicks verification={verification} size="sm" />
         </div>
         <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] text-[var(--text-muted)]">
           {field} · {pieceCount} {pieceCount === 1 ? "piece" : "pieces"}

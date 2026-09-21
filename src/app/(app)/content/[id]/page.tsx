@@ -12,7 +12,9 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Sheet } from "@/components/ui/Sheet";
 import { StatBlock } from "@/components/ui/StatBlock";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import { VerificationTicks } from "@/components/ui/VerificationTicks";
+import { toVerificationState } from "@/lib/api/verification";
+import { NO_VERIFICATION } from "@/types/verification";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { FollowButton } from "@/components/shared/FollowButton";
@@ -90,6 +92,10 @@ export default function ContentDetailPage() {
             // .lookupAuthors) — this used to render the bare `authorWawuId`
             // (a UUID) as the name, with nothing to fall back to.
             name: c.author?.name || c.author?.handle || "A WAWU user",
+            // The author's ticks, beside their name. A user shown without
+            // their tick is a defect (build brief B1), and a comment thread
+            // is a place users are shown.
+            verification: toVerificationState(c.author?.verification),
             avatarUrl: c.author?.avatarUrl ?? null,
             time: relativeTime(c.createdAt),
             text: c.text,
@@ -183,6 +189,9 @@ export default function ContentDetailPage() {
     const isCreator = user?.wawuId === content.creator.wawuId;
     const optimistic = {
       name: user?.fullName ?? "You",
+      // The poster's own ticks, from their session. The row is replaced by
+      // the server's copy on the next read either way.
+      verification: user?.verification ?? NO_VERIFICATION,
       avatarUrl: user?.avatarUrl ?? null,
       time: "now",
       text,
@@ -581,7 +590,7 @@ function TitleBlock({ content, state, following }: { content: ContentPiece; stat
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="flex items-center gap-1.5">
               <span className="truncate text-[14px] font-semibold">{content.creator.fullName}</span>
-              <VerificationBadge tier={content.creator.verificationLevel} />
+              <VerificationTicks verification={content.creator.verification} />
             </span>
             {(content.creator.headline || content.creator.location) && (
               <span className="truncate text-[12px] text-text-muted">
@@ -843,6 +852,7 @@ function Comments({
           <div className="min-w-0 flex-1 flex-col gap-1">
             <div className="flex items-center gap-2">
               <span className="text-[13.5px] font-semibold">{c.name}</span>
+              <VerificationTicks verification={c.verification} size="xs" />
               {c.author ? (
                 <span className="inline-flex h-[18px] items-center rounded-full bg-accent-tint px-2 text-[10px] font-bold text-accent">Author</span>
               ) : null}

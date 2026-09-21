@@ -222,7 +222,7 @@ export function useCreatorSetup(): CreatorSetupResult {
       {
         id: "community",
         title: "Start your first community",
-        body: "A room your people talk in. Reading costs nothing, sending costs one credit, and you keep 90% of every credit spent. The best split on the platform.",
+        body: "A room your people talk in. Reading costs nothing, sending costs one credit, and you keep 85% of every credit spent, the same as everything else you sell.",
         detail:
           hosted === 0
             ? "You are not hosting one yet"
@@ -249,7 +249,7 @@ export function useCreatorSetup(): CreatorSetupResult {
               : "Nothing published yet",
         state: uploadState,
         icon: "Upload",
-        href: "/create",
+        href: "/create/content",
         cta: published > 0 ? "Upload another" : inReview > 0 ? "See your library" : "Publish it",
         optional: false,
       },

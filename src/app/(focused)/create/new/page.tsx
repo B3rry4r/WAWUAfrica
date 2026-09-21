@@ -62,7 +62,7 @@ export default function NewContentPage() {
     return (
       <FlowPane>
         <div className="dt:hidden">
-          <FlowHeader title="Upload" onBack={() => router.push("/create")} />
+          <FlowHeader title="Upload" onBack={() => router.push("/create/content")} />
         </div>
         <div className="flex flex-col gap-[12px] p-[16px]">
           <Skeleton variant="row" className="h-[80px] rounded-card" />
@@ -79,7 +79,7 @@ export default function NewContentPage() {
     return (
       <FlowPane>
         <div className="dt:hidden">
-          <FlowHeader title="Upload" onBack={() => router.push("/create")} />
+          <FlowHeader title="Upload" onBack={() => router.push("/create/content")} />
         </div>
         <EmptyState
           icon="Sparkles"
@@ -97,7 +97,7 @@ export default function NewContentPage() {
     return (
       <FlowPane>
         <div className="dt:hidden">
-          <FlowHeader title="Upload" onBack={() => router.push("/create")} />
+          <FlowHeader title="Upload" onBack={() => router.push("/create/content")} />
         </div>
         <div className="flex flex-col gap-[12px] p-[16px]">
           <Skeleton variant="row" className="h-[80px] rounded-card" />

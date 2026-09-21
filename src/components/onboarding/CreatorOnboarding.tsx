@@ -209,7 +209,7 @@ export function CreatorOnboarding() {
               {[
                 { icon: "Upload" as const, strong: "Publish and price your work.", text: " Video, courses, audio, books, art, templates. You set the price." },
                 { icon: "MessageCircle" as const, strong: "Charge for your time.", text: " Set your own price for a message, and choose how long you get to reply." },
-                { icon: "Users" as const, strong: "Host a community.", text: " Earn 90% of every credit spent in it." },
+                { icon: "Users" as const, strong: "Host a community.", text: " Earn 85% of every credit spent in it, and it costs you no listing slot." },
               ].map((r) => (
                 <div key={r.icon} className="flex gap-[12px]">
                   <span className="grid place-items-center w-[38px] h-[38px] rounded-[12px] bg-[var(--decor-tint)] border border-[var(--border-decor)] shrink-0">

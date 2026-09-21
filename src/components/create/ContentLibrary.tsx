@@ -186,7 +186,7 @@ export function ContentLibrary() {
               title="Nothing here yet"
               caption={emptyDescriptions[filter]}
               {...(filter === "all"
-                ? { action: "Upload something", actionHref: "/create" }
+                ? { action: "Upload something", actionHref: "/create/content" }
                 : { action: "Show all", onAction: () => setFilter("all") })}
             />
           ) : (
@@ -224,7 +224,7 @@ export function ContentLibrary() {
                   All {slotsTotal} slots are in use. Take something down below to free one up.
                 </span>
               ) : (
-                <Button full variant="secondary" icon="Plus" href="/create">
+                <Button full variant="secondary" icon="Plus" href="/create/content">
                   Upload something new
                 </Button>
               )}

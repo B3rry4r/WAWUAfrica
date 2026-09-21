@@ -1,6 +1,9 @@
 import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import { mockContent, mockContentById, mockPurchasedIds } from "./mocks/mockContent";
 import { sessionStorage } from "@/lib/auth/session-storage";
+import { NO_VERIFICATION } from "@/types/verification";
+import type { VerificationState } from "@/types/verification";
+import { toVerificationState } from "./verification";
 import type {
   ContentDetailResponse,
   ContentFeedResponse,
@@ -77,7 +80,10 @@ function mapContentPiece(raw: HubContentPieceResponse): ContentPiece {
       wawuId: raw.creatorWawuId,
       fullName: raw.creatorWawuId,
       handle: raw.creatorWawuId,
-      verificationLevel: "basic",
+      // GAP, same one: no creator embed on this response, so there is no
+      // verification to read. NO_VERIFICATION renders no tick, which is the
+      // honest answer to "we do not know" — never a tick we cannot back.
+      verification: NO_VERIFICATION,
     },
     durationLabel: raw.durationLabel ?? undefined,
     pageCount: raw.pageCount ?? undefined,
@@ -124,7 +130,7 @@ function guardLocked(content: ContentPiece): ContentPiece {
  */
 export async function enrichCreatorIdentities(items: ContentPiece[]): Promise<ContentPiece[]> {
   const uniqueIds = Array.from(new Set(items.map((i) => i.creator.wawuId)));
-  const summaries = new Map<string, { isPro: boolean; handle: string | null; avatarUrl: string | null }>();
+  const summaries = new Map<string, CreatorSummary>();
   await Promise.all(
     uniqueIds.map(async (id) => {
       try {
@@ -145,6 +151,10 @@ export async function enrichCreatorIdentities(items: ContentPiece[]): Promise<Co
         handle: summary.handle,
         isPro: summary.isPro,
         avatarUrl: summary.avatarUrl,
+        // The public profile is the one read that knows another user's
+        // ticks, so this is what puts them on every content card, every
+        // search hit and every carousel item rather than only on a profile.
+        verification: summary.verification,
       },
     };
   });
@@ -188,21 +198,27 @@ export async function getFeaturedContent(): Promise<ContentPiece[]> {
 /**
  * Real GET /users/:wawuId/public-profile response carries the creator's
  * tier and handle — see profile.ts's RealPublicCreatorProfile for the full
- * shape. `tier` drives creatorSplitRate() (CLAUDE.md: 85/15 standard, 90/10
- * Pro — never invent a rate). `handle` is the only real, non-fabricated
+ * shape. `tier` drives creatorSplitRate() (CLAUDE.md: a flat 85/15,
+ * never invent a rate). `handle` is the only real, non-fabricated
  * display identity this endpoint exposes for another user (there is no
  * display-name field — see getCreatorProfile in profile.ts for the same
  * documented gap); it replaces the raw internal `creatorWawuId` that
  * mapContentPiece falls back to when this call can't be made. This is
- * money-bearing (it decides whether 85% or 90% is displayed as the
- * creator's cut), so only genuine mock mode (no backend configured)
- * degrades to the safe default — a real failure propagates and fails the
- * whole content-detail load rather than risk silently showing the wrong
- * split.
+ * NO LONGER money-bearing: there is one split now (85/15 everywhere, for
+ * everyone, credits included since 21 Sep 2026), so no field on this
+ * response can change the creator's cut. The strict failure handling below
+ * stays anyway, because `handle` is still the only real display identity
+ * this endpoint exposes and degrading it silently would show the wrong
+ * person's name against a piece.
  */
-async function getCreatorSummary(
-  creatorWawuId: string,
-): Promise<{ isPro: boolean; handle: string | null; avatarUrl: string | null }> {
+interface CreatorSummary {
+  isPro: boolean;
+  handle: string | null;
+  avatarUrl: string | null;
+  verification: VerificationState;
+}
+
+async function getCreatorSummary(creatorWawuId: string): Promise<CreatorSummary> {
   try {
     // Genuinely public (PublicUserProfileController) — not the guarded
     // /users/:wawuId/public-profile route, so this also works for
@@ -214,12 +230,18 @@ async function getCreatorSummary(
       tier: "basic" | "pro" | "pro_max";
       handle: string | null;
       avatarUrl: string | null;
+      verification?: unknown;
     }>(`/api/hub/users/public/${creatorWawuId}`);
-    return { isPro: profile.tier === "pro", handle: profile.handle, avatarUrl: profile.avatarUrl ?? null };
+    return {
+      isPro: profile.tier === "pro",
+      handle: profile.handle,
+      avatarUrl: profile.avatarUrl ?? null,
+      verification: toVerificationState(profile.verification),
+    };
   } catch (e) {
     if (!isMockModeError(e)) throw e;
     // SEAM: GET /api/hub/users/:wawuId/public-profile
-    return { isPro: false, handle: null, avatarUrl: null };
+    return { isPro: false, handle: null, avatarUrl: null, verification: NO_VERIFICATION };
   }
 }
 
@@ -375,6 +397,12 @@ export interface ContentCommentAuthor {
   name: string;
   handle: string | null;
   avatarUrl: string | null;
+  /**
+   * The two-tick contract. A comment author is a user appearing on a screen,
+   * so their ticks render here like anywhere else (build brief B1). Read
+   * through toVerificationState; absent means no tick.
+   */
+  verification?: unknown;
 }
 
 export interface ContentComment {

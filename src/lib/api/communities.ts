@@ -182,7 +182,7 @@ function toCommunityMessage(m: CommunityMessageWire): CommunityMessage {
   };
 }
 
-// SEAM: replace with GET /api/hub/credits — verified live: {userWawuId, creditBalance, trialEndsAt}.
+// SEAM: replace with GET /api/hub/credits — verified live: {userWawuId, creditBalance}. (trialEndsAt is still on the row but is legacy and always null on new accounts.)
 export async function getCreditsState(): Promise<CreditsState> {
   try {
     return await apiFetch<CreditsState>("/api/hub/credits", { authed: true });
@@ -429,7 +429,8 @@ export async function sendCommunityMessage(
     return toCommunityMessage(wire);
   } catch (e) {
     // The "buy more credits" rejection (CommunityMessageService.create:
-    // creditBalance=0 and the 7-day trial has ended) is a real 402, not a
+    // creditBalance is short of the message cost, the only way through now
+    // that the free trial is gone) is a real 402, not a
     // network failure — don't paper over it as a mock success. It's thrown
     // as `{message, reason:'insufficient_credits'}`, but the shared
     // AllExceptionsFilter (common/filters/all-exceptions.filter.ts) strips

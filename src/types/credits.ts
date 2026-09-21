@@ -11,7 +11,13 @@ export const CREDIT_PACKS: Record<CreditPackId, { credits: number; price: number
 export interface CreditsState {
   /** Count of credits, never a currency amount. */
   creditBalance: number;
-  /** 7 days from signup; null once it has lapsed. */
+  /**
+   * LEGACY, and always null on a new account. The 7-day free trial was
+   * removed on 21 Sep 2026 ("no 7 day silly trials"), so the backend no
+   * longer writes this and nothing here reads it. Kept on the type because
+   * the column still exists and older rows still carry a date; it is
+   * meaningless rather than wrong. Do not gate anything on it.
+   */
   trialEndsAt?: string | null;
 }
 

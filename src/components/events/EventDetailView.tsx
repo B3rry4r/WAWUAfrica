@@ -32,7 +32,7 @@ import { TicketPurchasePanel } from "./TicketPurchasePanel";
  *   - The "Verified by WAWUAfrica admin" banner. Every event on this calendar
  *     is admin-approved — that is what `published` means — so a badge saying so
  *     on all of them says nothing, and this app reserves verification language
- *     for the profile credibility ladder.
+ *     for the two paid verification ticks.
  *   - The `going3` avatar stack. There is no such field on the real contract
  *     and the old backend always sent an empty array for it, so it only ever
  *     rendered fabricated initials.

@@ -211,6 +211,29 @@ button, input, textarea, select { font-family: inherit; }
   --border-info: rgba(91, 200, 255, 0.30);
   --locked: #8A8994;
   --locked-veil: rgba(11, 10, 13, 0.62);
+
+  /* ---------- VERIFICATION TICKS ----------------------------------------
+     The two paid verifications (build brief B1) are the only semantic
+     colours in this app besides danger (red) and warning (amber):
+
+       creator verification       purple / lilac
+       professional verification  green
+
+     They are deliberately NOT --accent and NOT --success. --accent is
+     "you can press it", and a tick is not a button; --success is the lime
+     used by StatusPill and every approved state, and a tick that borrowed
+     it would read as "approved" rather than as a distinct paid credential.
+     Both render together when one account holds both, so they also have to
+     stay apart from each other at a glance.
+
+     Purple here is Electric Lilac rather than the core brand purple, so a
+     tick next to a purple button is still legible as a separate thing. */
+  --verify-creator: #9B7BFF;
+  --verify-creator-tint: rgba(155, 123, 255, 0.18);
+  --verify-creator-border: rgba(155, 123, 255, 0.34);
+  --verify-professional: #69D36A;
+  --verify-professional-tint: rgba(105, 211, 106, 0.18);
+  --verify-professional-border: rgba(105, 211, 106, 0.34);
 }
 
 /* ---------- Light mode: same token set, inverted ---------- */
@@ -271,6 +294,15 @@ button, input, textarea, select { font-family: inherit; }
 
   --locked: #6E6D78;
   --locked-veil: rgba(255, 255, 255, 0.55);
+
+  /* Both ticks darken on light, same reason --accent-soft does: Electric
+     Lilac and a mid green are both under 3:1 on white. */
+  --verify-creator: #6A44E8;
+  --verify-creator-tint: rgba(106, 68, 232, 0.12);
+  --verify-creator-border: rgba(106, 68, 232, 0.30);
+  --verify-professional: #2F8F31;
+  --verify-professional-tint: rgba(47, 143, 49, 0.12);
+  --verify-professional-border: rgba(47, 143, 49, 0.30);
 }
 :root {
   /* On dark, elevation reads as a lighter surface + a hairline, not a shadow.

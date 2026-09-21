@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Icon, Skeleton, EmptyState, ErrorState, VerificationBadge, BackLink, Avatar } from "@/components/ui";
+import { Icon, Skeleton, EmptyState, ErrorState, VerificationTicks, BackLink, Avatar } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { ContentCard } from "@/components/content/ContentCard";
 import { FollowButton } from "@/components/shared/FollowButton";
@@ -183,7 +183,7 @@ export default function SearchPage() {
                   <Link href={`/profile/${c.wawuId}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[14px] font-semibold">{c.fullName}</span>
-                      <VerificationBadge tier={c.verificationLevel} />
+                      <VerificationTicks verification={c.verification} />
                     </span>
                     <span className="truncate text-[12px] text-text-muted">
                       {c.headline} · {c.pieceCount} pieces{c.location ? ` · ${c.location}` : ""}
@@ -257,7 +257,7 @@ export default function SearchPage() {
                   <Link href={`/profile/${c.wawuId}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[14px] font-semibold">{c.fullName}</span>
-                      <VerificationBadge tier={c.verificationLevel} />
+                      <VerificationTicks verification={c.verification} />
                     </span>
                     <span className="truncate text-[12px] text-text-muted">
                       {c.headline} · {c.pieceCount} pieces{c.location ? ` · ${c.location}` : ""}

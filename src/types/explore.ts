@@ -1,4 +1,4 @@
-import type { VerificationLevel } from "./account";
+import type { VerificationState } from "./verification";
 import { CATEGORIES, type Category, type CategoryId } from "@/lib/categories";
 
 /**
@@ -19,7 +19,7 @@ export interface CreatorDiscovery {
   field: string;
   /** Number of published content pieces. */
   pieceCount: number;
-  verification?: VerificationLevel;
+  verification: VerificationState;
   following: boolean;
 }
 

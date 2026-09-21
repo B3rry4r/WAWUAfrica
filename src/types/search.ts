@@ -1,5 +1,5 @@
 import type { ContentPiece } from "./content";
-import type { VerificationLevel } from "./account";
+import type { VerificationState } from "./verification";
 
 export type SearchTab = "all" | "content" | "creators" | "communities";
 
@@ -9,7 +9,7 @@ export interface SearchCreatorResult {
   avatarUrl?: string | null;
   headline: string;
   location?: string;
-  verificationLevel: VerificationLevel;
+  verification: VerificationState;
   pieceCount: number;
 }
 

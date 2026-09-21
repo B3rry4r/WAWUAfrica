@@ -2,6 +2,7 @@ import { apiFetch } from "./client";
 import { enrichCreatorIdentities } from "./content";
 import type { SearchResponse, SearchResults, SearchCreatorResult, SearchCommunityResult } from "@/types/search";
 import type { ContentPiece, CreatorProfile as ContentCreatorProfile } from "@/types/content";
+import { NO_VERIFICATION } from "@/types/verification";
 
 /**
  * Real shapes returned by SearchResponseService (WAWU-Hub-API
@@ -90,16 +91,16 @@ interface WireClosestResult {
  * ContentPieceService or SearchResponseService. This affects every
  * content-returning endpoint, not just search. Until the backend enriches
  * (or the frontend adds a per-creator profile fetch), `creator` is built
- * from the id alone — fullName/handle fall back to the wawuId,
- * verificationLevel defaults to the lowest rung ("basic") as a safe
- * under-claim rather than a fabricated one.
+ * from the id alone — fullName/handle fall back to the wawuId, and
+ * verification is NO_VERIFICATION: no tick, because we genuinely do not know
+ * and an unbacked tick is worse than an absent one.
  */
 function placeholderCreator(creatorWawuId: string): ContentCreatorProfile {
   return {
     wawuId: creatorWawuId,
     fullName: creatorWawuId,
     handle: creatorWawuId,
-    verificationLevel: "basic",
+    verification: NO_VERIFICATION,
   };
 }
 
@@ -144,13 +145,14 @@ function toContentPiece(item: WireContentPiece): ContentPiece {
 
 /**
  * GAP: CreatorProfile (backend) has no `fullName`, `location`, or
- * `verificationLevel` field — UserProfile's own Prisma model only stores
- * `handle` (schema.prisma has no fullName/location column at all), and
- * verificationLevel is WAWU ID's tier ladder (schema.prisma's own comment on
- * VerificationSubmission: this backend "is NOT this table's concern to keep
- * in sync"), never mirrored into this Hub API's response. `tier` here is the
- * *subscription* tier (basic/pro), a different axis from verificationLevel —
- * never conflate the two.
+ * verification field on the search response — UserProfile's own Prisma model
+ * only stores `handle` (schema.prisma has no fullName/location column at
+ * all), and the two-tick columns are not projected into this search
+ * response yet. No tick is rendered until the backend joins them. `tier`
+ * here is the legacy subscription tier, a different axis entirely and one
+ * with no product surface left: never conflate the two.
+ *
+ * SEAM: GET /api/hub/search (its creator rows carry no `verification`).
  */
 function toSearchCreatorResult(item: WireCreatorProfile): SearchCreatorResult {
   return {
@@ -158,7 +160,7 @@ function toSearchCreatorResult(item: WireCreatorProfile): SearchCreatorResult {
     fullName: item.handle ?? item.wawuUserId,
     avatarUrl: item.avatarUrl,
     headline: item.bio ?? "",
-    verificationLevel: "basic",
+    verification: NO_VERIFICATION,
     pieceCount: item.contentCount,
   };
 }
