@@ -1871,309 +1871,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/hub/creator-subscription/ditto": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * GET /creator-subscription/ditto — whether this creator has opted in to
-         *     Ditto Music distribution, and the link once they have.
-         *
-         *     Not folded into GET /creator-subscription: the opt-in is a consent record,
-         *     not a property of the plan, and the signup link must not be handed to
-         *     every Pro Max subscriber who merely loads their billing page.
-         */
-        get: operations["CreatorSubscriptionController_dittoState"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/ditto/opt-in": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * POST /creator-subscription/ditto/opt-in — the explicit act. Nothing else
-         *     in the codebase writes this row, so paying for Pro Max can never enrol
-         *     somebody by itself.
-         */
-        post: operations["CreatorSubscriptionController_dittoOptIn"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["CreatorSubscriptionController_getSubscription"];
-        put?: never;
-        post: operations["CreatorSubscriptionController_subscribe"];
-        delete: operations["CreatorSubscriptionController_cancel"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["CreatorSubscriptionController_verify"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/upgrade": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["CreatorSubscriptionController_upgrade"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/downgrade": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["CreatorSubscriptionController_downgrade"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/retry-payment": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["CreatorSubscriptionController_retryPayment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/card": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["CreatorSubscriptionController_updateCard"];
-        trace?: never;
-    };
-    "/api/hub/creator-subscription/billing-history": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["CreatorSubscriptionController_billingHistory"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/referral/signup-state": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Whether an account can be created without a code. */
-        get: operations["ReferralController_signupState"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/referral/validate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * GET /referral/validate?code=... — checks a code and prices it.
-         *
-         *     Has no side effects on purpose: this is called while somebody is still
-         *     typing, and incrementing a use here would burn a single-use code on a
-         *     keystroke.
-         */
-        get: operations["ReferralController_validate"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/referral/claim": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * POST /referral/claim — remember the code this account arrived with.
-         *
-         *     Called once, right after the account exists. The code was applied before
-         *     there was anybody to attach it to, so it lived only in the browser until
-         *     now — and a browser copy does not survive the trip to an email client and
-         *     back in a new tab.
-         */
-        post: operations["ReferralController_claim"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/referral/mine": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** GET /referral/mine — the code this account arrived with, if still usable. */
-        get: operations["ReferralController_mine"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/admin/referral/codes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["AdminReferralController_list"];
-        put?: never;
-        post: operations["AdminReferralController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/admin/referral/codes/{code}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["AdminReferralController_update"];
-        trace?: never;
-    };
-    "/api/hub/admin/referral/codes/{code}/deactivate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["AdminReferralController_deactivate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/hub/admin/referral/signup-state": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["AdminReferralController_signupState"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** The toggle. Flipped from here, never from a deploy. */
-        patch: operations["AdminReferralController_setSignupState"];
-        trace?: never;
-    };
     "/api/hub/services/applications": {
         parameters: {
             query?: never;
@@ -3862,8 +3559,8 @@ export interface paths {
          *       DELETE /communities/:id/members/:userWawuId             host-only
          *
          *     `POST /:id/join` wrote `status: 'pending'` for a private community and
-         *     nothing could ever flip it, so a private community — the Pro tier's
-         *     headline feature — could be requested but never entered.
+         *     nothing could ever flip it, so a private community could be requested
+         *     but never entered.
          *
          *     CreatorAccountGuard here matches PATCH /:id above: managing a community
          *     is a creator-account capability, and hosting one already requires a
@@ -4271,6 +3968,24 @@ export interface components {
              * @enum {string}
              */
             category: "agriculture_food" | "trade_commerce" | "business_entrepreneurship" | "finance" | "technology" | "education" | "healthcare" | "employment" | "entertainment_creative" | "beauty" | "family_lifestyle" | "culture_heritage" | "religion_faith" | "travel_tourism" | "real_estate" | "transport_logistics" | "manufacturing" | "energy_utilities" | "media_communications" | "professional_services" | "legal_services" | "insurance_pensions" | "sports_fitness" | "government_public" | "social_impact";
+            /**
+             * @description Specialization ids from the C1 taxonomy, e.g.
+             *     `photography.portrait-photographer`. What a buyer actually searches and
+             *     filters on; `category` above is the deprecated flat list it replaces.
+             *
+             *     Optional and capped at three rather than required, deliberately:
+             *      - optional, because every piece published before this column exists has
+             *        none, and a required field would make those rows unrepublishable.
+             *      - capped, because this drives search placement. A piece tagged with
+             *        twenty specializations is tagged with none, and the cap belongs here
+             *        as well as in the client: a client-side maximum is a suggestion.
+             *
+             *     The ids are NOT validated against the taxonomy here. That list lives in
+             *     the web client and changes by deploy, so pinning a copy in this DTO would
+             *     create two lists that drift and reject valid input the day they diverge.
+             *     Shape is enforced; membership is the client's to get right.
+             */
+            specializations?: string[];
             tags?: string[];
             /** @enum {string} */
             accessType: "free" | "paid";
@@ -4289,68 +4004,11 @@ export interface components {
         };
         CreateCreditPurchaseDto: {
             /** @enum {string} */
-            pack: "pro" | "starter" | "popular";
+            pack: "starter" | "popular" | "pro";
         };
         VerifyCreditPurchaseDto: {
             transaction_id: string;
             tx_ref: string;
-        };
-        SubscribeDto: {
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
-            /**
-             * @description A referral code, if they were given one.
-             *
-             *     The DISCOUNT is not accepted from the client either — only the code is.
-             *     The percentage is looked up server-side and the naira amount recomputed
-             *     here, for the same reason `tier` is the only other field: a client that
-             *     can name its own price will.
-             */
-            referralCode?: string;
-        };
-        VerifySubscriptionDto: {
-            transaction_id: string;
-            tx_ref: string;
-        };
-        UpgradeSubscriptionDto: {
-            /** @enum {string} */
-            to?: "basic" | "pro" | "pro_max";
-        };
-        UpdateCardDto: {
-            flutterwaveCardToken: string;
-        };
-        ValidateReferralQueryDto: {
-            code: string;
-        };
-        CreateReferralCodeDto: {
-            /**
-             * @description Letters, digits, dash and underscore only.
-             *
-             *     These are printed in blog posts and typed by hand, so anything that needs
-             *     escaping in a URL or reads ambiguously in print is not worth allowing.
-             */
-            code: string;
-            label: string;
-            /**
-             * @description 0 is deliberately allowed. A code that takes nothing off is how a creator
-             *     is let through while public signup is closed, at the normal price.
-             */
-            discountPercent: number;
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
-            /** @description Null / omitted means unlimited. */
-            maxUses?: number;
-            expiresAt?: string;
-        };
-        UpdateReferralCodeDto: {
-            label?: string;
-            discountPercent?: number;
-            active?: boolean;
-            maxUses?: number;
-            expiresAt?: string;
-        };
-        UserSignupDto: {
-            userSignupEnabled: boolean;
         };
         ApplyCacDto: {
             registrationType: string;
@@ -4917,16 +4575,12 @@ export interface components {
             usedBytes: number;
             limitBytes: number;
             remainingBytes: number;
-            tier: string | null;
         };
         AdminContentCreatorView: {
             wawuUserId: string;
             handle: string | null;
             /** @enum {string|null} */
             accountType: "user" | "creator" | null;
-            /** @enum {string|null} */
-            tier: "basic" | "pro" | "pro_max" | null;
-            subscriptionPaid: boolean | null;
             kycStatus: string | null;
             slotsUsed: number | null;
             slotsTotal: number | null;
@@ -5048,16 +4702,9 @@ export interface components {
             handle: string | null;
             /** @enum {string|null} */
             accountType: "user" | "creator" | null;
-            /** @enum {string|null} */
-            tier: "basic" | "pro" | "pro_max" | null;
-            subscriptionPaid: boolean | null;
             kycStatus: string | null;
             slotsUsed: number | null;
             slotsTotal: number | null;
-            /** @enum {string|null} */
-            subscriptionStatus: "active" | "past_due" | "cancelled" | "expired" | null;
-            /** Format: date-time */
-            subscriptionCurrentPeriodEnd: string | null;
         };
         AdminKycHistoryEntryView: {
             id: string;
@@ -5315,6 +4962,7 @@ export interface components {
             contentType: "video" | "course" | "audio" | "pdf" | "image" | "template";
             description: string;
             category: string;
+            specializations: string[];
             tags: string[];
             /** @enum {string} */
             accessType: "free" | "paid";
@@ -5333,56 +4981,6 @@ export interface components {
         UnlockVerifyResult: {
             purchased: boolean;
             fullAssetUrl: string | null;
-        };
-        DittoState: {
-            eligible: boolean;
-            optedIn: boolean;
-            optedInAt: string | null;
-            signupUrl: string | null;
-            discountPercent: number;
-            emailed: boolean;
-        };
-        CreatorSubscriptionResponse: {
-            /** @enum {string} */
-            status: "active" | "past_due" | "cancelled" | "expired";
-            creatorWawuId: string;
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
-            flutterwaveCustomerRef: string | null;
-            flutterwavePlanId: string | null;
-            /** Format: date-time */
-            currentPeriodEnd: string;
-            renewalAttempts: number;
-            /** Format: date-time */
-            cancelsAt: string | null;
-            cardLast4: string | null;
-            /** @enum {string|null} */
-            pendingTier: "basic" | "pro" | "pro_max" | null;
-            /** Format: date-time */
-            tierChangesAt: string | null;
-            commissionRateOverride: number | null;
-        };
-        ReferralCodeView: {
-            code: string;
-            discountPercent: number;
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
-            priceNaira: number;
-            originalPriceNaira: number;
-        };
-        AdminReferralCodeView: {
-            label: string;
-            active: boolean;
-            maxUses: number | null;
-            usedCount: number;
-            expiresAt: string | null;
-            createdAt: string;
-            code: string;
-            discountPercent: number;
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
-            priceNaira: number;
-            originalPriceNaira: number;
         };
         DmSendInitResponse: {
             flutterwaveConfig: {
@@ -5560,7 +5158,7 @@ export interface components {
         ShopOrderView: {
             id: string;
             /** @enum {string} */
-            status: "paid" | "pending" | "cancelled" | "refunded" | "failed";
+            status: "paid" | "pending" | "refunded" | "failed" | "cancelled";
             subtotalNaira: number;
             deliveryNaira: number;
             totalNaira: number;
@@ -5746,7 +5344,6 @@ export interface components {
             streamBreakdown: components["schemas"]["CreatorEarningsStreamBreakdownEntry"][];
         };
         AdminCreatorGatesView: {
-            subscriptionPaid: boolean | null;
             /** @enum {string|null} */
             kycStatus: "pending" | "rejected" | "approved" | "not_started" | null;
             /** Format: date-time */
@@ -5760,31 +5357,9 @@ export interface components {
             handle: string | null;
             /** @enum {string} */
             accountType: "user" | "creator";
-            /** @enum {string|null} */
-            tier: "basic" | "pro" | "pro_max" | null;
             gates: components["schemas"]["AdminCreatorGatesView"];
-            /** @enum {string|null} */
-            subscriptionStatus: "active" | "past_due" | "cancelled" | "expired" | null;
-            /** @enum {string|null} */
-            pendingTier: "basic" | "pro" | "pro_max" | null;
             /** Format: date-time */
             createdAt: string;
-        };
-        AdminCreatorSubscriptionView: {
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
-            /** @enum {string} */
-            status: "active" | "past_due" | "cancelled" | "expired";
-            /** Format: date-time */
-            currentPeriodEnd: string;
-            /** @enum {string|null} */
-            pendingTier: "basic" | "pro" | "pro_max" | null;
-            /** Format: date-time */
-            tierChangesAt: string | null;
-            /** Format: date-time */
-            cancelsAt: string | null;
-            renewalAttempts: number;
-            cardLast4: string | null;
         };
         AdminCreatorVerificationView: {
             /** @enum {string|null} */
@@ -5799,8 +5374,6 @@ export interface components {
         AdminCreatorUploadsView: {
             slotsUsed: number | null;
             slotsTotal: number | null;
-            freeSlots: number | null;
-            paidSlots: number | null;
             pendingReviewCount: number;
             liveCount: number;
         };
@@ -5816,7 +5389,6 @@ export interface components {
             accountType: "user" | "creator" | null;
             /** Format: date-time */
             createdAt: string | null;
-            subscription: components["schemas"]["AdminCreatorSubscriptionView"];
             gates: components["schemas"]["AdminCreatorGatesView"];
             verification: components["schemas"]["AdminCreatorVerificationView"];
             uploads: components["schemas"]["AdminCreatorUploadsView"];
@@ -5962,10 +5534,7 @@ export interface components {
             noResponseRatePct: number;
         };
         CreatorStateResponse: {
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
             wawuUserId: string;
-            subscriptionPaid: boolean;
             /** @enum {string} */
             kycStatus: "pending" | "rejected" | "approved";
             slotsUsed: number;
@@ -6063,8 +5632,6 @@ export interface components {
             dmResponseHours: number;
         };
         LearnEntitlement: {
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
             freeCoursesTotal: number;
             freeCoursesUsed: number;
             enrolledCourseIds: string[];
@@ -6124,8 +5691,6 @@ export interface components {
             youtubeUrl: string | null;
             facebookUrl: string | null;
             linkedinUrl: string | null;
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
             dmEnabled: boolean;
             dmPrice: number | null;
             dmResponseHours: number;
@@ -6136,8 +5701,6 @@ export interface components {
         };
         EnrolResponse: {
             externalHostUrl: string;
-            /** @enum {string} */
-            tier: "basic" | "pro" | "pro_max";
             freeCoursesTotal: number;
             freeCoursesUsed: number;
             enrolledCourseIds: string[];
@@ -9608,470 +9171,6 @@ export interface operations {
             };
         };
     };
-    CreatorSubscriptionController_dittoState: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DittoState"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_dittoOptIn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DittoState"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_getSubscription: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreatorSubscriptionResponse"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_subscribe: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubscribeDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        free?: boolean | null;
-                        flutterwaveConfig: {
-                            txRef: string;
-                            amount: number;
-                            /** @enum {string} */
-                            currency: "NGN";
-                            publicKey: string;
-                        };
-                    } | {
-                        free: boolean;
-                        subscription: components["schemas"]["CreatorSubscriptionResponse"];
-                    };
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_cancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreatorSubscriptionResponse"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_verify: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VerifySubscriptionDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreatorSubscriptionResponse"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_upgrade: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpgradeSubscriptionDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FlutterwaveConfigResponse"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_downgrade: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreatorSubscriptionResponse"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_retryPayment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FlutterwaveConfigResponse"];
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_updateCard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateCardDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        last4: string;
-                    };
-                };
-            };
-        };
-    };
-    CreatorSubscriptionController_billingHistory: {
-        parameters: {
-            query: {
-                page: number;
-                perPage: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown[];
-                };
-            };
-        };
-    };
-    ReferralController_signupState: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        userSignupEnabled: boolean;
-                    };
-                };
-            };
-        };
-    };
-    ReferralController_validate: {
-        parameters: {
-            query: {
-                code: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReferralCodeView"];
-                };
-            };
-        };
-    };
-    ReferralController_claim: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ValidateReferralQueryDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        claimed: boolean;
-                    };
-                };
-            };
-        };
-    };
-    ReferralController_mine: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        code: string | null;
-                    };
-                };
-            };
-        };
-    };
-    AdminReferralController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReferralCodeView"][];
-                };
-            };
-        };
-    };
-    AdminReferralController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateReferralCodeDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReferralCodeView"];
-                };
-            };
-        };
-    };
-    AdminReferralController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateReferralCodeDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReferralCodeView"];
-                };
-            };
-        };
-    };
-    AdminReferralController_deactivate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                code: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminReferralCodeView"];
-                };
-            };
-        };
-    };
-    AdminReferralController_signupState: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        userSignupEnabled: boolean;
-                    };
-                };
-            };
-        };
-    };
-    AdminReferralController_setSignupState: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserSignupDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        userSignupEnabled: boolean;
-                    };
-                };
-            };
-        };
-    };
     ServiceApplicationController_list: {
         parameters: {
             query: {
@@ -10898,7 +9997,7 @@ export interface operations {
                             items: unknown;
                             id: string;
                             /** @enum {string} */
-                            status: "paid" | "pending" | "cancelled" | "refunded" | "failed";
+                            status: "paid" | "pending" | "refunded" | "failed" | "cancelled";
                             /** Format: date-time */
                             createdAt: string;
                             flutterwaveTxRef: string;
@@ -10954,7 +10053,7 @@ export interface operations {
                     "application/json": {
                         id: string;
                         /** @enum {string} */
-                        status: "paid" | "pending" | "cancelled" | "refunded" | "failed";
+                        status: "paid" | "pending" | "refunded" | "failed" | "cancelled";
                         /** Format: date-time */
                         createdAt: string;
                         flutterwaveTxRef: string;
@@ -11295,9 +10394,6 @@ export interface operations {
                  *     as a field, and the operator narrows it only when they mean to.
                  */
                 accountType?: "user" | "creator";
-                tier?: "basic" | "pro" | "pro_max";
-                /** @description The upload gate, as a filter: "who paid?" / "who has not?" */
-                subscriptionPaid?: boolean;
                 /**
                  * @description The earning gate, as a filter. `not_started` is accepted alongside the
                  *     three stored values because it is a real, distinguishable state the app

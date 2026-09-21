@@ -186,6 +186,15 @@ export interface ContentItem {
    */
   description?: string;
   category?: string;
+  /**
+   * C1 taxonomy specialization ids, e.g. `photography.portrait-photographer`.
+   * Capped at three by the picker and by CreateContentDto server-side, so a
+   * client that ignores the cap still gets rejected. `category` above is the
+   * deprecated flat list these replace, and both go on the wire: rows
+   * published before the specializations column existed carry only a
+   * category, so the backend still requires one.
+   */
+  specializations?: string[];
   previewAssetUrl?: string;
   fullAssetUrl?: string;
 }

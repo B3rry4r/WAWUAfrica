@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/Input";
 import { NairaInput } from "@/components/ui/NairaInput";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Sheet } from "@/components/ui/Sheet";
+import { SpecializationPicker } from "@/components/ui/SpecializationPicker";
 import { ErrorState } from "@/components/ui/Feedback";
 import { ContentGridCard } from "@/components/ui/ContentCard";
 import { ContentThumb } from "@/components/ui/ContentThumb";
@@ -86,6 +87,11 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
   const [title, setTitle] = useState(resubmit ? resubmit.title : "");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<CategoryId>("business_entrepreneurship");
+  // Specialization ids from the C1 taxonomy, persisted by POST /api/hub/content
+  // (ContentPiece.specializations). `category` above is the deprecated flat
+  // list and still goes with them: rows published before this column existed
+  // only carry a category, so the backend keeps requiring one.
+  const [specializations, setSpecializations] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -104,12 +110,12 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
   const steps = ["Upload", "Preview", "Details", "Price"];
   const stepLabel = `Step ${step + 1} of 4`;
 
-  // Live creator state, not the session's sign-in-time snapshot: the split
-  // shown on the price step still keys off the server's `tier` field
-  // (85/15 standard, 90/10 Pro), and slot numbers have to be current.
+  // Live creator state, not the session's sign-in-time snapshot, because the
+  // slot count on this screen has to be current.
   //
-  // `tier` is NOT a plan any more — nothing on this screen names it, prices it
-  // or offers to change it. It is only the input to creatorSplitRate().
+  // The split no longer comes from here at all. creatorSplitRate() takes no
+  // argument and returns the single 85/15 rate: the 90/10 went with the Pro
+  // plan that sold it, and there is no tier left for it to key off.
   const { creator } = useCreatorState();
   const gates = creatorGates({ creator });
   const keep = Math.round(creatorSplitRate() * 100);
@@ -145,6 +151,7 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
         title,
         description,
         category,
+        specializations,
         price: priceValue,
         // The preview is served publicly, so it is always a separate file:
         // reusing the sold asset here would hand the whole thing to anyone who
@@ -232,8 +239,8 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
                 onTitle={setTitle}
                 description={description}
                 onDescription={setDescription}
-                category={category}
-                onCategory={setCategory}
+                specializations={specializations}
+                onSpecializations={setSpecializations}
               />
             ) : null}
             {step === 3 ? (
@@ -382,28 +389,22 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
                 This is how readers find you in Explore. Pick the one someone browsing for your work would open.
               </span>
               {/*
-                Was a stale list of the old post categories (Construction, Sell,
-                Event, Opportunity, Research, plus disabled Learn/Question).
-                Events and Opportunities do not exist in this product at all,
-                and the rest predate the taxonomy, so this now renders the same
-                25 categories the mobile step and Explore use.
+                Was 25 rounded chips in a flex-wrap: the pill wall the product
+                owner rejected as unprofessional, rendering a flat taxonomy
+                that C1 replaced. Now the real Role -> Category ->
+                Specialization picker over all 557 entries, searchable and
+                progressively disclosed. Capped at three because this is what
+                a buyer filters on, and a piece tagged with ten things is
+                tagged with none.
               */}
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCategory(c.id)}
-                    className={`rounded-full px-[14px] py-2 text-[13px] ${
-                      category === c.id
-                        ? "bg-accent font-semibold text-on-accent"
-                        : "bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
+              <SpecializationPicker
+                role="creator"
+                value={specializations}
+                onChange={setSpecializations}
+                max={3}
+                label="What is this?"
+                hint="Pick up to three. This is how buyers find the piece in search and browse."
+              />
             </div>
           </div>
         </div>
@@ -635,15 +636,15 @@ function DetailsStep({
   onTitle,
   description,
   onDescription,
-  category,
-  onCategory,
+  specializations,
+  onSpecializations,
 }: {
   title: string;
   onTitle: (v: string) => void;
   description: string;
   onDescription: (v: string) => void;
-  category: CategoryId;
-  onCategory: (v: CategoryId) => void;
+  specializations: readonly string[];
+  onSpecializations: (v: string[]) => void;
 }) {
   return (
     <div className="flex flex-col gap-[16px]">
@@ -658,29 +659,21 @@ function DetailsStep({
         />
         <span className="text-[12px] text-[var(--text-muted)]">Say who it is for and what they will be able to do after.</span>
       </div>
-      <div className="flex flex-col gap-[8px]">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Category</span>
-        <div className="relative">
-          <select
-            value={category}
-            onChange={(e) => onCategory(e.target.value as CategoryId)}
-            className="flex w-full items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer appearance-none font-[var(--font-sans)]"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <Icon
-            name="ChevronDown"
-            size={16}
-            strokeWidth={2.2}
-            color="var(--text-muted)"
-            className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2"
-          />
-        </div>
-      </div>
+      {/*
+        Was a native <select> over the deprecated flat 25-category list. The
+        C1 taxonomy is 557 specializations, and a native select over that is
+        a scroll wheel with no search: the same unusable shape as the pill
+        wall, just vertical. Same picker as the desktop column, so the two
+        cannot drift.
+      */}
+      <SpecializationPicker
+        role="creator"
+        value={specializations}
+        onChange={onSpecializations}
+        max={3}
+        label="What is this?"
+        hint="Pick up to three. This is how buyers find the piece in search and browse."
+      />
       {/* The tag chips that used to sit here were hardcoded ("trading",
           "pricing") and had no editor and no field in the publish payload —
           removed rather than left looking editable. Restore when the publish
@@ -807,6 +800,7 @@ function contentPublish(payload: {
   title: string;
   description: string;
   category: string;
+  specializations: string[];
   price: number;
   previewAssetUrl: string;
   fullAssetUrl: string;
@@ -819,6 +813,7 @@ function contentPublish(payload: {
       price: payload.price,
       description: payload.description,
       category: payload.category,
+      specializations: payload.specializations,
       previewAssetUrl: payload.previewAssetUrl,
       fullAssetUrl: payload.fullAssetUrl,
     }).then(() => undefined),

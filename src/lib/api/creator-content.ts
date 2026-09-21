@@ -63,6 +63,8 @@ interface HubContentPieceResponse {
   title: string;
   description: string;
   category: string;
+  /** C1 specialization ids, e.g. `photography.portrait-photographer`. Max 3, enforced server-side too. */
+  specializations?: string[];
   price: number;
   previewAssetUrl: string;
   fullAssetUrl: string | null;
@@ -107,6 +109,7 @@ function mapToContentItem(raw: HubContentPieceResponse): ContentItem {
     isFirstUpload: raw.creatorFirstUploadFree,
     description: raw.description,
     category: raw.category,
+    specializations: raw.specializations ?? [],
     previewAssetUrl: raw.previewAssetUrl,
     fullAssetUrl: raw.fullAssetUrl ?? undefined,
   };
@@ -196,6 +199,11 @@ export const contentApi: ContentApi = {
           title: item.title,
           description: item.description ?? "",
           category: item.category ?? "",
+          // C1 taxonomy ids. `category` above is the deprecated flat list and
+          // still goes with them: rows published before specializations
+          // existed only have a category, so the backend keeps requiring one
+          // until a backfill maps the old values across.
+          specializations: item.specializations ?? [],
           accessType: item.price > 0 ? "paid" : "free",
           price: item.price,
           // Real uploaded object URLs, produced by POST /uploads/presign +
