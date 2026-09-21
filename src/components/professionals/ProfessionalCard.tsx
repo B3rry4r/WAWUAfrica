@@ -74,9 +74,9 @@ export function ProfessionalCard({ pro, variant = "card" }: ProfessionalCardProp
             <span className="truncate text-[12.5px] text-[var(--text-secondary)]">
               {categoryName(pro.category)}
             </span>
-            <span className="truncate text-[12px] text-[var(--text-muted)]">
+            <span className="text-[12px] leading-[1.35] text-[var(--text-muted)]">
               {reachable
-                ? `${formatNaira(pro.dmPrice as number)} to message, replies within ${windowLabel(pro.dmResponseHours)}`
+                ? `${formatNaira(pro.dmPrice as number)} to message, replies in ${windowLabel(pro.dmResponseHours)}`
                 : "Not taking messages right now"}
             </span>
           </span>
