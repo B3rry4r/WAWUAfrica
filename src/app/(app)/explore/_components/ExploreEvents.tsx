@@ -21,8 +21,16 @@ import { Icon, Skeleton } from "@/components/ui";
  * deliberately: /api/hub/events is an authenticated read and the bearer token
  * lives in localStorage, so a server-side call would go out unauthenticated.
  *
- * No price, no ticket, no amount appears on these rows. There is no such thing
- * on an event here.
+ * Prices are NOT on these rows, and that is a deliberate limit rather than
+ * the old "events never have money" rule, which stopped being true on
+ * 29 Aug 2026. The list endpoint returns `WawuEvent`, and money lives on the
+ * ticket TYPES hanging off an event (see ./event-tickets.ts), which this call
+ * does not fetch. Rendering "from N" here would mean either a second request
+ * per row or a figure picked from nothing. The event's own screen shows what
+ * a ticket costs, which is where somebody is deciding to buy one.
+ *
+ * `goingCount` is an interest signal and never a count of sales, so it is
+ * never presented as one.
  */
 export function ExploreEvents() {
   const [events, setEvents] = useState<WawuEvent[] | null>(null);
