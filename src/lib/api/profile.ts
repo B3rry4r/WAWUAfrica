@@ -1,6 +1,7 @@
-import type { CreatorProfile, ProfileContentItem } from "@/types/profile";
+import type { CreatorProfile, ProfileContentItem, ProfileView } from "@/types/profile";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
-import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
+import { ApiError, apiFetch, apiFetchPaginated, isMockModeError } from "./client";
+import { getCreators } from "./explore";
 import {
   getMockProfileFollowing,
   isMockCommunityJoined,
@@ -38,12 +39,29 @@ interface RealProfileContentRow {
  * whole of "paid stays locked until paid for": nothing on this screen
  * decides it, it only renders what the backend already decided.
  */
-async function getCreatorContent(wawuId: string): Promise<ProfileContentItem[]> {
+async function getCreatorContent(
+  wawuId: string,
+  /**
+   * `true` when nobody is signed in: a shared store link (build brief C3)
+   * opens somebody's shop with no session at all.
+   *
+   * The authed route 401s an anonymous caller, so the store used to render
+   * identity and cross-sell over an EMPTY SHELF - a page whose whole job is
+   * to sell somebody's work could not show any of it. The public route
+   * returns the same rows with no requester, which means every paid piece
+   * comes back locked and no `fullAssetUrl` is served. Free work is
+   * unlocked to everybody either way, which is what free means.
+   */
+  anonymous = false,
+): Promise<ProfileContentItem[]> {
+  const path = anonymous
+    ? `/api/hub/content/public/creator/${wawuId}/content?perPage=50`
+    : `/api/hub/users/${wawuId}/content?perPage=50`;
   try {
-    const { data } = await apiFetchPaginated<RealProfileContentRow>(
-      `/api/hub/users/${wawuId}/content?perPage=50`,
-      { authed: true, cache: "no-store" },
-    );
+    const { data } = await apiFetchPaginated<RealProfileContentRow>(path, {
+      authed: !anonymous,
+      cache: "no-store",
+    });
     return data.map((row) => ({
       id: row.id,
       title: row.title,
@@ -143,13 +161,52 @@ function formatFollowerCount(n: number): string {
  *  - `products`: correctly empty, not a gap — WAWUBasket/WAWUBeauty are
  *    external apps (CLAUDE.md); Hub API never carries their product data.
  */
-export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile> {
-  const [real, content] = await Promise.all([
-    apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${wawuId}/public-profile`, {
-      authed: true,
-    }),
-    getCreatorContent(wawuId),
-  ]);
+export async function getCreatorProfile(ref: string): Promise<CreatorProfile> {
+  const id = storeRef(ref);
+  let real: RealPublicCreatorProfile;
+  let content: CreatorProfile["content"];
+  try {
+    [real, content] = await Promise.all([
+      apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${id}/public-profile`, {
+        authed: true,
+      }),
+      getCreatorContent(id),
+    ]);
+  } catch (e) {
+    if (isMockModeError(e)) {
+      // SEAM: replace with GET /api/hub/users/:wawuId/public-profile
+      // Without this a fixture build could not open ANY visited profile, which
+      // is the half of build brief C2's one-template rule that actually sells.
+      const { mockCreatorProfile } = await import("./mocks/creator-profile");
+      const resolved = await resolveStoreRef(id);
+      return mockCreatorProfile(resolved?.wawuId ?? id);
+    }
+    // `ref` may be a HANDLE, and this endpoint takes an id. One directory
+    // lookup turns it into one, then the read is retried exactly once. See
+    // resolveStoreRef for why that lookup is a directory scan.
+    if (!(e instanceof ApiError && e.status === 404)) throw e;
+    const resolved = await resolveStoreRef(id);
+    if (!resolved || resolved.wawuId === id) throw e;
+    const [retry, retryContent] = await Promise.all([
+      apiFetch<RealPublicCreatorProfile>(`/api/hub/users/${resolved.wawuId}/public-profile`, {
+        authed: true,
+      }),
+      getCreatorContent(resolved.wawuId),
+    ]);
+    return { ...toCreatorProfile(retry, retryContent), name: resolved.name || retry.handle || "WAWU creator" };
+  }
+  return toCreatorProfile(real, content);
+}
+
+/**
+ * The public aggregate, mapped onto the profile shape the screen renders.
+ * Shared by the signed-in read above and the public store read below so the
+ * two cannot drift into describing the same creator differently.
+ */
+function toCreatorProfile(
+  real: RealPublicCreatorProfile,
+  content: CreatorProfile["content"],
+): CreatorProfile {
   return {
     wawuId: real.wawuUserId,
     name: real.handle ?? "WAWU creator",
@@ -189,6 +246,169 @@ export async function getCreatorProfile(wawuId: string): Promise<CreatorProfile>
     content,
     communities: [],
     products: [],
+  };
+}
+
+/* --------------------- the shareable store link (C3) --------------------- */
+
+/**
+ * Strips the decoration off whatever arrived in the URL, so `@adaeze`,
+ * `adaeze` and `%40adaeze` are one reference and not three.
+ */
+function storeRef(ref: string): string {
+  let value = ref.trim();
+  try {
+    value = decodeURIComponent(value);
+  } catch {
+    // A half-encoded segment ("%zz") is not worth failing a page load over.
+  }
+  return value.trim().replace(/^@/, "");
+}
+
+/**
+ * Turn a store-link reference into a real wawuId.
+ *
+ * Build brief C3 gives every user a link "in the form wawu/their-name", so
+ * the thing in the URL is a HANDLE, not the internal id. No endpoint on the
+ * contract resolves one: `/users/:wawuId/public-profile`,
+ * `/users/public/:wawuId` and `/users/:wawuId/content` all take an id, and
+ * the only search that accepts a handle is `/admin/creators` (admin-only,
+ * and this is the most anonymous page in the app).
+ *
+ * KNOWN BACKEND GAP, stated rather than papered over: until the Hub exposes
+ * a handle lookup (GET /api/hub/users/public/by-handle/:handle, or simply
+ * accepting a handle where it takes an id), this resolves the handle against
+ * the public creator directory, GET /api/hub/creators, which is genuinely
+ * unauthenticated and does return each creator's handle. Its ceiling is
+ * `perPage` (50 on the contract), so a link for somebody outside the first
+ * page of the directory will not resolve here. That is a real limit and it
+ * is the reason the gap above is worth closing server-side.
+ *
+ * Returns null only when nothing matched. The caller decides whether an
+ * unmatched reference is a 404 or an id to try as-is.
+ */
+export async function resolveStoreRef(
+  ref: string,
+): Promise<{ wawuId: string; name: string; handle: string } | null> {
+  const value = storeRef(ref).toLowerCase();
+  if (!value) return null;
+  let rows: Awaited<ReturnType<typeof getCreators>>;
+  try {
+    rows = await getCreators();
+  } catch {
+    // The directory is not load-bearing for an id: the caller falls back to
+    // using the reference as one. A handle simply will not resolve.
+    return null;
+  }
+  const match =
+    rows.find((r) => (r.handle ?? "").toLowerCase() === value) ??
+    rows.find((r) => r.wawuId.toLowerCase() === value);
+  if (!match) return null;
+  return { wawuId: match.wawuId, name: match.name, handle: match.handle ?? "" };
+}
+
+/**
+ * The store behind a shared `wawu/<handle>` link, read with NO session.
+ *
+ * Deliberately a different read from getCreatorProfile: that one calls
+ * `/users/:wawuId/public-profile`, which is WawuAuthGuard-protected, so a
+ * logged-out visitor gets a 401 and (before the public-path guard in
+ * client.ts) was hard-navigated to /sign-in. This calls
+ * `/api/hub/users/public/:wawuId` (PublicUserProfileController), which is
+ * genuinely unauthenticated and returns the same aggregate. Same mapper,
+ * same screen, no token.
+ *
+ * ONE HONEST GAP. There is no public per-creator CONTENT endpoint:
+ * `/users/:wawuId/content` is the guarded one and `/content/public/featured`
+ * is platform-wide, not creator-scoped. getCreatorContent sends the request
+ * without a token and degrades to an empty shelf if the server refuses, so a
+ * real deployment may show this creator's storefront with no items on it
+ * until that endpoint exists. Nothing is invented to fill the gap.
+ */
+export async function getStoreProfile(ref: string): Promise<CreatorProfile> {
+  const value = storeRef(ref);
+  if (!value) throw new ApiError("No store was asked for", 404);
+
+  /*
+    Two public reads, fired together because neither needs the other's
+    answer. The aggregate is the store. The directory row is what supplies a
+    DISPLAY NAME, which the aggregate genuinely has no field for (see
+    getCreatorProfile's list of gaps) — without it a shared link opens on
+    "chidi-creates" rather than on Chidi Umeh, which is a poor way to meet
+    somebody. It also carries the wawuId, which is the fallback for a backend
+    whose public read does not accept a handle. The live one does; that is
+    not on the contract, so it is not relied on.
+  */
+  const [attempt, resolved] = await Promise.all([
+    readPublicStore(value).then(
+      (profile) => ({ profile, error: null as unknown }),
+      (error: unknown) => ({ profile: null, error }),
+    ),
+    resolveStoreRef(value),
+  ]);
+  const named = (p: CreatorProfile): CreatorProfile =>
+    resolved?.name ? { ...p, name: resolved.name } : p;
+
+  if (attempt.profile) return named(attempt.profile);
+
+  const error = attempt.error;
+  const unresolved = isMockModeError(error) || (error instanceof ApiError && error.status === 404);
+  if (!unresolved) throw error;
+  if (!resolved) throw isMockModeError(error) ? new ApiError("No such store", 404) : error;
+  if (isMockModeError(error)) {
+    // SEAM: replace with GET /api/hub/users/public/:wawuId
+    const { mockCreatorProfile } = await import("./mocks/creator-profile");
+    return mockCreatorProfile(resolved.wawuId);
+  }
+  return named(await readPublicStore(resolved.wawuId));
+}
+
+async function readPublicStore(id: string): Promise<CreatorProfile> {
+  const [real, content] = await Promise.all([
+    apiFetch<RealPublicCreatorProfile>(`/api/hub/users/public/${encodeURIComponent(id)}`),
+    // Anonymous: this is the SHARED LINK path, where there is no session at
+    // all. The authed shelf read 401s here, which is why the store used to
+    // show identity and cross-sell over an empty shelf.
+    getCreatorContent(id, true),
+  ]);
+  return toCreatorProfile(real, content);
+}
+
+/**
+ * The read shape, normalised into what ProfileScreen draws.
+ *
+ * Lives here rather than in a route file because BOTH entry points need it:
+ * the signed-in /profile/:id page and the public store at /wawu/:handle.
+ * Build brief C2 forbids a second profile template, and two copies of the
+ * normaliser is how a second template gets built by accident.
+ */
+export function toProfileView(p: CreatorProfile): ProfileView {
+  return {
+    wawuId: p.wawuId,
+    name: p.name,
+    handle: p.handle,
+    bio: p.bio,
+    verification: p.verification,
+    avatarUrl: p.avatarUrl,
+    coverUrl: p.coverUrl,
+    location: p.location,
+    memberSince: p.memberSince,
+    website: p.socials.website,
+    // The public aggregate has no separate headline field; `categories[0]` is
+    // what the directory shows under a name, so it is the role line here too
+    // rather than a second invented one.
+    roleLine: p.categories[0],
+    specializations: p.categories,
+    socials: p.socials,
+    stats: {
+      pieces: p.stats.pieces,
+      piecesLabel: p.stats.piecesLabel,
+      followers: p.stats.followers,
+      evg: p.stats.evg,
+    },
+    dm: { enabled: p.dmEnabled, price: p.dmPrice, responseHours: p.dmResponseHours },
+    content: p.content,
+    communities: p.communities,
   };
 }
 

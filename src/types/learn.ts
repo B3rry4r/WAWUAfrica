@@ -18,6 +18,14 @@ export interface LearnCourse {
   whatItCovers: string[];
   /** The real per-course handoff URL (backend field) — never guess this from the id. */
   externalHostUrl: string;
+  /**
+   * Course artwork. Optional because the backend's LearnCourse model has no
+   * image column: a configured build gets `undefined` here and the card
+   * falls back to a brand panel rather than a broken image. The fixtures
+   * carry one so the rail can be reviewed against the Explore reference,
+   * which draws Learning & Growth as picture cards.
+   */
+  imageUrl?: string | null;
 }
 
 export interface Playbook {
@@ -82,8 +90,8 @@ export interface TemplatePack extends LearnGuideBase {
 export type LearnGuide = CountryGuide | ReferenceArticle | TemplatePack;
 
 /**
- * Basic tier → 1 free course. Pro tier → up to 3, of your choice. This is a
- * subscription-tier PERK, not a purchase — there is no wallet, no price, and
+ * How many courses this account can take at no charge. Server-derived. This
+ * is a PERK, not a purchase — there is no wallet, no price, and
  * spending a slot never touches Naira. Locked split (docs/01_SPEC.md).
  */
 export interface LearnEntitlement {

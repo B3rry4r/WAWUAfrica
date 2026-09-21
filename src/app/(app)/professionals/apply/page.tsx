@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Icon } from "@/components/ui/Icon";
 import { Callout } from "@/components/ui/Callout";
-import { ChoiceChips } from "@/components/ui/ChoiceChips";
+import { ChoiceChips, TaxonomyPicker } from "@/components/ui";
 import { FilePicker } from "@/components/ui/FilePicker";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -189,21 +189,28 @@ export default function ApplyProfessionalPage() {
         ) : null}
 
         <section className="flex flex-col gap-[9px]">
-          <span className="text-[13px] font-semibold text-text-secondary">
-            Which fields? <span className="font-normal text-text-muted">Pick as many as apply.</span>
-          </span>
-          <ChoiceChips
-            multiple
-            ariaLabel="Which fields?"
-            options={CATEGORIES.map((c) => ({ value: c.id, label: c.name }))}
+          {/*
+            Build brief C5. This was twenty-five rounded pills wrapped into a
+            vertical wall, which is the exact screen the owner called
+            unprofessional (refs/reject-offer-services-pillwall.jpg). It is now
+            the same sheet-and-rows control the upload wizard uses, so there is
+            one way to pick from a taxonomy in this app rather than two.
+
+            The ids are still the flat 25-category list, not C1's 21
+            professional categories: the regulated-category rules (which fields
+            legally require a licence) are keyed to these ids on the backend,
+            and re-deriving that mapping is a liability decision, not a rename.
+            See DECISIONS.md D7.
+          */}
+          <TaxonomyPicker
+            role="professional"
+            label="Which fields?"
+            hint="Pick as many as apply. Each one is a separate application."
+            emptyHint="No fields chosen yet. Pick the ones you actually practise in: each becomes its own application, reviewed on its own."
+            options={CATEGORIES.map((c) => ({ id: c.id, label: c.name }))}
             value={draft.categories}
-            onSelect={(value) =>
-              setDraft((d) => ({
-                ...d,
-                categories: d.categories.includes(value)
-                  ? d.categories.filter((c) => c !== value)
-                  : [...d.categories, value],
-              }))
+            onChange={(next) =>
+              setDraft((d) => ({ ...d, categories: next as typeof d.categories }))
             }
           />
           {alreadyIn.map((m) => (

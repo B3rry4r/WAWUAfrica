@@ -9,7 +9,6 @@ import { earningsApi } from "@/lib/api/earnings";
 import { getEvgScore } from "@/lib/api/profile";
 import { earningsStreamRows, saleSourceLabel, saleAmountDisplay, relativeTime } from "@/lib/earnings-display";
 import type { EarningsSummary } from "@/types/earnings";
-import { PLANS } from "@/types/subscription";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { HeldPayoutNote, VerificationBanner } from "@/components/dashboard/VerificationAsk";
 import { ListRow } from "@/components/ui/ListRow";
@@ -18,11 +17,20 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { ErrorState, Skeleton } from "@/components/ui/Feedback";
 import { FlowHeader } from "@/components/layout/FlowHeader";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitPercent, formatNaira } from "@/lib/format";
 
 interface StreamRow {
   icon: IconName;
   label: string;
+  /**
+   * Already formatted by earningsStreamRows: naira for the money streams, a
+   * COUNT for community credits.
+   *
+   * This row used to carry the raw number and format it with formatNaira()
+   * here, which printed a credit COUNT as a naira amount ("₦4" for four
+   * spent credits) on a live screen. Credits are never a currency value.
+   */
+  display: string;
   amount: number;
   status?: string;
   pct?: number;
@@ -79,7 +87,7 @@ export function EarningsDashboard() {
   }
 
   // A blank page is not a gate. Somebody arriving here from a stale link is
-  // told what this is and given the way in, the same way /subscription does.
+  // told what this is and given the way in.
   if (!gates.isCreator) {
     return (
       <div>
@@ -113,9 +121,7 @@ export function EarningsDashboard() {
     );
   }
 
-  const tier = gates.tier ?? "basic";
-  const tierLabel = PLANS[tier].name;
-  const keep = PLANS[tier].split;
+  const keep = creatorSplitPercent();
   const earned = approved ? earnings.payable + earnings.held : earnings.held;
 
   // Real per-stream figures and real recent sales, both from the same
@@ -131,6 +137,7 @@ export function EarningsDashboard() {
   const streams: StreamRow[] = earningsStreamRows(earnings).map((row) => ({
     icon: STREAM_ICONS[row.stream] ?? "Play",
     label: row.label,
+    display: row.display,
     amount: row.amount,
     pct: row.pct,
     dim: row.amount === 0,
@@ -142,7 +149,6 @@ export function EarningsDashboard() {
     dm: "MessageCircle",
     tip: "HandCoins",
     community_credits: "Ticket",
-    subscription: "Crown",
   };
   const recent = earnings.recentSales.map((sale) => ({
     // Keyed by the sale's own id: several sales share one source label, and
@@ -156,14 +162,11 @@ export function EarningsDashboard() {
 
   return (
     <div>
-      <FlowHeader
-        title="Earnings"
-        right={
-          <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">
-            {new Date().toLocaleDateString("en-NG", { month: "long" })}
-          </span>
-        }
-      />
+      {/* The month chip that used to sit here said "September" beside a
+          figure that is every sale the account has ever made. Two wrong
+          period signals on one bar. The response carries no date window, so
+          neither does the screen. */}
+      <FlowHeader title="Earnings" />
 
       <div className="pt-[16px] px-[16px] pb-[32px] flex flex-col gap-[14px] xl:mx-auto xl:w-full xl:max-w-[820px] xl:px-[28px] xl:pt-[28px]">
         {/* One worded-in-one-place ask (see VerificationAsk). The strip this
@@ -174,8 +177,12 @@ export function EarningsDashboard() {
         <div
           className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]"
         >
+          {/* ALL TIME, and it now says so. GET /content/mine/earnings sums
+              every completed purchase, answered DM and spent credit with no
+              date filter at all, so "this month" was a label the data has
+              never supported. */}
           <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
-            Earned this month
+            Earned, all time
           </span>
           <span
             className={`text-[38px] font-bold tracking-[-0.035em] leading-[1] [font-feature-settings:var(--font-feature-tabular)] ${
@@ -191,7 +198,7 @@ export function EarningsDashboard() {
                 <span
                   className="inline-flex items-center h-[26px] py-0 px-[10px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] text-[var(--text-secondary)] text-[11.5px] font-bold"
                 >
-                  {keep}/{100 - keep} on {tierLabel}
+                  {keep}/{100 - keep}
                 </span>
               </>
             ) : (
@@ -202,6 +209,19 @@ export function EarningsDashboard() {
               itself, and its copy is keyed to the real KYC status rather than
               implying a review is already under way. */}
           {!approved ? <HeldPayoutNote status={gates.kycStatus} /> : null}
+        </div>
+
+        {/* THE WAY TO THE MONEY. This screen totals what has been sold; the
+            wallet is the account it is paid into, and until now nothing in
+            the app linked to it at all - the route existed and no screen
+            pointed at it. */}
+        <div className="rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] p-[4px]">
+          <ListRow
+            href="/wallet"
+            icon="Wallet"
+            title="Your wallet"
+            subtitle="Where your money is paid out"
+          />
         </div>
 
         <div
@@ -225,7 +245,7 @@ export function EarningsDashboard() {
                         : "text-[14px] font-bold text-[var(--text-primary)]"
                     }`}
                   >
-                    {s.status ?? formatNaira(s.amount)}
+                    {s.status ?? s.display}
                   </span>
                 </div>
                 {s.pct !== undefined ? (
@@ -257,9 +277,26 @@ export function EarningsDashboard() {
               this rendered a button that did nothing when tapped. */}
           <SectionHeader caption="Recent" title="Sales" />
           <div className="flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] p-[4px]">
-            {recent.map((r) => (
-              <ListRow key={r.id} title={r.title} subtitle={r.subtitle} icon={r.icon} meta={r.meta} />
-            ))}
+            {/* An account with no sales yet rendered an empty bordered box
+                with nothing in it at all. */}
+            {recent.length === 0 ? (
+              <p className="m-0 p-[14px] text-[13.5px] leading-[1.5] text-[var(--text-muted)]">
+                No sales yet. Everything you sell shows up here, newest first.
+              </p>
+            ) : (
+              // trailing="none": there is no per-sale screen to open, and a
+              // chevron on a row that goes nowhere promises one.
+              recent.map((r) => (
+                <ListRow
+                  key={r.id}
+                  title={r.title}
+                  subtitle={r.subtitle}
+                  icon={r.icon}
+                  meta={r.meta}
+                  trailing="none"
+                />
+              ))
+            )}
           </div>
         </div>
       </div>

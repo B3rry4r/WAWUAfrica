@@ -2,12 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { checkReferralCode, claimReferralCode, getSignupState, type ReferralCodeCheck } from "@/lib/api/referral";
 import { describeError } from "@/lib/api/errors";
 import { PhoneInput } from "@/components/ui";
-import { referralStorage } from "@/lib/auth/referral-storage";
-import { formatNaira } from "@/lib/format";
-import { PLANS } from "@/types/subscription";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -47,11 +43,6 @@ export function SignUpFlow() {
    * moment: flashing a locked door and then unlocking it is worse than a beat
    * of nothing, and the server refuses regardless if it really is closed.
    */
-  const [userSignupOpen, setUserSignupOpen] = useState<boolean | null>(null);
-  const [referral, setReferral] = useState("");
-  const [referralCheck, setReferralCheck] = useState<ReferralCodeCheck | null>(null);
-  const [referralError, setReferralError] = useState<string | null>(null);
-  const [checkingReferral, setCheckingReferral] = useState(false);
   const [identity, setIdentity] = useState({
     firstName: "",
     middleName: "",
@@ -87,24 +78,12 @@ export function SignUpFlow() {
   useEffect(() => {
     const type = searchParams.get("type");
     if (type === "creator") setAccountType("creator");
-    void getSignupState().then((state) => {
-      setUserSignupOpen(state.userSignupEnabled);
-      // Nobody may sit on a choice that is closed. If they arrived with
-      // "user" selected and it has since shut, move them to the one that is
-      // actually open rather than letting Continue fail later.
-      if (!state.userSignupEnabled) setAccountType("creator");
-    });
-
-    // A code can arrive in the LINK (?ref=BLOG30), which is how a blog shares
-    // one: nobody has to read a code off a page and retype it. It is applied
-    // and validated here exactly as if it had been typed, so an expired or
-    // withdrawn link fails the same way and says so.
-    const ref = searchParams.get("ref");
-    if (ref) {
-      setReferral(ref.toUpperCase());
-      void applyReferralCode(ref);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Signup is open to both account types. There used to be a server switch
+    // that closed the discover account until creators were onboarded, plus a
+    // referral code that let somebody through it early. Both were part of the
+    // subscription machinery that build brief B1 removed: registration is
+    // free, there is no plan for a code to discount, and the endpoints behind
+    // them no longer exist.
   }, [searchParams]);
 
   useEffect(() => {
@@ -140,27 +119,6 @@ export function SignUpFlow() {
     setStep("details");
   };
 
-  const applyReferral = () => applyReferralCode(referral);
-
-  async function applyReferralCode(code: string) {
-    setCheckingReferral(true);
-    setReferralError(null);
-    try {
-      const check = await checkReferralCode(code);
-      setReferralCheck(check);
-      // Remembered so the subscription step can price with it without asking
-      // for the same code a second time.
-      referralStorage.set(check.code);
-      // A valid code is the invitation, so it opens the closed option too.
-      if (userSignupOpen === false) setUserSignupOpen(true);
-    } catch (e) {
-      setReferralCheck(null);
-      referralStorage.clear();
-      setReferralError(describeError(e).body);
-    } finally {
-      setCheckingReferral(false);
-    }
-  }
 
   const onCreateAccount = async () => {
     if (!details.acceptedTerms || submitting) return;
@@ -182,10 +140,6 @@ export function SignUpFlow() {
         accountType,
       });
       if (created.codeExpiresIn) setCodeTtlSeconds(created.codeExpiresIn);
-      // The account exists now, so the code can finally be attached to it.
-      // Until this point it lived only in the browser, which does not survive
-      // the trip to an email client and back in a new tab.
-      if (referralCheck) void claimReferralCode(referralCheck.code);
       setOtpState({ email: identity.email, phone: identity.phone, fullName, accountType });
       setStep("otp");
     } catch (e) {
@@ -232,13 +186,13 @@ export function SignUpFlow() {
   const onFinishInterests = () => {
     if (interests.length < INTERESTS_MIN) return;
     persistInterests(interests);
-    // Creators go straight into onboarding (tier -> payment -> KYC).
-    // Users land on the feed.
+    // Creators go straight into onboarding, which is now a free opt-in
+    // rather than a tier picker and a payment. Users land on the feed.
     router.push(otpState?.accountType === "creator" ? "/onboarding" : "/home");
   };
 
   // A creator's sign-up is two steps, not three: they skip interests and go
-  // to the plan. Counting to three would promise a step that never arrives.
+  // to onboarding. Counting to three would promise a step that never arrives.
   const totalSteps = accountType === "creator" ? 2 : 3;
   const stepLabel =
     step === "otp" ? `Step 2 of ${totalSteps}` : step === "interests" ? "Step 3 of 3" : `Step 1 of ${totalSteps}`;
@@ -270,68 +224,39 @@ export function SignUpFlow() {
           <div className="flex flex-col gap-2">
             <h2 className="m-0 text-[30px] font-bold leading-[1.12] tracking-[-0.03em]">What brings you to WAWU?</h2>
             <p className="m-0 text-[14.5px] leading-normal text-text-secondary">
-              {userSignupOpen === false
-                ? // "Switch later" is the wrong promise when only one option is
-                  // open — it offers a choice that is not on the screen.
-                  "Creator accounts are open now. The rest follows shortly."
-                : "You can switch to a creator account later, nothing here is permanent."}
+              You can switch to a creator account later, nothing here is permanent.
             </p>
           </div>
           {/*
-            The discover account, closed for launch.
+            The discover account.
 
-            Blurred rather than removed: taking the card away would say WAWU
-            has no such thing, which is wrong and would read as a product
-            decision instead of a queue. Left in place and blurred, with the
-            reason on top, it says "not yet" — which is the truth.
-
-            aria-hidden + inert on the blurred copy, because a card a sighted
-            user cannot reach must not still be tabbable or announced; the
-            notice above it carries the meaning for a screen reader.
+            It used to be blurred out behind a "not open yet" notice, released
+            only by a referral code. That whole gate is gone: the switch that
+            closed it and the code that opened it were both part of the
+            subscription machinery build brief B1 removed, and the endpoints
+            behind them no longer exist, so the card could never be unblurred
+            by anything a person did. Both accounts are open.
           */}
-          <div className="relative">
-            <div
-              className={userSignupOpen === false ? "pointer-events-none select-none blur-[3px] opacity-55" : ""}
-              aria-hidden={userSignupOpen === false}
-              {...(userSignupOpen === false ? { inert: "" as unknown as boolean } : {})}
-            >
-              <button
-                type="button"
-                disabled={userSignupOpen === false}
-                onClick={() => setAccountType("user")}
-                className={`flex w-full gap-3.5 rounded-card border bg-card p-4 text-left hover:bg-surface-hover active:bg-surface-press ${
-                  accountType === "user" ? "border-selected" : "border-hairline"
-                }`}
-              >
-                <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
-                  <Icon name="Compass" size={19} strokeWidth={2} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2">
-                    <span className="text-[17px] font-semibold text-text-primary">I&apos;m here to discover</span>
-                    <StatusPill kind="neutral">No subscription</StatusPill>
-                  </span>
-                  <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
-                    Browse and unlock content, message creators, join communities, shop the marketplace.
-                  </span>
-                </span>
-              </button>
-            </div>
-
-            {userSignupOpen === false ? (
-              <div className="absolute inset-0 flex items-center justify-center p-3">
-                <div className="flex max-w-[92%] items-start gap-2.5 rounded-input border border-hairline bg-[rgba(11,10,13,0.88)] px-3.5 py-[11px] backdrop-blur-sm">
-                  <Icon name="Clock" size={16} color="var(--accent)" strokeWidth={2.2} className="mt-0.5 shrink-0" />
-                  <span className="text-[12.5px] leading-[1.45] text-text-secondary">
-                    <span className="font-semibold text-text-primary">Not open yet.</span>{" "}
-                    We are onboarding creators first. Accounts for discovering and buying
-                    open shortly. Create a creator account below, or use the code you
-                    were given.
-                  </span>
-                </div>
-              </div>
-            ) : null}
-          </div>
+          <button
+            type="button"
+            onClick={() => setAccountType("user")}
+            className={`flex w-full gap-3.5 rounded-card border bg-card p-4 text-left hover:bg-surface-hover active:bg-surface-press ${
+              accountType === "user" ? "border-selected" : "border-hairline"
+            }`}
+          >
+            <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[13px] bg-tag text-text-secondary">
+              <Icon name="Compass" size={19} strokeWidth={2} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <span className="text-[17px] font-semibold text-text-primary">I&apos;m here to discover</span>
+                <StatusPill kind="neutral">No charge</StatusPill>
+              </span>
+              <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
+                Browse and unlock content, message creators, join communities, shop the marketplace.
+              </span>
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => setAccountType("creator")}
@@ -346,75 +271,19 @@ export function SignUpFlow() {
               <span className="min-w-0 flex-1">
                 <span className="block text-[17px] font-semibold text-text-primary">I want to create and earn</span>
                 <span className="mt-1 block text-[13.5px] leading-relaxed text-text-secondary">
-                  Everything above, plus upload and price your work, paid DMs, host communities, list your services
-                  as a professional, and keep 85%, 90% on Pro.
+                  Everything above, plus upload and price your work, paid DMs, host communities, and list your
+                  services as a professional. Joining costs nothing, and you keep 85% of what you earn.
                 </span>
               </span>
             </span>
           </button>
 
-          {/*
-            The referral code.
-
-            It does two jobs, which is why it sits on this step rather than
-            beside a price: it is the invitation that opens the discover
-            account while regular signup is closed, AND the discount carried
-            forward to whatever plan they buy. Applying it here means somebody
-            who was sent a code never has to find where to type it later.
-          */}
-          <div className="flex flex-col gap-2 rounded-card border border-hairline bg-card p-4">
-            <span className="text-[13.5px] font-semibold text-text-primary">Have a referral code?</span>
-            <div className="flex gap-2">
-              <input
-                value={referral}
-                onChange={(e) => {
-                  setReferral(e.target.value);
-                  setReferralError(null);
-                  setReferralCheck(null);
-                }}
-                placeholder="Enter your code"
-                aria-label="Referral code"
-                autoCapitalize="characters"
-                className="h-[46px] min-w-0 flex-1 rounded-input border border-hairline bg-input px-3.5 text-[14px] uppercase outline-none placeholder:normal-case placeholder:text-text-disabled"
-              />
-              <Button
-                variant="secondary"
-                onClick={() => void applyReferral()}
-                loading={checkingReferral}
-                disabled={checkingReferral || referral.trim().length < 3}
-              >
-                Apply
-              </Button>
-            </div>
-            {referralCheck ? (
-              <span className="flex items-start gap-1.5 text-[12.5px] leading-[1.45] text-success">
-                <Icon name="Check" size={14} color="var(--success)" strokeWidth={2.6} className="mt-0.5 shrink-0" />
-                {referralCheck.discountPercent > 0 ? (
-                  <span>
-                    {referralCheck.discountPercent}% off {PLANS[referralCheck.tier].name} -{" "}
-                    <s className="text-text-muted">{formatNaira(referralCheck.originalPriceNaira)}</s>{" "}
-                    <span className="font-semibold text-text-primary">{formatNaira(referralCheck.priceNaira)}</span>
-                  </span>
-                ) : (
-                  // A 0% code is an invitation, not a discount. Saying "0% off"
-                  // would read as a broken code rather than an open door.
-                  <span>Code accepted. You can create your account.</span>
-                )}
-              </span>
-            ) : null}
-            {referralError ? (
-              <span className="text-[12.5px] leading-[1.45] text-danger">{referralError}</span>
-            ) : null}
-          </div>
         </div>
         <div className="flex flex-col gap-2.5 border-t border-hairline bg-surface-page px-5 pb-[26px] pt-4 xl:mt-6 xl:border-0 xl:bg-transparent xl:px-0 xl:pb-0 xl:pt-0">
           <Button
             full
             size="lg"
             iconRight="ArrowRight"
-            // Closed + no accepted code + the closed option selected is the one
-            // combination that cannot proceed.
-            disabled={userSignupOpen === false && accountType === "user" && !referralCheck}
             onClick={() => setStep("identity")}
           >
             Continue

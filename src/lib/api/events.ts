@@ -50,6 +50,7 @@ function listQuery(params: ListEventsParams): string {
   if (params.type) query.set("type", params.type);
   if (params.category) query.set("category", params.category);
   if (params.featured !== undefined) query.set("featured", String(params.featured));
+  if (params.host) query.set("host", params.host);
   if (params.page !== undefined) query.set("page", String(params.page));
   if (params.perPage !== undefined) query.set("perPage", String(params.perPage));
   return query.toString();
@@ -100,6 +101,27 @@ export async function getFeaturedEvent(params: ListEventsParams = {}): Promise<W
  * communities.ts for the same arrangement).
  */
 // SEAM: replace with GET /api/hub/events/mine
+/**
+ * One host's PUBLISHED events, for the Events tab on a profile.
+ *
+ * THE BUG THIS REPLACES. The profile called `listMyEvents(hostWawuId)`, which
+ * hits GET /events/mine - the CALLER's events. The `hostWawuId` argument was
+ * only ever used by the mock, so against a real backend a visitor opening
+ * somebody's profile saw THEIR OWN events listed under that person's name.
+ *
+ * /events/mine cannot serve this even filtered: it deliberately returns every
+ * status, including pending and rejected submissions, which belong to the
+ * host alone. This reads the PUBLIC list with `?host=`, so it inherits
+ * `status: published` and shows exactly what the calendar shows.
+ */
+export async function listEventsByHost(
+  hostWawuId: string,
+  params: ListEventsParams = {},
+): Promise<EventPage> {
+  if (!hostWawuId) return { events: [], total: 0, currentPage: 1, nextPage: null };
+  return listEvents({ ...params, host: hostWawuId });
+}
+
 export async function listMyEvents(hostWawuId: string, params: ListEventsParams = {}): Promise<EventPage> {
   const query = new URLSearchParams();
   if (params.page !== undefined) query.set("page", String(params.page));

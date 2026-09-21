@@ -60,19 +60,5 @@ export default function LibraryPage() {
     );
   }
 
-  if (!gates.canUpload) {
-    return (
-      <GatePane>
-        <EmptyState
-          icon="CreditCard"
-          title="Subscribe to unlock uploading"
-          caption="A paid creator subscription unlocks publishing and your content library. KYC is separate and only gates payouts."
-          action="Choose a plan"
-          actionHref="/subscription"
-        />
-      </GatePane>
-    );
-  }
-
   return <ContentLibrary />;
 }

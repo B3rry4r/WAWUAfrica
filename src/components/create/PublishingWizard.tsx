@@ -4,10 +4,9 @@ import { useState } from "react";
 import { CATEGORIES, type CategoryId } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { CONTENT_TYPE_META, type ContentType } from "@/types/content";
-import { PLANS } from "@/types/subscription";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
-import { formatNaira } from "@/lib/format";
+import { creatorSplitRate, formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { FilePicker } from "@/components/ui/FilePicker";
@@ -20,6 +19,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { ErrorState } from "@/components/ui/Feedback";
 import { ContentGridCard } from "@/components/ui/ContentCard";
 import { ContentThumb } from "@/components/ui/ContentThumb";
+import { TaxonomyPicker } from "@/components/ui";
 
 const stepIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -71,34 +71,27 @@ const UPLOAD_ACCEPT: Record<ContentType, string> = {
 
 export interface PublishingWizardProps {
   type: ContentType;
-  firstUpload: boolean;
-  /**
-   * No-charge slots still available on this creator's plan (Basic 1, Pro 2),
-   * excluding the piece being written now.
-   *
-   * The wizard used to model this as the single boolean above, so EVERY
-   * upload after the first was forced to be paid — a Pro creator silently lost
-   * the second no-charge slot their plan includes. The server has always
-   * allowed it (UPLOAD_ALLOWANCE_BY_TIER in the API), so the two disagreed and
-   * the UI was the stricter one.
-   */
-  noChargeSlotsLeft: number;
   /** Set when re-entering the wizard to fix and resubmit a rejected item. */
   resubmit?: { id: string; title: string };
 }
 
-export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmit }: PublishingWizardProps) {
+export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
   const router = useRouter();
   const meta = CONTENT_TYPE_META[type];
   const [step, setStep] = useState(0);
-  const [paid, setPaid] = useState(!firstUpload);
-  // The first upload is forced to ₦0; after that it is a choice, but only
-  // while the plan still has a no-charge slot to spend.
-  const canChooseNoCharge = !firstUpload && noChargeSlotsLeft > 0;
-  const [price, setPrice] = useState(1500);
-  const [title, setTitle] = useState(resubmit ? resubmit.title : firstUpload ? "" : "The trader's playbook");
+  // Every listing carries a price (build brief B2). There is no ₦0 path here
+  // any more: no first-upload allowance, no plan slots, no Free/Paid toggle.
+  // `null` means "not set yet" and is what blocks submission; no figure is
+  // seeded, because the product does not name a default, a floor or a ceiling.
+  const [price, setPrice] = useState<number | null>(null);
+  const [title, setTitle] = useState(resubmit ? resubmit.title : "");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<CategoryId>("business_entrepreneurship");
+  // Specialization ids from the C1 taxonomy, persisted by POST /api/hub/content
+  // (ContentPiece.specializations). `category` above is the deprecated flat
+  // list and still goes with them: rows published before this column existed
+  // only carry a category, so the backend keeps requiring one.
+  const [specializations, setSpecializations] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -110,28 +103,31 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
   // A genuinely separate, freely-viewable preview (cover image or sample clip).
   // `previewAsset` is public — the backend returns it to everyone, including
   // anonymous callers — so reusing the paid file here would hand the full
-  // asset to anyone who reads the URL. Required for paid pieces.
+  // asset to anyone who reads the URL. Required on every piece, since every
+  // piece is sold.
   const [preview, setPreview] = useState<UploadedFile | null>(null);
 
   const steps = ["Upload", "Preview", "Details", "Price"];
   const stepLabel = `Step ${step + 1} of 4`;
 
-  // Live creator state, not the session's sign-in-time snapshot: tier decides
-  // the split shown on the price step (85/15 vs Pro's 90/10) and slot numbers,
-  // and a creator who upgraded after signing in was quoted the wrong one.
+  // Live creator state, not the session's sign-in-time snapshot, because the
+  // slot count on this screen has to be current.
+  //
+  // The split no longer comes from here at all. creatorSplitRate() takes no
+  // argument and returns the single 85/15 rate: the 90/10 went with the Pro
+  // plan that sold it, and there is no tier left for it to key off.
   const { creator } = useCreatorState();
   const gates = creatorGates({ creator });
-  const tier = gates.tier ?? "basic";
-  const tierIsPro = tier === "pro";
-  // The plan's own name: `tierIsPro` is a boolean and there are three tiers,
-  // so it called every Pro Max creator "Basic".
-  const tierName = PLANS[tier].name;
-  const keep = PLANS[tier].split;
-  const youEarn = Math.round((price * keep) / 100);
-  const wawuTakes = price - youEarn;
-  const proEarn = Math.round(price * 0.9);
-  // The slot this upload would land in, ahead of publishing.
-  const nextSlot = Math.min(gates.slotsUsed + 1, gates.slotsTotal);
+  const keep = Math.round(creatorSplitRate() * 100);
+  const priceValue = price ?? 0;
+  /** The one publish condition the price field carries: greater than zero. */
+  const priceSet = priceValue > 0;
+  const youEarn = Math.round((priceValue * keep) / 100);
+  const wawuTakes = priceValue - youEarn;
+  // The slot this upload would land in, ahead of publishing. A resubmitted
+  // piece already owns the slot it was first published into, so it must not be
+  // counted against the cap a second time.
+  const nextSlot = Math.min(resubmit ? Math.max(gates.slotsUsed, 1) : gates.slotsUsed + 1, gates.slotsTotal);
 
   const submit = async () => {
     if (publishing) return;
@@ -139,9 +135,12 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
       setPublishError("Attach your file first. Nothing can be published without it.");
       return;
     }
-    const isPaid = paid && !firstUpload;
-    if (isPaid && !preview) {
-      setPublishError("Paid pieces need a preview. Add a cover or short sample so buyers can see what they're paying for.");
+    if (!priceSet) {
+      setPublishError("Set a price above ₦0. Every listing is sold, so a price is required.");
+      return;
+    }
+    if (!preview) {
+      setPublishError("Add a preview. Buyers need a cover or short sample to see what they are paying for.");
       return;
     }
     setPublishing(true);
@@ -152,10 +151,12 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
         title,
         description,
         category,
-        price: isPaid ? price : 0,
-        // Free pieces are wholly public, so the file may serve as its own
-        // preview. Paid pieces must carry a distinct, openly viewable preview.
-        previewAssetUrl: preview?.fileUrl ?? asset.fileUrl,
+        specializations,
+        price: priceValue,
+        // The preview is served publicly, so it is always a separate file:
+        // reusing the sold asset here would hand the whole thing to anyone who
+        // reads the URL.
+        previewAssetUrl: preview.fileUrl,
         fullAssetUrl: asset.fileUrl,
       });
       setSubmitted(true);
@@ -171,13 +172,11 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
       <Submitted
         type={type}
         title={title}
-        price={paid && !firstUpload ? price : 0}
+        price={priceValue}
         previewUrl={preview?.fileUrl}
       />
     );
   }
-
-  const desktopPrice = paid && !firstUpload ? price : 0;
 
   // D7 desktop header · 3-pill progress summary. The mobile `step` pointer
   // (Upload → Preview → Details → Price) is a literal current-screen
@@ -190,7 +189,7 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
   const desktopStepsFilled = [
     asset !== null, // Upload — genuinely attached, not assumed
     title.trim().length > 0, // Details
-    firstUpload || !paid || price > 0, // Price — first upload is auto-free; otherwise needs a price once "Paid" is chosen
+    priceSet, // Price — always required now, and never satisfied by ₦0
   ];
   let desktopCurrentStep = desktopStepsFilled.findIndex((filled) => !filled);
   if (desktopCurrentStep === -1) desktopCurrentStep = desktopStepsFilled.length - 1;
@@ -233,31 +232,24 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
         ) : (
           <>
             {step === 0 ? <UploadStep type={type} asset={asset} onAsset={setAsset} /> : null}
-            {step === 1 ? <PreviewStep type={type} isPaid={paid && !firstUpload} preview={preview} onPreview={setPreview} /> : null}
+            {step === 1 ? <PreviewStep type={type} preview={preview} onPreview={setPreview} /> : null}
             {step === 2 ? (
               <DetailsStep
                 title={title}
                 onTitle={setTitle}
                 description={description}
                 onDescription={setDescription}
-                category={category}
-                onCategory={setCategory}
+                specializations={specializations}
+                onSpecializations={setSpecializations}
               />
             ) : null}
             {step === 3 ? (
               <PriceStep
-                firstUpload={firstUpload}
-                canChooseNoCharge={canChooseNoCharge}
-                noChargeSlotsLeft={noChargeSlotsLeft}
-                paid={paid}
-                onPaid={setPaid}
                 price={price}
                 onPrice={setPrice}
                 keep={keep}
-                tierIsPro={tierIsPro}
                 youEarn={youEarn}
                 wawuTakes={wawuTakes}
-                proEarn={proEarn}
               />
             ) : null}
           </>
@@ -287,15 +279,15 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
         ) : null}
         {!publishError && step === 3 ? (
           <>
-            <Button full size="lg" loading={publishing} onClick={submit}>
-              {resubmit ? "Resubmit for review" : firstUpload ? "Publish at ₦0" : "Submit for review"}
+            <Button full size="lg" loading={publishing} disabled={!priceSet} onClick={submit}>
+              {resubmit ? "Resubmit for review" : "Submit for review"}
             </Button>
             <span className="text-[12px] text-[var(--text-muted)] self-center">
-              {resubmit
-                ? "Reviewed again before it goes live."
-                : firstUpload
-                  ? "Reviewed before it goes live."
-                  : "Reviewed before it goes live, same as any upload."}
+              {priceSet
+                ? resubmit
+                  ? "Reviewed again before it goes live."
+                  : "Reviewed before it goes live, same as any upload."
+                : "Set a price above ₦0 to send this for review."}
             </span>
           </>
         ) : null}
@@ -350,8 +342,8 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
             need to fake success. A dead button with no onClick is worse
             (looks real, does nothing silently); cutting it until a real
             drafts resource exists is the honest option. */}
-        <Button size="sm" iconRight="ArrowRight" loading={publishing} onClick={submit}>
-          {resubmit ? "Resubmit for review" : firstUpload ? "Publish at ₦0" : "Publish"}
+        <Button size="sm" iconRight="ArrowRight" loading={publishing} disabled={!priceSet} onClick={submit}>
+          {resubmit ? "Resubmit for review" : "Publish"}
         </Button>
       </div>
 
@@ -397,28 +389,22 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
                 This is how readers find you in Explore. Pick the one someone browsing for your work would open.
               </span>
               {/*
-                Was a stale list of the old post categories (Construction, Sell,
-                Event, Opportunity, Research, plus disabled Learn/Question).
-                Events and Opportunities do not exist in this product at all,
-                and the rest predate the taxonomy, so this now renders the same
-                25 categories the mobile step and Explore use.
+                Was 25 rounded chips in a flex-wrap: the pill wall the product
+                owner rejected as unprofessional, rendering a flat taxonomy
+                that C1 replaced. Now the real Role -> Category ->
+                Specialization picker over all 557 entries, searchable and
+                progressively disclosed. Capped at three because this is what
+                a buyer filters on, and a piece tagged with ten things is
+                tagged with none.
               */}
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCategory(c.id)}
-                    className={`rounded-full px-[14px] py-2 text-[13px] ${
-                      category === c.id
-                        ? "bg-accent font-semibold text-on-accent"
-                        : "bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
+              <TaxonomyPicker
+                role="creator"
+                value={specializations}
+                onChange={setSpecializations}
+                max={3}
+                label="What is this?"
+                hint="Pick up to three. This is how buyers find the piece in search and browse."
+              />
             </div>
           </div>
         </div>
@@ -435,90 +421,45 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
           ) : null}
           <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-accent bg-card p-[22px]">
             <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Price</span>
-            {firstUpload ? (
-              <div className="flex flex-col gap-[11px] rounded-[var(--radius-card)] border border-accent bg-elevated p-[16px]">
-                <span className="text-[15px] font-semibold text-text-primary">Your first one goes out at ₦0</span>
-                <p className="m-0 text-[13px] leading-[1.5] text-text-secondary">
-                  Nobody has bought from you yet. Give this one away, then price everything after it.
-                </p>
-                <div className="flex">
-                  <StatusPill kind="info">₦0 · set for you</StatusPill>
+            <NairaInput
+              label="What buyers pay"
+              value={price}
+              onValueChange={setPrice}
+              presets={[500, 1000, 1500, 2500]}
+              hint={`Most pieces in this category sell between ${formatNaira(500)} and ${formatNaira(2500)}.`}
+              error={price !== null && !priceSet ? "A price has to be more than ₦0." : undefined}
+            />
+            {priceSet ? (
+              <div className="flex flex-col gap-[9px] border-t border-hairline pt-[14px]">
+                <div className="flex justify-between text-[13.5px] text-text-secondary">
+                  <span>You keep {keep}%</span>
+                  <span className="font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
+                    {formatNaira(youEarn)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-[9px] pt-1">
+                  <Icon name="Info" size={15} color="var(--warning)" />
+                  <span className="text-[12.5px] text-[var(--warning)]">
+                    Uses slot {nextSlot} of {gates.slotsTotal}
+                  </span>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="flex gap-1 rounded-full border border-hairline bg-tag p-1">
-                  {["No charge", "Paid"].map((label) => {
-                    const active = (label === "Paid") === paid;
-                    return (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => setPaid(label === "Paid")}
-                        className={`h-[38px] flex-1 rounded-full border-none text-[13.5px] font-semibold ${
-                          active
-                            ? "bg-accent text-on-accent"
-                            : "bg-transparent text-text-secondary hover:bg-state-hover active:bg-state-press"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {paid ? (
-                  <>
-                    <NairaInput
-                      label="What buyers pay"
-                      value={price}
-                      onChange={setPrice}
-                      presets={[500, 1000, 1500, 2500]}
-                      hint={`Most pieces in this category sell between ${formatNaira(500)} and ${formatNaira(2500)}.`}
-                    />
-                    <div className="flex flex-col gap-[9px] border-t border-hairline pt-[14px]">
-                      <div className="flex justify-between text-[13.5px] text-text-secondary">
-                        <span>You keep {keep}% on {tierName}</span>
-                        <span className="font-bold text-text-primary [font-feature-settings:var(--font-feature-tabular)]">
-                          {formatNaira(youEarn)}
-                        </span>
-                      </div>
-                      {!tierIsPro ? (
-                        <div className="flex justify-between text-[13px] text-text-muted">
-                          <span>On Pro you would keep</span>
-                          <span className="[font-feature-settings:var(--font-feature-tabular)]">{formatNaira(proEarn)}</span>
-                        </div>
-                      ) : null}
-                      <div className="flex items-center gap-[9px] pt-1">
-                        <Icon name="Info" size={15} color="var(--warning)" />
-                        <span className="text-[12.5px] text-[var(--warning)]">
-                          Uses slot {nextSlot} of {gates.slotsTotal} · resets on renewal
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                ) : null}
-              </>
-            )}
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-hairline bg-card p-[22px]">
             <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview</span>
             <span className="text-[13.5px] leading-[1.5] text-text-secondary">
-              You choose the giveaway. The clip, cover or extract buyers get before they pay.
+              You choose what buyers see before they pay: the clip, cover or extract.
             </span>
             {/* The picker the desktop pane was missing: submit() requires a
-                separate preview for paid pieces, so without this control
-                desktop creators hit an error naming a field they could not
-                see. */}
+                separate preview, so without this control desktop creators hit
+                an error naming a field they could not see. */}
             <FilePicker
               folder="content/preview"
               accept="image/png,image/jpeg,image/webp,video/mp4,application/pdf"
               label={preview ? "Replace the preview" : "Add a preview"}
-              hint={
-                desktopPrice > 0
-                  ? "Required for paid pieces: a cover or short sample buyers see before paying."
-                  : "Optional when the piece is ₦0."
-              }
+              hint="Required: a cover or short sample buyers see before paying."
               onUploaded={setPreview}
               onCleared={() => setPreview(null)}
             />
@@ -531,9 +472,9 @@ export function PublishingWizard({ type, firstUpload, noChargeSlotsLeft, resubmi
           <div className="mt-auto flex flex-col gap-[10px] rounded-[var(--radius-card)] border border-hairline bg-card p-[18px]">
             <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview as a buyer</span>
             <ContentGridCard
-              state={desktopPrice > 0 ? "locked" : "free"}
+              state="locked"
               title={title || meta.label}
-              price={desktopPrice > 0 ? desktopPrice : undefined}
+              price={priceValue}
               contentType={type}
               count={meta.label}
               ratio={previewRatio[type]}
@@ -592,12 +533,10 @@ function UploadStep({
 
 function PreviewStep({
   type,
-  isPaid,
   preview,
   onPreview,
 }: {
   type: ContentType;
-  isPaid: boolean;
   preview: UploadedFile | null;
   onPreview: (f: UploadedFile | null) => void;
 }) {
@@ -622,11 +561,7 @@ function PreviewStep({
         folder="content/preview"
         accept="image/png,image/jpeg,image/webp,video/mp4,application/pdf"
         label={preview ? "Replace the preview" : "Add a preview"}
-        hint={
-          isPaid
-            ? "Required for paid pieces: a cover image or a short sample. Buyers see this before paying."
-            : "Optional at ₦0. Your file is already public."
-        }
+        hint="Required: a cover image or a short sample. Buyers see this before paying."
         onUploaded={onPreview}
         onCleared={() => onPreview(null)}
       />
@@ -701,15 +636,15 @@ function DetailsStep({
   onTitle,
   description,
   onDescription,
-  category,
-  onCategory,
+  specializations,
+  onSpecializations,
 }: {
   title: string;
   onTitle: (v: string) => void;
   description: string;
   onDescription: (v: string) => void;
-  category: CategoryId;
-  onCategory: (v: CategoryId) => void;
+  specializations: readonly string[];
+  onSpecializations: (v: string[]) => void;
 }) {
   return (
     <div className="flex flex-col gap-[16px]">
@@ -724,29 +659,21 @@ function DetailsStep({
         />
         <span className="text-[12px] text-[var(--text-muted)]">Say who it is for and what they will be able to do after.</span>
       </div>
-      <div className="flex flex-col gap-[8px]">
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">Category</span>
-        <div className="relative">
-          <select
-            value={category}
-            onChange={(e) => onCategory(e.target.value as CategoryId)}
-            className="flex w-full items-center gap-[10px] h-[52px] py-0 px-[16px] rounded-[var(--radius-input)] bg-[var(--surface-input)] border border-[var(--border-hairline)] text-[var(--text-primary)] text-[15px] cursor-pointer appearance-none font-[var(--font-sans)]"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <Icon
-            name="ChevronDown"
-            size={16}
-            strokeWidth={2.2}
-            color="var(--text-muted)"
-            className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2"
-          />
-        </div>
-      </div>
+      {/*
+        Was a native <select> over the deprecated flat 25-category list. The
+        C1 taxonomy is 557 specializations, and a native select over that is
+        a scroll wheel with no search: the same unusable shape as the pill
+        wall, just vertical. Same picker as the desktop column, so the two
+        cannot drift.
+      */}
+      <TaxonomyPicker
+        role="creator"
+        value={specializations}
+        onChange={onSpecializations}
+        max={3}
+        label="What is this?"
+        hint="Pick up to three. This is how buyers find the piece in search and browse."
+      />
       {/* The tag chips that used to sit here were hardcoded ("trading",
           "pricing") and had no editor and no field in the publish payload —
           removed rather than left looking editable. Restore when the publish
@@ -756,136 +683,51 @@ function DetailsStep({
 }
 
 function PriceStep({
-  firstUpload,
-  canChooseNoCharge,
-  noChargeSlotsLeft,
-  paid,
-  onPaid,
   price,
   onPrice,
   keep,
-  tierIsPro,
   youEarn,
   wawuTakes,
-  proEarn,
 }: {
-  firstUpload: boolean;
-  canChooseNoCharge: boolean;
-  noChargeSlotsLeft: number;
-  paid: boolean;
-  onPaid: (v: boolean) => void;
-  price: number;
-  onPrice: (v: number) => void;
+  price: number | null;
+  onPrice: (v: number | null) => void;
   keep: number;
-  tierIsPro: boolean;
   youEarn: number;
   wawuTakes: number;
-  proEarn: number;
 }) {
+  // Greater than zero is the whole rule. No floor, no ceiling, no default:
+  // the product names none of those, so this step does not invent one.
+  const priceSet = (price ?? 0) > 0;
   return (
     <>
-      {firstUpload ? (
-        <div className="flex flex-col gap-[14px] p-0 rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]">
-          <span className="grid place-items-center w-[46px] h-[46px] rounded-[14px] bg-[var(--accent-tint)] border border-[var(--border-accent)]">
-            <Icon name="Gift" size={20} strokeWidth={2} color="var(--accent)" />
+      <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
+        Everything published here is sold, so this piece needs a price before it can go for review.
+      </p>
+
+      <NairaInput
+        label="Price per sale"
+        value={price}
+        onValueChange={onPrice}
+        presets={[500, 1000, 1500, 2500]}
+        hint={`Most PDFs on WAWU sell between ${formatNaira(500)} and ${formatNaira(2000)}.`}
+        error={price !== null && !priceSet ? "A price has to be more than ₦0." : undefined}
+      />
+
+      {priceSet ? (
+        <div className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]">
+          <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">You earn per sale</span>
+          <span className="text-[34px] font-bold tracking-[-0.035em] leading-[1] [font-feature-settings:var(--font-feature-tabular)]">
+            {formatNaira(youEarn)}
           </span>
-          <div className="flex flex-col gap-[7px]">
-            <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Your first one goes out at ₦0</span>
-            <p className="m-0 text-[13.5px] leading-[1.5] text-[var(--text-secondary)]">
-              Nobody has bought from you yet, so nobody knows the work is worth paying for. Give this one away, then price everything after it.
-            </p>
+          <div className="flex items-center gap-[10px] pt-[13px] border-t border-t-[var(--border-hairline)]">
+            <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Buyer pays</span>
+            <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price ?? 0)}</span>
           </div>
-          <div className="flex">
-            <StatusPill kind="info">₦0 · set for you</StatusPill>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Not the first upload, but the plan's no-charge slots are spent. Say so,
-          rather than presenting a dead control with no explanation. */}
-      {!firstUpload && noChargeSlotsLeft <= 0 ? (
-        <p className="m-0 text-[13px] leading-[1.5] text-[var(--text-muted)]">
-          Your plan&rsquo;s no-charge uploads are used up, so this one carries a price. Moving up to Pro adds another.
-        </p>
-      ) : null}
-
-      <div className={`flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)] ${firstUpload ? "opacity-[0.55]" : "opacity-100"}`}>
-        {["No charge", "Paid"].map((label) => {
-          const active = (label === "Paid") === paid;
-          // The first upload can only be ₦0; once the plan's no-charge slots
-          // are gone, only "Paid" is left.
-          const locked = label === "Paid" ? firstUpload : !firstUpload && !canChooseNoCharge;
-          return (
-            <button
-              key={label}
-              type="button"
-              disabled={locked}
-              onClick={() => onPaid(label === "Paid")}
-              className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] text-[13.5px] font-semibold font-[var(--font-sans)] ${
-                active
-                  ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-                  : locked
-                    ? "bg-transparent text-[var(--text-disabled)]"
-                    : "bg-transparent text-[var(--text-secondary)] hover:bg-state-hover active:bg-state-press"
-              } ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
-            >
-              {locked ? (
-                <span className="inline-flex items-center gap-[7px]">
-                  <Icon name="Lock" size={14} strokeWidth={2.2} color="var(--text-disabled)" />
-                  {label}
-                </span>
-              ) : (
-                label
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {firstUpload ? (
-        <div className="flex flex-col gap-[11px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-          <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">What happens next</span>
-          <div className="flex gap-[11px]">
-            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[var(--text-on-accent)] text-[11px] font-bold shrink-0">1</span>
-            <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">This goes live at ₦0 and starts pulling people to your profile.</span>
-          </div>
-          <div className="flex gap-[11px]">
-            <span className="grid place-items-center w-[22px] h-[22px] rounded-[999px] bg-[var(--accent)] text-[var(--text-on-accent)] text-[11px] font-bold shrink-0">2</span>
-            <span className="flex-1 text-[13px] leading-[1.45] text-[var(--text-secondary)]">Your next upload can carry any price from {formatNaira(100)} to {formatNaira(5000)}.</span>
+          <div className="flex items-center gap-[10px]">
+            <span className="flex-1 text-[13px] text-[var(--text-secondary)]">WAWU takes {100 - keep}%</span>
+            <span className="text-[13.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">−{formatNaira(wawuTakes)}</span>
           </div>
         </div>
-      ) : paid ? (
-        <>
-          <NairaInput
-            label="Price per sale"
-            value={price}
-            onChange={onPrice}
-            presets={[500, 1000, 1500, 2500]}
-            hint={`Most PDFs on WAWU sell between ${formatNaira(500)} and ${formatNaira(2000)}.`}
-          />
-          <div className="flex flex-col gap-[12px] p-[18px] rounded-[var(--radius-card)] bg-[var(--surface-elevated)] border border-[var(--border-accent)]">
-            <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">You earn per sale</span>
-            <span className="text-[34px] font-bold tracking-[-0.035em] leading-[1] [font-feature-settings:var(--font-feature-tabular)]">
-              {formatNaira(youEarn)}
-            </span>
-            <div className="flex items-center gap-[10px] pt-[13px] border-t border-t-[var(--border-hairline)]">
-              <span className="flex-1 text-[13px] text-[var(--text-secondary)]">Buyer pays</span>
-              <span className="text-[13.5px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
-            </div>
-            <div className="flex items-center gap-[10px]">
-              <span className="flex-1 text-[13px] text-[var(--text-secondary)]">WAWU takes {100 - keep}%</span>
-              <span className="text-[13.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">−{formatNaira(wawuTakes)}</span>
-            </div>
-            {!tierIsPro ? (
-              <div className="flex items-center gap-[9px] pt-[12px] border-t border-t-[var(--border-hairline)]">
-                <Icon name="TrendingUp" size={15} strokeWidth={2.2} color="var(--accent)" />
-                <span className="flex-1 text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
-                  On Pro you would keep {formatNaira(proEarn)}, 90% instead of 85%.
-                </span>
-              </div>
-            ) : null}
-          </div>
-        </>
       ) : null}
     </>
   );
@@ -921,7 +763,7 @@ function Submitted({
           <div className="flex-1 min-w-0 flex flex-col gap-[5px]">
             <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{title || "Untitled"}</span>
             <span className="text-[12.5px] text-[var(--text-secondary)]">
-              {CONTENT_TYPE_META[type].label} · {price > 0 ? `${formatNaira(price)}` : "No charge"}
+              {CONTENT_TYPE_META[type].label} · {formatNaira(price)}
             </span>
             <div className="flex">
               <StatusPill kind="warning" size="xs">Pending review</StatusPill>
@@ -958,6 +800,7 @@ function contentPublish(payload: {
   title: string;
   description: string;
   category: string;
+  specializations: string[];
   price: number;
   previewAssetUrl: string;
   fullAssetUrl: string;
@@ -970,6 +813,7 @@ function contentPublish(payload: {
       price: payload.price,
       description: payload.description,
       category: payload.category,
+      specializations: payload.specializations,
       previewAssetUrl: payload.previewAssetUrl,
       fullAssetUrl: payload.fullAssetUrl,
     }).then(() => undefined),

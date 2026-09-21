@@ -1,11 +1,5 @@
 import Link from "next/link";
-import type { ProfileTab } from "@/types/profile";
-
-const TABS: { id: ProfileTab; label: string }[] = [
-  { id: "content", label: "Content" },
-  { id: "community", label: "Community" },
-  { id: "about", label: "About" },
-];
+import { PROFILE_TAB_LABEL, type ProfileTab } from "@/types/profile";
 
 /**
  * Profile tab bar. Active tab gets the accent underline.
@@ -19,27 +13,39 @@ const TABS: { id: ProfileTab; label: string }[] = [
  * and has no approved spec for this gap yet.
  */
 export function ProfileTabs({
-  wawuId,
+  basePath,
   active,
+  tabs,
   compact = false,
 }: {
-  wawuId: string;
+  /**
+   * Where the tab links point. The owner's profile lives at /profile and
+   * everybody else's at /profile/:wawuId, and the tab bar has to work on
+   * both: hard-coding /profile/:wawuId sent the owner to their own public
+   * URL and lost the Edit controls.
+   */
+  basePath: string;
   active: ProfileTab;
+  /** Only the tabs this profile has anything for. See profileTabsFor(). */
+  tabs: ProfileTab[];
   compact?: boolean;
 }) {
+  // One tab is not a tab bar: a buyer's profile has Overview and nothing
+  // else, and a lone underlined word reads as a control that failed to load.
+  if (tabs.length < 2) return null;
   return (
     <div
       className={[
-        "flex gap-[22px] border-b border-[var(--border-hairline)] p-[12px_18px_0]",
+        "wawu-no-scrollbar flex gap-[22px] overflow-x-auto border-b border-[var(--border-hairline)] p-[12px_18px_0]",
         compact ? "" : "mt-[14px] xl:mt-0",
       ].join(" ")}
     >
-      {TABS.map((tab) => {
-        const on = tab.id === active;
+      {tabs.map((tab) => {
+        const on = tab === active;
         return (
           <Link
-            key={tab.id}
-            href={`/profile/${wawuId}?tab=${tab.id}`}
+            key={tab}
+            href={`${basePath}?tab=${tab}`}
             className={[
               "relative whitespace-nowrap pb-3 text-[14px] no-underline",
               // Unselected branch only: the active tab already sits at
@@ -50,7 +56,7 @@ export function ProfileTabs({
                 : "font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]",
             ].join(" ")}
           >
-            {tab.label}
+            {PROFILE_TAB_LABEL[tab]}
             {on && (
               <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-[2px] bg-[var(--accent)]" />
             )}

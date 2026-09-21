@@ -87,8 +87,28 @@ export function alisonHandoffUrl(courseId: string): string {
   return `https://alison.com/course/${courseId}`;
 }
 
+/**
+ * The course catalogue.
+ *
+ * Has a mock-mode fallback, unlike before. Without one this threw in a
+ * fixture build, and because Explore awaits it in a server component that
+ * threw the WHOLE PAGE: /explore returned a Server Components render error
+ * rather than a page with one section missing. A catalogue read failing is
+ * not a reason for a browse screen to stop existing.
+ *
+ * A real failure against a configured backend still propagates.
+ */
 export async function getCourses(): Promise<LearnCourse[]> {
-  return await apiFetch<LearnCourse[]>("/api/hub/learn/courses");
+  try {
+    return await apiFetch<LearnCourse[]>("/api/hub/learn/courses");
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/learn/courses
+    // Imported here rather than at the top so the fixture catalogue is not
+    // pulled into the bundle a configured build ships.
+    const { getMockCourses } = await import("./mocks/learn");
+    return getMockCourses();
+  }
 }
 
 export async function getCourse(id: string): Promise<LearnCourse | null> {

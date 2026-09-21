@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { getOwnProfile } from "@/lib/api/verification";
 import type { OwnProfile } from "@/types/verification";
 import { Avatar } from "@/components/ui/Avatar";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { ListRow } from "@/components/ui/ListRow";
 import { SoundSetting } from "@/components/layout/SoundToggle";
 import { TgifSetting } from "@/components/tgif/TgifSetting";
@@ -93,7 +92,6 @@ export default function SettingsPage() {
                     href: "/kyc",
                     meta: KYC_STATUS_LABEL[gates.kycStatus],
                   },
-                  { title: "Subscription", subtitle: "Plan, billing and renewal", icon: "BadgeCheck", href: "/subscription" },
                   {
                     title: "Paid messages",
                     // The creator's OWN window, not a fixed sentence. This row
@@ -156,9 +154,6 @@ export default function SettingsPage() {
                 <span className="text-[12.5px] text-[var(--text-muted)]">{profile.email}</span>
               </div>
               <div className="flex flex-col items-end gap-[5px]">
-                {/* Live tier first — profile.plan is a stale "basic" when
-                    own-profile's accountType disagrees with creator state. */}
-                {isCreator && <TierBadge tier={gates.tier ?? profile.plan} />}
                 <span className="text-[11.5px] text-[var(--text-muted)]">
                   {isCreator ? "Creator" : "Member"} account
                 </span>

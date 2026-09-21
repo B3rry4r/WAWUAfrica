@@ -35,7 +35,10 @@ is the wallet note: who custodies creator money decides whether a CBN licence
 is needed, so a change that puts WAWU in custody is worth checking rather than
 assuming.
 - Naira (₦) only. Never dollars.
-- Revenue splits: 85/15 standard, 90/10 for Pro-tier creators. Never invent a rate.
+- **Revenue split is a flat 85/15.** There is no Pro tier to earn 90/10 with
+  (see the subscription note below). Never invent a rate. WAWU Credits are the
+  one deliberate exception at 90/10 for every creator, and always were
+  tier-independent: do not collapse the two.
 - **Creators have a wallet; WAWU does not hold the money.** Each wallet is a
   Flutterwave *payout subaccount*: an account at Flutterwave MFB in the
   creator's own name, under Flutterwave's CBN banking licence. Flutterwave
@@ -48,15 +51,30 @@ assuming.
 - **WAWU Credits render as a COUNT** ("48 credits"), never a naira value, never cashable.
 - No DRM, no screenshot-blocking, no liveness/Face-ID. These do not exist in this product.
 - **Creator is an ACCOUNT TYPE**, not a trust-tier badge or an earned level.
-- Two independent gates: a paid subscription unlocks uploading; manual KYC unlocks
-  earning. "Paid + uploading + KYC pending" is a normal state, not an edge case.
+- **There is no subscription and no creator tier** (product-owner reversal,
+  20 Sep 2026, build brief B1). Registration, profile creation and listing are
+  free; uploading is NOT gated on payment. Basic/Pro/Pro Max are gone, along
+  with the referral codes that discounted them. Revenue now comes from discrete
+  paid actions: verification, paid featuring, paid advertising, community chat
+  tokens. This replaced the earlier "a paid subscription unlocks uploading" note.
+- **ONE gate now, not two: manual KYC unlocks EARNING.** That gate is unchanged
+  and was always independent of payment. "Uploading + KYC pending" is a normal
+  state, not an edge case.
+- **Maximum 5 items per account**, counted across products, content and services
+  together. Hard cap, enforced server-side. No free/paid slot split, because
+  every listing carries a price (brief B2: no free content).
 - KYC is manual review. Nigeria: BVN + NIN. Elsewhere: national-ID equivalent.
 - WAWUBasket / WAWUBeauty are external apps. Handoff only — never rebuild their
   commerce engine.
 - No jobs, no gigs, no Opportunities section.
 - **Events are back** (product-owner reversal, 22 Aug 2026), as a user-submitted,
-  admin-moderated calendar. Same shape as the old app: no ticketing, no pricing,
-  no payment. "Going" is an interest signal, never money — as it always was.
+  admin-moderated calendar.
+- **Events now sell tickets** (build brief B2, 20 Sep 2026). This replaces the
+  earlier "no ticketing, no pricing, no payment" line: B2 lists "events &
+  tickets" as a listing type, the approved designs price event cards in ₦, and
+  B3 makes hosting an event a VERIFIED-ONLY capability. A buyer cannot host at
+  all; an unverified creator or professional cannot either. "Going" is still an
+  interest signal and still never money, which is a separate thing from a ticket.
 
 ## Navigation
 Bottom bar, 5 slots, the SAME for everyone:

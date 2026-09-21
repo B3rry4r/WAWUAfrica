@@ -1,7 +1,6 @@
 "use client";
 
 import { CreateHub } from "@/components/create/CreateHub";
-import { PLANS } from "@/types/subscription";
 import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
 import { creatorGates } from "@/lib/auth/gates";
@@ -39,7 +38,7 @@ export default function CreatePage() {
     );
   }
 
-  // Gate 1 of 2: uploading is only reachable from a creator account. A user
+  // The one gate on this screen: uploading is only reachable from a creator account. A user
   // account has no `creator` record at all — send them to set one up rather
   // than letting them fall through to a picker that has nothing to publish.
   if (!gates.isCreator) {
@@ -56,34 +55,10 @@ export default function CreatePage() {
     );
   }
 
-  // Gate 2 of 2: a creator account still needs a paid subscription to upload.
-  // KYC is a separate, independent gate on earning, not on uploading — a
-  // creator who is subscribed but KYC-pending (gates.awaitingKyc) reaches
-  // CreateHub normally below.
-  if (!gates.canUpload) {
-    return (
-      <CenteredPane>
-        <EmptyState
-          icon="CreditCard"
-          title="Subscribe to unlock uploading"
-          caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts. You can start that anytime after."
-          action="Choose a plan"
-          actionHref="/subscription"
-        />
-      </CenteredPane>
-    );
-  }
-
-  const tier = creator?.tier ?? "basic";
-  const plan = PLANS[tier];
-
-  return (
-    <CreateHub
-      slotsUsed={creator?.slotsUsed ?? 0}
-      slotsTotal={creator?.slotsTotal ?? plan.slots}
-      tier={tier}
-      proPrice={PLANS.pro.price}
-      proSlots={PLANS.pro.slots}
-    />
-  );
+  // There is no second gate. Uploading used to need a paid subscription on
+  // top of a creator account; subscriptions are gone and listing is free.
+  // KYC remains a separate, independent gate on EARNING, never on uploading —
+  // a creator who is KYC-pending (gates.awaitingKyc) reaches CreateHub
+  // normally.
+  return <CreateHub slotsUsed={gates.slotsUsed} slotsTotal={gates.slotsTotal} />;
 }

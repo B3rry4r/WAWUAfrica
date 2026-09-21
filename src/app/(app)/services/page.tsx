@@ -5,7 +5,8 @@ import Link from "next/link";
 import { getServices, getOtherApplications } from "@/lib/api/services";
 import type { PartnerService, ServiceApplication } from "@/types/services";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
-import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TierBadge, TileCard } from "@/components/ui";
+import { Button, ComingSoonPill, ErrorState, Icon, ListRow, TileCard, ICON_GRID } from "@/components/ui";
+import { orderedServices, type PlatformService } from "@/lib/platform-services";
 import type { IconName } from "@/components/ui/Icon";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 
@@ -39,11 +40,31 @@ const eyebrow = "px-[2px] text-[11px] font-bold uppercase tracking-[0.06em] text
  * under an "Open now" / "Coming soon" heading, so repeating it on every card
  * says the same thing twice.
  */
-function ServiceCard({ s, index }: { s: PartnerService; index: number }) {
-  const live = s.status === "live";
-  const href = live ? (s.cta?.href ?? `/services/${s.slug ?? s.id}`) : `/services/${s.slug ?? s.id}`;
-
-  return <TileCard index={index} title={s.name} icon={s.icon as IconName} href={href} />;
+function ServiceCard({ s, open }: { s: PlatformService; open: boolean }) {
+  // A service the catalogue carries always has a detail screen at
+  // /services/<slug>, even when the list itself names no href. Without this,
+  // a service the catalogue had switched on (Loans, Pensions) sorted into
+  // "Open now" and then rendered dimmed and unclickable, which reads as
+  // broken rather than as open.
+  const href = s.href ?? (s.slug ? `/services/${s.slug}` : undefined);
+  // Bare icon and title, no card: build brief A5 takes the multi-colour block
+  // grid out of the app (the colour there was `index % 7` and never meant
+  // anything), and the owner asked for the same treatment Bills Payment got,
+  // "not big cards, just icons and the titles sitting proper".
+  //
+  // A service that is not open yet is deliberately NOT a link. A card that
+  // navigates nowhere is worse than one that says so, and the dimming is what
+  // says it now that the grid no longer captions each tile.
+  return (
+    <TileCard
+      layout="stacked"
+      size="sm"
+      title={s.brand}
+      icon={s.icon}
+      iconImageSrc={s.iconImageSrc}
+      {...(open && href ? { href } : { disabled: true })}
+    />
+  );
 }
 
 const TIMELINE_DOT: Record<"done" | "current" | "upcoming", string> = {
@@ -95,8 +116,28 @@ export default function ServicesPage() {
     );
   }
 
-  const live = services.filter((s) => s.status === "live");
-  const coming = services.filter((s) => s.status === "coming");
+  /*
+    What exists comes from PLATFORM_SERVICES; whether it is OPEN comes from
+    the catalogue.
+
+    The two used to be the same thing, and the result was that /services and
+    the landing page disagreed about what WAWU offers: the landing listed
+    eight, the catalogue returned five, and Events and Shop appeared on one
+    surface and not the other. Product owner, 21 Sep 2026: "services should
+    carry only the services that shows in the landing page."
+
+    A service the catalogue does not carry (Events, Shop, BNPL are WAWU's own
+    surfaces, not partner services) keeps the list's own `soon` flag.
+  */
+  const statusOf = (slug?: string) =>
+    slug ? services.find((c) => (c.slug ?? c.id) === slug)?.status : undefined;
+  const isOpen = (s: PlatformService) => {
+    const catalogue = statusOf(s.slug);
+    return catalogue ? catalogue === "live" : !s.soon;
+  };
+  const ordered = orderedServices(isOpen);
+  const live = ordered.filter(isOpen);
+  const coming = ordered.filter((s) => !isOpen(s));
   const featured = applications.find((a) => a.status === "under_review" || a.status === "pending") ?? applications[0] ?? null;
 
   return (
@@ -111,52 +152,32 @@ export default function ServicesPage() {
           Get registered, get trained, get covered, without leaving the app.
         </p>
 
-        <section className="flex flex-col gap-[11px]">
+        {/*
+          The same icon grid as the landing page and the desktop pane, not a
+          third rendering of the same eight services. Price and turnaround
+          live on each service's own screen, where somebody is actually
+          deciding; here they made every row three lines tall and turned
+          eight services into a page and a half of scrolling.
+        */}
+        <section className="flex flex-col gap-[14px]">
           <span className={eyebrow}>Open now</span>
-          <div className="flex flex-col gap-[10px]">
+          <div className={ICON_GRID}>
             {live.map((s) => (
-              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] no-underline hover:bg-surface-hover active:bg-surface-press">
-                <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-decor)] bg-[var(--decor-tint)]">
-                  <Icon name={s.icon as IconName} size={20} color="var(--accent)" />
-                </span>
-                <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-                  <span className="flex items-center gap-[8px] text-[15.5px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
-                    {s.name}
-                  </span>
-                  <span className="text-[13px] text-[var(--text-secondary)]">{s.tagline}</span>
-                  <span className="text-[12px] text-[var(--text-muted)]">
-                    {s.priceFrom} · {s.turnaround}
-                  </span>
-                </div>
-                <Icon name="ChevronRight" size={17} color="var(--text-muted)" className="self-center" />
-              </Link>
+              <ServiceCard key={s.brand} s={s} open />
             ))}
           </div>
         </section>
 
-        <section className="flex flex-col gap-[11px]">
-          <div className="flex items-center gap-[8px] px-[2px]">
-            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--text-muted)]">Coming with Pro</span>
-            <TierBadge tier="pro" />
-          </div>
-          <div className="flex flex-col gap-[10px]">
-            {coming.map((s) => (
-              <Link key={s.id} href={`/services/${s.slug ?? s.id}`} className="flex gap-[13px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[14px] opacity-[0.82] no-underline hover:bg-surface-hover active:bg-surface-press">
-                <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] border border-[var(--border-hairline)] bg-[var(--surface-tag)]">
-                  <Icon name={s.icon as IconName} size={20} color="var(--text-muted)" />
-                </span>
-                <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-                  <span className="flex items-center gap-[8px] text-[15.5px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
-                    {s.name}
-                    <ComingSoonPill>Coming soon</ComingSoonPill>
-                  </span>
-                  <span className="text-[13px] text-[var(--text-secondary)]">{s.tagline}</span>
-                </div>
-                <Icon name="ChevronRight" size={17} color="var(--text-muted)" className="self-center" />
-              </Link>
-            ))}
-          </div>
-        </section>
+        {coming.length ? (
+          <section className="flex flex-col gap-[14px]">
+            <span className={eyebrow}>Coming soon</span>
+            <div className={ICON_GRID}>
+              {coming.map((s) => (
+                <ServiceCard key={s.brand} s={s} open={false} />
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
 
       {/* D13 frame 1 — live and coming-soon sit as equals in one grid; the applications tracker moves alongside instead of onto its own screen. */}
@@ -191,9 +212,9 @@ export default function ServicesPage() {
 
           <div className="flex flex-col gap-[14px]">
             <span className={eyebrow}>Open now</span>
-            <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
-              {live.map((s, i) => (
-                <ServiceCard key={s.id} s={s} index={i} />
+            <div className={ICON_GRID}>
+              {live.map((s) => (
+                <ServiceCard key={s.brand} s={s} open />
               ))}
             </div>
           </div>
@@ -201,11 +222,9 @@ export default function ServicesPage() {
           {coming.length ? (
             <div className="flex flex-col gap-[14px]">
               <span className={eyebrow}>Coming soon</span>
-              <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 xl:grid-cols-4">
-                {coming.map((s, i) => (
-                  // Offset so the "coming soon" block does not repeat the
-                  // exact colour sequence the block above it just used.
-                  <ServiceCard key={s.id} s={s} index={i + live.length} />
+              <div className={ICON_GRID}>
+                {coming.map((s) => (
+                  <ServiceCard key={s.brand} s={s} open={false} />
                 ))}
               </div>
             </div>

@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { isPublicPath } from "@/lib/auth/public-routes";
 import { SessionProvider, useSession } from "@/lib/auth/session-provider";
 import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
@@ -12,7 +13,6 @@ import { AppHeader } from "./AppHeader";
 import { Sidebar } from "./Sidebar";
 import { DesktopHeader } from "./DesktopHeader";
 import { RequireAuth } from "./RequireAuth";
-import { RequirePaidCreator } from "./RequirePaidCreator";
 
 interface AppShellProps {
   children: ReactNode;
@@ -37,8 +37,8 @@ interface AppShellProps {
  * place that decision gets made; no per-route changes are needed for a
  * screen to pick up the desktop shell.
  *
- * AMBIGUITY RESOLVED: 4 of the 17 desktop frames (D9 Subscription, D11
- * Product detail, D12 Learn, D13 Services) are drawn without a sidebar in
+ * AMBIGUITY RESOLVED: 4 of the 17 desktop frames (D9, D11 Product detail,
+ * D12 Learn, D13 Services) are drawn without a sidebar in
  * the design file — just a header. Treated as a drawing omission, not a
  * distinct "focused" layout: every (app) route gets the persistent
  * Sidebar + DesktopHeader here, unconditionally, the same way mobile's
@@ -62,9 +62,6 @@ interface AppShellProps {
  * genuinely needs a sidebar-less focused layout, that's a per-route decision
  * for that screen's task, not a shell-level exception.
  */
-/** Kept in step with RequireAuth's PUBLIC_ROUTES. */
-const PUBLIC_DOCUMENT_ROUTES = ["/terms", "/privacy/policy"];
-
 export function AppShell({ children, header = true }: AppShellProps) {
   // Warm Flutterwave's script so tapping Pay opens the modal immediately
   // instead of sitting on a dead button while a cross-origin script loads.
@@ -97,7 +94,7 @@ function PublicOrShell({ children, header }: { children: ReactNode; header: bool
   // mount the full shell for a tick, and one tick is all it takes - AppHeader
   // fetches on mount, 401s without a session, and forceSignIn does a hard
   // window.location to /sign-in before hydration ever finishes.
-  if (PUBLIC_DOCUMENT_ROUTES.includes(pathname) && !(hydrated && isAuthenticated)) {
+  if (isPublicPath(pathname) && !(hydrated && isAuthenticated)) {
     return (
       <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-hairline bg-page xl:max-w-[860px]">
         {children}
@@ -120,9 +117,7 @@ function FullShell({ children, header }: { children: ReactNode; header: boolean 
             </>
           ) : null}
           <main className="pb-[96px] xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pb-0">
-            <RequireAuth>
-              <RequirePaidCreator>{children}</RequirePaidCreator>
-            </RequireAuth>
+            <RequireAuth>{children}</RequireAuth>
           </main>
         </div>
       </div>

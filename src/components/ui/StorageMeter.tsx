@@ -8,7 +8,7 @@ import { getStorageUsage, type StorageUsage } from "@/lib/api/uploads";
  * How much of their storage an account has used.
  *
  * This exists because the ceiling is real and was invisible. Storage is capped
- * per account (2GB, 5GB on Pro Max) and enforced at presign — so without this
+ * per account and enforced at presign — so without this
  * the first a creator learns of the limit is an upload being refused, after
  * they picked the file and waited.
  *
@@ -91,8 +91,7 @@ export function StorageMeter({ refreshKey = 0, className = "" }: StorageMeterPro
       {tight ? (
         <span className="flex items-start gap-[6px] text-[11.5px] leading-[1.45] text-[var(--text-muted)]">
           <Icon name="TriangleAlert" size={13} color="var(--warning)" className="mt-[1px] shrink-0" />
-          {humanBytes(usage.remainingBytes)} left. Remove something you no longer need
-          {usage.tier === "pro_max" ? "" : ", or move up a plan for more space"}.
+          {humanBytes(usage.remainingBytes)} left. Remove something you no longer need.
         </span>
       ) : null}
     </div>

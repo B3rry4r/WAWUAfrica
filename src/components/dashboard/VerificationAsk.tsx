@@ -38,7 +38,7 @@ const COPY: Record<Exclude<KycStatus, "approved">, VerificationCopy> = {
     icon: "ShieldAlert",
     headline: "You have not started verification yet",
     body:
-      "Your subscription unlocked uploading. Verification is a separate step, and it is the one that lets us pay you. Takes a few minutes, reviewed in 1 to 3 days.",
+      "Uploading is already open to you. Verification is a separate step, and it is the one that lets us pay you. Takes a few minutes, reviewed in 1 to 3 days.",
     cta: "Start verification",
     heldNote:
       "You have not started verification yet. It is what releases this to your bank account. Nothing you earn is lost while it sits here.",

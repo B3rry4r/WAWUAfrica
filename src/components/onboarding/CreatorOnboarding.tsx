@@ -1,173 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
-import { creatorGates } from "@/lib/auth/gates";
+import { creatorGates, MAX_ITEMS_PER_ACCOUNT } from "@/lib/auth/gates";
 import { useRouter } from "next/navigation";
-import type { CreatorTier } from "@/types/account";
-import { PLANS, PLAN_ORDER, planFeatures } from "@/types/subscription";
+import { becomeCreator } from "@/lib/api/auth";
 import { formatNaira } from "@/lib/format";
-import { checkReferralCode, getClaimedReferralCode, type ReferralCodeCheck } from "@/lib/api/referral";
-import { referralStorage } from "@/lib/auth/referral-storage";
-import { subscriptionApi } from "@/lib/api/subscription";
-import { isFlutterwaveCancelled } from "@/lib/flutterwave";
+import { describeError } from "@/lib/api/errors";
 import { useSession } from "@/lib/auth/session-provider";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { verificationCopy } from "@/components/dashboard/VerificationAsk";
 
-type Step = "value" | "tier" | "processing" | "success" | "failed";
+type Step = "value" | "activating" | "success" | "failed";
 
-function CheckRow({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="flex items-start gap-[9px] text-[13.5px] leading-[1.4] text-[var(--text-secondary)]">
-      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} className="mt-[2px]" />
-      {children}
-    </span>
-  );
-}
-
+/**
+ * Becoming a creator.
+ *
+ * This was a paywall: a value screen, a tier picker (Basic / Pro / Pro Max),
+ * a Flutterwave charge and a payment-confirmed receipt, and an unpaid creator
+ * was held on it by RequirePaidCreator until they paid. Subscriptions were
+ * removed from the product, so all of that is gone. Registration, profile
+ * creation and listing are free; the screen now explains what a creator
+ * account is and switches it on.
+ *
+ * What is NOT gone is KYC. It was always the second, independent gate and it
+ * still is: it decides when earnings are paid out, never what can be
+ * published.
+ */
 export function CreatorOnboarding() {
   const router = useRouter();
   const { user, setCreatorState, signOut } = useSession();
-  const { creator, loading: creatorLoading } = useCreatorState();
+  const { creator, loading: creatorLoading, reload } = useCreatorState();
   const [step, setStep] = useState<Step>("value");
-  /** True only while the checkout modal is being opened. */
-  const [paying, setPaying] = useState(false);
-  const [tier, setTier] = useState<CreatorTier>("pro");
-  // Kept only for the card's emphasis styling. The TIER is the state.
-  const proSelected = tier !== "basic";
-  // Set from the subscription the server confirms, so the receipt shows the
-  // real renewal date rather than a hardcoded one.
-  const [renewsAt, setRenewsAt] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * The referral code they applied at sign-up, if any.
-   *
-   * Loaded once and re-checked against the server rather than trusted from
-   * storage: the price must come from the same place that will charge it, and
-   * a code can have been deactivated or used up since sign-up.
-   */
-  const [referral, setReferral] = useState<ReferralCodeCheck | null>(null);
-  useEffect(() => {
-    let active = true;
-    // The browser copy first, then the ACCOUNT's. The local one is gone
-    // whenever somebody came back in a new tab or on another device, which
-    // is the normal shape of "register, go to your email, come back".
-    void (async () => {
-      const stored = referralStorage.get() ?? (await getClaimedReferralCode());
-      if (!stored || !active) return;
-      await applyStoredCode(stored, () => active);
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const applyStoredCode = async (stored: string, stillActive: () => boolean) => {
-    await checkReferralCode(stored)
-      .then((check) => {
-        if (!stillActive()) return;
-        setReferral(check);
-        // A code is issued against ONE plan. This screen opens on Pro, so a
-        // code for Basic silently did nothing: the creator saw the full
-        // ₦5,999 with no explanation, which is exactly what the product
-        // owner hit with a 100% code. Selecting the code's own plan is the
-        // only reading of "I was given this code" that is not a trap.
-        setTier(check.tier);
-      })
-      // A code that no longer validates simply does not apply. Blocking
-      // somebody from subscribing over it would be worse than the full price.
-      .catch(() => referralStorage.clear());
-  };
-
-  const listPrice = PLANS[tier].price;
-  // A code is issued against ONE plan, so it only discounts that plan. Picking
-  // a different tier must not silently carry the discount across.
-  const discountApplies = referral !== null && referral.tier === tier && referral.discountPercent > 0;
-  const price = discountApplies ? referral.priceNaira : listPrice;
-  // Yearly billing, so the term ends a year from today. Used before payment
-  // (the confirm screen has no server date yet); the success screen prefers
-  // the real `renewsAt` the subscription came back with.
-  const oneYearFromNow = new Date();
-  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-  const formatDay = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  const projectedRenewal = formatDay(oneYearFromNow);
-  const title =
-    step === "value"
-      ? "Become a creator"
-      : step === "tier"
-        ? "Choose your tier"
-        : step === "failed" || step === "processing"
-          ? "Payment"
-          : "";
-
-  const pay = () => {
-    // No "processing" screen yet: the Flutterwave modal has not even opened,
-    // and claiming to confirm a payment nobody has made is what made this
-    // flow feel broken. `onCharged` flips to it once the charge is real.
-    setPaying(true);
-    subscriptionApi
-      // The code goes to the server, not the price: it recomputes the naira.
-      .subscribe(tier, () => {
-        setPaying(false);
-        setStep("processing");
-      }, referral?.tier === tier ? referral.code : undefined)
-      .then((subscription) => {
-        // Apply the tier the SERVER confirmed, not the one the user picked:
-        // this is what flips canUpload on for the rest of the app, so it must
-        // come from the verified subscription row. (This previously mutated
-        // the dev-only mock session store, granting creator access locally
-        // regardless of what the backend actually said.)
-        setCreatorState({
-          tier: subscription.plan.tier,
-          subscriptionPaid: subscription.state === "active",
-          // "not_started", never "pending". Paying for a subscription does not
-          // submit anything to review — defaulting to "pending" here is what
-          // put "Held, not payable yet · released as soon as verification
-          // clears" in front of creators who had never been asked to verify.
-          kyc: user?.creator?.kyc ?? "not_started",
-          slotsUsed: user?.creator?.slotsUsed ?? 0,
-          slotsTotal: subscription.plan.slots,
-          dmPrice: user?.creator?.dmPrice ?? 0,
-          dmEnabled: user?.creator?.dmEnabled ?? false,
-        });
-        setRenewsAt(subscription.renewsAt ?? null);
-        setStep("success");
-      })
-      .catch((e) => {
-        // Dismissing Flutterwave's checkout charges nothing — send the user
-        // back to the confirm screen rather than a payment-declined error.
-        setPaying(false);
-        // Dismissing checkout charges nothing, so stay on the tier screen
-        // rather than showing a payment-declined error.
-        if (isFlutterwaveCancelled(e)) {
-          setStep("tier");
-          return;
-        }
-        // A real backend rejection (declined card, already subscribed) lands
-        // on the real failure screen.
-        setStep("failed");
-      });
-  };
-
-  // Gates for the already-subscribed branch below. Never re-checks
+  // Gates for the already-a-creator branch below. Never re-checks
   // `creator.kyc` inline — see src/lib/auth/gates.ts.
   const alreadyGates = creatorGates({ creator });
   // One wording for all four KYC states, shared with every other surface that
   // asks for verification (src/components/dashboard/VerificationAsk.tsx).
-  // This branch used to say "it is still outstanding" and offer "Verify my
-  // identity" to anyone who was not yet approved — including creators whose
-  // submission was already in review, and creators whose documents had been
-  // rejected, neither of whom is in an "outstanding" state.
   const alreadyCopy = verificationCopy(alreadyGates.kycStatus);
 
-  // Somebody who has already paid must never be shown the signup flow again.
-  // Without this they walked the whole thing and were told, only in the network
-  // tab, "Already subscribed — use /upgrade, /downgrade, or /retry-payment".
-  if (creator?.subscriptionPaid && step !== "success") {
+  const activate = () => {
+    setError(null);
+    setStep("activating");
+    becomeCreator()
+      .then(() => {
+        // Ask the server what it actually recorded rather than asserting it
+        // locally. The old flow could set creator state from a payment it had
+        // just verified; there is no receipt to trust here.
+        setCreatorState({
+          tier: user?.creator?.tier ?? "basic",
+          kyc: user?.creator?.kyc ?? "not_started",
+          slotsUsed: user?.creator?.slotsUsed ?? 0,
+          slotsTotal: MAX_ITEMS_PER_ACCOUNT,
+          dmPrice: user?.creator?.dmPrice ?? 0,
+          dmEnabled: user?.creator?.dmEnabled ?? false,
+        });
+        reload();
+        setStep("success");
+      })
+      .catch((e) => {
+        setError(describeError(e).body);
+        setStep("failed");
+      });
+  };
+
+  // Somebody who is already a creator must never be walked through this again.
+  if (alreadyGates.isCreator && step !== "success") {
     return (
       <Centered>
         <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--decor-tint)] border border-[var(--border-decor)]">
@@ -175,8 +77,7 @@ export function CreatorOnboarding() {
         </span>
         <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">You are already a creator</h2>
         <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[300px]">
-          Your {PLANS[creator.tier].name} subscription is active, so uploading and the creator tools are
-          already on.
+          Uploading and the creator tools are already on. You can list up to {MAX_ITEMS_PER_ACCOUNT} items.
         </p>
         {alreadyCopy ? (
           <p className="m-0 max-w-[300px] text-[14px] leading-[1.5] text-[var(--text-secondary)]">
@@ -184,9 +85,8 @@ export function CreatorOnboarding() {
           </p>
         ) : null}
         <div className="flex w-full max-w-[320px] flex-col gap-[10px] pt-[6px]">
-          {/* Somebody who paid and bounced off this screen is exactly who the
-              setup checklist is for — it is the primary way on from here, and
-              it carries the verification ask as one of its rows. */}
+          {/* The setup checklist is the primary way on from here, and it
+              carries the verification ask as one of its rows. */}
           <Button full size="lg" iconRight="ArrowRight" onClick={() => router.replace("/creator/setup")}>
             Finish setting up
           </Button>
@@ -195,16 +95,8 @@ export function CreatorOnboarding() {
               {alreadyCopy.cta}
             </Button>
           ) : null}
-          <Button
-            full
-            size="lg"
-            variant="secondary"
-            onClick={() => router.replace("/creator")}
-          >
+          <Button full variant="ghost" onClick={() => router.replace("/creator")}>
             Go to your dashboard
-          </Button>
-          <Button full variant="ghost" onClick={() => router.replace("/subscription")}>
-            Manage subscription
           </Button>
         </div>
       </Centered>
@@ -222,17 +114,16 @@ export function CreatorOnboarding() {
     );
   }
 
-  if (step === "processing") {
+  if (step === "activating") {
     return (
       <Centered>
         <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--surface-card)] border border-[var(--border-strong)]">
           <Icon name="Loader" size={36} strokeWidth={2.2} color="var(--accent)" />
         </span>
-        <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Confirming your payment</h2>
-        <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[280px]">This takes a few seconds. Do not close the app.</p>
-        <div className="w-[180px] h-[5px] rounded-[999px] bg-[var(--surface-tag)] overflow-hidden mt-[6px]">
-          <div className="w-[62%] h-full rounded-[999px] bg-[var(--accent)]" />
-        </div>
+        <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Setting up your creator account</h2>
+        <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[280px]">
+          This takes a few seconds.
+        </p>
       </Centered>
     );
   }
@@ -244,31 +135,15 @@ export function CreatorOnboarding() {
           <span className="grid place-items-center w-[72px] h-[72px] rounded-[999px] bg-[var(--decor-tint)] border border-[var(--border-decor)]">
             <Icon name="Check" size={34} strokeWidth={2.6} color="var(--accent)" />
           </span>
-          <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">
-            Payment confirmed. You are on {PLANS[tier].name}.
-          </h2>
+          <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">You are a creator now</h2>
+          <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[320px]">
+            Nothing to pay. Publish and sell from today, up to {MAX_ITEMS_PER_ACCOUNT} items on your account.
+          </p>
 
-          <div className="flex flex-col gap-[8px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
-            <div className="flex items-center gap-[10px]">
-              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Paid today</span>
-              <span className="text-[14px] font-bold [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
-            </div>
-            <div className="flex items-center gap-[10px]">
-              <span className="flex-1 text-[13.5px] text-[var(--text-secondary)]">Renews</span>
-              <span className="text-[14px] font-semibold [font-feature-settings:var(--font-feature-tabular)]">
-                {renewsAt ? formatDay(new Date(renewsAt)) : projectedRenewal}
-              </span>
-            </div>
-          </div>
-
-          {/* The two gates, said plainly, at the one moment the creator is
-              guaranteed to be looking: right after the charge clears. They
-              used to be dropped straight onto the dashboard from here and
-              only ever learn about verification from a tinted strip they did
-              not notice — then find their earnings "held" for a review nobody
-              had ever asked them to start. Nothing below is a wall: the ask is
-              the primary action, and skipping it changes nothing about what
-              they can upload or sell. */}
+          {/* The one remaining gate, said plainly at the moment somebody is
+              guaranteed to be looking. It is not a wall: the ask is the
+              primary action, and skipping it changes nothing about what they
+              can upload or sell. */}
           <div className="flex flex-col gap-[14px] w-full p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left">
             <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
               Two separate things
@@ -278,8 +153,8 @@ export function CreatorOnboarding() {
                 <Icon name="Check" size={16} strokeWidth={2.6} color="var(--success)" />
               </span>
               <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
-                <span className="text-[var(--text-primary)] font-semibold">Uploading is unlocked.</span> That is what the
-                subscription you just paid for does. Publish and sell from today.
+                <span className="text-[var(--text-primary)] font-semibold">Uploading is open.</span> It costs nothing
+                and there is no plan to buy. Publish and sell from today.
               </span>
             </div>
             <div className="flex gap-[12px]">
@@ -295,11 +170,6 @@ export function CreatorOnboarding() {
           </div>
         </div>
         <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
-          {/* Paying used to end here, on a dashboard nobody had been shown how
-              to use. The setup checklist is the continuation of this same
-              story — it opens with verification listed on it (marked
-              skippable, because it is), alongside the paid-message price, the
-              first community and the first upload. */}
           <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/creator/setup")}>
             Set up your account
           </Button>
@@ -307,7 +177,7 @@ export function CreatorOnboarding() {
             Skip for now
           </Button>
           <span className="text-[12px] leading-[1.45] text-[var(--text-muted)] self-center text-center">
-            Six steps, none of them urgent. Verification is one of them. Skipping costs you nothing today; the
+            Five steps, none of them urgent. Verification is one of them. Skipping costs you nothing today; the
             checklist waits at the top of your dashboard whenever you want it.
           </span>
         </div>
@@ -316,29 +186,19 @@ export function CreatorOnboarding() {
   }
 
   return (
-    // mx-auto, not m-0. /onboarding is the paywall, so it renders with no
-    // desktop sidebar - which left m-0 pinning this column hard against the
-    // left edge with half a screen of empty background beside it.
     <div className="flex flex-col min-h-[100vh] max-w-[var(--mobile-column)] xl:max-w-[760px] mx-auto">
       {/*
-        On the first step, back USED to be router.back(). Now that an unpaid
-        creator is held here until they pick a tier, that went nowhere: every
-        app route bounces straight back, so the button looked broken. The way
-        out of a paywall is to leave the account, so it signs out.
+        Back genuinely goes back now. This used to sign the user out, because
+        /onboarding was a paywall an unpaid creator could not leave: every app
+        route bounced them straight back here, so an ordinary back button
+        looked broken. Nothing holds them here any more.
       */}
       <FlowHeader
-        title={title}
-        onBack={() => {
-          if (step !== "value") return setStep("value");
-          signOut();
-          router.replace("/sign-in");
-        }}
-        right={step === "tier" ? <span className="text-[12.5px] font-semibold text-[var(--text-muted)]">Billed yearly</span> : undefined}
+        title={step === "failed" ? "Something went wrong" : "Become a creator"}
+        onBack={() => router.push("/home")}
       />
 
-      <div
-        className={`flex-1 flex flex-col gap-[18px] px-[20px] pb-[20px] ${step === "value" ? "pt-[24px]" : "pt-[18px]"}`}
-      >
+      <div className="flex-1 flex flex-col gap-[18px] px-[20px] pb-[20px] pt-[24px]">
         {step === "value" ? (
           <>
             <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em] leading-[1.15]">
@@ -364,125 +224,19 @@ export function CreatorOnboarding() {
             </div>
 
             <div className="flex flex-col gap-[12px] p-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)]">
-              <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">Two steps</span>
-              {[
-                ["Pick a yearly tier", ", unlocks uploading."],
-                ["Verify your identity", ", unlocks getting paid. Reviewed in 1–3 days."],
-              ].map(([s, r], i) => (
-                <div key={s} className="flex gap-[11px]">
-                  <span className="grid place-items-center w-[24px] h-[24px] rounded-[999px] bg-[var(--accent)] text-[var(--text-on-accent)] text-[12px] font-bold shrink-0">{i + 1}</span>
-                  <span className="flex-1 text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
-                    <span className="text-[var(--text-primary)] font-semibold">{s}</span>
-                    {r}
-                  </span>
-                </div>
-              ))}
-              <span className="text-[12.5px] leading-[1.45] text-[var(--text-muted)] pl-[35px]">They are independent. You can upload and sell before verification, and before it clears. Only the payout waits.</span>
-            </div>
-          </>
-        ) : null}
-
-        {step === "tier" ? (
-          <>
-            {/*
-              All THREE plans. This was a two-way toggle over a `proSelected`
-              boolean, so Pro Max could not be chosen at all — the tier existed
-              on the pricing page, in the API and in the allowance table, and
-              there was no way to buy it. PLAN_ORDER is the one list every
-              other pricing surface reads.
-            */}
-            <div className="flex gap-[4px] p-[4px] rounded-[999px] bg-[var(--surface-tag)] border border-[var(--border-hairline)]">
-              {PLAN_ORDER.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTier(t)}
-                  aria-pressed={tier === t}
-                  className={`flex-1 grid place-items-center h-[40px] rounded-[999px] border-[none] px-[6px] text-[13px] font-semibold cursor-pointer font-[family-name:var(--font-sans)] ${
-                    tier === t
-                      ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
-                      : "bg-transparent text-[var(--text-secondary)] hover:bg-state-hover active:bg-state-press"
-                  }`}
-                >
-                  {PLANS[t].name}
-                </button>
-              ))}
-            </div>
-
-            <div
-              className={`flex flex-col gap-[15px] p-[20px] rounded-[var(--radius-card)] border ${
-                proSelected
-                  ? "bg-[var(--surface-elevated)] border-[var(--border-selected)]"
-                  : "bg-[var(--surface-card)] border-[var(--border-hairline)]"
-              }`}
-            >
-              <div className="flex">
-                <TierBadge tier={tier} />
-              </div>
-              <div className="flex flex-col gap-[4px]">
-                <div className="flex items-baseline gap-[7px]">
-                  {discountApplies ? (
-                    <s className="text-[18px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">
-                      {formatNaira(listPrice)}
-                    </s>
-                  ) : null}
-                  <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(price)}</span>
-                  <span className="text-[14px] text-[var(--text-muted)]">a year</span>
-                </div>
-                {discountApplies ? (
-                  <span className="flex items-center gap-[7px]">
-                    <span className="rounded-full bg-[var(--accent)] px-[8px] py-[2px] text-[11px] font-bold text-[var(--text-on-accent)]">
-                      {referral.discountPercent}% off
-                    </span>
-                    <span className="text-[12px] text-[var(--text-muted)]">code {referral.code}</span>
-                  </span>
-                ) : referral && referral.tier !== tier ? (
-                  // The mismatch was silent. Somebody holding a code and
-                  // looking at full price has to be told which plan it is for,
-                  // and given the one tap that applies it.
-                  <button
-                    type="button"
-                    onClick={() => setTier(referral.tier)}
-                    className="flex items-center gap-[7px] text-left"
-                  >
-                    <span className="text-[12px] text-[var(--text-secondary)]">
-                      Code {referral.code} is {referral.discountPercent}% off {PLANS[referral.tier].name}.
-                    </span>
-                    <span className="text-[12px] font-semibold text-[var(--accent)]">Use it</span>
-                  </button>
-                ) : null}
-              </div>
-
-              <div
-                className={`flex items-center gap-[12px] p-[14px] rounded-[var(--radius-input)] border ${
-                  proSelected
-                    ? "bg-[var(--selected-tint)] border-[var(--border-selected)]"
-                    : "bg-[var(--surface-tag)] border-[var(--border-hairline)]"
-                }`}
-              >
-                <span className="text-[24px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
-                  {PLANS[tier].split}/{100 - PLANS[tier].split}
-                </span>
-                <span className="flex-1 text-[12.5px] leading-[1.4] text-[var(--text-secondary)]">
-                  {PLANS[tier].split === 90
-                    ? "Keep 90% on content, DMs, tips and storefront, not 85%."
-                    : "Community credits still pay 90% on every tier."}
-                </span>
-              </div>
-
-              {/*
-                planFeatures puts the derived allowance at the head of the
-                list. This card used to render that row itself AND take the
-                plan's own features, which each spelled the same allowance out
-                by hand - so the tier screen said "12 uploads, 2 included, 10
-                paid" and "12 uploads a year - 2 included and 10 paid", one
-                under the other, to someone about to pay.
-              */}
-              <div className="flex flex-col gap-[9px]">
-                {planFeatures(tier).slice(0, 6).map((f) => (
-                  <CheckRow key={f}>{f}</CheckRow>
-                ))}
-              </div>
+              <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[var(--text-muted)]">
+                What it costs
+              </span>
+              <span className="text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
+                <span className="text-[var(--text-primary)] font-semibold">Nothing.</span> Creating your account,
+                building your profile and listing your work all cost {formatNaira(0)}. You can list up to{" "}
+                {MAX_ITEMS_PER_ACCOUNT} items.
+              </span>
+              <span className="text-[13.5px] leading-[1.45] text-[var(--text-secondary)]">
+                <span className="text-[var(--text-primary)] font-semibold">Verification is separate.</span> It unlocks
+                getting paid, and it is reviewed by a person in 1 to 3 days. You can upload and sell before it clears.
+                Only the payout waits.
+              </span>
             </div>
           </>
         ) : null}
@@ -492,12 +246,10 @@ export function CreatorOnboarding() {
             <span className="grid place-items-center w-[88px] h-[88px] rounded-[999px] bg-[var(--danger-tint)] border border-[rgba(255,92,92,0.3)]">
               <Icon name="TriangleAlert" size={36} strokeWidth={2.2} color="var(--danger)" />
             </span>
-            <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">Payment did not go through</h2>
-            <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[290px]">Your bank declined the charge. Nothing was taken from your account.</p>
-            <div className="flex items-start gap-[10px] w-full py-[14px] px-[16px] rounded-[var(--radius-card)] bg-[var(--surface-card)] border border-[var(--border-hairline)] text-left mt-[6px]">
-              <Icon name="Info" size={16} color="var(--text-muted)" className="mt-[1px]" />
-              <span className="flex-1 text-[13px] leading-[1.5] text-[var(--text-secondary)]">Try another card, or pay by transfer or USSD instead.</span>
-            </div>
+            <h2 className="m-0 text-[26px] font-bold tracking-[-0.03em]">We could not switch your account over</h2>
+            <p className="m-0 text-[15px] leading-[1.55] text-[var(--text-secondary)] max-w-[290px]">
+              {error ?? "Something went wrong on our side. Nothing about your account has changed."}
+            </p>
           </div>
         ) : null}
       </div>
@@ -505,36 +257,32 @@ export function CreatorOnboarding() {
       <div className="flex flex-col gap-[10px] pt-[16px] px-[20px] pb-[26px] border-t border-t-[var(--border-hairline)]">
         {step === "value" ? (
           <>
-            <Button full size="lg" iconRight="ArrowRight" onClick={() => setStep("tier")}>
-              Choose a tier
+            <Button full size="lg" iconRight="ArrowRight" onClick={activate}>
+              Become a creator
             </Button>
             <button
               type="button"
-              onClick={() => {
-                signOut();
-                router.replace("/sign-in");
-              }}
+              onClick={() => router.push("/home")}
               className="self-center text-[12.5px] font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)]"
             >
-              Sign out
+              Not now
             </button>
-          </>
-        ) : null}
-        {step === "tier" ? (
-          <>
-            <Button full size="lg" onClick={pay} disabled={paying}>
-              {paying ? "Opening checkout…" : `Pay ${formatNaira(price)} with ${PLANS[tier].name}`}
-            </Button>
-            <span className="text-[12px] text-[var(--text-muted)] self-center">Renews yearly. Cancel before renewal.</span>
           </>
         ) : null}
         {step === "failed" ? (
           <>
-            <Button full size="lg" icon="RotateCw" onClick={() => setStep("tier")}>
+            <Button full size="lg" icon="RotateCw" onClick={activate}>
               Try again
             </Button>
-            <Button full variant="ghost" onClick={() => setStep("tier")}>
-              Choose another tier
+            <Button
+              full
+              variant="ghost"
+              onClick={() => {
+                signOut();
+                router.replace("/sign-in");
+              }}
+            >
+              Sign out
             </Button>
           </>
         ) : null}

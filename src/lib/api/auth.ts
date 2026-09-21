@@ -10,6 +10,7 @@ import type {
   SessionUser,
 } from "@/types/auth";
 import type { AccountType, CreatorTier, KycStatus, VerificationLevel } from "@/types/account";
+import { MAX_ITEMS_PER_ACCOUNT } from "@/lib/auth/gates";
 import { apiFetch, ApiError, delay, isMockModeError } from "@/lib/api/client";
 import { WAWU_ID_BASE } from "@/lib/api/config";
 
@@ -94,11 +95,14 @@ interface HubMeResponse {
 
 interface HubCreatorStateResponse {
   tier: CreatorTier;
-  subscriptionPaid: boolean;
   kycStatus: KycStatus;
   slotsUsed: number;
-  /** Computed server-side from tier (basic 3 / pro 7) — confirmed via CreatorStateService, not a client computation. */
-  slotsTotal: number;
+  /**
+   * Whatever the server still computes. Deliberately NOT read: the allowance
+   * is a flat MAX_ITEMS_PER_ACCOUNT for every account now, and gates.ts is
+   * the only place that number lives.
+   */
+  slotsTotal?: number;
   dmPrice: number | null;
   dmEnabled: boolean;
 }
@@ -144,10 +148,10 @@ function mapVerificationTier(tier: string): VerificationLevel {
 function toCreatorState(state: HubCreatorStateResponse): CreatorState {
   return {
     tier: state.tier,
-    subscriptionPaid: state.subscriptionPaid,
     kyc: state.kycStatus,
     slotsUsed: state.slotsUsed,
-    slotsTotal: state.slotsTotal,
+    // The flat cap, never the server's tier-derived number.
+    slotsTotal: MAX_ITEMS_PER_ACCOUNT,
     dmPrice: state.dmPrice ?? 0,
     dmEnabled: state.dmEnabled,
   };
@@ -338,12 +342,11 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
       const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { token: result.accessToken });
       creator = toCreatorState(state);
     } catch (e) {
-      // 403/404 is the ordinary answer for an account that is not a creator,
-      // and for a creator who has not picked a tier yet.
+      // 403/404 is the ordinary answer for an account that is not a creator.
       const notACreator = e instanceof ApiError && (e.status === 404 || e.status === 403);
       // Anything else — 5xx, timeout, network — is a REQUEST FAILURE, not
       // evidence about this account. Swallowing it used to hand a real,
-      // paid, KYC-approved creator a session with creator:null, which
+      // KYC-approved creator a session with creator:null, which
       // silently locked uploading, earnings and every creator surface for
       // the rest of the session with no error anywhere. Surface it so the
       // sign-in screen can retry instead of signing them in demoted.
@@ -352,7 +355,7 @@ export async function signIn(payload: SignInPayload): Promise<AuthResponse> {
     }
 
     // The server's own answer wins over the cached flag. A profile row that
-    // was never written, or written as "user" before they upgraded, must not
+    // was never written, or written as "user" before they became a creator, must not
     // outrank live creator state.
     const accountType: AccountType = creator !== null ? "creator" : me.accountType ?? "user";
 
@@ -446,16 +449,43 @@ export async function saveNewPassword(payload: NewPasswordPayload): Promise<void
 }
 
 /**
- * Live creator tier/slots/KYC status, read fresh from the Hub API rather
- * than the snapshot captured at sign-in (SessionUser.creator). Used by
- * screens that gate or display slot counts / tier / KYC status and need it
- * current, not just "as of last login" — e.g. after an upgrade, a KYC
- * decision, or a publish that used a slot.
+ * Live creator slots/KYC status, read fresh from the Hub API rather than the
+ * snapshot captured at sign-in (SessionUser.creator). Used by screens that
+ * gate or display slot counts / KYC status and need it current, not just "as
+ * of last login" — e.g. after a KYC decision, or a publish that used a slot.
  *
- * Creator-only: returns null for a plain user (no CreatorState row) or a
- * creator account pre-tier-selection, exactly like the sign-in path already
- * treats a 404 here (see signIn above).
+ * Creator-only: returns null for a plain user (no CreatorState row), exactly
+ * like the sign-in path already treats a 404 here (see signIn above).
  */
+/**
+ * Turns the signed-in account into a creator account.
+ *
+ * This is the whole of "become a creator" now. It used to be a purchase:
+ * POST /creator-subscription, a Flutterwave charge, then a verify round trip,
+ * and the CreatorState row appeared as a side effect of a successful payment.
+ * Subscriptions are gone and registration, profile creation and listing are
+ * free, so the only thing left to record is the account type itself.
+ *
+ * PATCH /api/hub/users/me is the same call sign-up already makes for someone
+ * who picks "creator" on the first screen — this is that call, for someone
+ * who picked "user" then changed their mind.
+ *
+ * SEAM: replace with PATCH /api/hub/users/me { accountType: "creator" }
+ * (and confirm the backend provisions the CreatorState row off the back of
+ * it, which payment verification used to do).
+ */
+export async function becomeCreator(): Promise<void> {
+  try {
+    await apiFetch("/api/hub/users/me", {
+      method: "PATCH",
+      authed: true,
+      body: { accountType: "creator" as AccountType },
+    });
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
+  }
+}
+
 export async function getCreatorState(): Promise<CreatorState | null> {
   try {
     const state = await apiFetch<HubCreatorStateResponse>("/api/hub/creator/state", { authed: true });

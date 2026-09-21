@@ -7,8 +7,6 @@ import { describeError } from "@/lib/api/errors";
 import { creatorGates } from "@/lib/auth/gates";
 import { useSession } from "@/lib/auth/session-provider";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
-import { PLANS } from "@/types/subscription";
-import { formatNaira } from "@/lib/format";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { Button } from "@/components/ui/Button";
 import { CommunityImage } from "@/components/ui/CommunityImage";
@@ -29,18 +27,17 @@ function Column({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Create a community — the entry point the product sold on both pricing cards
- * (docs/01 §4: Basic "unlimited messages in open communities", Pro "can
- * open/host private communities") and never shipped.
+ * Create a community.
  *
- * Both gates are explained, never silently enforced:
- *   - No creator account / unpaid subscription → the whole screen says so and
- *     points at the one flow that fixes it.
- *   - Basic tier picking "Private" → the option stays visible and selectable-
- *     looking with the reason and the upgrade route attached, rather than a
- *     dead greyed row that tells nobody why (the pricing card already sold
- *     private communities as a Pro line item; this is where that promise gets
- *     cashed or explained).
+ * Private rooms used to be a Pro-tier perk, with a "move up to Pro" card
+ * attached to the option. Subscriptions are gone, so there is no tier to move
+ * up to and that card would have been a paywall nobody could pay: both kinds
+ * are open to every creator account now. FLAGGED: the server may still refuse
+ * `kind: "private"` for a non-Pro row until the backend catches up, and a
+ * genuine 403 is surfaced as-is rather than pre-empted here.
+ *
+ * The one gate left is explained, never silently enforced: no creator account
+ * and the whole screen says so, pointing at the flow that fixes it.
  *
  * KYC is deliberately not consulted here. It gates earning, never creating.
  */
@@ -61,10 +58,9 @@ export function CreateCommunity() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canHostPrivate = gates.tier === "pro";
   const trimmedName = name.trim();
   const trimmedDescription = description.trim();
-  const ready = trimmedName.length >= 3 && trimmedDescription.length >= 10 && (kind === "open" || canHostPrivate);
+  const ready = trimmedName.length >= 3 && trimmedDescription.length >= 10;
 
   // Wait for the SERVER's answer on creator-vs-user before committing to a
   // branch — the sign-in snapshot says "user" forever for anyone who
@@ -88,26 +84,9 @@ export function CreateCommunity() {
         <EmptyState
           icon="Users"
           title="Hosting needs a creator account"
-          caption="Anyone can join and talk in a community. Hosting one of your own is part of a creator subscription."
+          caption="Anyone can join and talk in a community. Hosting one of your own comes with a creator account, at no charge."
           action="Set up a creator account"
           actionHref="/onboarding"
-        />
-      </Column>
-    );
-  }
-
-  // Gate 1: the subscription. Same gate as uploading — a creator account with
-  // no active subscription cannot host.
-  if (!gates.canUpload) {
-    return (
-      <Column>
-        <FlowHeader title="New community" />
-        <EmptyState
-          icon="Lock"
-          title="Your subscription is not active"
-          caption={`Hosting a community comes with a creator subscription, from ${formatNaira(PLANS.basic.price)} a year. Open communities are on every tier.`}
-          action="See the tiers"
-          actionHref="/subscription"
         />
       </Column>
     );
@@ -222,7 +201,7 @@ export function CreateCommunity() {
             <span className="flex flex-1 flex-col gap-[3px]">
               <span className="text-[15px] font-semibold text-text-primary">Open</span>
               <span className="text-[12.5px] leading-[1.45] text-text-secondary">
-                Anyone can join and start talking straight away. On every tier.
+                Anyone can join and start talking straight away.
               </span>
             </span>
           </button>
@@ -230,50 +209,21 @@ export function CreateCommunity() {
           <button
             type="button"
             onClick={() => setKind("private")}
-            aria-disabled={!canHostPrivate}
             className={`flex w-full cursor-pointer gap-[12px] rounded-card border p-[15px] text-left font-[family-name:var(--font-sans)] ${
-              kind === "private" && canHostPrivate
+              kind === "private"
                 ? "border-selected bg-elevated"
                 : "border-hairline bg-card hover:bg-surface-hover active:bg-surface-press"
             }`}
           >
             <Icon name="Lock" size={19} strokeWidth={2} color="var(--accent)" className="mt-[2px] shrink-0" />
             <span className="flex flex-1 flex-col gap-[3px]">
-              <span className="flex items-center gap-[8px] text-[15px] font-semibold text-text-primary">
-                Private
-                {!canHostPrivate ? (
-                  <span className="inline-flex h-[20px] items-center rounded-full bg-tag px-[8px] text-[10.5px] font-bold uppercase tracking-[0.05em] text-text-secondary">
-                    Pro
-                  </span>
-                ) : null}
-              </span>
+              <span className="flex items-center gap-[8px] text-[15px] font-semibold text-text-primary">Private</span>
               <span className="text-[12.5px] leading-[1.45] text-text-secondary">
                 People ask to join and you approve them. Nobody reads it until you do.
               </span>
             </span>
           </button>
 
-          {/* The rule, said out loud, at the moment it bites — a greyed row
-              with no sentence attached is why nobody knew private communities
-              existed in the first place. */}
-          {kind === "private" && !canHostPrivate ? (
-            <div className="flex flex-col gap-[10px] rounded-card border border-hairline bg-card p-[15px]">
-              <span className="text-[13.5px] font-semibold text-text-primary">Private communities come with Pro</span>
-              <span className="text-[12.5px] leading-[1.5] text-text-secondary">
-                Your {PLANS[gates.tier ?? "basic"].name} tier hosts open communities with unlimited messages. Pro
-                adds private ones you approve people into, {PLANS.pro.slots} upload slots instead of {PLANS.basic.slots},
-                and a {PLANS.pro.split}/{100 - PLANS.pro.split} split.
-              </span>
-              <div className="flex gap-[10px]">
-                <Button size="sm" variant="secondary" className="flex-1" href="/subscription">
-                  Move up to Pro
-                </Button>
-                <Button size="sm" variant="ghost" className="flex-1" onClick={() => setKind("open")}>
-                  Make it open
-                </Button>
-              </div>
-            </div>
-          ) : null}
         </div>
 
         <div className="flex items-start gap-[10px] rounded-input border border-hairline bg-card px-[14px] py-[13px]">

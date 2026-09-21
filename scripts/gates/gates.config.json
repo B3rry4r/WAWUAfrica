@@ -19,6 +19,7 @@
       ".next/**",
       "dist/**",
       "generated/**",
+      "**/*.generated.ts",
       "build/**",
       "**/mocks/**"
     ]
@@ -57,9 +58,10 @@
     },
     "hardcoded_signals": {
       "enabled": true,
+      "_why_token_layer": "These two paths shipped pointing at src/theme/** and src/styles/tokens*, NEITHER of which exists in this repo. The real token layer is src/app/tokens.css, so the gate's idea of 'inside the token layer' resolved to nothing. It still caught raw hex in .ts/.tsx (the source globs never included .css), so nothing was being missed in practice, but a token-layer allowlist that matches no file is a gate with a hole waiting for the first person who moves a colour into it.",
       "token_layer": [
-        "src/theme/**",
-        "src/styles/tokens*"
+        "src/app/tokens.css",
+        "src/app/globals.css"
       ],
       "check_colors": true,
       "allow_paths": []
@@ -89,6 +91,9 @@
       "enabled": true
     },
     "unbacked_promises": {
+      "enabled": true
+    },
+    "pill_walls": {
       "enabled": true
     }
   }

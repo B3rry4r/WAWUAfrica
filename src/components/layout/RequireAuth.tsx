@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { isPublicPath } from "@/lib/auth/public-routes";
 import { useSession } from "@/lib/auth/session-provider";
 
 /**
@@ -27,14 +28,17 @@ import { useSession } from "@/lib/auth/session-provider";
  *
  * Deliberately narrow: /privacy/policy is the public document, while /privacy
  * itself and /privacy/blocked are that account's own settings and stay gated.
+ *
+ * The list itself now lives in lib/auth/public-routes.ts, because allowing a
+ * route takes agreement here, in AppShell and in the API client's 401
+ * handler. Two of the three used to hold their own copy of it.
  */
-const PUBLIC_ROUTES = ["/terms", "/privacy/policy"];
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, hydrated } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  const isPublic = PUBLIC_ROUTES.includes(pathname);
+  const isPublic = isPublicPath(pathname);
 
   useEffect(() => {
     if (isPublic) return;

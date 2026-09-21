@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { contentApi } from "@/lib/api/creator-content";
 import { useCreatorState } from "@/lib/auth/use-creator-state";
-import { PLANS } from "@/types/subscription";
+import { MAX_ITEMS_PER_ACCOUNT } from "@/lib/auth/gates";
 import type { ContentItem, ContentStatus } from "@/types/content";
 import { CreatorUploadCard } from "@/components/ui/ContentCard";
 import { BackLink, Button, EmptyState, ErrorState, Sheet, Skeleton } from "@/components/ui";
@@ -94,10 +94,10 @@ export function ContentLibrary() {
     return items.filter((i) => i.status === filter);
   }, [items, filter]);
 
-  // Real slots total (Basic 6 / Pro 15, derived server-side from tier), never
+  // Real slots total, the flat per-account cap, never
   // the frozen mock — see src/lib/api/mocks/session.ts.
   const { creator } = useCreatorState();
-  const slotsTotal = creator?.slotsTotal ?? PLANS.basic.slots;
+  const slotsTotal = creator?.slotsTotal ?? MAX_ITEMS_PER_ACCOUNT;
   // A rejected piece does not hold a slot (the wizard's own copy promises
   // "if it is rejected the slot comes back"), so counting every row —
   // which the header used to do — overstated how full the library was.
@@ -215,14 +215,19 @@ export function ContentLibrary() {
 
           {items && filtered.length > 0 ? (
             <div className="pt-[6px] dt:max-w-[280px]">
-              <Button
-                full
-                variant="secondary"
-                icon="Plus"
-                href={slotsUsed >= slotsTotal ? "/subscription" : "/create"}
-              >
-                {slotsUsed >= slotsTotal ? "All slots in use. See plans" : "Upload something new"}
-              </Button>
+              {/* When every slot is in use there is nowhere useful to send
+                  somebody: this screen IS where you free one up, and the old
+                  "See plans" button pointed at a subscription page that no
+                  longer exists. A sentence beats a button to itself. */}
+              {slotsUsed >= slotsTotal ? (
+                <span className="block text-[12.5px] leading-[1.45] text-text-muted">
+                  All {slotsTotal} slots are in use. Take something down below to free one up.
+                </span>
+              ) : (
+                <Button full variant="secondary" icon="Plus" href="/create">
+                  Upload something new
+                </Button>
+              )}
             </div>
           ) : null}
         </div>

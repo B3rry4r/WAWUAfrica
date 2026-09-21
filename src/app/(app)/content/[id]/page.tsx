@@ -689,7 +689,7 @@ function LessonList({ content }: { content: ContentPiece }) {
 }
 
 function LockedCta({ content, onUnlock }: { content: ContentPiece; onUnlock: () => void }) {
-  const split = Math.round(content.price * creatorSplitRate(content.creator.isPro));
+  const split = Math.round(content.price * creatorSplitRate());
   return (
     <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-5">
       <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">Preview ends</span>
@@ -995,7 +995,7 @@ function UnlockDialogBody({
   onDone: () => void;
   onClose: () => void;
 }) {
-  const split = Math.round(content.price * creatorSplitRate(content.creator.isPro));
+  const split = Math.round(content.price * creatorSplitRate());
 
   return (
     <>

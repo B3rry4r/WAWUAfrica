@@ -281,7 +281,7 @@ function UpsellCard() {
     <div className="flex flex-col gap-[11px] rounded-card border border-decor bg-elevated p-[18px]">
       <span className="text-[14.5px] font-semibold">Sell what you know</span>
       <span className="text-[12.5px] leading-[1.45] text-text-secondary">
-        Creators keep 85%, 90% on Pro. Your first upload goes out at ₦0.
+        Creators keep 85% of every sale. Joining and listing cost nothing.
       </span>
       <Button full size="sm" iconRight="ArrowRight" href="/onboarding">
         Become a creator

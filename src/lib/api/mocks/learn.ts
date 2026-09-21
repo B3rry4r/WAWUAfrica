@@ -5,6 +5,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   {
     id: "c-bookkeeping",
     externalHostUrl: "https://alison.com/course/c-bookkeeping",
+    imageUrl: "/mock/learn/c1.jpg",
     title: "Bookkeeping for small business",
     category: "Business",
     hours: 8,
@@ -20,6 +21,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   {
     id: "c-marketing",
     externalHostUrl: "https://alison.com/course/c-marketing",
+    imageUrl: "/mock/learn/c2.jpg",
     title: "Digital marketing basics",
     category: "Marketing",
     hours: 6,
@@ -34,6 +36,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   {
     id: "c-export-docs",
     externalHostUrl: "https://alison.com/course/c-export-docs",
+    imageUrl: "/mock/learn/c3.jpg",
     title: "Export documentation",
     category: "Trade",
     hours: 10,
@@ -48,6 +51,7 @@ export const MOCK_COURSES: LearnCourse[] = [
   {
     id: "c-customer-service",
     externalHostUrl: "https://alison.com/course/c-customer-service",
+    imageUrl: "/mock/learn/c4.jpg",
     title: "Customer service that keeps people",
     category: "Business",
     hours: 4,
@@ -197,7 +201,7 @@ export const MOCK_PLAYBOOK: Playbook = {
     {
       heading: "Digital Marketing: From Instagram to WhatsApp, Reaching Millions on a Shoestring",
       body:
-        "The Trust Deficit is Real: Online scams are rampant. Your digital presence must be meticulously crafted to build trust. Social proof—testimonials, user-generated content is your most powerful weapon. Community Over Corporation: Nigerians crave connection. They don't want to interact with a faceless brand; they want to connect with a person, a story, a mission.",
+        "The Trust Deficit is Real: Online scams are rampant. Your digital presence must be meticulously crafted to build trust. Social proof (testimonials, user-generated content) is your most powerful weapon. Community Over Corporation: Nigerians crave connection. They don't want to interact with a faceless brand; they want to connect with a person, a story, a mission.",
     },
     {
       heading: "The Art of the Naija Sell: Customer Psychology & Relationship Management",

@@ -1,42 +1,46 @@
-import Link from "next/link";
 import type { CreatorDiscovery } from "@/types/explore";
-import { Avatar } from "@/components/ui/Avatar";
-import { VerificationBadge } from "@/components/ui/VerificationBadge";
+import { Avatar, MediaCard, VerificationBadge } from "@/components/ui";
 import { FollowButton } from "@/components/shared/FollowButton";
 
 /**
- * Desktop 4-up creator discovery card (design D10). Shared by the Explore
- * landing's "Creators to watch" row and /explore/creators' xl grid so both
- * stay identical without forking the card.
+ * The creator card, built to the reference
+ * (refs/target-explore-desktop-structure.jpg, "Featured Creators").
  *
- * The identity half is a link to the creator's profile. It used to be inert:
- * the card offered Follow and nothing else, so Explore let you follow someone
- * you had no way of opening. FollowButton stays OUTSIDE the link — nesting it
- * would make tapping Follow navigate instead (same rule as the row card in
- * /explore/creators).
+ * WHAT THE REFERENCE DRAWS. A portrait photograph IS the card. The name with
+ * its tick, the role line and a full-width purple Follow pill sit over the
+ * bottom of that photograph behind a scrim. Nothing else: no piece count, no
+ * handle, no separate panel under the picture.
+ *
+ * WHAT WAS THERE BEFORE, twice. First a 56px avatar circle on a dark card
+ * with "field - N pieces" under it, which on real data is a coloured circle
+ * with a letter in it and tells a visitor nothing about the person. Then a
+ * photo on top with the body in a panel below, which is the EVENT card's
+ * shape, not this one. This is the reference's shape.
+ *
+ * FollowButton stays outside MediaCard's link on purpose: nesting a button
+ * inside an anchor makes pressing Follow navigate instead of following.
  */
 export function CreatorGridCard({ creator }: { creator: CreatorDiscovery }) {
+  const display = creator.handle ? `@${creator.handle}` : creator.name;
+
   return (
-    // The hover belongs to the whole card, but it is driven by the identity
-    // link only: `has-[a:hover]` keeps FollowButton (a <button>, deliberately
-    // outside the link) from lighting the card it does not navigate.
-    <div className="flex flex-col items-start gap-3 rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-5 has-[a:hover]:border-strong has-[a:hover]:bg-surface-hover">
-      <Link
+    <div className="relative w-[168px] shrink-0 dt:w-[188px]">
+      <MediaCard
         href={`/profile/${creator.wawuId}`}
-        className="flex w-full flex-col items-start gap-3 no-underline"
-      >
-        <Avatar src={creator.avatarUrl} initial={creator.name.charAt(0)} size={56} />
-        <div className="flex items-center gap-[7px]">
-          <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">
-            {creator.handle ? `@${creator.handle}` : creator.name}
-          </span>
-          {creator.verification ? <VerificationBadge tier={creator.verification} size={16} /> : null}
-        </div>
-        <span className="text-[12.5px] text-[var(--text-muted)]">
-          {creator.field} · {creator.pieceCount} {creator.pieceCount === 1 ? "piece" : "pieces"}
-        </span>
-      </Link>
-      <div className="flex w-full [&>button]:w-full">
+        imageUrl={creator.avatarUrl}
+        aspect="aspect-[3/4]"
+        className="w-full"
+        fallback={<Avatar src={null} initial={creator.name.charAt(0)} size={64} />}
+        title={display}
+        titleBadge={
+          creator.verification ? <VerificationBadge tier={creator.verification} size={14} /> : undefined
+        }
+        caption={creator.field || undefined}
+        // The Follow pill's own space, reserved inside the scrim so the name
+        // and role are never pushed behind the button laid over them.
+        action={<span className="block h-[32px]" />}
+      />
+      <div className="absolute inset-x-[11px] bottom-[11px] [&>button]:w-full">
         <FollowButton wawuId={creator.wawuId} initial={creator.following} size="sm" />
       </div>
     </div>

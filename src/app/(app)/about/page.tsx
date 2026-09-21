@@ -61,7 +61,7 @@ export default function AboutPage() {
       </span>
       <Section
         title="What creators earn"
-        body="Creators price their own work in naira. On a sale, 85% goes to the creator and WAWU keeps 15%, or 90/10 on the Pro and Pro Max tiers."
+        body="Creators price their own work in naira. On a sale, 85% goes to the creator and WAWU keeps 15%. Registration and listing cost nothing, and there is no subscription."
       />
       <Section
         title="Credits, never cash"

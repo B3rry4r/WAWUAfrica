@@ -24,7 +24,16 @@ const GROUPS: { title: string; rows: Row[] }[] = [
     rows: [
       { key: "newReplies", label: "Replies to my messages", caption: "When a creator answers a paid DM" },
       { key: "newFollowers", label: "New followers", caption: "When someone follows you" },
-      { key: "promotions", label: "Offers and news", caption: "Occasional WAWU announcements" },
+      {
+        key: "promotions",
+        label: "Offers and news",
+        // Build brief C8 made this switch real: it is now the opt-out for
+        // admin-composed campaigns (kind `campaign`), honoured on every
+        // dispatch in NotificationService.emitCampaign. The caption says what
+        // it controls rather than describing a vague category, because a
+        // switch whose effect you cannot predict is one nobody touches.
+        caption: "Announcements and product news in your notifications",
+      },
       { key: "communityDigest", label: "Community digest", caption: "Weekly highlights from communities you joined" },
     ],
   },
@@ -117,10 +126,25 @@ export function NotificationsSettingsBody() {
           </div>
         ))}
       </div>
-      <p className="m-0 flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--text-muted)]">
-        <Icon name="Info" size={14} color="var(--text-muted)" />
-        Paid-message alerts never get switched off, refunds depend on them.
-      </p>
+      <div className="flex flex-col gap-[6px]">
+        <p className="m-0 flex items-start gap-[7px] px-[4px] text-[12px] leading-[1.45] text-[var(--text-muted)]">
+          <Icon name="Info" size={14} color="var(--text-muted)" />
+          Paid-message alerts never get switched off, refunds depend on them.
+        </p>
+        {/*
+          Verification prompts are account state, not marketing, so they are
+          not behind "Offers and news" and there is no switch for them. Said
+          out loud here rather than left for somebody to discover: the prompt
+          arrives at most once a fortnight and stops the day the account is
+          verified. MECHANISM: VerificationReminderService (backend cron
+          `remind-unverified-to-verify`).
+        */}
+        <p className="m-0 flex items-start gap-[7px] px-[4px] text-[12px] leading-[1.45] text-[var(--text-muted)]">
+          <Icon name="BadgeCheck" size={14} color="var(--text-muted)" />
+          If your account is not verified, you get a reminder about it at most once a fortnight. It stops
+          as soon as you are verified.
+        </p>
+      </div>
       {saveError ? (
         <p className="m-0 flex items-center gap-[7px] px-[4px] text-[12px] text-[var(--danger)]">
           <Icon name="CircleAlert" size={14} color="var(--danger)" />

@@ -3,10 +3,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TileCard } from "@/components/ui/TileCard";
+import { orderedServices } from "@/lib/platform-services";
 import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
-import { PLANS, PLAN_ORDER } from "@/types/subscription";
-import { TierBadge } from "@/components/ui/TierBadge";
 import { formatNaira } from "@/lib/format";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
@@ -57,115 +56,19 @@ const PIPELINE = ["Training", "Payments", "Banking", "Healthcare", "Legal", "Tra
  * Basket and Beauty are separate products with their own marks and brand
  * colours, so they carry a logo rather than an icon.
  */
-const QUICK_SERVICES: {
-  brand: string;
-  label: string;
-  blurb: string;
-  icon: IconName;
-  /** The commissioned icon badge replacing `icon`'s lucide glyph on this rail. */
-  iconImageSrc?: string;
-  href?: string;
-  soon?: boolean;
-  /** The card's own gradient, same treatment the industry cards used. */
-  bg: string;
-}[] = [
-  {
-    brand: "Shop",
-    label: "Creator equipment",
-    blurb: "Cameras, mics, lights and laptops, checked before we stock them.",
-    icon: "ShoppingBag",
-    iconImageSrc: "/icons/services/shop.png",
-    href: "/shop",
-    // Pulled off the live surface for now (product-owner instruction, 12 Sep
-    // 2026) — same treatment as Bills Payment/Loans/BNPL/Pensions/Telemedicine
-    // below. See ShopLayout, which gates the routes themselves the same way.
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]",
-  },
-  {
-    brand: "Bills Payment",
-    label: "Airtime, power, cable",
-    blurb: "Pay any bill in seconds.",
-    icon: "CreditCard",
-    iconImageSrc: "/icons/services/bills-payment.png",
-    href: "/services/pay",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]",
-  },
-  {
-    brand: "Legal",
-    label: "Filings and lawyers",
-    blurb: "CAC and tax filings, or book a lawyer.",
-    icon: "Scale",
-    iconImageSrc: "/icons/services/legal.png",
-    href: "/services/legal",
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]",
-  },
-  {
-    brand: "Loans",
-    label: "Borrow",
-    blurb: "Apply for credit against what you earn here.",
-    icon: "Landmark",
-    iconImageSrc: "/icons/services/loans.png",
-    // Not open yet, same as BNPL. Both halves of the old "Loans/EasyBuy"
-    // entry are coming soon — splitting them was about naming two different
-    // products, not about opening one of them.
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]",
-  },
-  {
-    // Split out of "Loans/EasyBuy" on the product owner's instruction (1 Sep
-    // 2026) and renamed: BNPL and a loan are different products — one is
-    // instalments on a purchase, the other is credit — and one slash was
-    // making them read as a single service.
-    brand: "BNPL",
-    label: "Buy now, pay later",
-    blurb: "Spread the cost of a purchase over monthly payments.",
-    icon: "Smartphone",
-    iconImageSrc: "/icons/services/bnpl.png",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]",
-  },
-  {
-    brand: "Pensions",
-    label: "Retirement",
-    blurb: "Save for later on irregular income.",
-    icon: "PiggyBank",
-    iconImageSrc: "/icons/services/pensions.png",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]",
-  },
-  {
-    brand: "Events",
-    label: "What's on",
-    blurb: "Find what is happening, or list your own.",
-    icon: "CalendarDays",
-    iconImageSrc: "/icons/services/events.png",
-    href: "/events",
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]",
-  },
-  {
-    brand: "Telemedicine",
-    label: "Health cover",
-    blurb: "See a doctor and get covered.",
-    icon: "Stethoscope",
-    iconImageSrc: "/icons/services/telemedicine.png",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-aqua))]",
-  },
+/*
+  The service rail reads PLATFORM_SERVICES (src/lib/platform-services.ts).
 
-];
+  The list used to live here, inline, which is why /services showed a
+  different set with different names and different icons: two lists, one of
+  them read by one page. Product owner, 21 Sep 2026: "services should carry
+  only the services that shows in the landing page." That is only enforceable
+  if there is one list, so this page no longer owns it.
 
-/**
- * Open services lead the grid, "coming soon" ones trail — asked for once the
- * grid stopped captioning them and started just dimming them instead: a
- * dimmed tile in among the live ones needs its position to carry some of
- * what the caption used to say. `sort` is stable, so within each group the
- * order above is preserved.
- */
-const ORDERED_QUICK_SERVICES = [...QUICK_SERVICES].sort(
-  (a, b) => Number(Boolean(a.soon)) - Number(Boolean(b.soon)),
-);
+  The landing makes no catalogue call, so the list's own `soon` flag decides
+  what is open here. /services layers the live catalogue status on top.
+*/
+const ORDERED_QUICK_SERVICES = orderedServices();
 
 /**
  * The two storefronts, as ordinary entries in the services directory.
@@ -314,7 +217,7 @@ interface CompareRow {
 }
 
 const COMPARE_ROWS: CompareRow[] = [
-  { feature: "Platform Fees", wawu: "10-15% (85-90% keep)", others: ["10-20% + /txn", "20%", "20%"] },
+  { feature: "Platform Fees", wawu: "15% (you keep 85%)", others: ["10-20% + /txn", "20%", "20%"] },
   { feature: "Training & Upskilling", wawu: "Training included for members", others: [false, false, false] },
   { feature: "Government Partnerships", wawu: "Federal Government-approved", others: [false, false, false] },
   { feature: "Device & Equipment Financing", wawu: "Partnerships", others: [false, false, false] },
@@ -329,13 +232,12 @@ const COMPARE_ROWS: CompareRow[] = [
   { feature: "Smart Vault", wawu: true, others: [true, false, false] },
   { feature: "Instant Payouts", wawu: true, others: [true, false, false] },
   { feature: "Scheduler", wawu: true, others: [true, false, false] },
-  { feature: "Membership Tiers", wawu: true, others: [true, true, true] },
-  { feature: "Subscriptions", wawu: true, others: [true, true, true] },
+  { feature: "No fee to join or list", wawu: true, others: [false, false, false] },
 ];
 
 const FAQ = [
-  { q: "What % of earnings does the platform take?", a: "WAWUAfrica takes 15% as standard and 10% on Pro. You keep 85% of everything you earn, content unlocks, paid DMs, tips and storefront sales, and 90% on every stream once you go Pro. There is no listing fee and no monthly platform fee." },
-  { q: "Do I need to be verified to publish?", a: "No. Creator is an account type, pick it at signup or upgrade later, then pay a subscription (Basic or Pro) to publish content, turn on paid DMs and host communities. KYC is separate and only gates when you can receive payouts." },
+  { q: "What % of earnings does the platform take?", a: "WAWUAfrica takes 15% as standard. You keep 85% of everything you earn: content unlocks, paid DMs, tips and storefront sales. There is no listing fee, no monthly platform fee and no subscription." },
+  { q: "Do I need to be verified to publish?", a: "No. Creator is an account type, pick it at signup or switch to it later, and publishing costs nothing. KYC is separate and only gates when you can receive payouts." },
   { q: "How quickly can I get paid out?", a: "Earnings are paid to your own bank account once KYC clears, never held in a platform wallet. No stories." },
   { q: "Is there a minimum follower count to join?", a: "No. Whether you are just starting or an established creator ready to scale, you can join today and start publishing. Your first piece goes out at no charge, you price everything after that." },
   { q: "What happens if a creator never replies to a paid DM?", a: "The sender is refunded in full after 24 hours and WAWU takes no fee on that refund. Creators who repeatedly miss the window have DMs switched off automatically." },
@@ -400,8 +302,8 @@ export async function LandingContent() {
           <div className="relative mx-auto flex max-w-[1080px] flex-col items-center text-center">
             <span className="inline-flex min-h-[34px] items-center gap-2.5 rounded-full border border-accent bg-[rgba(11,10,13,0.6)] px-4 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-accent-hover shadow-[0_0_24px_var(--accent-tint-strong)] dt:px-5 dt:text-[12px] dt:tracking-[0.14em]">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-              <span className="dt:hidden">Keep up to 90% of what you earn</span>
-              <span className="hidden dt:inline">Keep up to 90% of everything you earn, best in Africa</span>
+              <span className="dt:hidden">Keep 85% of what you earn</span>
+              <span className="hidden dt:inline">Keep 85% of everything you earn, best in Africa</span>
             </span>
             <h1 className="m-0 mt-7 text-[46px] font-bold leading-[1.02] tracking-[-0.04em] text-text-primary dt:text-[88px]">
               Turn Your WOW
@@ -546,13 +448,13 @@ export async function LandingContent() {
                   </span>
                   <span className="mt-4 block text-[21px] font-bold text-white">Real-Time Earnings</span>
                   <p className="m-0 mt-2 max-w-[340px] text-[14px] leading-normal text-[rgba(255,255,255,0.78)]">
-                    Watch your income grow with subscriptions, tips, PPV sales, commerce, and more.
+                    Watch your income grow with content sales, tips, paid messages, commerce, and more.
                   </p>
                 </div>
                 <div className="flex w-full flex-col gap-2.5 dt:w-[340px]">
                   {[
-                    { icon: "Crown" as IconName, label: "New Subscription", meta: "Lemuel joined PRO", amount: "+₦4,999", delay: "0s" },
-                    { icon: "UserPlus" as IconName, label: "New Subscriber", meta: "Ella joined", amount: "+₦999", delay: "1.3s" },
+                    { icon: "Crown" as IconName, label: "Course Sold", meta: "Lemuel bought your course", amount: "+₦4,999", delay: "0s" },
+                    { icon: "UserPlus" as IconName, label: "Paid Message", meta: "Ella asked a question", amount: "+₦999", delay: "1.3s" },
                     { icon: "Lock" as IconName, label: "PPV Unlocked", meta: "Exclusive content", amount: "+₦2,000", delay: "2.6s" },
                     { icon: "HandCoins" as IconName, label: "Tip Received", meta: "Marcus sent a tip", amount: "+₦500", delay: "3.9s" },
                   ].map((n) => (
@@ -634,10 +536,10 @@ export async function LandingContent() {
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-text-secondary">● Memberships</span>
-                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.02em] text-text-primary">Recurring income from your biggest supporters</span>
+                  <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-text-secondary">● Events</span>
+                  <span className="mt-2 block text-[24px] font-bold tracking-[-0.02em] text-text-primary">Fill a room, and keep what it makes</span>
                   <p className="m-0 mt-2 text-[14px] leading-normal text-text-secondary">
-                    Yearly creator tiers, membership trials and promo codes. Steady, predictable, yours.
+                    List an event, gather the people who already follow you, and sell from the same profile.
                   </p>
                 </div>
               </div>
@@ -672,7 +574,7 @@ export async function LandingContent() {
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-3.5">
               <WhitePill href="/sign-up?type=creator">Cash in on your WOW</WhitePill>
-              <Button size="lg" variant="secondary" href="#pricing">Turn WOW into income</Button>
+              <Button size="lg" variant="secondary" href="#pricing">See what it costs</Button>
             </div>
           </div>
         </section>
@@ -694,7 +596,7 @@ export async function LandingContent() {
               </p>
               <div className="mt-8 flex flex-wrap gap-x-10 gap-y-5">
                 {[
-                  { big: "85-90%", small: "You Keep" },
+                  { big: "85%", small: "You Keep" },
                   { big: "No Hassle", small: "Payouts" },
                   { big: "No Hidden", small: "Fees" },
                 ].map((s) => (
@@ -714,103 +616,87 @@ export async function LandingContent() {
 
         <SectionMark />
 
-        {/* ============ CREATOR TIERS ============ */}
+        {/* ============ WHAT IT COSTS ============ */}
+        {/*
+          This was the CREATOR TIERS section: three PLANS cards (Basic, Pro,
+          Pro Max) with yearly prices and a "Go Pro" button. Subscriptions were
+          removed from the product, so there are no plans to render.
+
+          The section itself stays, and keeps `id="pricing"`, because the
+          footer and a hero button both link to `#pricing` — deleting it would
+          have left two controls scrolling to nothing. What somebody clicking
+          "what does this cost" needs to read is now the honest answer.
+        */}
         <section id="pricing" className="relative px-5 py-14 dt:py-20">
           <div className="relative mx-auto max-w-[1240px]">
             <div className="flex flex-col items-center text-center">
-              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">Creator Tiers</span>
+              <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-text-primary">What it costs</span>
               <h2 className="m-0 mt-3 text-[34px] font-bold leading-[1.06] tracking-[-0.03em] text-text-primary dt:text-[48px]">
-                Go further, <span className="text-accent-hover">keep more</span>
+                Join at no charge, <span className="text-accent-hover">list at no charge</span>
               </h2>
+              <p className="m-0 mt-4 max-w-[560px] text-[15px] leading-normal text-text-secondary">
+                There is no subscription and no monthly platform fee. Creating your account, building your profile
+                and listing your work cost nothing.
+              </p>
             </div>
-            {/*
-              Driven by PLANS, not retyped.
 
-              These cards were hand-written and had already drifted: the Pro
-              card advertised ₦18,999 and fifteen uploads after the plan
-              itself moved to ₦14,999 and twelve. A pricing page that restates
-              its own prices will always eventually lie about one.
-            */}
-            <div className="mt-10 grid grid-cols-1 gap-4 dt:grid-cols-4 dt:gap-5">
-              <div className="hidden flex-col gap-4 rounded-card border border-hairline bg-card p-6 dt:flex">
-                <span className="text-[16px] font-semibold text-text-primary">Starter</span>
-                <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">{formatNaira(0)}</span>
+            <div className="mt-10 grid grid-cols-1 gap-4 dt:grid-cols-3 dt:gap-5">
+              <div className="flex flex-col gap-4 rounded-card border border-accent bg-elevated p-6 shadow-[0_0_60px_var(--accent-tint)]">
+                <span className="text-[16px] font-semibold text-text-primary">Joining</span>
+                <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
+                  {formatNaira(0)}
+                </span>
                 <div className="flex flex-col gap-2.5">
                   {[
-                    "Browse and unlock content",
-                    "Message creators",
-                    "Join open communities",
-                    "Learn with our guides",
+                    "Create your account and profile",
+                    "List up to 5 products, pieces or services",
+                    "Turn on paid messages",
+                    "Host a community",
+                    "Browse, buy and message",
                   ].map((perk) => (
-                    <span key={perk} className="flex items-center gap-2.5 text-[14px] text-text-secondary">
-                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} />
+                    <span key={perk} className="flex items-start gap-2.5 text-[13.5px] leading-[1.4] text-text-secondary">
+                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
                       {perk}
                     </span>
                   ))}
                 </div>
-                <Button full variant="secondary" size="sm" href="/sign-up" className="mt-auto">Join now</Button>
+                <Button full href="/sign-up?type=creator" className="mt-auto">Start at no charge</Button>
               </div>
 
-              {PLAN_ORDER.map((tier) => {
-                const plan = PLANS[tier];
-                // Pro is the one carrying the emphasis: it is the plan most
-                // people should be on, and giving all three a glow would mean
-                // none of them had one.
-                const featured = tier === "pro";
-                return (
-                  <div
-                    key={tier}
-                    className={`flex flex-col gap-4 rounded-card border p-6 ${
-                      featured
-                        ? "border-accent bg-elevated shadow-[0_0_60px_var(--accent-tint)]"
-                        : "border-hairline bg-card"
-                    }`}
-                  >
-                    <span className="self-start"><TierBadge tier={tier} /></span>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-[30px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
-                          {formatNaira(plan.price)}
-                        </span>
-                        <span className="text-[14px] text-text-muted">a year</span>
-                      </div>
-                      <span className="text-[13px] font-semibold text-text-primary">{plan.headline}</span>
-                    </div>
+              <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-6">
+                <span className="text-[16px] font-semibold text-text-primary">When you sell</span>
+                <span className="text-[34px] font-bold tracking-[-0.03em] [font-feature-settings:var(--font-feature-tabular)]">
+                  85/15
+                </span>
+                <p className="m-0 text-[13.5px] leading-[1.45] text-text-secondary">
+                  You keep 85% of everything you earn: content unlocks, paid messages, tips and storefront sales.
+                  Nothing is taken until something sells.
+                </p>
+                <span className="text-[12.5px] leading-[1.45] text-text-muted">
+                  Community credits pay 90% to the host.
+                </span>
+              </div>
 
-                    {/* Ditto is why Pro Max exists, so it gets its own titled
-                        block instead of being the ninth bullet in a list. */}
-                    {plan.highlight ? (
-                      <div className="flex flex-col gap-1.5 rounded-[var(--radius-input)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-3">
-                        <span className="text-[12.5px] font-bold text-text-primary">{plan.highlight.title}</span>
-                        <span className="text-[11.5px] text-text-muted">{plan.highlight.note}</span>
-                      </div>
-                    ) : null}
-
-                    <div className="flex flex-col gap-2.5">
-                      <span className="text-[12px] font-semibold text-text-muted">{plan.featuresLabel}</span>
-                      {plan.features.slice(0, 6).map((perk) => (
-                        <span key={perk} className="flex items-start gap-2.5 text-[13.5px] leading-[1.4] text-text-secondary">
-                          <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
-                          {perk}
-                        </span>
-                      ))}
-                    </div>
-
-                    <span className="text-[12.5px] font-semibold text-text-primary">
-                      Keep up to {plan.split}% of your earnings
+              <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-6">
+                <span className="text-[16px] font-semibold text-text-primary">Optional extras</span>
+                <span className="text-[13.5px] leading-[1.45] text-text-secondary">
+                  Pay only for the things you choose to add:
+                </span>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    "Verification, reviewed by a person",
+                    "Featuring your listing",
+                    "Advertising on the platform",
+                    "Community chat tokens",
+                  ].map((perk) => (
+                    <span key={perk} className="flex items-start gap-2.5 text-[13.5px] leading-[1.4] text-text-secondary">
+                      <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />
+                      {perk}
                     </span>
-
-                    <Button
-                      full
-                      variant={featured ? "primary" : "secondary"}
-                      href="/sign-up?type=creator"
-                      className="mt-auto"
-                    >
-                      {plan.cta}
-                    </Button>
-                  </div>
-                );
-              })}
+                  ))}
+                </div>
+                <Button full variant="secondary" href="/sign-up" className="mt-auto">Join now</Button>
+              </div>
             </div>
           </div>
         </section>
@@ -1008,7 +894,7 @@ export async function LandingContent() {
                     "Financial inclusion: device financing",
                     "Faith-based approach",
                     "Pan-African focus: designed for Africa & global",
-                    "85-90% revenue share, best in Africa",
+                    "85% revenue share, best in Africa",
                   ].map((p) => (
                     <span key={p} className="flex items-center gap-2.5 text-[13.5px] text-text-secondary">
                       <Icon name="Check" size={15} color="var(--success)" strokeWidth={2.4} />
@@ -1036,7 +922,7 @@ export async function LandingContent() {
                 Join a growing community of Professionals, Entrepreneurs, Artisans, Creators and start earning more with lower fees, better tools, instant payouts, and training included all on WAWUAfrica.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-x-7 gap-y-2.5">
-                {["85-90% revenue share, best in Africa", "More features + Training + Financial Inclusion + Government partnerships", "Instant payouts"].map((b) => (
+                {["85% revenue share, best in Africa", "More features + Training + Financial Inclusion + Government partnerships", "Instant payouts"].map((b) => (
                   <span key={b} className="flex items-center gap-2 text-[13px] text-text-secondary">
                     <Icon name="Check" size={14} color="var(--success)" strokeWidth={2.6} />
                     {b}
@@ -1188,7 +1074,7 @@ export async function LandingContent() {
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[20px] w-auto self-start object-contain opacity-80" />
         <div className="grid grid-cols-2 gap-x-5 gap-y-7 dt:grid-cols-4">
           {[
-            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Join the Movement", "/sign-up?type=creator"], ["Creator tiers", "#pricing"]] },
+            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Join the Movement", "/sign-up?type=creator"], ["What it costs", "#pricing"]] },
             { label: "Resources", links: [["Explore", "/explore"], ["Learn", "/learn"], ["Services", "/services"]] },
             { label: "Company", links: [["Terms and privacy", "/terms"]] },
           ].map((col) => (

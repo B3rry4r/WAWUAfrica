@@ -73,7 +73,7 @@ export function TicketTypeEditor({ eventId, eventName }: { eventId: string; even
   // `!== "basic"` test would have quietly handed that null the Pro rate --
   // the same 5% error in the other direction.
   const tier = creatorGates({ creator }).tier;
-  const splitRate = creatorSplitRate(tier === "pro" || tier === "pro_max");
+  const splitRate = creatorSplitRate();
 
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);

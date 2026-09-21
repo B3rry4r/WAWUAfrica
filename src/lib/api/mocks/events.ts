@@ -71,7 +71,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e1.jpg",
     category: "business",
     contactEmail: null,
     contactPhone: null,
@@ -109,7 +109,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e2.jpg",
     category: "training",
     contactEmail: null,
     contactPhone: null,
@@ -143,7 +143,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e3.jpg",
     category: "other",
     contactEmail: null,
     contactPhone: null,
@@ -177,7 +177,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e4.jpg",
     category: "other",
     contactEmail: null,
     contactPhone: null,
@@ -211,7 +211,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e5.jpg",
     category: "other",
     contactEmail: null,
     contactPhone: null,
@@ -246,7 +246,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     recapUrl: "https://wawuafrica.com/recaps/catalogue",
     recapText:
       "Ninety-one people came. The question that took up half the session: what to do with a piece that sold well for a month and then stopped. Short answer from the room. Re-list it against a different search term before you rewrite it.",
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e6.jpg",
     category: "other",
     contactEmail: null,
     contactPhone: null,
@@ -279,7 +279,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e7.jpg",
     category: "other",
     contactEmail: null,
     contactPhone: null,
@@ -313,7 +313,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e8.jpg",
     category: "community",
     contactEmail: null,
     contactPhone: null,
@@ -346,7 +346,7 @@ const MOCK_EVENTS: WawuEvent[] = [
     hasRecap: false,
     recapUrl: null,
     recapText: null,
-    bannerUrl: null,
+    bannerUrl: "/mock/events/e9.jpg",
     category: "community",
     contactEmail: null,
     contactPhone: null,
@@ -392,7 +392,11 @@ export async function getMockEvents(params: ListEventsParams): Promise<EventPage
       (params.format === undefined || e.format === params.format) &&
       (params.type === undefined || e.type === params.type) &&
       (params.category === undefined || e.category === params.category) &&
-      (params.featured === undefined || e.featured === params.featured),
+      (params.featured === undefined || e.featured === params.featured) &&
+      // One host's events, for the Events tab on their profile. The fixture
+      // has to honour this too, or the mock build shows every event under
+      // everybody's name, which is the bug the `host` filter exists to fix.
+      (params.host === undefined || e.hostWawuId === params.host),
   ).sort((a, b) =>
     view === "past"
       ? new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()

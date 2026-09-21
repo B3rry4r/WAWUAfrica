@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CONTENT_TYPES, type ContentType } from "@/types/content";
-import { PLANS } from "@/types/subscription";
 import { contentApi } from "@/lib/api/creator-content";
 import type { ContentItem } from "@/types/content";
 import { PublishingWizard } from "@/components/create/PublishingWizard";
@@ -40,16 +39,11 @@ export default function NewContentPage() {
 
   const resubmitId = searchParams.get("resubmit");
   const [resubmitItem, setResubmitItem] = useState<ContentItem | null | undefined>(resubmitId ? undefined : null);
-  // Whether this creator has anything live yet — determines whether this
-  // upload is the first one, which the server requires to go out at ₦0. Read
-  // fresh from the real library rather than the frozen mock array, since
-  // that's what actually changes as uploads get published.
-  const [hasPublished, setHasPublished] = useState<boolean | undefined>(undefined);
-  // How many ₦0 pieces already exist. The plan includes a fixed number of
-  // them (Basic 1, Pro 2) and the server enforces that, so the wizard has to
-  // count them rather than assuming "first upload only" — which is what it
-  // used to do, quietly costing Pro creators the second slot they paid for.
-  const [noChargeUsed, setNoChargeUsed] = useState<number | undefined>(undefined);
+  // Nothing else is read from the library here any more. This route used to
+  // load it to work out whether this was the creator's first upload and how
+  // many ₦0 pieces their plan still allowed. Both concepts are gone: every
+  // listing carries a price, and the only cap is MAX_ITEMS_PER_ACCOUNT, which
+  // the server enforces.
 
   useEffect(() => {
     if (!resubmitId) return;
@@ -61,19 +55,6 @@ export default function NewContentPage() {
       cancelled = true;
     };
   }, [resubmitId]);
-
-  useEffect(() => {
-    let cancelled = false;
-    contentApi.getLibrary().then((items) => {
-      if (cancelled) return;
-      setHasPublished(items.some((i) => i.status === "live"));
-      // A rejected piece hands its slot back, so it does not count.
-      setNoChargeUsed(items.filter((i) => i.status !== "rejected" && i.price === 0).length);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // No gate decision until the SERVER has answered whether this account is a
   // creator (`resolved` covers session hydration too).
@@ -92,8 +73,8 @@ export default function NewContentPage() {
   }
 
   // This route is a direct URL, not just a button behind CreateHub — it needs
-  // the same two gates CreateHub enforces, or it's a bypass of "paid
-  // subscription unlocks uploading". KYC status never factors in here.
+  // the same gate CreateHub enforces. There is only one now: uploading is
+  // free, so a creator account is the whole of it. KYC never factors in here.
   if (!gates.isCreator) {
     return (
       <FlowPane>
@@ -111,25 +92,8 @@ export default function NewContentPage() {
     );
   }
 
-  if (!gates.canUpload) {
-    return (
-      <FlowPane>
-        <div className="dt:hidden">
-          <FlowHeader title="Upload" onBack={() => router.push("/create")} />
-        </div>
-        <EmptyState
-          icon="CreditCard"
-          title="Subscribe to unlock uploading"
-          caption="A paid creator subscription unlocks publishing. KYC is separate and only gates payouts."
-          action="Choose a plan"
-          actionHref="/subscription"
-        />
-      </FlowPane>
-    );
-  }
-
-  // Waiting on the resubmit item and/or the live library to load.
-  if (resubmitItem === undefined || hasPublished === undefined || noChargeUsed === undefined) {
+  // Waiting on the resubmit item to load.
+  if (resubmitItem === undefined) {
     return (
       <FlowPane>
         <div className="dt:hidden">
@@ -150,23 +114,12 @@ export default function NewContentPage() {
       ? (typeParam as ContentType)
       : "video";
 
-  const firstUpload = resubmitItem
-    ? !!resubmitItem.isFirstUpload
-    : searchParams.get("first") === "1"
-      ? true
-      : !hasPublished;
-
-  // A resubmitted piece already owns whichever slot it was published into, so
-  // it must not be counted against the creator a second time.
-  const allowance = PLANS[gates.tier ?? "basic"].freeSlots;
-  const alreadyMine = resubmitItem && resubmitItem.price === 0 ? 1 : 0;
-  const noChargeSlotsLeft = Math.max(0, allowance - noChargeUsed + alreadyMine);
-
+  // A resubmitted piece already owns the slot it was published into, so the
+  // wizard is told it is a resubmission and does not count it against the cap
+  // a second time.
   return (
     <PublishingWizard
       type={type}
-      firstUpload={firstUpload}
-      noChargeSlotsLeft={noChargeSlotsLeft}
       resubmit={resubmitItem ? { id: resubmitItem.id, title: resubmitItem.title } : undefined}
     />
   );

@@ -18,6 +18,19 @@ import { Icon, type IconName } from "./Icon";
 /**
  * The palette, cycled by index.
  *
+ * DEPRECATED, and deliberately still here. Build brief A5 kills the
+ * multi-colour block tile: "the current Bills Payment screen runs purple,
+ * teal, red and amber colour-block tiles side by side. That is the clearest
+ * violation of the brand rule and it goes." Every in-app grid that used
+ * `layout="overlay"` now uses `layout="tile"` instead.
+ *
+ * What still uses it: TgifDaily, where the colour is the whole point (a
+ * different hue per day of the week is the feature, not decoration), and the
+ * overlay layout itself, which remains for a caller that genuinely wants a
+ * full-bleed art card. Nothing new should reach for it. If you are about to
+ * pass `index` to a grid of services, categories or billers, you want
+ * `layout="tile"`.
+ *
  * Deterministic on purpose: the same list renders the same colours every time,
  * so a card keeps its identity between visits instead of reshuffling. Every
  * entry is a token — no raw hex, per CLAUDE.md — and every one is dark enough
@@ -37,6 +50,32 @@ export const TILE_GRADIENTS = [
 export function tileGradient(index: number): string {
   return TILE_GRADIENTS[((index % TILE_GRADIENTS.length) + TILE_GRADIENTS.length) % TILE_GRADIENTS.length];
 }
+
+/**
+ * The grid `layout="tile"` is meant to sit in, as one class rather than a
+ * string each caller retypes slightly differently.
+ *
+ * Six across on desktop, matching refs/target-explore-desktop-tiles.jpg, which
+ * fits a twelve-service catalogue into two rows instead of the three-screen
+ * scroll the old 140px colour blocks produced. Two across on a phone, because
+ * a 34px icon plus a two-word label is comfortable at ~170px and one column
+ * would be a list.
+ */
+export const TILE_GRID =
+  "grid grid-cols-2 gap-[10px] sm:grid-cols-3 dt:grid-cols-6";
+
+/**
+ * The grid `layout="stacked"` sits in: bare icons with their titles under
+ * them, close together, no containers.
+ *
+ * Asked for by name for Bills Payment: "not big cards, just icons and the
+ * titles sitting proper". Four across on a phone and eight on desktop keeps a
+ * twelve-item catalogue to three rows and two, instead of the endless scroll
+ * of 140px colour blocks it replaced. `items-start` so a two-line title does
+ * not push its neighbours' icons out of line.
+ */
+export const ICON_GRID =
+  "grid grid-cols-4 items-start gap-x-[6px] gap-y-[18px] sm:grid-cols-6 dt:grid-cols-8";
 
 export type TileCardSize = "sm" | "md" | "lg";
 
@@ -73,8 +112,15 @@ export interface TileCardProps {
    * and be the actual slides, the write-ups below them" — after the gradient
    * version read as a wall of mismatched colours once every card carried a
    * supplied icon rather than a single lucide glyph.
+   * "tile": the restrained grid card from build brief A5/C6. A neutral
+   * surface, a hairline border, one small accent-tinted icon and a short
+   * label. It replaces "overlay" everywhere a grid is a LIST OF CHOICES
+   * (services, bill categories, billers, professional fields) rather than a
+   * gallery: those grids were the multi-coloured wall the brief throws out.
+   * Height comes from the content, so a row of them stays a row instead of
+   * stretching down a desktop page.
    */
-  layout?: "overlay" | "stacked";
+  layout?: "overlay" | "stacked" | "tile";
   href?: string;
   onClick?: () => void;
   /** Greys the card and drops the link — for a service that is not open yet. */
@@ -83,8 +129,14 @@ export interface TileCardProps {
   selected?: boolean;
   /** Picks the gradient. Pass the item's index. */
   index?: number;
-  /** An explicit gradient, when the caller already owns one. Ignored by `layout="stacked"`. */
+  /** An explicit gradient, when the caller already owns one. Ignored by `layout="stacked"` and `layout="tile"`. */
   gradientClass?: string;
+  /**
+   * `layout="tile"` only: draws a trailing chevron, for a tile that opens a
+   * further screen rather than making the choice outright. C5 asks for this
+   * on the "apply to be listed" and "offer your services" rebuilds.
+   */
+  chevron?: boolean;
   size?: TileCardSize;
   className?: string;
 }
@@ -111,9 +163,76 @@ export function TileCard({
   selected = false,
   index = 0,
   gradientClass,
+  chevron = false,
   size = "md",
   className = "",
 }: TileCardProps) {
+  if (layout === "tile") {
+    /*
+      The restrained grid card (build brief A5, C6).
+
+      What it replaces: a two-column wall of full-bleed purple/teal/red/amber
+      blocks, each 140px tall, which on desktop became an endless scroll of
+      colour and on mobile read as four unrelated products rather than four
+      choices in one list. The colour carried no meaning -- it was `index % 7`.
+
+      What it is instead: one neutral surface, one hairline border, one
+      accent-tinted icon, one label. The emphasis on the screen is the choice
+      the person is making, not the card. Height follows content, so twelve of
+      these fit a desktop row-and-a-half instead of a page and a half.
+    */
+    const tileShell = [
+      "group flex w-full items-center gap-[11px] rounded-card border p-[13px] text-left",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
+      selected
+        ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
+        : "border-[var(--border-hairline)] bg-[var(--surface-card)]",
+      disabled
+        ? "opacity-50"
+        : "cursor-pointer transition-colors duration-150 hover:border-[var(--border-strong)] hover:bg-[var(--surface-elevated)]",
+      className,
+    ].join(" ");
+
+    const tileBody = (
+      <>
+        {iconImageSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={iconImageSrc} alt="" className="h-[34px] w-[34px] shrink-0 rounded-input object-contain" />
+        ) : icon ? (
+          <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-input bg-[var(--accent-tint)]">
+            <Icon name={icon} size={18} color="var(--accent)" strokeWidth={1.9} />
+          </span>
+        ) : null}
+        <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+          <span className="block truncate text-[13.5px] font-semibold leading-tight text-text-primary">{title}</span>
+          {subtitle ? (
+            <span className="block truncate text-[11.5px] leading-tight text-text-secondary">{subtitle}</span>
+          ) : null}
+          {meta ? (
+            <span className="block truncate text-[11.5px] font-semibold leading-tight text-accent">{meta}</span>
+          ) : null}
+        </span>
+        {chevron ? (
+          <Icon name="ChevronRight" size={16} color="var(--text-muted)" className="shrink-0" />
+        ) : null}
+      </>
+    );
+
+    if (disabled) return <div className={tileShell}>{tileBody}</div>;
+    if (href) {
+      return (
+        <Link href={href} className={`${tileShell} no-underline`}>
+          {tileBody}
+        </Link>
+      );
+    }
+    return (
+      <button type="button" onClick={onClick} className={tileShell}>
+        {tileBody}
+      </button>
+    );
+  }
+
   if (layout === "stacked") {
     // No box around the icon, no shell around the tile: "remove the
     // containers, just icons and text" — the icon itself is the tile, title
@@ -133,21 +252,32 @@ export function TileCard({
 
     const stackedBody = (
       <>
-        {iconImageSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={iconImageSrc}
-            alt=""
-            className={`${STACKED_ICON_SIZE[size]} drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]`}
-          />
-        ) : icon ? (
-          <Icon
-            name={icon}
-            size={size === "sm" ? 56 : size === "lg" ? 88 : 76}
-            color="var(--accent)"
-            strokeWidth={1.6}
-          />
-        ) : null}
+        {/*
+          One fixed box, whichever art lands in it.
+
+          A commissioned PNG and a lucide glyph used to be sized
+          independently (96px vs 56px), so a row where one service had no art
+          drew a smaller icon AND pushed its title up to a different baseline
+          from its neighbours'. The box is the same either way now; only what
+          sits inside it changes.
+        */}
+        <span className={`grid ${STACKED_ICON_SIZE[size]} shrink-0 place-items-center`}>
+          {iconImageSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={iconImageSrc}
+              alt=""
+              className="h-full w-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
+            />
+          ) : icon ? (
+            <Icon
+              name={icon}
+              size={size === "sm" ? 40 : size === "lg" ? 64 : 56}
+              color="var(--accent)"
+              strokeWidth={1.6}
+            />
+          ) : null}
+        </span>
         <span className="flex flex-col gap-0.5">
           <span className={`block font-bold leading-tight text-text-primary ${size === "sm" ? "text-[13px]" : "text-[15px]"}`}>
             {title}

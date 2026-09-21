@@ -5,7 +5,98 @@ import type { CreatorTier, VerificationLevel } from "./account";
  * longer surfaced anywhere in this app, so a tab whose only content was
  * links into them has nothing left to show.
  */
-export type ProfileTab = "content" | "community" | "about";
+export type ProfileTab = "overview" | "content" | "services" | "events";
+
+/**
+ * The tab bar is DERIVED, not fixed.
+ *
+ * C2 lists Overview, Content, Products, Events, Services. Two of those do not
+ * survive contact with what an account can actually be (product owner,
+ * 21 Sep 2026: "a user don't offer products... services are professional
+ * accounts"):
+ *
+ *  - PRODUCTS is gone. A person does not sell products on WAWU. The backend
+ *    `Product` model has no owner at all - no sellerId, no creator relation -
+ *    because it is WAWU's own curated shop catalogue (`wawuVerified`,
+ *    `wawuPick`, both admin-set), and there is no creator product upload
+ *    anywhere in the app. The tab could only ever have listed somebody
+ *    else's stock.
+ *  - SERVICES belongs to PROFESSIONAL accounts. A creator who has never
+ *    applied to be listed has no services, and a tab that is permanently
+ *    empty is a dead end, not a feature.
+ *
+ * So the bar shows Overview plus whatever this account actually has:
+ * Content for a creator who has published, Services for an approved
+ * professional, Events for a host. A buyer's profile is Overview alone, and
+ * that is correct rather than broken.
+ */
+export const PROFILE_TAB_LABEL: Record<ProfileTab, string> = {
+  overview: "Overview",
+  content: "Content",
+  services: "Services",
+  events: "Events",
+};
+
+/** Which tabs this profile has anything to put in. Overview is always first. */
+export function profileTabsFor(has: {
+  content: boolean;
+  services: boolean;
+  events: boolean;
+}): ProfileTab[] {
+  const out: ProfileTab[] = ["overview"];
+  if (has.content) out.push("content");
+  if (has.services) out.push("services");
+  if (has.events) out.push("events");
+  return out;
+}
+
+/**
+ * ONE profile, whoever is looking at it.
+ *
+ * Build brief C2: "Owner vs visitor: the same page. The only difference is
+ * that the owner sees an Edit control. Do not build two templates - a forked
+ * profile screen will drift, and verification-harness's `forks` gate will
+ * fail it."
+ *
+ * There WERE two templates. /profile was a settings menu (a column of
+ * ListRows: dashboard, earnings, wallet, KYC, purchases, saved, settings)
+ * with a small identity block on top, and /profile/[wawuId] was the
+ * storefront. The owner could not see their own profile as anybody else saw
+ * it, which is the one view that matters when it is a shop window.
+ *
+ * So both routes normalise into this and render the same screen. The fields
+ * are the union of what the two reads can supply; anything one of them
+ * cannot answer is optional and is left out rather than defaulted, because a
+ * zero on a profile is a claim ("0 followers") and an absent number is not.
+ */
+export interface ProfileView {
+  wawuId: string;
+  name: string;
+  handle: string;
+  bio: string;
+  verification: VerificationLevel;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+  /** "Chief Steward, WAWU" in the reference. The creator's own headline. */
+  roleLine?: string;
+  location?: string;
+  memberSince?: string;
+  /** Their own site. When absent, the store link takes this slot (C2). */
+  website?: string;
+  /** C1 specialization ids, or the older free-text interests. */
+  specializations: string[];
+  socials: CreatorProfile["socials"];
+  stats: {
+    pieces?: number;
+    piecesLabel?: string;
+    followers?: string;
+    evg?: number;
+  };
+  /** Paid messaging, for a visitor. Absent on the owner's own view. */
+  dm?: { enabled: boolean; price: number; responseHours: number };
+  content: ProfileContentItem[];
+  communities: CreatorCommunity[];
+}
 
 export interface ProfileStats {
   followers: string;

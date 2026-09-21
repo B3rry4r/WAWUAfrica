@@ -122,7 +122,7 @@ export function CommunityTabs({
             tab === "joined"
               ? "Join a community, reading costs nothing, sending costs one credit per message."
               : tab === "hosting"
-                ? "Your subscription includes hosting. Members pay one credit a message and you keep 90% of it."
+                ? "Hosting comes with your creator account. Members pay one credit a message and you keep 90% of it."
                 : "Check back soon for more communities."
           }
           action={tab === "hosting" ? "Start a community" : undefined}

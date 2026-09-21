@@ -45,7 +45,7 @@ interface CategoryRow {
 // kept out of it and shown under "Account" instead, since notification
 // preferences apply to every account type, not just creators (mobile's own
 // settings groups already put it under "App", available to everyone). D17's
-// own caption only calls out "no paid questions, no payouts, no subscription"
+// own caption only calls out "no paid questions, no payouts"
 // for a user account — it never says a user loses notification settings, so
 // this reads as the design's grouping shorthand rather than a product rule.
 const CREATING_ROWS: CategoryRow[] = [
@@ -56,7 +56,8 @@ const CREATING_ROWS: CategoryRow[] = [
   { key: "identity", label: "Identity verification", icon: "IdCard", href: "/kyc" },
   { key: "paid-questions", label: "Paid questions", icon: "MessageCircleQuestion", href: "/messages/settings" },
   { key: "payouts", label: "Payouts", icon: "Banknote", href: "/earnings" },
-  { key: "subscription", label: "Subscription", icon: "Crown", href: "/subscription" },
+  // There was a "Subscription" row here, pointing at /subscription. Both are
+  // gone: nothing is subscribed to, so the row had no screen to open.
 ];
 
 const ACCOUNT_ROWS: CategoryRow[] = [
@@ -93,7 +94,7 @@ export function SettingsCategoryList({
   const { signOut } = useSession();
   // Live creator state, not the session's sign-in-time accountType — that is
   // written once at sign-in and never revisited, so the entire "Creating"
-  // group (paid questions, payouts, subscription) stayed hidden from anyone
+  // group (identity, paid questions, payouts) stayed hidden from anyone
   // who became a creator after signing in.
   const { creator, resolved } = useCreatorState();
   const isCreator = creatorGates({ creator }).isCreator;

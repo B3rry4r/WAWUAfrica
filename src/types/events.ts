@@ -201,6 +201,14 @@ export interface ListEventsParams {
   type?: EventType;
   category?: EventCategory;
   featured?: boolean;
+  /**
+   * One host's PUBLISHED events, for the Events tab on their profile.
+   *
+   * Not the same thing as /events/mine, which returns the CALLER's events at
+   * every status. Reading a visited profile's events from "mine" showed the
+   * viewer their own events under somebody else's name.
+   */
+  host?: string;
   page?: number;
   perPage?: number;
 }

@@ -32,14 +32,6 @@
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/shop.ts:24"
     },
-    "22ff1568edc08c9b": {
-      "evidence": "import { mockNotifications } from \"./mocks/mockNotifications\";",
-      "gate": "fake_data",
-      "message": "production file imports a 'mock' source",
-      "owner": "legacy-app-repair 2026-08-31",
-      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
-      "where": "src/lib/api/notifications.ts:2"
-    },
     "25c7fdc8e217048f": {
       "evidence": "} from \"./mocks/profile\";",
       "gate": "fake_data",
@@ -111,6 +103,14 @@
       "owner": "legacy-app-repair 2026-08-31",
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/communities.ts:27"
+    },
+    "47feb3355c4ac1c5": {
+      "evidence": "src/app/(app)/services/cac/apply/page.tsx:38, src/app/(app)/services/nepc/apply/page.tsx:34",
+      "gate": "forks",
+      "message": "interface 'DocSlot' is declared in 2 files - one of them is a fork",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
+      "where": "src/app/(app)/services/cac/apply/page.tsx:38"
     },
     "49115fdcf71a6a9e": {
       "evidence": "this.name = \"MockModeError\";",
@@ -408,6 +408,14 @@
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/content.ts:2"
     },
+    "ebe1bed4126f69d6": {
+      "evidence": "import { mockNotifications, mockCampaignAudiences, mockCampaignDestinations, mockCampaigns, recordMockCampaign, dispatchMockCampaign } from \"./mocks/mockNotifications\";",
+      "gate": "fake_data",
+      "message": "production file imports a 'mock' source",
+      "owner": "legacy-app-repair 2026-08-31",
+      "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land. Evidence string refreshed 20260921 (build brief C8): the SAME accepted finding, whose import list grew to cover the admin campaign fixtures. No new finding was accepted here and the fail count is unchanged. Re-keyed 21 Sep 2026: the import list grew for the campaign work, which changes the evidence string and therefore the finding's hash. Same gate, same file, same decision, same original owner; nothing new was accepted.",
+      "where": "src/lib/api/notifications.ts:2"
+    },
     "ee04c016ca060e8d": {
       "evidence": "src/lib/api/dm.ts:19, src/lib/api/messaging.ts:125",
       "gate": "forks",
@@ -439,14 +447,6 @@
       "owner": "legacy-app-repair 2026-08-31",
       "reason": "Mock fallback gated on isMockModeError(); a real 4xx/5xx is rethrown so a refusal is never swallowed into fixture data. Drains per-module as endpoints land.",
       "where": "src/lib/api/client.ts:237"
-    },
-    "47feb3355c4ac1c5": {
-      "evidence": "src/app/(app)/services/cac/apply/page.tsx:38, src/app/(app)/services/nepc/apply/page.tsx:34",
-      "gate": "forks",
-      "message": "interface 'DocSlot' is declared in 2 files - one of them is a fork",
-      "owner": "legacy-app-repair 2026-08-31",
-      "reason": "Same-named interface declared in a client module and its server counterpart. Not a fork of one component; two sides of a wire contract. Drains when the dashboard's generated contract is extended to the app client.",
-      "where": "src/app/(app)/services/cac/apply/page.tsx:38"
     }
   }
 }

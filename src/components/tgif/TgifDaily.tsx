@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
-import { tileGradient } from "@/components/ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useSession } from "@/lib/auth/session-provider";
 import { getTgifEntry, personalise, firstNameOf, type TgifEntry } from "@/lib/api/tgif";
+// The colour and the day boundary are shared with the home screen's TGIF
+// hero (build brief C9), so both show the same reading in the same colour.
+import { tgifGradient, startOfDay } from "./gradient";
 
 /**
  * TGIF: one scripture and one prayer, read a card at a time.
@@ -30,62 +32,7 @@ import { getTgifEntry, personalise, firstNameOf, type TgifEntry } from "@/lib/ap
  * text ships with the app.
  */
 
-/*
-  A DIFFERENT COLOUR EVERY DAY, and it has to actually LOOK different.
-
-  The first attempt at this was eleven hand-written gradients, and it failed
-  for a reason worth writing down: ten of the eleven had a purple in them.
-  Purple is the brand accent, so reaching for it is the reflex, and the result
-  was that whatever the hash picked the card came out purple. A palette whose
-  entries are all the same colour is not a palette.
-
-  So this uses the app's own tile palette instead of a private one. It is the
-  set already on the services and bills grids, where you can see it working:
-  purple, teal, coral, yellow, lime, dark. Reusing it also means this screen
-  cannot drift from the rest of the app, and there is no second colour system
-  to keep in step.
-
-  HUES is which of that palette's seven entries to deal from, and it is a
-  subset for one reason: entries 0 and 4 are both purple-into-purple and read
-  as the same card. Dropping one takes the purple share of the year from 46%
-  to 32% and makes a fortnight look like a fortnight rather than a theme.
-
-  Picked from the date rather than from Math.random(), which matters twice
-  over: it holds still while you tap back and forth through the cards instead
-  of repainting under you, and everybody opening the app on the same day gets
-  the same one, so it is something two people can actually mention to each
-  other.
-*/
-/** The tile-palette entries this deals from, one per distinct hue. */
-const HUES = [0, 1, 3, 5, 6, 2] as const;
-
-function gradientFor(date: Date): string {
-  /*
-    FNV-1a over "2026-09-05", then an avalanche step.
-
-    The obvious `h * 31 + charCode` was tried first and is not good enough
-    here. On keys that differ by one digit it stays almost linear, so a month
-    came out as 6, 5, 4, 3, 2... : the colour visibly counted down the list
-    and back up again, which is the opposite of the "different every day" this
-    is for.
-  */
-  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  let h = 0x811c9dc5;
-  for (let i = 0; i < key.length; i++) {
-    h ^= key.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  h ^= h >>> 15;
-  h = Math.imul(h, 0x2545f491);
-  h ^= h >>> 13;
-  return tileGradient(HUES[(h >>> 0) % HUES.length]);
-}
-
 const LONG_DATE = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" });
-
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
 
 interface Card {
   /** The word on the progress bar's tooltip and the card's own eyebrow. */
@@ -253,7 +200,7 @@ export function TgifDaily() {
   return (
     <div className="flex w-full max-w-[560px] flex-col gap-[12px]">
       <div
-        className={`relative flex min-h-[430px] flex-col overflow-hidden rounded-[var(--radius-card)] p-[16px_18px_18px] ${gradientFor(date)}`}
+        className={`relative flex min-h-[430px] flex-col overflow-hidden rounded-[var(--radius-card)] p-[16px_18px_18px] ${tgifGradient(date)}`}
       >
         <span className="pointer-events-none absolute -right-8 -top-10 opacity-[0.13]" aria-hidden="true">
           <Icon name="Quote" size={190} color="#fff" strokeWidth={1} />
