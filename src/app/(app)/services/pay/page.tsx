@@ -86,6 +86,24 @@ function billStatusLabel(status: BillRecord["status"]): string {
   }
 }
 
+/** Plain words for a status the customer never chose and should not have to decode. */
+function billStatusLabel(status: BillRecord["status"]): string {
+  switch (status) {
+    case "processing":
+      return "Delivering";
+    case "delivered":
+      return "Delivered";
+    case "failed":
+      return "Refund owed";
+    case "refunded":
+      return "Refunded";
+    case "paid":
+      return "Processing";
+    default:
+      return status;
+  }
+}
+
 export default function PayPage() {
   const { user } = useSession();
   // Catalogue status. This tool lives at a static route, which Next resolves
