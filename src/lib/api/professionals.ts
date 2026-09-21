@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError } from "./client";
 import type { CategoryId } from "@/lib/categories";
 import type {
   MyProfessionalApplication,
@@ -27,7 +27,17 @@ export async function listProfessionals(
 ): Promise<ProfessionalListing[]> {
   const params = new URLSearchParams({ page: String(page), perPage: "20" });
   if (category) params.set("category", category);
-  return apiFetch<ProfessionalListing[]>(`/api/hub/professionals?${params}`);
+  try {
+    return await apiFetch<ProfessionalListing[]>(`/api/hub/professionals?${params}`);
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/professionals
+    // Without this a fixture build has no directory at all, and a
+    // PROFESSIONAL profile renders as a creator with one tab missing: the
+    // Services tab and the "Listed professional" block both read this.
+    const { getMockProfessionals } = await import("./mocks/professionals");
+    return getMockProfessionals(category);
+  }
 }
 
 /** GET /api/hub/professionals/:id */

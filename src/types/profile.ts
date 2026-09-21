@@ -5,16 +5,50 @@ import type { CreatorTier, VerificationLevel } from "./account";
  * longer surfaced anywhere in this app, so a tab whose only content was
  * links into them has nothing left to show.
  */
-export type ProfileTab = "overview" | "content" | "products" | "events" | "services";
+export type ProfileTab = "overview" | "content" | "services" | "events";
 
-/** The tab bar, in the order build brief C2 sets. */
-export const PROFILE_TABS: { id: ProfileTab; label: string }[] = [
-  { id: "overview", label: "Overview" },
-  { id: "content", label: "Content" },
-  { id: "products", label: "Products" },
-  { id: "events", label: "Events" },
-  { id: "services", label: "Services" },
-];
+/**
+ * The tab bar is DERIVED, not fixed.
+ *
+ * C2 lists Overview, Content, Products, Events, Services. Two of those do not
+ * survive contact with what an account can actually be (product owner,
+ * 21 Sep 2026: "a user don't offer products... services are professional
+ * accounts"):
+ *
+ *  - PRODUCTS is gone. A person does not sell products on WAWU. The backend
+ *    `Product` model has no owner at all - no sellerId, no creator relation -
+ *    because it is WAWU's own curated shop catalogue (`wawuVerified`,
+ *    `wawuPick`, both admin-set), and there is no creator product upload
+ *    anywhere in the app. The tab could only ever have listed somebody
+ *    else's stock.
+ *  - SERVICES belongs to PROFESSIONAL accounts. A creator who has never
+ *    applied to be listed has no services, and a tab that is permanently
+ *    empty is a dead end, not a feature.
+ *
+ * So the bar shows Overview plus whatever this account actually has:
+ * Content for a creator who has published, Services for an approved
+ * professional, Events for a host. A buyer's profile is Overview alone, and
+ * that is correct rather than broken.
+ */
+export const PROFILE_TAB_LABEL: Record<ProfileTab, string> = {
+  overview: "Overview",
+  content: "Content",
+  services: "Services",
+  events: "Events",
+};
+
+/** Which tabs this profile has anything to put in. Overview is always first. */
+export function profileTabsFor(has: {
+  content: boolean;
+  services: boolean;
+  events: boolean;
+}): ProfileTab[] {
+  const out: ProfileTab[] = ["overview"];
+  if (has.content) out.push("content");
+  if (has.services) out.push("services");
+  if (has.events) out.push("events");
+  return out;
+}
 
 /**
  * ONE profile, whoever is looking at it.

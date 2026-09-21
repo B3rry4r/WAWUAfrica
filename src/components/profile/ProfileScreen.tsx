@@ -9,7 +9,8 @@ import { formatNaira } from "@/lib/format";
 import { getSpecializations } from "@/lib/taxonomy/taxonomy";
 import { EVENT_CATEGORY_LABEL, type WawuEvent } from "@/types/events";
 import type { ProfessionalListing } from "@/types/professional";
-import { PROFILE_TABS, type ProfileTab, type ProfileView } from "@/types/profile";
+import { CATEGORIES } from "@/lib/categories";
+import { profileTabsFor, type ProfileTab, type ProfileView } from "@/types/profile";
 import {
   Avatar,
   Button,
@@ -70,14 +71,55 @@ export interface ProfileScreenProps {
 }
 
 export function ProfileScreen({ view, isOwner, tab, basePath, following = false }: ProfileScreenProps) {
+  /*
+    The two listing kinds are fetched HERE, once, rather than inside the tab
+    that shows them. The tab bar has to know what this account actually is
+    before it can draw itself: a creator who has never applied as a
+    professional must not be offered a Services tab, and a host with no
+    events must not be offered an empty Events tab. Fetching per tab meant
+    the bar was drawn from a guess and the answer arrived after.
+  */
+  const [events, setEvents] = useState<WawuEvent[] | null>(null);
+  const [services, setServices] = useState<ProfessionalListing[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    listMyEvents(view.wawuId, { perPage: 12 })
+      .then((page) => alive && setEvents(page.events))
+      .catch(() => alive && setEvents([]));
+    listProfessionals()
+      .then((rows) => alive && setServices(rows.filter((r) => r.wawuId === view.wawuId)))
+      .catch(() => alive && setServices([]));
+    return () => {
+      alive = false;
+    };
+  }, [view.wawuId]);
+
+  const tabs = profileTabsFor({
+    content: view.content.length > 0,
+    // `null` is "still loading", and a tab that appears a beat late moves the
+    // bar under the reader's finger. Both default to absent until answered.
+    services: (services?.length ?? 0) > 0,
+    events: (events?.length ?? 0) > 0,
+  });
+  // A tab whose content has gone (or was never there) falls back to Overview
+  // rather than rendering a body for a tab that is not in the bar.
+  const active: ProfileTab = tabs.includes(tab) ? tab : "overview";
+
   return (
     <div className="flex flex-col pb-[96px] xl:pb-[40px]">
-      <ProfileIdentity view={view} isOwner={isOwner} following={following} />
-      <ProfileTabs basePath={basePath} active={tab} />
+      <ProfileIdentity view={view} isOwner={isOwner} following={following} services={services} />
+      <ProfileTabs basePath={basePath} active={active} tabs={tabs} />
 
       <div className="flex flex-col gap-[20px] px-[16px] pt-[18px] xl:flex-row xl:items-start xl:gap-[26px] xl:px-[26px]">
         <div className="flex min-w-0 flex-1 flex-col gap-[20px]">
-          <TabBody view={view} isOwner={isOwner} tab={tab} />
+          <TabBody
+            view={view}
+            isOwner={isOwner}
+            tab={active}
+            events={events}
+            services={services}
+          />
           {/* C10: no screen is a dead end, and a shared profile is the most
               common way somebody arrives at this product at all. */}
           <ProfileCrossSell isOwner={isOwner} name={view.name} />
@@ -104,11 +146,20 @@ function ProfileIdentity({
   view,
   isOwner,
   following,
+  services,
 }: {
   view: ProfileView;
   isOwner: boolean;
   following: boolean;
+  services: ProfessionalListing[] | null;
 }) {
+  /*
+    A professional's headline is their own sentence about what they do and it
+    is the truest role line this app has - a creator's is their first
+    category, which is a filter, not a description. When somebody is listed,
+    theirs wins.
+  */
+  const professionalHeadline = services?.[0]?.headline;
   const specs = getSpecializations(view.specializations);
   // A specialization id resolves to a taxonomy label; anything else is an
   // older free-text interest and is shown as typed rather than dropped.
@@ -185,8 +236,10 @@ function ProfileIdentity({
                 <VerificationBadge tier={view.verification} size={19} />
               </div>
               <span className="text-[13.5px] text-[var(--text-muted)]">@{view.handle || view.wawuId}</span>
-              {view.roleLine ? (
-                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">{view.roleLine}</span>
+              {professionalHeadline ?? view.roleLine ? (
+                <span className="text-[14.5px] font-semibold text-[var(--text-primary)]">
+                  {professionalHeadline ?? view.roleLine}
+                </span>
               ) : null}
               {view.bio ? (
                 <p className="m-0 max-w-[68ch] text-[13.5px] leading-[1.55] text-[var(--text-secondary)] [text-wrap:pretty]">
@@ -254,7 +307,15 @@ function ProfileIdentity({
           {/* A visitor's paid actions. The owner cannot pay to message
               themselves, so this is the one block the two views differ on
               beyond the Edit controls. */}
+          {/*
+            Capped, not full-bleed. The action row is built for a phone, where
+            it is the width of the screen; on a desktop profile the content
+            column is over a thousand pixels and "Message N300" became a pill
+            running the whole way across, which reads as a banner rather than
+            a button.
+          */}
           {!isOwner && view.dm ? (
+            <div className="w-full xl:max-w-[420px]">
             <ProfileActions
               creator={{
                 wawuId: view.wawuId,
@@ -267,6 +328,7 @@ function ProfileIdentity({
               }}
               dmEnabled={view.dm.enabled}
             />
+            </div>
           ) : null}
         </div>
       </div>
@@ -344,18 +406,28 @@ function StatRow({ view }: { view: ProfileView }) {
 
 /* -------------------------------- tabs --------------------------------- */
 
-function TabBody({ view, isOwner, tab }: { view: ProfileView; isOwner: boolean; tab: ProfileTab }) {
+function TabBody({
+  view,
+  isOwner,
+  tab,
+  events,
+  services,
+}: {
+  view: ProfileView;
+  isOwner: boolean;
+  tab: ProfileTab;
+  events: WawuEvent[] | null;
+  services: ProfessionalListing[] | null;
+}) {
   switch (tab) {
     case "content":
       return <ContentTab view={view} isOwner={isOwner} />;
-    case "products":
-      return <ProductsTab isOwner={isOwner} />;
     case "events":
-      return <EventsTab view={view} isOwner={isOwner} />;
+      return <EventsTab view={view} isOwner={isOwner} events={events} />;
     case "services":
-      return <ServicesTab view={view} isOwner={isOwner} />;
+      return <ServicesTab view={view} isOwner={isOwner} services={services} />;
     default:
-      return <OverviewTab view={view} isOwner={isOwner} />;
+      return <OverviewTab view={view} isOwner={isOwner} services={services} />;
   }
 }
 
@@ -376,11 +448,26 @@ function SectionHead({ title, href }: { title: string; href?: string }) {
 }
 
 /** C2's "Featured section: the user's featured content... with prices." */
-function OverviewTab({ view, isOwner }: { view: ProfileView; isOwner: boolean }) {
+function OverviewTab({
+  view,
+  isOwner,
+  services,
+}: {
+  view: ProfileView;
+  isOwner: boolean;
+  services: ProfessionalListing[] | null;
+}) {
   const featured = view.content.slice(0, 4);
 
   return (
     <div className="flex flex-col gap-[20px]">
+      {/* A professional's credentials lead their Overview: it is what somebody
+          is deciding on before they pay to send a message. A creator has no
+          such block and the section simply is not there. */}
+      {services && services.length > 0 ? (
+        <ProfessionalStanding listings={services} />
+      ) : null}
+
       {featured.length > 0 ? (
         <section className="flex flex-col gap-[12px]">
           <SectionHead title="Featured" href={`${isOwner ? "/create/library" : ""}` || undefined} />
@@ -488,51 +575,15 @@ function ContentCardRow({ item }: { item: ProfileView["content"][number] }) {
   );
 }
 
-/**
- * Products.
- *
- * FLAGGED, not faked. C2 asks for a Products tab listing the user's products
- * with prices, and B2 lists products as a listing type. The backend's
- * `Product` model has NO owner: no sellerId, no creator relation. It is
- * WAWU's own curated shop catalogue (it carries `wawuVerified` and `wawuPick`,
- * both admin-set), and there is no creator-facing product upload anywhere in
- * the app - /create offers content types and communities only.
- *
- * So a creator does not own products today, and a tab that listed "their"
- * products would be listing somebody else's. Giving Product an owner and
- * building a seller flow (ownership, moderation, stock, fulfilment) is a real
- * feature, not a rename, and the shop is off the live surface anyway. Raised
- * rather than resolved quietly: DECISIONS.md D9.
- */
-function ProductsTab({ isOwner }: { isOwner: boolean }) {
-  return (
-    <EmptyState
-      icon="ShoppingBag"
-      title="Products are stocked by WAWU"
-      caption={
-        isOwner
-          ? "The marketplace is WAWU's own catalogue today, so there is nothing here to list yet. Your content, events and services are on the other tabs."
-          : "The marketplace is WAWU's own catalogue. Browse it for equipment checked before it is stocked."
-      }
-      action="Browse the marketplace"
-      actionHref="/shop"
-    />
-  );
-}
-
-function EventsTab({ view, isOwner }: { view: ProfileView; isOwner: boolean }) {
-  const [events, setEvents] = useState<WawuEvent[] | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    listMyEvents(view.wawuId, { perPage: 12 })
-      .then((page) => alive && setEvents(page.events))
-      .catch(() => alive && setEvents([]));
-    return () => {
-      alive = false;
-    };
-  }, [view.wawuId]);
-
+function EventsTab({
+  view,
+  isOwner,
+  events,
+}: {
+  view: ProfileView;
+  isOwner: boolean;
+  events: WawuEvent[] | null;
+}) {
   if (!events) {
     return (
       <div className="grid grid-cols-2 gap-[12px] sm:grid-cols-3">
@@ -587,19 +638,15 @@ function EventsTab({ view, isOwner }: { view: ProfileView; isOwner: boolean }) {
   );
 }
 
-function ServicesTab({ view, isOwner }: { view: ProfileView; isOwner: boolean }) {
-  const [listings, setListings] = useState<ProfessionalListing[] | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    listProfessionals()
-      .then((rows) => alive && setListings(rows.filter((r) => r.wawuId === view.wawuId)))
-      .catch(() => alive && setListings([]));
-    return () => {
-      alive = false;
-    };
-  }, [view.wawuId]);
-
+function ServicesTab({
+  view,
+  isOwner,
+  services: listings,
+}: {
+  view: ProfileView;
+  isOwner: boolean;
+  services: ProfessionalListing[] | null;
+}) {
   if (!listings) return <Skeleton variant="row" />;
 
   if (listings.length === 0) {
@@ -645,6 +692,97 @@ function ServicesTab({ view, isOwner }: { view: ProfileView; isOwner: boolean })
       ))}
     </div>
   );
+}
+
+/**
+ * A professional's standing, on their Overview.
+ *
+ * ANSWERING "how do you cover the professionals profile state?". A
+ * professional account is not a creator with an extra tab: what a buyer is
+ * deciding on is the FIELD they are approved in, the KIND of credential a
+ * person checked, who issued it, what they take on, and what it costs to
+ * start. None of that was anywhere on a profile - the directory had it and
+ * the profile did not, so the page somebody actually lands on from a shared
+ * link was the one page that could not answer "are you real".
+ *
+ * Multiple listings are normal: an application is per FIELD, so one person
+ * can be approved in two. Each gets a row.
+ *
+ * THE LICENCE NUMBER IS DELIBERATELY ABSENT. It is never sent to the app
+ * (see ProfessionalDetail): a buyer can check the public register
+ * themselves, but the number is an identifier somebody could impersonate its
+ * holder with. The issuing body is enough to check.
+ */
+function ProfessionalStanding({ listings }: { listings: ProfessionalListing[] }) {
+  return (
+    <section className="flex flex-col gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[16px]">
+      <div className="flex items-center gap-[9px]">
+        <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-input bg-[var(--accent-tint)]">
+          <Icon name="BadgeCheck" size={17} color="var(--accent)" strokeWidth={2} />
+        </span>
+        <div className="flex flex-col gap-[1px]">
+          <h2 className="m-0 text-[15px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
+            Listed professional
+          </h2>
+          <span className="text-[12px] text-[var(--text-muted)]">
+            A person reviewed this before it went live
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-[10px]">
+        {listings.map((p) => (
+          <Link
+            key={p.id}
+            href={`/professionals/${p.id}`}
+            className="flex flex-col gap-[8px] rounded-[var(--radius-input)] border border-[var(--border-hairline)] p-[13px] no-underline transition-colors hover:border-strong hover:bg-surface-hover"
+          >
+            <div className="flex flex-wrap items-center gap-[8px]">
+              <span className="text-[13.5px] font-semibold text-[var(--text-primary)]">
+                {categoryName(p.category)}
+              </span>
+              {/*
+                What KIND of credential was checked (licence, qualification,
+                portfolio) and who issued it are on ProfessionalDetail, not on
+                the list row this reads. Showing "Practising licence" from a
+                response that never said so would be fabricating the one fact
+                a buyer is relying on, so the row says only what it knows -
+                that this field is live - and links to the detail page that
+                has the rest.
+              */}
+              <StatusPill kind="success">Approved</StatusPill>
+            </div>
+            {p.services.length > 0 ? (
+              <span className="text-[12.5px] leading-[1.45] text-[var(--text-secondary)]">
+                {p.services.join(" · ")}
+              </span>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-x-[14px] gap-y-[5px] text-[12px] text-[var(--text-muted)]">
+              {/* The price to send the first message, which is the model:
+                  they pay to start, then the two of you arrange the rest.
+                  Nothing at all where paid messaging is off - there is no
+                  default rate, and quoting one for somebody would be
+                  inventing their price. */}
+              {p.dmEnabled && p.dmPrice !== null ? (
+                <span className="font-semibold text-[var(--accent)]">
+                  {formatNaira(p.dmPrice)} to send the first message
+                </span>
+              ) : (
+                <span>Not taking messages right now</span>
+              )}
+              {p.dmEnabled && p.dmResponseHours ? (
+                <span>Replies within {p.dmResponseHours} hours, or you are refunded</span>
+              ) : null}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function categoryName(id: string): string {
+  return CATEGORIES.find((c) => c.id === id)?.name ?? id.replace(/_/g, " ");
 }
 
 /* ----------------------------- side panel ------------------------------ */

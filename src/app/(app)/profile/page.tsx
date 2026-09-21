@@ -7,7 +7,7 @@ import { contentApi } from "@/lib/api/creator-content";
 import { CONTENT_TYPE_META, type ContentItem } from "@/types/content";
 import type { OwnProfile } from "@/types/verification";
 import type { ProfileContentItem } from "@/types/profile";
-import { PROFILE_TABS, type ProfileTab, type ProfileView } from "@/types/profile";
+import { PROFILE_TAB_LABEL, type ProfileTab, type ProfileView } from "@/types/profile";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ProfileScreen } from "@/components/profile/ProfileScreen";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
@@ -99,9 +99,11 @@ function toView(p: OwnProfile, content: ProfileContentItem[]): ProfileView {
 function OwnProfileContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const tab: ProfileTab = PROFILE_TABS.some((t) => t.id === tabParam)
-    ? (tabParam as ProfileTab)
-    : "overview";
+  // The screen decides which tabs EXIST (they depend on what this account
+  // actually has), so this only has to reject a ?tab= that is not a tab at
+  // all. An unavailable one falls back to Overview there.
+  const tab: ProfileTab =
+    tabParam && tabParam in PROFILE_TAB_LABEL ? (tabParam as ProfileTab) : "overview";
 
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [content, setContent] = useState<ProfileContentItem[]>([]);

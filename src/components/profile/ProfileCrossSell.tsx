@@ -1,5 +1,5 @@
 import { orderedServices } from "@/lib/platform-services";
-import { Button, ICON_GRID, TileCard } from "@/components/ui";
+import { Button, TileCard } from "@/components/ui";
 
 /**
  * The platform entry points every profile carries (build brief C2 and C10).
@@ -38,7 +38,18 @@ export function ProfileCrossSell({ isOwner, name }: { isOwner: boolean; name: st
         </p>
       </div>
 
-      <div className={ICON_GRID}>
+      {/*
+        Four across at every width, which is the one thing ICON_GRID does not
+        do here.
+
+        ICON_GRID goes to eight columns on desktop because it is sized for the
+        full page. This block sits in a CARD inside the profile's content
+        column, so eight columns squeezed eight icons into roughly half the
+        width they were drawn for and "Bills Payment" wrapped under a clipped
+        glyph. Four fixes that without touching the phone, where four across
+        was already right and is what the bills and services grids use.
+      */}
+      <div className="grid grid-cols-4 items-start gap-x-[6px] gap-y-[18px]">
         {services.map((s) => (
           <TileCard
             key={s.brand}

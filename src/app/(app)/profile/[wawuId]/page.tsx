@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { getCreatorProfile, isFollowing } from "@/lib/api/profile";
 import type { CreatorProfile } from "@/types/profile";
-import { PROFILE_TABS, type ProfileTab, type ProfileView } from "@/types/profile";
+import { PROFILE_TAB_LABEL, type ProfileTab, type ProfileView } from "@/types/profile";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ProfileScreen } from "@/components/profile/ProfileScreen";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
@@ -66,9 +66,11 @@ function VisitedProfileContent() {
   const wawuId = String(params?.wawuId ?? "");
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const tab: ProfileTab = PROFILE_TABS.some((t) => t.id === tabParam)
-    ? (tabParam as ProfileTab)
-    : "overview";
+  // The screen decides which tabs EXIST (they depend on what this account
+  // actually has), so this only has to reject a ?tab= that is not a tab at
+  // all. An unavailable one falls back to Overview there.
+  const tab: ProfileTab =
+    tabParam && tabParam in PROFILE_TAB_LABEL ? (tabParam as ProfileTab) : "overview";
 
   const [profile, setProfile] = useState<CreatorProfile | null>(null);
   const [following, setFollowing] = useState(false);
