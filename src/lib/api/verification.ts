@@ -487,7 +487,15 @@ export async function getOwnProfile(): Promise<OwnProfile> {
  * ProfileEditPage's disabled name field, which reflects this same real
  * constraint instead of pretending the save persisted it.
  */
-export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
+export async function saveProfile(
+  draft: OwnProfileDraft,
+  /**
+   * The profile as it was LOADED, used only to tell "never had one" from
+   * "had one and cleared it" for the two newest fields. Optional: a caller
+   * that does not pass it simply never sends an empty value for them.
+   */
+  previous?: Pick<OwnProfile, "company" | "headline">,
+): Promise<OwnProfile> {
   try {
     await apiFetch<unknown>("/api/hub/users/me", {
       method: "PATCH",
@@ -501,10 +509,32 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
         interests: draft.interests,
         bio: draft.bio,
         handle: draft.handle,
-        // Free text, so it is sent even when empty and clears the field.
-        // The URL fields below are the exception, not this.
-        company: draft.company ?? "",
-        headline: draft.headline ?? "",
+        /*
+          SENT ONLY WHEN THERE IS SOMETHING TO SAY.
+
+          These two are the newest columns on the profile, and this endpoint
+          runs a ValidationPipe with `forbidNonWhitelisted: true`: a property
+          the deployed DTO does not know is not ignored, it 400s the WHOLE
+          request. So while a web deploy is ahead of the API deploy, sending
+          `company: ""` on every save broke saving entirely, for every field,
+          for everybody, with "property company should not exist". That is
+          exactly what happened on 21 Sep 2026.
+
+          An empty value is now omitted, so an account that has never set
+          either one sends neither and saves against an older API unharmed.
+          A value still goes up, and so does an empty one that is CLEARING a
+          value the profile actually had, which is the only case where an
+          empty string carries information. `hadCompany`/`hadHeadline` come
+          from the profile as it was loaded, so this is "send what changed"
+          rather than "send everything", which is the better PATCH contract
+          regardless of deploy order.
+        */
+        ...(draft.company ? { company: draft.company } : previous?.company ? { company: "" } : {}),
+        ...(draft.headline
+          ? { headline: draft.headline }
+          : previous?.headline
+            ? { headline: "" }
+            : {}),
         instagramHandle: draft.socials.instagram ?? "",
         whatsappHandle: draft.socials.whatsapp ?? "",
         xHandle: draft.socials.x ?? "",
