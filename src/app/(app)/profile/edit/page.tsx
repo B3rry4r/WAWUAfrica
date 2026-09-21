@@ -49,6 +49,13 @@ export default function EditProfilePage() {
     lost-update problem the separate endpoints avoid.
   */
   const [experience, setExperience] = useState<ProfileExperience[]>([]);
+  /*
+    The profile AS LOADED, kept only so the save can tell "never had a
+    company" from "had one and cleared it". Those two look identical in the
+    draft (both an empty string) and they mean opposite things on the wire:
+    one must send nothing, the other must send "".
+  */
+  const [loaded, setLoaded] = useState<Pick<OwnProfile, "company" | "headline"> | null>(null);
   const [draft, setDraft] = useState<OwnProfileDraft>({
     firstName: "",
     middleName: "",
@@ -71,6 +78,7 @@ export default function EditProfilePage() {
         if (!active) return;
         setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, headline: p.headline ?? "", company: p.company ?? "", interests: [...p.interests], socials: { ...p.socials }, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl });
         setExperience(p.experience);
+        setLoaded({ company: p.company, headline: p.headline });
         setLoading(false);
       })
       .catch(() => active && (setLoadError(true), setLoading(false)));
@@ -91,10 +99,13 @@ export default function EditProfilePage() {
     setSaving(true);
     setSaveError(null);
     try {
-      const saved = await saveProfile({
-        ...draft,
-        handle: draft.handle.trim().replace(/^@/, ""),
-      });
+      const saved = await saveProfile(
+        {
+          ...draft,
+          handle: draft.handle.trim().replace(/^@/, ""),
+        },
+        loaded ?? undefined,
+      );
       // The header's avatar and name come from the session snapshot, which is
       // otherwise frozen at sign-in — patch it so a just-saved picture shows
       // up in the top bar (and thread avatar lists) without waiting for the
