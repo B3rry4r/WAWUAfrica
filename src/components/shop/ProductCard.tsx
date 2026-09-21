@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatNaira } from "@/lib/format";
-import type { Product } from "@/types/shop";
+import { PRODUCT_CATEGORY_LABEL, type Product } from "@/types/shop";
 import { Icon } from "@/components/ui";
 
 /**
@@ -42,6 +42,7 @@ export function ProductCard({
   onAdd,
   busy,
   hidePickBadge,
+  showCategory,
 }: {
   product: Product;
   /** Omitted on surfaces where adding is not offered. */
@@ -49,6 +50,13 @@ export function ProductCard({
   busy?: boolean;
   /** True on the picks shelf, where "WAWU pick" is tautological. */
   hidePickBadge?: boolean;
+  /**
+   * The aisle line under the title, which the approved marketplace reference
+   * draws on every featured card (refs/mobile/ref-marketplace.png). Off by
+   * default: inside an aisle every card carries the same word, so it is noise
+   * there and useful only on a mixed shelf.
+   */
+  showCategory?: boolean;
 }) {
   const image = product.images[0] ?? null;
   const badge = product.wawuVerified
@@ -58,7 +66,7 @@ export function ProductCard({
       : null;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] transition-all duration-200 hover:-translate-y-[3px] hover:border-[var(--border-strong)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] transition-all duration-200 hover:-translate-y-[3px] hover:border-[var(--border-strong)]">
       <Link
         href={`/shop/product/${product.slug}`}
         className="relative block aspect-[4/5] overflow-hidden bg-[var(--surface-page)]"
@@ -105,6 +113,12 @@ export function ProductCard({
         >
           {product.name}
         </Link>
+
+        {showCategory ? (
+          <span className="text-[12px] leading-[1.3] text-[var(--text-muted)]">
+            {product.subcategory || PRODUCT_CATEGORY_LABEL[product.category]}
+          </span>
+        ) : null}
 
         {/*
           The rating slot from the brief. Renders only when a real average

@@ -50,6 +50,25 @@ export interface ChoiceChipsProps<T> {
    * exact pattern C5 throws out.
    */
   scroll?: boolean;
+  /**
+   * The selected chip is FILLED with the accent instead of tinted.
+   *
+   * A browse rail sitting directly under a screen title has nothing else
+   * competing with it, and the mobile references draw the active chip solid
+   * purple there. Inside a form, where the chips sit among inputs, a solid
+   * purple chip reads as a submit button, which is why the tinted state stays
+   * the default rather than being replaced.
+   */
+  fill?: boolean;
+  /**
+   * The chips share the full width of the row, one equal column each.
+   *
+   * For a short, fixed set that reads as a tab bar rather than a filter rail
+   * (the Events screen's Discover / My Events / Host Event). A long list must
+   * not use this: squeezing twelve chips onto one line is how a rail becomes
+   * unreadable. It is ignored with `scroll`, which is the opposite layout.
+   */
+  stretch?: boolean;
 }
 
 export function ChoiceChips<T extends string | number>({
@@ -59,15 +78,22 @@ export function ChoiceChips<T extends string | number>({
   ariaLabel,
   multiple = false,
   scroll = false,
+  fill = false,
+  stretch = false,
 }: ChoiceChipsProps<T>) {
   if (options.length === 0) return null;
 
+  const wide = stretch && !scroll;
+
   const chipClass = (selected: boolean) =>
     [
-      "inline-flex h-9 shrink-0 items-center gap-[6px] rounded-full border px-3 text-[13px] font-semibold no-underline transition-colors",
+      "inline-flex h-9 items-center gap-[6px] rounded-full border px-3 text-[13px] font-semibold no-underline transition-colors",
+      wide ? "min-w-0 flex-1 justify-center" : "shrink-0",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
       selected
-        ? "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
+        ? fill
+          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)]"
+          : "border-[var(--border-selected)] bg-[var(--selected-tint)] text-[var(--accent)]"
         : "border-hairline bg-card text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
     ].join(" ");
 
@@ -76,7 +102,9 @@ export function ChoiceChips<T extends string | number>({
       className={
         scroll
           ? "wawu-no-scrollbar flex gap-2 overflow-x-auto"
-          : "flex flex-wrap gap-2"
+          : wide
+            ? "flex w-full gap-2"
+            : "flex flex-wrap gap-2"
       }
       role="group"
       aria-label={ariaLabel}
@@ -91,7 +119,7 @@ export function ChoiceChips<T extends string | number>({
               <Icon
                 name={option.icon}
                 size={14}
-                color={selected ? "var(--accent)" : "var(--text-muted)"}
+                color={selected ? (fill ? "var(--text-on-accent)" : "var(--accent)") : "var(--text-muted)"}
                 strokeWidth={1.9}
               />
             ) : null}

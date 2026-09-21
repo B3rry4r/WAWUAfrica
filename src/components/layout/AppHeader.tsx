@@ -44,9 +44,23 @@ const OWN_HEADER_ROUTES = [
   "/explore/creators",
 ];
 
+/**
+ * Routes that own their header at that EXACT path only, with their sub-routes
+ * keeping the global one.
+ *
+ * /events draws the design's own back/title/calendar bar
+ * (refs/mobile/ref-events.png), but /events/new, /events/mine and
+ * /events/[id] do not draw one at all - prefix-matching this would leave
+ * every one of them with no header and no way back.
+ */
+const OWN_HEADER_EXACT = ["/events"];
+
 /** Exported so DesktopHeader can hide on the same routes at xl width. */
 export function hasOwnHeader(pathname: string) {
-  return OWN_HEADER_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  return (
+    OWN_HEADER_EXACT.includes(pathname) ||
+    OWN_HEADER_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
+  );
 }
 
 /**

@@ -77,6 +77,18 @@ export const TILE_GRID =
 export const ICON_GRID =
   "grid grid-cols-4 items-start gap-x-[6px] gap-y-[18px] sm:grid-cols-6 dt:grid-cols-8";
 
+/*
+  LABEL WEIGHT AND SIZE, set deliberately. Product owner, 21 Sep 2026: "those
+  icons with the fonts... fonts are bold and big please reduce them... All!!!"
+
+  The icon is the thing being recognised on these grids; the label only names
+  it. Bold 15px under a 56px glyph competed with the artwork and made a row of
+  twelve read as twelve headlines. Every layout here now sits at medium weight
+  and 11.5-12.5px, except `action`, which stays semibold 13px because each of
+  its cards is a separate act rather than one entry in a catalogue.
+
+  Do not raise these back without asking.
+*/
 export type TileIconTone = "accent" | "aqua" | "lime" | "coral" | "yellow";
 
 /**
@@ -179,6 +191,18 @@ export interface TileCardProps {
    * Do not use it to decorate a catalogue.
    */
   iconTone?: TileIconTone;
+  /**
+   * `layout="tile"` only: let the subtitle wrap to two lines instead of
+   * truncating to one.
+   *
+   * The Services design puts a two-line description BESIDE the icon, not
+   * under it. `tile` is the right shape for that (icon left, text right) but
+   * its subtitle truncates, which is correct for a twelve-item catalogue
+   * where the line is a hint, and wrong here where the line is the service's
+   * actual description. Product owner, 21 Sep 2026: "that is not the design,
+   * the two line description is beside the icon".
+   */
+  subtitleLines?: 1 | 2;
   size?: TileCardSize;
   className?: string;
 }
@@ -207,6 +231,7 @@ export function TileCard({
   gradientClass,
   chevron = false,
   iconTone = "accent",
+  subtitleLines = 1,
   size = "md",
   className = "",
 }: TileCardProps) {
@@ -252,7 +277,7 @@ export function TileCard({
           </span>
         ) : null}
         <span className="flex min-w-0 flex-col gap-[3px]">
-          <span className="text-[14.5px] font-bold leading-tight tracking-[-0.01em] text-text-primary">{title}</span>
+          <span className="text-[13px] font-semibold leading-tight tracking-[-0.01em] text-text-primary">{title}</span>
           {subtitle ? (
             <span className="text-[12px] leading-[1.35] text-text-secondary">{subtitle}</span>
           ) : null}
@@ -291,7 +316,9 @@ export function TileCard({
       these fit a desktop row-and-a-half instead of a page and a half.
     */
     const tileShell = [
-      "group flex w-full items-center gap-[11px] rounded-card border p-[13px] text-left",
+      `group flex w-full rounded-card border p-[13px] text-left ${
+        subtitleLines === 2 ? "items-start gap-[10px]" : "items-center gap-[11px]"
+      }`,
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
       selected
         ? "border-[var(--border-selected)] bg-[var(--selected-tint)]"
@@ -301,6 +328,57 @@ export function TileCard({
         : "cursor-pointer transition-colors duration-150 hover:border-[var(--border-strong)] hover:bg-[var(--surface-elevated)]",
       className,
     ].join(" ");
+
+    if (subtitleLines === 2) {
+      /*
+        The descriptive card the Services design draws. Zoom into
+        refs/mobile/ref-services.png and it is unambiguous: a BARE coloured
+        glyph on the left, no badge box around it, and BOTH the title and the
+        description in the column beside it, each wrapping to as many lines as
+        they need. The card's height follows its text.
+
+        Two earlier attempts got this wrong. The first put the icon in a
+        34px tinted badge and clamped the description to two lines, which left
+        about 100px of text at 390px, truncated "Bills Payment" and made every
+        card tall. The second moved the description under the icon to buy it
+        width, which is not what the design does at all. Product owner: "the
+        two texts sit beside the icons not just one".
+
+        Dropping the badge is what makes it fit: the glyph alone is narrower,
+        so the text column gets the width back without shrinking the type
+        further or clamping anything.
+      */
+      const bareIcon = iconImageSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={iconImageSrc} alt="" className="h-[26px] w-[26px] shrink-0 object-contain" />
+      ) : icon ? (
+        <Icon name={icon} size={24} color={ICON_TONE[iconTone].color} strokeWidth={1.8} className="shrink-0" />
+      ) : null;
+      const descBody = (
+        <>
+          {bareIcon}
+          <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+            <span className="text-[12px] font-semibold leading-tight text-text-primary">{title}</span>
+            {subtitle ? (
+              <span className="text-[10.5px] leading-[1.35] text-text-secondary">{subtitle}</span>
+            ) : null}
+          </span>
+        </>
+      );
+      if (disabled) return <div className={tileShell}>{descBody}</div>;
+      if (href) {
+        return (
+          <Link href={href} className={`${tileShell} no-underline`}>
+            {descBody}
+          </Link>
+        );
+      }
+      return (
+        <button type="button" onClick={onClick} className={tileShell}>
+          {descBody}
+        </button>
+      );
+    }
 
     const tileBody = (
       <>
@@ -315,9 +393,9 @@ export function TileCard({
           </span>
         ) : null}
         <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-          <span className="block truncate text-[13.5px] font-semibold leading-tight text-text-primary">{title}</span>
+          <span className="block truncate text-[12.5px] font-medium leading-tight text-text-primary">{title}</span>
           {subtitle ? (
-            <span className="block truncate text-[11.5px] leading-tight text-text-secondary">{subtitle}</span>
+            <span className="block truncate text-[11.5px] leading-[1.35] text-text-secondary">{subtitle}</span>
           ) : null}
           {meta ? (
             <span className="block truncate text-[11.5px] font-semibold leading-tight text-accent">{meta}</span>
@@ -390,7 +468,7 @@ export function TileCard({
           ) : null}
         </span>
         <span className="flex flex-col gap-0.5">
-          <span className={`block font-bold leading-tight text-text-primary ${size === "sm" ? "text-[13px]" : "text-[15px]"}`}>
+          <span className={`block font-medium leading-tight text-text-primary ${size === "sm" ? "text-[11.5px]" : "text-[12.5px]"}`}>
             {title}
           </span>
           {subtitle ? (

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { VerificationTicks } from "@/components/ui/VerificationTicks";
 import { formatNaira } from "@/lib/format";
@@ -30,7 +31,65 @@ function windowLabel(hours: number): string {
  * question and how long they have to answer — making that a second click
  * turns a decision into four.
  */
-export function ProfessionalCard({ pro }: { pro: ProfessionalListing }) {
+export interface ProfessionalCardProps {
+  pro: ProfessionalListing;
+  /**
+   * "card" (default) is the directory tile: avatar block, service tags, and
+   * the terms of the paid message along the bottom.
+   *
+   * "row" is the compact form the approved Services design draws under "Top
+   * Professionals" (refs/mobile/ref-services.png): one line per person with a
+   * trailing action, three or four of them under a section heading rather
+   * than a grid of full cards. A prop, not a second component - CLAUDE.md
+   * forbids forking one, and the two forms have to keep saying the same
+   * things about the same person.
+   *
+   * WHAT THE ROW CANNOT DRAW. The design puts a star rating and a review
+   * count on each row. `ProfessionalListing` carries no rating and no review
+   * count, and nothing on the contract produces one, so the row shows the
+   * facts that do exist: whether they are verified, what the first message
+   * costs, and how long they have to reply. Inventing 4.9 stars for somebody
+   * would be exactly the fabrication this directory refuses elsewhere.
+   */
+  variant?: "card" | "row";
+}
+
+export function ProfessionalCard({ pro, variant = "card" }: ProfessionalCardProps) {
+  if (variant === "row") {
+    const reachable = pro.dmEnabled && pro.dmPrice !== null;
+    return (
+      <div className="flex items-center gap-[12px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[12px]">
+        <Link
+          href={`/professionals/${pro.id}`}
+          className="flex min-w-0 flex-1 items-center gap-[12px] no-underline text-inherit"
+        >
+          <Avatar src={pro.avatarUrl} initial={pro.name.charAt(0)} size={48} />
+          <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+            <span className="flex items-center gap-[6px]">
+              <span className="truncate text-[14.5px] font-semibold text-[var(--text-primary)]">
+                {pro.name}
+              </span>
+              <VerificationTicks verification={pro.verification} size="sm" />
+            </span>
+            <span className="truncate text-[12.5px] text-[var(--text-secondary)]">
+              {categoryName(pro.category)}
+            </span>
+            <span className="text-[12px] leading-[1.35] text-[var(--text-muted)]">
+              {reachable
+                ? `${formatNaira(pro.dmPrice as number)} to message, replies in ${windowLabel(pro.dmResponseHours)}`
+                : "Not taking messages right now"}
+            </span>
+          </span>
+        </Link>
+        {reachable ? (
+          <Button href={`/professionals/${pro.id}`} size="sm" className="shrink-0">
+            Message
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={`/professionals/${pro.id}`}

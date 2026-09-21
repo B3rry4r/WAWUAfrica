@@ -22,12 +22,45 @@ import type { IconName } from "@/components/ui/Icon";
  * surfaces rather than partner services, so they have no slug and never get a
  * catalogue status.
  */
+/**
+ * The filter groups the Services screen's chip rail is built from.
+ *
+ * The approved mobile design (refs/mobile/ref-services.png) draws a single
+ * scrolling row of five chips. Its labels are Legal / Business / Creative /
+ * Health, which describe a catalogue WAWU does not have: there is no business
+ * support, design or tech-development service in this list, and there never
+ * was one. Rather than draw four chips with nothing behind them, the rail is
+ * derived from the services that DO exist, in the design's shape: "All" plus
+ * one chip per group, one line, scrolling.
+ *
+ * Keep this in step with the list below. A group with no service in it is a
+ * dead filter and the rail simply will not render it.
+ */
+export type ServiceGroup = "legal" | "money" | "health" | "lifestyle";
+
+export const SERVICE_GROUP_LABEL: Record<ServiceGroup, string> = {
+  legal: "Legal",
+  money: "Money",
+  health: "Health",
+  lifestyle: "Lifestyle",
+};
+
+/** Chip order. Filtered down to the groups that actually carry a service. */
+export const SERVICE_GROUP_ORDER: readonly ServiceGroup[] = Object.freeze([
+  "legal",
+  "money",
+  "health",
+  "lifestyle",
+]);
+
 export interface PlatformService {
   /** The name shown under the icon. */
   brand: string;
   /** A short line for surfaces that have room for one. */
   label: string;
   blurb: string;
+  /** Which filter chip on /services shows it. */
+  group: ServiceGroup;
   /** Catalogue join key. Absent for WAWU's own surfaces. */
   slug?: string;
   /** Commissioned art. The icon IS the control on every surface that lists these. */
@@ -46,8 +79,9 @@ export interface PlatformService {
 export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
   {
     brand: "Legal",
+    group: "legal",
     label: "Filings and lawyers",
-    blurb: "CAC and tax filings, or book a lawyer.",
+    blurb: "CAC filings, or book a lawyer.",
     slug: "legal",
     icon: "Scale",
     iconImageSrc: "/icons/services/legal.png",
@@ -55,16 +89,18 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
   },
   {
     brand: "Events",
+    group: "lifestyle",
     label: "What's on",
-    blurb: "Find what is happening, or list your own.",
+    blurb: "Find one, or list your own.",
     icon: "CalendarDays",
     iconImageSrc: "/icons/services/events.png",
     href: "/events",
   },
   {
     brand: "Shop",
+    group: "lifestyle",
     label: "Creator equipment",
-    blurb: "Cameras, mics, lights and laptops, checked before we stock them.",
+    blurb: "Gear, checked before we stock it.",
     icon: "ShoppingBag",
     iconImageSrc: "/icons/services/shop.png",
     href: "/shop",
@@ -76,6 +112,7 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
   },
   {
     brand: "Bills Payment",
+    group: "money",
     label: "Airtime, power, cable",
     blurb: "Pay any bill in seconds.",
     slug: "pay",
@@ -85,8 +122,9 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
   },
   {
     brand: "Loans",
+    group: "money",
     label: "Borrow",
-    blurb: "Apply for credit against what you earn here.",
+    blurb: "Credit against what you earn.",
     slug: "loans",
     icon: "Landmark",
     iconImageSrc: "/icons/services/loans.png",
@@ -98,16 +136,18 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
     // instalments on a purchase, the other is credit - and one slash was
     // making them read as a single service.
     brand: "BNPL",
+    group: "money",
     label: "Buy now, pay later",
-    blurb: "Spread the cost of a purchase over monthly payments.",
+    blurb: "Pay for a purchase monthly.",
     icon: "Smartphone",
     iconImageSrc: "/icons/services/bnpl.png",
     soon: true,
   },
   {
     brand: "Pensions",
+    group: "money",
     label: "Retirement",
-    blurb: "Save for later on irregular income.",
+    blurb: "Save on irregular income.",
     slug: "pension",
     icon: "PiggyBank",
     iconImageSrc: "/icons/services/pensions.png",
@@ -115,8 +155,9 @@ export const PLATFORM_SERVICES: readonly PlatformService[] = Object.freeze([
   },
   {
     brand: "Telemedicine",
+    group: "health",
     label: "Health cover",
-    blurb: "See a doctor and get covered.",
+    blurb: "See a doctor, get covered.",
     slug: "care",
     icon: "Stethoscope",
     iconImageSrc: "/icons/services/telemedicine.png",

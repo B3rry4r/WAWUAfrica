@@ -4,12 +4,33 @@ import { useEffect, useState } from "react";
 import { setGoing } from "@/lib/api/events";
 import { Icon } from "@/components/ui";
 
+/**
+ * Which glyph the toggle wears. The meaning never changes: every one of these
+ * writes the same Going signal.
+ *
+ * The approved Events design draws this control as a BOOKMARK on the hero
+ * picture and as a HEART on the small cards. Neither is a second feature:
+ * there is no saved-events endpoint and no `saved` field on an event, so
+ * rather than draw a control that writes nothing, the design's shapes are
+ * worn by the one per-user event signal the backend actually has. The label
+ * and the title still say what pressing it does.
+ */
+type GoingShape = "calendar" | "bookmark" | "heart";
+
 interface GoingButtonProps {
   eventId: string;
   going: boolean;
   count: number;
   /** "icon" is the 34px round toggle on a card; "full" is the wide control on the detail screen. */
   variant?: "icon" | "full";
+  shape?: GoingShape;
+  /**
+   * "chip" is the bordered 34px pill. "bare" is the naked glyph the picture
+   * cards use, where a bordered button over a photograph reads as chrome.
+   */
+  chrome?: "chip" | "bare";
+  /** "media" colours the bare glyph for sitting on a photograph. */
+  tone?: "default" | "media";
   /** The authoritative state the server came back with — the count included. */
   onChange?: (next: { userGoing: boolean; goingCount: number }) => void;
   /** Called when the write was refused. The button has already reverted itself. */
@@ -29,7 +50,17 @@ interface GoingButtonProps {
  * keeps a filled-in state after the write failed is lying about what the
  * organiser can see.
  */
-export function GoingButton({ eventId, going, count, variant = "icon", onChange, onError }: GoingButtonProps) {
+export function GoingButton({
+  eventId,
+  going,
+  count,
+  variant = "icon",
+  shape = "calendar",
+  chrome = "chip",
+  tone = "default",
+  onChange,
+  onError,
+}: GoingButtonProps) {
   const [optimistic, setOptimistic] = useState<{ going: boolean; count: number } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -60,6 +91,9 @@ export function GoingButton({ eventId, going, count, variant = "icon", onChange,
   const label = shownGoing ? "You're going. Press to take yourself off the list." : "Mark yourself as going";
 
   if (variant === "icon") {
+    const glyph =
+      shape === "bookmark" ? "Bookmark" : shape === "heart" ? "Heart" : shownGoing ? "CalendarCheck" : "CalendarPlus";
+    const bare = chrome === "bare";
     return (
       <button
         type="button"
@@ -72,17 +106,30 @@ export function GoingButton({ eventId, going, count, variant = "icon", onChange,
         aria-pressed={shownGoing}
         aria-label={label}
         title={label}
-        className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border transition-colors disabled:opacity-60 ${
-          shownGoing
-            ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-accent-hover active:bg-accent-press"
-            : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-surface-hover hover:border-strong active:bg-surface-press"
+        className={`grid shrink-0 place-items-center transition-colors disabled:opacity-60 ${
+          bare
+            ? `h-[30px] w-[30px] rounded-full ${
+                tone === "media"
+                  ? "text-white hover:text-[var(--accent)]"
+                  : shownGoing
+                    ? "text-[var(--accent)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--accent)]"
+              }`
+            : `h-[34px] w-[34px] rounded-full border ${
+                shownGoing
+                  ? "border-transparent bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-accent-hover active:bg-accent-press"
+                  : "border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)] hover:bg-surface-hover hover:border-strong active:bg-surface-press"
+              }`
         }`}
       >
+        {/* Filled when the signal is on: on a bare glyph the outline alone is
+            too quiet to tell the two states apart at 20px. */}
         <Icon
-          name={shownGoing ? "CalendarCheck" : "CalendarPlus"}
-          size={16}
+          name={glyph}
+          size={bare ? 21 : 16}
           strokeWidth={1.9}
           color="currentColor"
+          fill={bare && shownGoing ? "currentColor" : "none"}
         />
       </button>
     );

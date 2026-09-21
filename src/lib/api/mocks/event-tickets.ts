@@ -102,6 +102,82 @@ const TICKET_TYPES: Record<string, EventTicketType[]> = {
       salesEndAt: null,
     },
   ],
+  /*
+    Tiers on the rest of the upcoming fixtures, so the calendar's cards have a
+    real price to read. The calendar prices a card from the cheapest tier on
+    the event (lowestTicketPrices), and with only two fixtures carrying tiers
+    every other card fell back to no price at all — which is the correct
+    rendering of "nothing on sale" and the wrong way to look at a screen whose
+    design prices every card.
+  */
+  "ev-pricing-workshop": [
+    {
+      id: "tt-pricing-regular",
+      tier: "regular",
+      name: "Seat",
+      priceNaira: 10000,
+      quantity: 120,
+      sold: 44,
+      remaining: 76,
+      soldOut: false,
+      salesStartAt: null,
+      salesEndAt: null,
+    },
+  ],
+  "ev-export-clinic": [
+    {
+      id: "tt-export-early",
+      tier: "early_bird",
+      name: "Early bird",
+      priceNaira: 5000,
+      quantity: 40,
+      sold: 40,
+      remaining: 0,
+      soldOut: true,
+      salesStartAt: null,
+      salesEndAt: null,
+    },
+    {
+      id: "tt-export-regular",
+      tier: "regular",
+      name: "Regular",
+      priceNaira: 8500,
+      quantity: 100,
+      sold: 31,
+      remaining: 69,
+      soldOut: false,
+      salesStartAt: null,
+      salesEndAt: null,
+    },
+  ],
+  "ev-poultry-webinar": [
+    {
+      id: "tt-poultry-regular",
+      tier: "regular",
+      name: "Seat",
+      priceNaira: 3500,
+      quantity: 300,
+      sold: 122,
+      remaining: 178,
+      soldOut: false,
+      salesStartAt: null,
+      salesEndAt: null,
+    },
+  ],
+  "ev-textile-competition": [
+    {
+      id: "tt-textile-entry",
+      tier: "regular",
+      name: "Entry",
+      priceNaira: 15000,
+      quantity: 60,
+      sold: 18,
+      remaining: 42,
+      soldOut: false,
+      salesStartAt: null,
+      salesEndAt: null,
+    },
+  ],
 };
 
 let ticketSeq = 100;

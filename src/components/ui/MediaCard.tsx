@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Icon, type IconName } from "./Icon";
 
 /**
  * The picture-led card the Explore reference is built from
@@ -24,6 +25,26 @@ import type { ReactNode } from "react";
  */
 export type MediaCardVariant = "overlay" | "stacked";
 
+/**
+ * How the card's link is drawn.
+ *
+ *   "wrap"     the whole card IS the anchor. The default, and right for a
+ *              card whose only affordance is "open this".
+ *   "overlay"  the card is a plain box with the anchor stretched across it
+ *              and `badge` / `corner` / `action` lifted above it.
+ *
+ * "overlay" exists because a BUTTON may not live inside an anchor: nesting
+ * interactive content is invalid HTML and leaves a screen reader with one
+ * control that does two things, while a mouse press on the inner control
+ * navigates instead of pressing it. An events card carries a save toggle on
+ * the picture, so it needs this. It is a prop rather than a second card
+ * component on purpose.
+ */
+export type MediaCardLinkMode = "wrap" | "overlay";
+
+/** Type scale for the body. "lg" is the hero card at the top of a screen. */
+export type MediaCardSize = "md" | "lg";
+
 export interface MediaCardProps {
   href: string;
   imageUrl?: string | null;
@@ -37,11 +58,15 @@ export interface MediaCardProps {
   /** Sits immediately after the title, on the same line. A verification tick. */
   titleBadge?: ReactNode;
   caption?: string;
+  /** A small glyph before the caption. A pin on a venue, a clock on a time. */
+  captionIcon?: IconName;
   /** Small chips under the caption. */
   tags?: readonly string[];
   /** The one action, full width at the bottom. */
   action?: ReactNode;
   variant?: MediaCardVariant;
+  linkMode?: MediaCardLinkMode;
+  size?: MediaCardSize;
   /** Tailwind aspect utility for the media area. */
   aspect?: string;
   className?: string;
@@ -56,12 +81,18 @@ export function MediaCard({
   title,
   titleBadge,
   caption,
+  captionIcon,
   tags,
   action,
   variant = "overlay",
+  linkMode = "wrap",
+  size = "md",
   aspect = "aspect-[3/4]",
   className = "",
 }: MediaCardProps) {
+  // A control on the picture has to sit above the stretched link, or the link
+  // swallows the press. Only "overlay" draws that link, so only it lifts them.
+  const lift = linkMode === "overlay" ? "z-[2]" : "";
   const media = (
     <span className={`relative block w-full overflow-hidden ${variant === "overlay" ? "h-full" : aspect} bg-[linear-gradient(160deg,var(--accent-deep),var(--surface-elevated))]`}>
       {imageUrl ? (
@@ -70,8 +101,8 @@ export function MediaCard({
       ) : (
         <span className="absolute inset-0 grid place-items-center">{fallback}</span>
       )}
-      {badge ? <span className="absolute left-[10px] top-[10px]">{badge}</span> : null}
-      {corner ? <span className="absolute right-[10px] top-[10px]">{corner}</span> : null}
+      {badge ? <span className={`absolute left-[10px] top-[10px] ${lift}`}>{badge}</span> : null}
+      {corner ? <span className={`absolute right-[10px] top-[10px] ${lift}`}>{corner}</span> : null}
     </span>
   );
 
@@ -85,13 +116,14 @@ export function MediaCard({
     invisible for every viewer whose system is set to light.
   */
   const onScrim = variant === "overlay";
+  const large = size === "lg";
   const body = (
     <span className="flex flex-col gap-[3px]">
       <span className="flex items-center gap-[5px]">
         <span
-          className={`min-w-0 flex-1 truncate text-[14px] font-bold leading-tight tracking-[-0.01em] ${
-            onScrim ? "text-white" : "text-[var(--text-primary)]"
-          }`}
+          className={`min-w-0 flex-1 font-bold tracking-[-0.01em] ${
+            large ? "line-clamp-2 text-[19px] leading-[1.22]" : "truncate text-[14px] leading-tight"
+          } ${onScrim ? "text-white" : "text-[var(--text-primary)]"}`}
         >
           {title}
         </span>
@@ -99,11 +131,14 @@ export function MediaCard({
       </span>
       {caption ? (
         <span
-          className={`line-clamp-2 text-[12px] leading-[1.35] ${
+          className={`flex items-center gap-[5px] ${large ? "text-[13.5px]" : "text-[12px]"} leading-[1.35] ${
             onScrim ? "text-[rgba(255,255,255,0.72)]" : "text-[var(--text-muted)]"
           }`}
         >
-          {caption}
+          {captionIcon ? (
+            <Icon name={captionIcon} size={large ? 15 : 13} color="currentColor" strokeWidth={1.9} />
+          ) : null}
+          <span className="min-w-0 flex-1 truncate">{caption}</span>
         </span>
       ) : null}
       {tags && tags.length > 0 ? (
@@ -111,7 +146,9 @@ export function MediaCard({
           {tags.map((t) => (
             <span
               key={t}
-              className={`inline-flex items-center rounded-full px-[9px] py-[3px] text-[10.5px] font-semibold ${
+              className={`inline-flex items-center rounded-full font-semibold ${
+                large ? "px-[12px] py-[6px] text-[12px]" : "px-[9px] py-[3px] text-[10.5px]"
+              } ${
                 onScrim
                   ? "bg-[rgba(255,255,255,0.14)] text-[rgba(255,255,255,0.88)]"
                   : "border border-[var(--border-hairline)] bg-[var(--surface-tag)] text-[var(--text-secondary)]"
@@ -122,33 +159,55 @@ export function MediaCard({
           ))}
         </span>
       ) : null}
-      {action ? <span className="mt-[9px] block">{action}</span> : null}
+      {/* Relative + lifted so a control in here stays pressable when the card
+          draws a stretched link over itself (linkMode="overlay"). The scrim
+          and the body panel are deliberately NOT lifted: tapping the title
+          has to reach that link and open the card. */}
+      {action ? <span className={`relative mt-[9px] block ${lift}`}>{action}</span> : null}
     </span>
   );
 
   const shell =
     "group relative flex shrink-0 flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-hairline)] no-underline transition-colors hover:border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]";
 
-  if (variant === "overlay") {
-    return (
-      <Link href={href} className={`${shell} ${aspect} ${className}`}>
+  /*
+    The scrim is what makes white text legible over a photograph that can be
+    any brightness. Anchored to the bottom rather than covering the card, so
+    the picture still reads as the card's own.
+  */
+  const inner =
+    variant === "overlay" ? (
+      <>
         {media}
-        {/*
-          The scrim is what makes white text legible over a photograph that
-          can be any brightness. Anchored to the bottom rather than covering
-          the card, so the picture still reads as the card's own.
-        */}
-        <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.96)_0%,rgba(11,10,13,0.88)_46%,transparent_100%)] px-[11px] pb-[11px] pt-[52px]">
+        <span
+          className={`absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgba(11,10,13,0.96)_0%,rgba(11,10,13,0.88)_46%,transparent_100%)] ${
+            large ? "px-[14px] pb-[14px] pt-[64px]" : "px-[11px] pb-[11px] pt-[52px]"
+          }`}
+        >
           {body}
         </span>
-      </Link>
+      </>
+    ) : (
+      <>
+        {media}
+        <span className="flex flex-1 flex-col px-[11px] pb-[12px] pt-[10px]">{body}</span>
+      </>
+    );
+
+  const box = `${shell} ${variant === "overlay" ? aspect : "bg-[var(--surface-card)]"} ${className}`;
+
+  if (linkMode === "overlay") {
+    return (
+      <div className={box}>
+        {inner}
+        <Link href={href} aria-label={title} className="absolute inset-0 z-[1] rounded-[inherit]" />
+      </div>
     );
   }
 
   return (
-    <Link href={href} className={`${shell} bg-[var(--surface-card)] ${className}`}>
-      {media}
-      <span className="flex flex-1 flex-col px-[11px] pb-[12px] pt-[10px]">{body}</span>
+    <Link href={href} className={box}>
+      {inner}
     </Link>
   );
 }
