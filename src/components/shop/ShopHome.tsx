@@ -43,9 +43,26 @@ import { ShopHeader } from "./ShopHeader";
  * picture alone runs to 470px tall, which is a poster, not a shelf. The extra
  * two are rendered and hidden below xl rather than fetched twice.
  */
-const MOBILE_SHELF = 3;
 const DESKTOP_SHELF = 5;
-const SHELF = "grid grid-cols-3 gap-[10px] xl:grid-cols-5 xl:gap-[16px]";
+/*
+  A shelf SCROLLS on a phone, it does not squeeze.
+
+  It was `grid-cols-3`, three cards across 390px, which left each card about
+  110px wide: a thumbnail too small to see what the thing is and a price
+  crushed under a two-line title. Product owner, 21 Sep 2026: "marketplace
+  cards are obviously too tiny on mobile... a single card or double card
+  scroll is enough".
+
+  So below xl it is a horizontal rail at roughly two cards to a screen, with
+  the third peeking to say there is more. Above xl there is real width, so it
+  stays the five-across grid.
+*/
+const SHELF =
+  "wawu-no-scrollbar -mx-[16px] flex snap-x snap-mandatory gap-[12px] overflow-x-auto px-[16px] pb-[2px] " +
+  "xl:mx-0 xl:grid xl:grid-cols-5 xl:gap-[16px] xl:overflow-visible xl:px-0";
+
+/** Each card's width in that rail. Two to a screen at 390px, a sliver of the third visible. */
+const SHELF_ITEM = "w-[46%] shrink-0 snap-start sm:w-[31%] xl:w-auto xl:shrink";
 
 export function ShopHome() {
   const router = useRouter();
@@ -132,7 +149,7 @@ export function ShopHome() {
         ) : picks === null ? (
           <div className={SHELF}>
             {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-[240px] rounded-card" />
+              <Skeleton key={i} className={`${SHELF_ITEM} h-[240px] rounded-card`} />
             ))}
           </div>
         ) : picks.length === 0 ? (
@@ -141,8 +158,8 @@ export function ShopHome() {
           </p>
         ) : (
           <div className={SHELF}>
-            {picks.slice(0, DESKTOP_SHELF).map((p, i) => (
-              <div key={p.id} className={i >= MOBILE_SHELF ? "hidden h-full xl:block" : "h-full"}>
+            {picks.slice(0, DESKTOP_SHELF).map((p) => (
+              <div key={p.id} className={`${SHELF_ITEM} h-full`}>
                 <ProductCard product={p} showCategory hidePickBadge />
               </div>
             ))}
@@ -156,7 +173,7 @@ export function ShopHome() {
           <SectionHeader title="Featured Services" actionHref="/services" />
           <div className={SHELF}>
             {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-[170px] rounded-card" />
+              <Skeleton key={i} className={`${SHELF_ITEM} h-[170px] rounded-card`} />
             ))}
           </div>
         </section>
@@ -164,8 +181,8 @@ export function ShopHome() {
         <section className="flex flex-col gap-[12px]">
           <SectionHeader title="Featured Services" actionHref="/services" />
           <div className={SHELF}>
-            {services.slice(0, DESKTOP_SHELF).map((s, i) => (
-              <div key={s.id} className={i >= MOBILE_SHELF ? "hidden h-full xl:block" : "h-full"}>
+            {services.slice(0, DESKTOP_SHELF).map((s) => (
+              <div key={s.id} className={`${SHELF_ITEM} h-full`}>
                 <ServiceCard service={s} />
               </div>
             ))}
