@@ -64,8 +64,25 @@ export function MyEventsList() {
         Events
       </Link>
 
-      <div className="flex flex-wrap items-end gap-[12px]">
-        <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+      {/*
+        STACKED ON A PHONE, ONE ROW ON A DESKTOP.
+
+        This was a single `flex-wrap` row holding the title block (`flex-1
+        min-w-0`) alongside two `shrink-0` actions. `flex-wrap` only moves an
+        item to the next line when it cannot fit at its BASE size, and
+        `min-w-0` told the title block its base size was zero, so it never
+        wrapped: it shrank. On a 390px screen the two actions took the width
+        they had asked for and the heading was left with about a hundred
+        pixels, wrapping "My submissions" and its whole paragraph one or two
+        words to a line. That is the screenshot the product owner sent on
+        21 Sep 2026.
+
+        A phone stacks the two, so the heading gets the full width and the
+        actions sit under it. `xl:` puts them back on one line, where there
+        is room for both.
+      */}
+      <div className="flex flex-col gap-[14px] xl:flex-row xl:flex-wrap xl:items-end xl:gap-[12px]">
+        <div className="flex min-w-0 flex-col gap-[3px] xl:flex-1">
           <h1 className="text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)] xl:text-[26px]">
             My submissions
           </h1>
@@ -77,16 +94,22 @@ export function MyEventsList() {
             Everything you have sent in, at every stage. An admin reads each one before it reaches the calendar.
           </p>
         </div>
-        <Link
-          href="/tickets"
-          className="inline-flex shrink-0 items-center gap-[7px] text-[13.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
-        >
-          <Icon name="Ticket" size={16} color="currentColor" />
-          My tickets
-        </Link>
-        <Button href="/events/new" icon="Plus" size="sm">
-          Submit an event
-        </Button>
+        {/* The two actions keep their own row so the stacked phone layout
+            does not stretch a small button to the full width of the screen:
+            a flex column aligns its children to `stretch` by default, and
+            "Submit an event" came out as a banner. */}
+        <div className="flex flex-wrap items-center gap-[14px] xl:contents">
+          <Link
+            href="/tickets"
+            className="inline-flex shrink-0 items-center gap-[7px] text-[13.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+          >
+            <Icon name="Ticket" size={16} color="currentColor" />
+            My tickets
+          </Link>
+          <Button href="/events/new" icon="Plus" size="sm">
+            Submit an event
+          </Button>
+        </div>
       </div>
 
       {error ? (

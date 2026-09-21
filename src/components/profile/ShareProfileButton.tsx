@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 
 /**
@@ -69,12 +70,20 @@ export function ShareProfileButton({
    * link out in full with a copy control beside it, for the public store
    * page, where the link is the thing being advertised and a visitor who
    * cannot use the clipboard can still read it and type it.
+   *
+   * "inline" is the compact form for the profile's meta row. It exists
+   * because that row used to render `wawu/<handle>` as a plain anchor behind
+   * a shop glyph: nothing said the string was yours to take, and there was
+   * nothing to press to take it. Product owner, 21 Sep 2026: "there's even
+   * no copy button, rather you embedded the public store link directly with
+   * a marketplace icon, and how do you expect users to know that?" So the
+   * inline form says the word "Copy" next to the link and copies on press.
    */
   display = "button",
 }: {
   handle: string;
   compact?: boolean;
-  display?: "button" | "row";
+  display?: "button" | "row" | "inline";
 }) {
   const [state, setState] = useState<CopyState>("idle");
   const clean = handle.replace(/^@/, "");
@@ -100,6 +109,40 @@ export function ShareProfileButton({
     }
     await copy(url);
   };
+
+  if (display === "inline") {
+    return (
+      <span className="inline-flex items-center gap-[2px]">
+        {/* The link still goes where it says it goes: somebody who wants to
+            see their own storefront presses the name, not the copy control. */}
+        <Link
+          href={path}
+          className="inline-flex items-center gap-[6px] rounded-full py-[3px] pl-[2px] pr-[6px] text-[12.5px] font-semibold text-[var(--accent)] no-underline hover:text-text-primary"
+        >
+          <Icon name="Store" size={14} strokeWidth={2} />
+          wawu/{clean}
+        </Link>
+        <button
+          type="button"
+          onClick={() => void copy(`${window.location.origin}${path}`)}
+          aria-label={`Copy your store link, wawu/${clean}`}
+          className="inline-flex h-[26px] shrink-0 items-center gap-[5px] rounded-full border border-hairline bg-tag px-[9px] text-[11.5px] font-semibold text-text-secondary transition-colors hover:border-[var(--accent)] hover:text-text-primary"
+        >
+          <Icon name={state === "copied" ? "Check" : "Copy"} size={12} color="currentColor" strokeWidth={2.2} />
+          {state === "copied" ? "Copied" : state === "failed" ? "Copy failed" : "Copy"}
+        </button>
+        {/* The swapped label is the only visible confirmation, and a screen
+            reader gets nothing from an icon changing, so it is announced. */}
+        <span aria-live="polite" className="sr-only">
+          {state === "copied"
+            ? "Store link copied."
+            : state === "failed"
+              ? "Could not reach the clipboard. Open the link and copy it from the address bar."
+              : ""}
+        </span>
+      </span>
+    );
+  }
 
   if (display === "row") {
     return (
