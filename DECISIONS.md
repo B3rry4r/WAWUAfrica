@@ -179,13 +179,36 @@ with exactly two paid ticks (Creator, purple, ₦4,999/yr; Professional, green,
 (`basic`, `verified_user`, `verified_business`, `certified_professional`,
 `trusted_partner`). Replacing one with the other was authorised.
 
-**Why it stopped.** The resulting tier is not owned by this backend. It is
-pushed to the external WAWU ID identity service:
+**Why it stopped, with the evidence.** It was put to me that WAWU ID is only
+an auth service and has nothing to do with verification ticks. That is not what
+this codebase does. Three independent confirmations:
 
-```
-PATCH {WAWU_ID}/internal/users/:userId/verification-tier   { tier }
-        - src/common/auth/wawu-id.client.ts, elevateVerificationTier()
-```
+1. **The call site is live, not vestigial.** `verification-submission.service.ts`
+   line 139 calls `elevateVerificationTier` on every approval, and
+   `admin-professional-review.service.ts` line 231 does the same for
+   professionals:
+   ```
+   PATCH {WAWU_ID}/internal/users/:userId/verification-tier   { tier }
+           - src/common/auth/wawu-id.client.ts, elevateVerificationTier()
+   ```
+
+2. **This backend deliberately does not store the tick.** From that service's
+   own header: "The badge *tier* itself is WAWU ID's own `verificationTier`
+   claim - on approval this service calls WawuIdClient.elevateVerificationTier
+   and never persists tier as this backend's source of truth." The approval
+   path elevates at WAWU ID FIRST and only then writes the local row, with a
+   comment explaining that the other order produces a permanent divergence
+   between the two services with no way back.
+
+3. **A live token proves it.** Signing in to `id.wawuafrica.com` returns an
+   access token whose payload contains `"verificationTier": "basic"`, and
+   `src/common/auth/wawu-jwt-claims.interface.ts` declares
+   `verificationTier: string` as a claim "confirmed against the real WAWU ID
+   service's token.service.ts".
+
+So the tick is an identity claim issued by WAWU ID, and this backend is a
+workflow around it. Changing the enum on this side alone would send WAWU ID
+values it has never heard of on every approval.
 
 WAWU ID is a separate service. It is not one of the two repositories in scope
 (`wawu-backend`, `wawuafrica`), so its accepted tier values cannot be read or
@@ -279,25 +302,44 @@ unrun. Silence reads as a pass."
   introduced by the teardown.
 - Taxonomy self-tests - 47 passed.
 
-**NOT RUN - no Postgres in this environment.** Nothing is listening on
-127.0.0.1:5432, and these suites boot a real Nest app whose PrismaService opens
-a connection on module init:
-- every `*.contract.spec.ts` (the wire-shape contracts)
-- `src/common/tests/protected-registry.regression.spec.ts`
-- `src/common/tests/route-shadowing.regression.spec.ts`
+**CORRECTION - both "unavailable" claims were wrong.** An earlier version of
+this section said the contract suite could not run because there was no
+Postgres, and that no browser was available. Neither was true. **Postgres 16 is
+installed** at `/usr/lib/postgresql/16` (it just needs to run as a non-root
+user), and **Chromium is pre-installed** at `/opt/pw-browsers/chromium-1194`
+with Playwright already pointed at it. I accepted two limits without testing
+them, which is the same failure as reporting an unrun check as a pass, only
+with the sign flipped. Both now run.
 
-The last two are worth naming because they are NOT called `contract.spec` and
-so slip through the obvious ignore pattern. Running the DB-free set with
-`--testPathIgnorePatterns "contract.spec"` sweeps them in and produces 21
-failures that look like regressions and are only an absent database. They were
-verified by typecheck only. **Run `npm run test:contract` against a real
-Postgres before trusting any of this.**
+**RAN, against a real database - and it is NOT green.** With Postgres up, the
+migrations applied and `mock-wawu-id` running on :4001:
 
-**NOT RUN - no browser.** `frontend-surface-build` Phase 5 (measure computed
-values in a real browser at every breakpoint) and the `qa-audit` render pass
-have not happened. Every layout, contrast and interaction-state claim in the
-exit criteria is therefore still unverified. Nothing here should be read as
-design conformance.
+```
+Test Suites: 32 failed, 45 passed, 77 total
+Tests:      219 failed, 3 skipped, 995 passed, 1217 total
+```
+
+The migration itself is verified: all four tables dropped, `CreatorState` down
+to exactly its six remaining columns, both enums gone.
+
+The 219 failures are test-FIXTURE drift, not broken behaviour, and they are
+being fixed. Two shapes: setup failures where a fixture updates a
+`CreatorState` row its own setup no longer creates
+(`direct-message.contract.spec.ts:132` and friends), and 403s where a 2xx is
+expected, because fixtures used to establish "this account is a creator" by
+inserting a `CreatorSubscription` row and that table is gone (see D6c).
+
+**This is the thing to take seriously.** The backend teardown was reported as
+verified on the strength of `npm run build` and `tsc --noEmit`. Both pass.
+Neither exercises a single line of behaviour. A green compile said nothing
+about whether 219 contract assertions still held, and they did not.
+
+**STILL NOT RUN - the full Phase 5 measurement pass.** Screenshots now exist
+for the changed routes at 390px and 1280px, with horizontal overflow measured
+(none) and console errors captured (none beyond sandbox proxy TLS noise on
+external images). That is not the same as the full
+`frontend-surface-build` Phase 5: computed hover/focus/disabled states,
+contrast ratios and every route at every breakpoint are still unmeasured.
 
 ## D6. Gate findings are fixed at the root, not baselined away
 
