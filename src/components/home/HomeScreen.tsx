@@ -6,26 +6,43 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { HomeRightRail } from "@/components/shared/HomeRightRail";
+import { HomeOverview } from "@/components/home/HomeOverview";
 import { getFeed } from "@/lib/api/content";
 import { TgifDaily } from "@/components/tgif/TgifDaily";
 import { isHidden as isTgifHidden, setHidden as setTgifHidden, subscribe as subscribeTgifHidden } from "@/lib/tgif-preference";
 import type { ContentPiece } from "@/types/content";
+
+/*
+  This was `(app)/components/HomeFeed.tsx`, which was a feed with a devotional
+  tab on the front of it. Build brief C9 makes Home a screen in its own right
+  (refs/target-home-mobile.jpg), so the tab row gained a HOME tab and the feed
+  became one of the things it holds rather than the thing it is. The feed
+  panes below are the old file's, unchanged; nothing was copied, the file
+  moved.
+*/
 
 // "Trending" used to sit here as a third tab, but there is no distinct
 // trending query on the real contract (ListContentQueryDto only accepts
 // `scope: 'feed' | 'mine'` — no ranking/sort param) and no client-side signal
 // to derive one from honestly. It rendered the exact same items as "For
 // you" with nothing behind the label. Removed rather than left as a fake
-// sort — see the "Following" doc comment below for the sibling fix.
+// sort — see the "Following" doc comment below for the sibling fix. It is
+// also why C9's "Trending Activities" block is not built as drawn; see
+// HomeOverview.tsx.
 /*
-  TGIF LEADS, and it is what the tab opens on.
+  HOME LEADS, AND TGIF LEADS HOME.
 
-  That is the product owner's own ordering ("TGIF - For You- Following"), and
-  it is the one tab whose value is spent by lunchtime: a devotional read at
-  9pm has already missed its day, while the feed is the same whenever it is
-  opened. Putting it anywhere else means most people meet it only by accident.
+  The product owner's ordering was "TGIF - For You - Following" and TGIF is
+  still the first thing on the screen: it is the card at the top of the Home
+  tab, which is the tab that opens. That is the reference's own arrangement
+  and it serves the same reason the ordering was given for. TGIF is the one
+  tab whose value is spent by lunchtime, so it cannot be somewhere people
+  reach only by accident; putting the verse on the landing tab puts it in
+  front of more readers than a tab beside it ever did, and "Reflect" opens
+  the full reading.
 */
 const TABS = [
+  { id: "home", label: "Home" },
   { id: "tgif", label: "TGIF" },
   { id: "for-you", label: "For you" },
   { id: "following", label: "Following" },
@@ -33,10 +50,10 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-export function HomeFeed() {
+export function HomeScreen() {
   const [items, setItems] = useState<ContentPiece[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<TabId>("tgif");
+  const [tab, setTab] = useState<TabId>("home");
   // Starts `false` (shown) so the server-rendered markup and the first client
   // paint agree, then syncs to the real, possibly-hidden preference on mount
   // — same reason `usePlaying()` in SoundToggle.tsx defers to an effect
@@ -49,9 +66,10 @@ export function HomeFeed() {
   }, []);
 
   // A hidden TGIF that was also the active tab has nothing to show — land on
-  // the feed instead of a blank pane.
+  // Home instead of a blank pane. Home itself still has something to show
+  // with the devotional off: the card is what goes, not the screen.
   useEffect(() => {
-    if (tgifHidden && tab === "tgif") setTab("for-you");
+    if (tgifHidden && tab === "tgif") setTab("home");
   }, [tgifHidden, tab]);
 
   const visibleTabs = useMemo(() => TABS.filter((t) => t.id !== "tgif" || !tgifHidden), [tgifHidden]);
@@ -120,13 +138,16 @@ export function HomeFeed() {
 
         <div className="flex flex-col gap-4 px-4 pb-8 pt-4 xl:px-[26px] xl:pt-[22px]">
           {/*
-            TGIF is checked BEFORE the feed's own loading and error states,
-            because it does not need the feed. It reads a file that shipped
-            with the app, so a feed that is slow, or down, or empty has nothing
-            to do with whether today's reading can be shown. Ordering it after
-            those checks would have hidden it behind an unrelated failure.
+            Home and TGIF are both checked BEFORE the feed's own loading and
+            error states, because neither needs the feed. The devotional reads
+            a file that shipped with the app, so a feed that is slow, or down,
+            or empty has nothing to do with whether today's reading can be
+            shown. Ordering them after those checks would have hidden them
+            behind an unrelated failure.
           */}
-          {tab === "tgif" ? (
+          {tab === "home" ? (
+            <HomeOverview showTgif={!tgifHidden} onOpenTgif={() => setTab("tgif")} />
+          ) : tab === "tgif" ? (
             <TgifDaily />
           ) : error ? (
             <EmptyState
