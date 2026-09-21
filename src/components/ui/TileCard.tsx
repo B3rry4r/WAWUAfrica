@@ -316,8 +316,8 @@ export function TileCard({
       these fit a desktop row-and-a-half instead of a page and a half.
     */
     const tileShell = [
-      `group w-full rounded-card border p-[13px] text-left ${
-        subtitleLines === 2 ? "flex flex-col gap-[8px]" : "flex items-center gap-[11px]"
+      `group flex w-full rounded-card border p-[13px] text-left ${
+        subtitleLines === 2 ? "items-start gap-[10px]" : "items-center gap-[11px]"
       }`,
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-page)]",
       selected
@@ -330,39 +330,52 @@ export function TileCard({
     ].join(" ");
 
     if (subtitleLines === 2) {
-      const iconBadge = iconImageSrc ? (
+      /*
+        The descriptive card the Services design draws. Zoom into
+        refs/mobile/ref-services.png and it is unambiguous: a BARE coloured
+        glyph on the left, no badge box around it, and BOTH the title and the
+        description in the column beside it, each wrapping to as many lines as
+        they need. The card's height follows its text.
+
+        Two earlier attempts got this wrong. The first put the icon in a
+        34px tinted badge and clamped the description to two lines, which left
+        about 100px of text at 390px, truncated "Bills Payment" and made every
+        card tall. The second moved the description under the icon to buy it
+        width, which is not what the design does at all. Product owner: "the
+        two texts sit beside the icons not just one".
+
+        Dropping the badge is what makes it fit: the glyph alone is narrower,
+        so the text column gets the width back without shrinking the type
+        further or clamping anything.
+      */
+      const bareIcon = iconImageSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={iconImageSrc} alt="" className="h-[30px] w-[30px] shrink-0 rounded-input object-contain" />
+        <img src={iconImageSrc} alt="" className="h-[26px] w-[26px] shrink-0 object-contain" />
       ) : icon ? (
-        <span
-          className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-input ${ICON_TONE[iconTone].badge}`}
-        >
-          <Icon name={icon} size={17} color={ICON_TONE[iconTone].color} strokeWidth={1.9} />
-        </span>
+        <Icon name={icon} size={24} color={ICON_TONE[iconTone].color} strokeWidth={1.8} className="shrink-0" />
       ) : null;
-      const stackBody = (
+      const descBody = (
         <>
-          <span className="flex w-full items-center gap-[9px]">
-            {iconBadge}
-            <span className="min-w-0 flex-1 text-[12px] font-medium leading-tight text-text-primary">{title}</span>
-            {chevron ? <Icon name="ChevronRight" size={15} color="var(--text-muted)" className="shrink-0" /> : null}
+          {bareIcon}
+          <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+            <span className="text-[12px] font-semibold leading-tight text-text-primary">{title}</span>
+            {subtitle ? (
+              <span className="text-[10.5px] leading-[1.35] text-text-secondary">{subtitle}</span>
+            ) : null}
           </span>
-          {subtitle ? (
-            <span className="line-clamp-2 text-[10.5px] leading-[1.3] text-text-secondary">{subtitle}</span>
-          ) : null}
         </>
       );
-      if (disabled) return <div className={tileShell}>{stackBody}</div>;
+      if (disabled) return <div className={tileShell}>{descBody}</div>;
       if (href) {
         return (
           <Link href={href} className={`${tileShell} no-underline`}>
-            {stackBody}
+            {descBody}
           </Link>
         );
       }
       return (
         <button type="button" onClick={onClick} className={tileShell}>
-          {stackBody}
+          {descBody}
         </button>
       );
     }
