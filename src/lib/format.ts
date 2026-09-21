@@ -30,8 +30,15 @@ export function formatCredits(count: number): string {
  * that every creator without a paid plan was already on, and the live API
  * reports no successful payment has ever been taken, so nobody was on 90/10.
  *
- * WAWU Credits are the deliberate exception at 90/10 and were always
- * tier-independent. They are computed server-side and must not be folded in here.
+ * WAWU Credits USED TO BE the one exception, at 90/10. They are not any
+ * more: the product owner moved them to 85/15 on 21 Sep 2026 ("Credits
+ * follow 85 15"), so this is now the only split in the product, on every
+ * stream, for every account.
+ *
+ * Credits are still computed server-side and must not be folded in here. The
+ * backend divides integer kobo by an exact 17/20 against each purchase lot's
+ * real cost basis; multiplying a client-side figure by 0.85 would produce a
+ * number that disagrees with the ledger in the last kobo.
  */
 export const CREATOR_SPLIT_RATE = 0.85;
 

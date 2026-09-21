@@ -198,17 +198,18 @@ export async function getFeaturedContent(): Promise<ContentPiece[]> {
 /**
  * Real GET /users/:wawuId/public-profile response carries the creator's
  * tier and handle — see profile.ts's RealPublicCreatorProfile for the full
- * shape. `tier` drives creatorSplitRate() (CLAUDE.md: 85/15 standard, 90/10
- * Pro — never invent a rate). `handle` is the only real, non-fabricated
+ * shape. `tier` drives creatorSplitRate() (CLAUDE.md: a flat 85/15,
+ * never invent a rate). `handle` is the only real, non-fabricated
  * display identity this endpoint exposes for another user (there is no
  * display-name field — see getCreatorProfile in profile.ts for the same
  * documented gap); it replaces the raw internal `creatorWawuId` that
  * mapContentPiece falls back to when this call can't be made. This is
- * money-bearing (it decides whether 85% or 90% is displayed as the
- * creator's cut), so only genuine mock mode (no backend configured)
- * degrades to the safe default — a real failure propagates and fails the
- * whole content-detail load rather than risk silently showing the wrong
- * split.
+ * NO LONGER money-bearing: there is one split now (85/15 everywhere, for
+ * everyone, credits included since 21 Sep 2026), so no field on this
+ * response can change the creator's cut. The strict failure handling below
+ * stays anyway, because `handle` is still the only real display identity
+ * this endpoint exposes and degrading it silently would show the wrong
+ * person's name against a piece.
  */
 interface CreatorSummary {
   isPro: boolean;

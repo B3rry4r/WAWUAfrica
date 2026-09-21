@@ -73,8 +73,8 @@ export function HostedCommunitiesPanel({
         <div className="flex flex-col items-start gap-[12px] dt:flex-row dt:items-center dt:justify-between dt:gap-[20px]">
           <span className="max-w-[52ch] text-[13px] leading-[1.5] text-text-secondary">
             You are not hosting one yet. Members read at no charge, sending costs them one credit, and you keep{" "}
-            <span className="font-semibold text-text-primary">90%</span> of every credit spent. The best split on the
-            platform, on both tiers.
+            <span className="font-semibold text-text-primary">85%</span> of every credit spent. It costs you no
+            listing slot either.
           </span>
           <Button
             full={dense}

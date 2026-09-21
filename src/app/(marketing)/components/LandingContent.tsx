@@ -223,8 +223,25 @@ const COMPARE_ROWS: CompareRow[] = [
   { feature: "Device & Equipment Financing", wawu: "Partnerships", others: [false, false, false] },
   { feature: "Faith & Community Approach", wawu: true, others: [false, false, false] },
   { feature: "Content Types", wawu: "Videos, Articles, Audio, Courses, Products", others: ["Videos (up to 10GB), Photos, Audio, PDFs", "Videos, Photos, Audio, PDFs", "Videos & Photos"] },
-  { feature: "Lifetime Memberships", wawu: true, others: [true, false, false] },
-  { feature: "Membership Trials & Promo Codes", wawu: true, others: [true, false, false] },
+  /*
+    Two rows were removed here, both because they claimed a feature WAWU
+    does not have. A comparison table is the most load-bearing copy on the
+    site: it is read as a promise, and a tick in the WAWU column against
+    something that does not exist is the `unbacked_promises` defect in its
+    purest form.
+
+      "Lifetime Memberships"           - memberships went with subscriptions.
+                                         Nothing is sold on a recurring basis
+                                         and there is no membership to hold
+                                         for a lifetime.
+      "Membership Trials & Promo Codes" - the 7-day WAWU Credits trial was
+                                         removed on 21 Sep 2026, and the
+                                         promo/referral codes that discounted
+                                         subscriptions went with the plans
+                                         they discounted.
+
+    Restore either row only alongside the feature it describes.
+  */
   { feature: "Paid DMs", wawu: true, others: [true, false, true] },
   { feature: "1-on-1 Calls", wawu: true, others: [true, false, false] },
   { feature: "Group Chats", wawu: true, others: [true, false, false] },
@@ -673,7 +690,7 @@ export async function LandingContent() {
                   Nothing is taken until something sells.
                 </p>
                 <span className="text-[12.5px] leading-[1.45] text-text-muted">
-                  Community credits pay 90% to the host.
+                  Community credits pay the host on the same 85%.
                 </span>
               </div>
 
@@ -687,7 +704,7 @@ export async function LandingContent() {
                     "Verification, reviewed by a person",
                     "Featuring your listing",
                     "Advertising on the platform",
-                    "Community chat tokens",
+                    "WAWU Credits for community chat",
                   ].map((perk) => (
                     <span key={perk} className="flex items-start gap-2.5 text-[13.5px] leading-[1.4] text-text-secondary">
                       <Icon name="Check" size={15} color="var(--accent)" strokeWidth={2.4} className="mt-[2px] shrink-0" />

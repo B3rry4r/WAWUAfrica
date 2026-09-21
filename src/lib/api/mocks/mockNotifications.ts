@@ -158,16 +158,6 @@ export const mockNotifications: NotificationsResponse = {
       read: true,
       createdAt: minutesAgo(4 * 24 * 60),
     },
-    {
-      id: "n-trial-ending",
-      kind: "trial_ending",
-      title: "Your community trial ends tomorrow",
-      body: `After that, each message costs ${formatCredits(1)}.`,
-      tone: "warning",
-      creditsCount: 0,
-      read: true,
-      createdAt: minutesAgo(6 * 24 * 60),
-    },
   ],
 };
 /* ───────────── admin campaign fixtures (build brief C8) ──────────────────

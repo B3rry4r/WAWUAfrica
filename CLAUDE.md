@@ -35,10 +35,13 @@ is the wallet note: who custodies creator money decides whether a CBN licence
 is needed, so a change that puts WAWU in custody is worth checking rather than
 assuming.
 - Naira (₦) only. Never dollars.
-- **Revenue split is a flat 85/15.** There is no Pro tier to earn 90/10 with
-  (see the subscription note below). Never invent a rate. WAWU Credits are the
-  one deliberate exception at 90/10 for every creator, and always were
-  tier-independent: do not collapse the two.
+- **Revenue split is a flat 85/15, on every stream, with no exceptions.**
+  Never invent a rate. WAWU Credits were the last exception, at 90/10; the
+  product owner moved them to 85/15 on 21 Sep 2026 ("Credits follow 85 15"),
+  so there is now exactly ONE split in the product. This line used to say the
+  opposite and to warn against collapsing the two rates; that warning is
+  retired, not merely ignored. There is also no Pro tier to earn a better
+  rate with (see the subscription note below).
 - **Creators have a wallet; WAWU does not hold the money.** Each wallet is a
   Flutterwave *payout subaccount*: an account at Flutterwave MFB in the
   creator's own name, under Flutterwave's CBN banking licence. Flutterwave
@@ -49,14 +52,22 @@ assuming.
   hub and show it as the balance. (Built 5 Sep 2026, replacing the earlier
   "no wallet today" note.)
 - **WAWU Credits render as a COUNT** ("48 credits"), never a naira value, never cashable.
+- **"WAWU Credits" is the name.** The build brief's monetisation table calls
+  this "community chat tokens"; it is the same instrument, already built, and
+  its price is not TBC. Product owner, 21 Sep 2026: "it's wawu credits not the
+  other name". There is no second currency.
+- **No free trial.** The 7-day credits trial is gone (21 Sep 2026, "no 7 day
+  silly trials"). Every metered community message costs a credit, and a sender
+  with none is asked to buy some. Balances already granted were untouched: the
+  free allowance was withdrawn, not the credits.
 - No DRM, no screenshot-blocking, no liveness/Face-ID. These do not exist in this product.
 - **Creator is an ACCOUNT TYPE**, not a trust-tier badge or an earned level.
 - **There is no subscription and no creator tier** (product-owner reversal,
   20 Sep 2026, build brief B1). Registration, profile creation and listing are
   free; uploading is NOT gated on payment. Basic/Pro/Pro Max are gone, along
   with the referral codes that discounted them. Revenue now comes from discrete
-  paid actions: verification, paid featuring, paid advertising, community chat
-  tokens. This replaced the earlier "a paid subscription unlocks uploading" note.
+  paid actions: verification, paid featuring, paid advertising, WAWU Credits
+  for community chat. This replaced the earlier "a paid subscription unlocks uploading" note.
 - **ONE gate now, not two: manual KYC unlocks EARNING.** That gate is unchanged
   and was always independent of payment. "Uploading + KYC pending" is a normal
   state, not an edge case.

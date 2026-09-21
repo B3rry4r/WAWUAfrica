@@ -84,7 +84,6 @@ export function actionHrefFor(n: AppNotification): string {
     case "tip_received":
       return "/earnings";
     case "credits_low":
-    case "trial_ending":
       return "/communities?topup=1";
     case "content_published":
     case "content_rejected":

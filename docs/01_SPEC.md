@@ -21,7 +21,7 @@ Every number below is current. Do not substitute numbers from any other document
 | 1 | **PPV** — video, course, live stream | One-time price (₦100–₦5,000, currency adjusts by region), pay once, permanent library access | Creator 85% / WAWU 15% | Live stream is flagged phase-2 (Section 6) — pre-recorded video covers PPV-video for now |
 | 2 | **Downloadable content** — audio, PDF/book, image/art, template, course material | One-time price, pay once, permanent download | Creator 85% / WAWU 15% | Same mechanic as PPV, different delivery (download vs stream) |
 | 3 | **Direct messaging (DM)** | Creator sets per-message price (min ₦50, no ceiling — cap removed on the product owner's instruction, 2026-08-21), toggles DM on/off, user pays per message | Creator 85% / WAWU 15% on response. **Zero WAWU fee on refund.** | 24-hour response window (current, see Section 2). Auto-refund on miss. Escalating penalty for non-responders. |
-| 4 | **WAWU Credits** — general/open community messaging | Prepaid credit packs (₦500/50, ₦1,000/120, ₦2,000/300), 1 credit = 1 message, 7-day free trial before purchase required | Creator 90% / WAWU 10% | Not a wallet — see Section 3 for the hard constraints that keep it that way |
+| 4 | **WAWU Credits** — general/open community messaging | Prepaid credit packs (₦500/50, ₦1,000/120, ₦2,000/300), 1 credit = 1 message. No free trial (removed 21 Sep 2026) | Creator 85% / WAWU 15% | Not a wallet — see Section 3 for the hard constraints that keep it that way |
 | 5 | **Tips & donations** | Voluntary amount, no content gate | Creator 85% / WAWU 15% | Simplest item — a Flutterwave charge with no unlock logic |
 | 6 | **Storefront sales** | Physical products (merch, food, fashion, beauty, art) | Creator 85% / WAWU 15% | **Routes through the existing external WAWUBasket / WAWUBeauty apps.** Not rebuilt here. |
 | 7 | **Creator Subscription — Basic**, ₦5,999/year | Creator pays WAWU for tier access | WAWU 100% / creator 0% on the tier fee itself | See Section 4 for perks and dependency flags |
@@ -77,9 +77,9 @@ keeping for that reason, not because the doc says so:
 
 If any future request asks to add a "cash out my credits" feature, or to let credits pay for something else, stop — that's the wallet problem re-appearing under a different name.
 
-- 7-day free trial for community chat starts at signup.
-- After trial: must hold credits to send messages in general/open communities. Reading remains free; sending costs 1 credit per message.
-- Creator share (90%) rewards creators for building and moderating active communities — this is deliberately a better split than every other stream, not an error.
+- No free trial. Removed 21 Sep 2026 on the product owner's instruction ("no 7 day silly trials"); this section previously opened with a 7-day allowance from signup.
+- Must hold credits to send messages in general/open communities. Reading remains free; sending costs 1 credit per message.
+- Creator share is 85%, the same as every other stream. It was 90% until 21 Sep 2026, described here as "deliberately a better split"; the product owner collapsed it into the flat rate, so credits are no longer an exception to anything.
 
 ---
 

@@ -102,7 +102,7 @@ export function CommunityTabs({
           </span>
           <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
             <span className="text-[14.5px] font-semibold text-text-primary">Start a community</span>
-            <span className="text-[12.5px] text-text-muted">You keep 90% of every credit spent in it</span>
+            <span className="text-[12.5px] text-text-muted">You keep 85% of every credit spent in it</span>
           </span>
           <Icon name="ChevronRight" size={17} color="var(--text-muted)" strokeWidth={2.2} />
         </Link>
@@ -122,7 +122,7 @@ export function CommunityTabs({
             tab === "joined"
               ? "Join a community, reading costs nothing, sending costs one credit per message."
               : tab === "hosting"
-                ? "Hosting comes with your creator account. Members pay one credit a message and you keep 90% of it."
+                ? "Hosting comes with your creator account. Members pay one credit a message and you keep 85% of it."
                 : "Check back soon for more communities."
           }
           action={tab === "hosting" ? "Start a community" : undefined}

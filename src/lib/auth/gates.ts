@@ -30,7 +30,7 @@ export const MAX_ITEMS_PER_ACCOUNT = 5;
  * Uploading is NOT gated. Registration, profile creation and listing are
  * free, so a creator account can publish from the moment it exists; revenue
  * comes from discrete paid actions (verification, featuring, advertising,
- * community chat tokens) rather than a subscription.
+ * WAWU Credits for community chat) rather than a subscription.
  *
  * `isCreator && kyc !== "approved"` (awaitingKyc) is a normal state, not an
  * edge case — most new creators live there for their first few days. They can
