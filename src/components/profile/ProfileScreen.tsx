@@ -32,6 +32,12 @@ import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { ProfileCrossSell } from "@/components/profile/ProfileCrossSell";
 import { ExperienceSection } from "@/components/profile/ExperienceSection";
+import {
+  CompleteProfileCard,
+  CreatorToolsCard,
+  OwnerStatCards,
+  ProfileStrengthCard,
+} from "@/components/profile/OwnerOverviewCards";
 
 /**
  * THE profile screen. One template, owner and visitor alike.
@@ -135,15 +141,28 @@ export function ProfileScreen({ view, isOwner, tab, basePath, following = false 
         </div>
 
         {/*
-          C2's side panel. On mobile the same three cards stack under the tab
-          body rather than becoming a fourth tab: About is not a destination,
-          it is context for whatever tab you are on.
+          THE RAIL IS THE OWNER'S WORKBENCH, not the profile's own detail.
+
+          About, Social Links and Skills used to live here. The approved
+          reference puts all three in the MAIN column, under the work, and
+          keeps the rail for the things only the owner acts on. That ordering
+          is the right way round: About and Skills describe the person and a
+          VISITOR reads them, so burying them in a rail that is empty for
+          visitors put the description of the account in the column that only
+          the account holder has anything in.
+
+          So the rail now carries the owner's tools and nothing else, and it
+          renders nothing at all for a visitor rather than an empty column.
         */}
-        <aside className="flex shrink-0 flex-col gap-[14px] xl:w-[326px]">
-          <SocialLinksCard view={view} isOwner={isOwner} />
-          <SkillsCard view={view} isOwner={isOwner} />
-          <AboutCard view={view} isOwner={isOwner} />
-        </aside>
+        {isOwner ? (
+          <aside className="flex shrink-0 flex-col gap-[14px] xl:w-[326px]">
+            <CreatorToolsCard />
+            <ProfileStrengthCard
+              pct={view.completeness?.pct}
+              missing={view.completeness?.missing}
+            />
+          </aside>
+        ) : null}
       </div>
     </div>
   );
@@ -204,16 +223,30 @@ function ProfileIdentity({
         a second "desktop identity" component is the fork C2 forbids.
       */}
       <div className="flex flex-col gap-[14px] px-[16px] pb-[4px] xl:flex-row xl:items-start xl:gap-[22px] xl:px-[26px]">
-        <div className="-mt-[38px] flex items-end justify-between gap-3 xl:-mt-[54px] xl:block">
+        {/*
+          THE AVATAR OVERLAPS THE COVER, and on a desktop it is large.
+
+          It was 84px at every width, which on a 1280px page left a small
+          circle adrift beside a name block and nothing tying the two to the
+          cover above. The reference draws it at roughly 130px, cutting well
+          into the cover, which is what makes the header read as one object
+          rather than a band and a row. `size` is a number rather than a
+          class, so the two sizes are two renders of the same Avatar behind a
+          breakpoint, not a second component.
+        */}
+        <div className="-mt-[38px] flex items-end justify-between gap-3 xl:-mt-[66px] xl:block">
           <div className="relative shrink-0">
-            <span className="block overflow-hidden rounded-full border-[3px] border-[var(--surface-page)]">
+            <span className="block overflow-hidden rounded-full border-[3px] border-[var(--surface-page)] xl:hidden">
               <Avatar src={view.avatarUrl ?? null} initial={view.name.charAt(0)} size={84} />
+            </span>
+            <span className="hidden overflow-hidden rounded-full border-[4px] border-[var(--surface-page)] xl:block">
+              <Avatar src={view.avatarUrl ?? null} initial={view.name.charAt(0)} size={132} />
             </span>
             {isOwner ? (
               <Link
                 href="/profile/edit"
                 aria-label="Change your profile picture"
-                className="absolute bottom-[2px] right-[2px] grid h-[28px] w-[28px] place-items-center rounded-full border-2 border-[var(--surface-page)] bg-[var(--accent)] no-underline"
+                className="absolute bottom-[2px] right-[2px] grid h-[28px] w-[28px] place-items-center rounded-full border-2 border-[var(--surface-page)] bg-[var(--accent)] no-underline xl:bottom-[6px] xl:right-[6px] xl:h-[34px] xl:w-[34px]"
               >
                 <Icon name="Camera" size={13} color="var(--text-on-accent)" strokeWidth={2.2} />
               </Link>
@@ -364,7 +397,15 @@ function ProfileOwnerActions({
       ) : (
         <FollowButton wawuId={view.wawuId} initial={following} size="sm" />
       )}
-      <ShareProfileButton handle={view.handle || view.wawuId} compact />
+      {/* Labelled and filled on desktop, where the reference draws it as the
+          primary control beside the name. A phone header has no room for two
+          labelled buttons, so it stays the icon there. */}
+      <span className="xl:hidden">
+        <ShareProfileButton handle={view.handle || view.wawuId} compact />
+      </span>
+      <span className="hidden xl:inline-flex">
+        <ShareProfileButton handle={view.handle || view.wawuId} tone="accent" />
+      </span>
     </>
   );
 }
@@ -379,20 +420,38 @@ function MetaItem({ icon, text }: { icon: "MapPin" | "Calendar" | "Building2"; t
 }
 
 /**
- * The reference's stat row reads Posts / Followers / Following / Monthly
- * Views. Two of those are not on the contract: nothing returns a FOLLOWING
- * count or a monthly view count for a profile, and putting a 0 under either
- * label is a claim rather than an absence. So the row renders the numbers
- * that exist, and gains the other two the day an endpoint answers them.
- * See DECISIONS.md D11.
+ * Posts / Followers / Following / Monthly Views, which is what the approved
+ * reference draws.
+ *
+ * This comment used to say that two of the four were "not on the contract"
+ * and that the row would gain them "the day an endpoint answers them". That
+ * day had already passed: the public aggregate has carried `followingCount`
+ * all along and GET /users/me/profile-stats has carried a month-scoped view
+ * count, and this client never called either. The claim outlived the fact,
+ * which is the failure mode a note like that has.
+ *
+ * WHAT IS STILL CONDITIONAL, and why that is not the same thing:
+ *
+ *  - MONTHLY VIEWS IS OWNER-ONLY. profile-stats takes the caller's id from
+ *    the token and has no parameter that could point it at somebody else, so
+ *    a visitor's row is three figures and the owner's is four. That is a
+ *    privacy decision on the server, not a gap.
+ *  - EVERY FIGURE IS SKIPPED WHEN ABSENT rather than rendered as 0. "0
+ *    Followers" is a claim about a person; a missing cell is not. So a failed
+ *    stats call shortens the row instead of libelling the account.
+ *
+ * EVG is gone from here. It is an internal engagement score, it was in the
+ * row only because it happened to be on the aggregate, and it is not on the
+ * reference. The other four are what the screen is for.
  */
 function StatRow({ view }: { view: ProfileView }) {
   const items: { value: string; label: string }[] = [];
   if (view.stats.pieces !== undefined)
     items.push({ value: String(view.stats.pieces), label: view.stats.piecesLabel ?? "Posts" });
   if (view.stats.followers !== undefined) items.push({ value: view.stats.followers, label: "Followers" });
-  if (view.stats.evg !== undefined)
-    items.push({ value: view.stats.evg.toLocaleString("en-NG"), label: "EVG" });
+  if (view.stats.following !== undefined) items.push({ value: view.stats.following, label: "Following" });
+  if (view.stats.monthlyViews !== undefined)
+    items.push({ value: view.stats.monthlyViews, label: "Monthly Views" });
   if (items.length === 0) return null;
 
   return (
@@ -466,6 +525,24 @@ function OverviewTab({
 
   return (
     <div className="flex flex-col gap-[20px]">
+      {/*
+        THE OWNER'S THREE FIGURES, then the ring. Both lead the Overview,
+        because a creator opening their own profile came to check them; a
+        visitor never sees either and the column starts at the work.
+      */}
+      {isOwner ? (
+        <>
+          <OwnerStatCards
+            earningsThisMonth={view.owner?.earningsThisMonth}
+            monthlyViews={view.stats.monthlyViews}
+            productsSold={view.owner?.productsSold}
+          />
+          <CompleteProfileCard
+            pct={view.completeness?.pct}
+            missing={view.completeness?.missing}
+          />
+        </>
+      ) : null}
       {/* A professional's credentials lead their Overview: it is what somebody
           is deciding on before they pay to send a message. A creator has no
           such block and the section simply is not there. */}
@@ -504,6 +581,12 @@ function OverviewTab({
       )}
 
       <ExperienceSection experience={view.experience} isOwner={isOwner} />
+
+      {/* Moved out of the rail: these describe the account, so they belong in
+          the column a visitor actually reads. */}
+      <AboutCard view={view} isOwner={isOwner} />
+      <SocialLinksCard view={view} isOwner={isOwner} />
+      <SkillsCard view={view} isOwner={isOwner} />
 
       {view.communities.length > 0 ? (
         <section className="flex flex-col gap-[12px]">
@@ -583,9 +666,24 @@ function ContentCardRow({ item }: { item: ProfileView["content"][number] }) {
           )}
         </span>
       </span>
-      <span className="flex flex-col gap-[3px] px-[12px] pb-[12px] pt-[10px]">
+      <span className="flex flex-1 flex-col gap-[3px] px-[12px] pb-[12px] pt-[10px]">
         <span className="truncate text-[14px] font-semibold text-[var(--text-primary)]">{item.title}</span>
         <span className="truncate text-[12px] text-[var(--text-muted)]">{item.kindLabel}</span>
+        {/*
+          THE PRICE, UNDER THE TITLE, where the reference puts it.
+
+          It is also still on the thumbnail as a chip, and that is not a
+          duplicate by accident: the chip is what reads at a glance down a
+          shelf of covers, and this line is what somebody reads when they have
+          stopped on one card. A pending piece has no price to state, so the
+          line is simply absent rather than reading "₦0" for something nobody
+          can buy yet.
+        */}
+        {item.status === "pending" ? null : (
+          <span className="mt-auto pt-[4px] text-[13px] font-bold text-[var(--text-primary)]">
+            {item.price === 0 ? "Free" : formatNaira(item.price)}
+          </span>
+        )}
       </span>
     </Link>
   );

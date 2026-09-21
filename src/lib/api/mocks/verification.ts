@@ -51,8 +51,23 @@ export const MOCK_OWN_PROFILE: OwnProfile = {
   accountType: "creator",
   verification: mockVerification([]),
   plan: "basic",
-  stats: { published: 4, sales: 86, followers: "2.4k" },
+  // All four the reference draws, so mock mode shows the owner's row as the
+  // real one will. `monthlyViews` is the owner-only figure.
+  // All four figures the reference draws, plus the completeness the ring and
+  // the strength checklist both read. `missing` deliberately still has two
+  // entries: a fixture showing a finished profile never exercises the card
+  // that exists to get somebody to finish one.
+  stats: {
+    published: 4,
+    sales: 86,
+    followers: "2.4k",
+    following: "312",
+    monthlyViews: "12.4k",
+    completenessPct: 60,
+    completenessMissing: ["cover", "links"],
+  },
   interests: ["Agriculture", "Business", "Trade"],
+  headline: "Chief Steward, WAWU",
   company: "WAWU Africa",
   /*
     Three roles, chosen to exercise the three cases the header has to draw

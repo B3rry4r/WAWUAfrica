@@ -17,6 +17,7 @@ import type { IconName } from "@/components/ui/Icon";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { CATEGORIES } from "@/lib/categories";
+import { TaxonomyPicker } from "@/components/ui/TaxonomyPicker";
 import { ExperienceEditor } from "@/components/profile/ExperienceEditor";
 import type { ProfileExperience } from "@/types/profile";
 
@@ -29,7 +30,7 @@ import type { ProfileExperience } from "@/types/profile";
  * carefully and still appear under nothing. The value stored is the category
  * id, and the label shown is its real name.
  */
-const INTEREST_OPTIONS = CATEGORIES.map((c) => ({ value: c.id, label: c.name }));
+const INTEREST_OPTIONS = CATEGORIES.map((c) => ({ id: c.id, label: c.name }));
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -55,6 +56,7 @@ export default function EditProfilePage() {
     name: "",
     handle: "",
     bio: "",
+    headline: "",
     company: "",
     interests: [],
     socials: { instagram: "", whatsapp: "", x: "", tiktok: "", youtube: "", facebook: "", linkedin: "", website: "" },
@@ -67,7 +69,7 @@ export default function EditProfilePage() {
     getOwnProfile()
       .then((p: OwnProfile) => {
         if (!active) return;
-        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, company: p.company ?? "", interests: [...p.interests], socials: { ...p.socials }, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl });
+        setDraft({ firstName: p.firstName, middleName: p.middleName, lastName: p.lastName, name: p.name, handle: p.handle, bio: p.bio, headline: p.headline ?? "", company: p.company ?? "", interests: [...p.interests], socials: { ...p.socials }, avatarUrl: p.avatarUrl, coverUrl: p.coverUrl });
         setExperience(p.experience);
         setLoading(false);
       })
@@ -224,6 +226,14 @@ export default function EditProfilePage() {
               hint="This is your profile link on WAWU"
             />
             <Input
+              label="Headline"
+              value={draft.headline ?? ""}
+              onChange={(e) => setDraft((d) => ({ ...d, headline: e.target.value }))}
+              icon="BadgeCheck"
+              placeholder="Chief Steward, WAWU"
+              hint="One line under your name. What you do, in your own words."
+            />
+            <Input
               label="Company"
               value={draft.company ?? ""}
               onChange={(e) => setDraft((d) => ({ ...d, company: e.target.value }))}
@@ -241,80 +251,36 @@ export default function EditProfilePage() {
               />
             </label>
 
-            <section className="flex flex-col gap-[10px]">
-              <div className="flex items-baseline justify-between gap-[10px]">
-                <span className="text-[13px] font-semibold text-text-secondary">Interests</span>
-                {/* 25 rows is a long way to scroll to find out whether you
-                    picked anything, so the count is stated at the top. */}
-                <span className="text-[12px] text-text-muted">
-                  {draft.interests.length === 0 ? "None picked" : `${draft.interests.length} picked`}
-                </span>
-              </div>
-              <span className="text-[12px] leading-[1.45] text-text-muted">
-                These decide where you show up when someone browses Explore.
-              </span>
-              {/*
-                A GRID OF ROWS, NOT A CLOUD OF PILLS.
+            {/*
+              THE SAME PICKER AS EVERY OTHER TAXONOMY SELECTOR, not a third
+              layout for this one list.
 
-                These 25 categories were a `flex-wrap` of rounded pills. The
-                labels run from "Legal Services" to "Social Impact &
-                Community Development", so every line broke at a different
-                place and the block landed as a ragged wall with holes in it.
-                Product owner, 21 Sep 2026: "this interest style is
-                scattered".
+              This has now been wrong twice. It was a `flex-wrap` wall of 25
+              rounded pills ("this interest style is scattered"), and the fix
+              for that gave each category its own row, which lined them up and
+              turned 25 options into 25 rows of scrolling ("if you lay out
+              these pills on one long screen like this you are very stupid").
+              Both were the same mistake: putting the whole list on the page.
 
-                Equal-width cells on a fixed column count fix that: the left
-                edges line up, the rows line up, and the eye can go down the
-                list instead of hunting across it.
+              TaxonomyPicker already solves this and already carries the rule
+              in its own doc comment, which names a wall of pills as the
+              pattern the product owner asked to be removed EVERYWHERE. Its
+              `options` prop exists precisely so a list that is not the C1
+              taxonomy can use the same control. So the page shows what is
+              chosen and a button; the 25 options live in the sheet, with
+              search, and the sheet is a centred modal on desktop.
 
-                TWO COLUMNS ON A PHONE, NOT ONE. The first attempt at this
-                gave each category its own full-width row, which lined
-                everything up and turned 25 options into 25 rows of scrolling:
-                "if you lay out these pills on one long screen like this you
-                are very stupid". Two columns halves that to 13 rows, which
-                fits in about a screen and a half instead of four. The type
-                steps down and a label is allowed to take two lines, so
-                "Social Impact & Community Development" wraps inside its cell
-                rather than setting the width for all 25.
-
-                `items-stretch` (the grid default) keeps every cell in a row
-                the same height whether its label wrapped or not, so the
-                two columns stay level. The tick sits in a reserved box on
-                every cell, selected or not, so choosing one does not shift
-                the text beside it.
-              */}
-              <div className="grid grid-cols-2 gap-[8px] xl:grid-cols-3">
-                {INTEREST_OPTIONS.map(({ value, label }) => {
-                  const active = draft.interests.includes(value);
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => toggleInterest(value)}
-                      className={[
-                        "flex min-h-[44px] w-full cursor-pointer items-center gap-[8px] rounded-[var(--radius-input)] border px-[10px] py-[7px] text-left text-[11.5px] leading-[1.3] xl:text-[12.5px]",
-                        active
-                          ? "border-[var(--border-selected)] bg-[var(--selected-tint)] font-semibold text-accent"
-                          : "border-hairline bg-tag font-medium text-text-secondary hover:border-strong hover:bg-surface-hover active:bg-surface-press",
-                      ].join(" ")}
-                    >
-                      <span
-                        className={[
-                          "grid h-[16px] w-[16px] shrink-0 place-items-center rounded-[5px] border",
-                          active ? "border-accent bg-accent" : "border-strong",
-                        ].join(" ")}
-                      >
-                        {active ? (
-                          <Icon name="Check" size={11} color="var(--text-on-accent)" strokeWidth={3} />
-                        ) : null}
-                      </span>
-                      <span className="min-w-0 flex-1">{label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
+              No component was forked to get this, which is the point: the
+              next time this treatment changes it changes in one file.
+            */}
+            <TaxonomyPicker
+              options={INTEREST_OPTIONS}
+              value={draft.interests}
+              onChange={(next) => setDraft((d) => ({ ...d, interests: next }))}
+              label="Interests"
+              hint="These decide where you show up when someone browses Explore."
+              emptyHint="Nothing picked yet. Choose the areas you work in."
+            />
 
             <ExperienceEditor experience={experience} onChange={setExperience} />
 

@@ -1,3 +1,4 @@
+import type { ProfileStep } from "./verification";
 import type { CreatorTier } from "./account";
 import type { VerificationState } from "./verification";
 
@@ -103,7 +104,15 @@ export interface ProfileView {
   verification: VerificationState;
   avatarUrl?: string | null;
   coverUrl?: string | null;
-  /** "Chief Steward, WAWU" in the reference. The creator's own headline. */
+  /**
+   * "Chief Steward, WAWU": the account's own sentence about what it does.
+   *
+   * This used to be filled with the first INTEREST CATEGORY, so a farmer's
+   * profile read "Agriculture" where a headline belongs. A category decides
+   * where somebody appears in Explore; it describes nobody. There is a real
+   * `headline` field now and the category is only the fallback for profiles
+   * written before it existed.
+   */
   roleLine?: string;
   location?: string;
   memberSince?: string;
@@ -120,20 +129,59 @@ export interface ProfileView {
   /** C1 specialization ids, or the older free-text interests. */
   specializations: string[];
   socials: CreatorProfile["socials"];
+  /**
+   * The row under the bio. Every figure is optional and an absent one is
+   * SKIPPED rather than rendered as 0, because "0 Followers" is a claim and a
+   * missing number is not.
+   *
+   * `monthlyViews` is owner-only by design. GET /users/me/profile-stats takes
+   * the caller's id from the token and has no parameter that could point it
+   * at anybody else, so a visitor never sees how often a profile is opened.
+   */
   stats: {
     pieces?: number;
     piecesLabel?: string;
     followers?: string;
+    following?: string;
+    monthlyViews?: string;
     evg?: number;
   };
   /** Paid messaging, for a visitor. Absent on the owner's own view. */
   dm?: { enabled: boolean; price: number; responseHours: number };
+  /**
+   * The owner's own money and sales figures.
+   *
+   * Present ONLY on the owner's read, and not because the client decides so:
+   * both come from endpoints that take the caller's id from the token and
+   * have no parameter that could point them at another account. A visitor's
+   * read cannot return them, so this is absent rather than hidden.
+   */
+  owner?: {
+    earningsThisMonth?: number;
+    productsSold?: number;
+  };
+  /**
+   * The completeness ring and the strength checklist, which are the same
+   * five steps shown twice. Both read this ONE object so they cannot
+   * disagree about what is still outstanding.
+   */
+  completeness?: {
+    /** 0, 20, 40, 60, 80 or 100. Five steps, not a continuous score. */
+    pct: number;
+    missing: ProfileStep[];
+  };
   content: ProfileContentItem[];
   communities: CreatorCommunity[];
 }
 
 export interface ProfileStats {
   followers: string;
+  /**
+   * How many accounts this person follows. Optional because the public
+   * aggregate is the only source and an older Hub may not send it; absent
+   * means "not known", which the stat row skips rather than printing 0.
+   */
+  following?: string;
   piecesLabel: string;
   pieces: number;
   evg: number;
@@ -203,6 +251,8 @@ export interface CreatorProfile {
   memberSince?: string;
   replyTime?: string;
   company?: string;
+  /** The one line under the name. A sentence, never a category. */
+  headline?: string;
   experience: ProfileExperience[];
   categories: string[];
   socials: {

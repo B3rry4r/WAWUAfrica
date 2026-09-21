@@ -121,8 +121,15 @@ export interface TaxonomyOption {
 }
 
 export interface TaxonomyPickerProps {
-  /** Which half of the taxonomy to offer. A buyer holds neither. */
-  role: TaxonomyRole;
+  /**
+   * Which half of the taxonomy to offer. A buyer holds neither.
+   *
+   * OPTIONAL, and required in practice only when `options` is absent. It was
+   * declared required while its own doc below said `options` made it ignored,
+   * so a caller supplying its own list had to pass a role that meant nothing
+   * and did nothing. A prop documented as ignored should not be mandatory.
+   */
+  role?: TaxonomyRole;
   /**
    * What the value holds. "specialization" (default) is the 557-entry list
    * behind a category drill-down; "category" is the 15 or 21 categories
@@ -300,7 +307,7 @@ function PickerSheet({
   max,
   onClose,
 }: {
-  role: TaxonomyRole;
+  role?: TaxonomyRole;
   select: TaxonomyPickerSelect;
   options?: readonly TaxonomyOption[];
   value: readonly string[];
@@ -311,7 +318,9 @@ function PickerSheet({
   const [query, setQuery] = useState("");
   const [openCategory, setOpenCategory] = useState<TaxonomyCategory | null>(null);
 
-  const categories = CATEGORIES_BY_ROLE[role];
+  // Only read on the taxonomy path. A supplied `options` list is flat and
+  // never drills into a category, so it needs no role and passes none.
+  const categories = role ? CATEGORIES_BY_ROLE[role] : [];
   const trimmed = query.trim();
   const searching = trimmed.length > 0;
 
@@ -321,7 +330,9 @@ function PickerSheet({
   const results = useMemo(
     () =>
       searching && select === "specialization"
-        ? searchSpecializationLabels(trimmed, { role, limit: 60 })
+        ? role
+          ? searchSpecializationLabels(trimmed, { role, limit: 60 })
+          : []
         : [],
     [searching, trimmed, role, select],
   );
