@@ -410,3 +410,192 @@ resolved or baselined with a named owner.
 **Harness denominator sanity-checked** per the README: `files scanned: 326`
 against 346 TS/TSX in the repo. The 20-file gap reconciles exactly (19 mocks
 excluded deliberately, 1 `next-env.d.ts`). Nothing is silently unexamined.
+
+---
+
+## D7. The wallet screens, designed from the principles because there is no reference
+
+Brief A4b lists "the wallet balance / earnings / withdrawal screens" among the
+surfaces with **no reference image**. So this records the reasoning, per A4.
+
+**Chosen.** One screen, `/wallet`, in four stacked blocks: the balance and its
+single action, three quiet ledger tiles, the account number for receiving
+money, then activity. Plus a withdrawal sheet in two steps (details, then
+confirm a NAME the bank gave back).
+
+**Rejected.** A dashboard: balance tile, earnings chart, payout schedule, bank
+list and activity side by side. It is what a wallet screen usually looks like
+and it is wrong here, because none of those five things is the reason somebody
+opens this screen.
+
+**Why.** A creator opens a wallet for one of two reasons: to see what is in it,
+or to take it out. A5's instruction is restraint ("let one thing per screen be
+the emphatic thing"), so the balance is the only large figure on the page and
+"Withdraw to your bank" is the only filled button. Everything else is neutral
+surfaces, hairline borders and muted labels. Purple appears exactly once, on
+that button, because purple is the colour of ACTION in `tokens.css` and not the
+colour of "this is a WAWU screen".
+
+**The custody sentence is on the screen, not just in the code.** Under the
+balance it says the account is the creator's own and that WAWU never holds
+their money, it only moves it on their instruction. That is the product's
+actual legal shape (an account at Flutterwave MFB, in their name, under
+Flutterwave's licence) and a creator staring at a balance is entitled to know
+who is holding it.
+
+**Three totals, deliberately not styled like the balance.** "Paid in",
+"Withdrawn" and, only when there is something in flight, "On the way in". They
+are 17px on neutral tiles under a line that says they are WAWU's records and
+that the figure above is the bank's. The rule they exist under is that a total
+this app added up must never be presented as the balance. They are reference,
+the balance is truth, and the typography says which is which.
+
+**What the disabled state does.** A creator whose identity check is not
+approved still sees the balance. The withdraw button is disabled and carries
+the server's own sentence explaining why, plus the route to verification. A
+control that disappears, or one that is greyed out and will not say why, is a
+dead end (brief B3: the explanation is a conversion surface, not an error).
+
+**The withdrawal confirm step is not decoration.** A Nigerian bank transfer to
+a wrong account number is irreversible. The account is resolved with the bank
+first and the NAME it returns is what the creator confirms, so the check is
+against a person rather than against ten digits they have just retyped.
+
+---
+
+## D8. The wallet opens at registration, and the KYC gate moved to the payout
+
+**Chosen.** A creator account gets its Flutterwave payout subaccount the moment
+onboarding saves the account type (`PATCH /users/me`). The identity check now
+gates `POST /wallet/withdraw` instead of gating the wallet's existence.
+
+**Authorised by** build brief C7: "auto-provision a wallet on registration for
+creators and professionals".
+
+**Rejected.** Keeping the old behaviour, where the wallet was opened lazily on
+the first `GET /wallet` and only once KYC was approved.
+
+**Why this is safe, and actually safer.** Two reasons, and the second is the
+stronger one:
+
+1. A payout subaccount is an account in the CREATOR'S OWN NAME at Flutterwave
+   MFB, opened with a name, email, country and phone, under Flutterwave's CBN
+   licence. It holds nothing of WAWU's. An account existing early is not WAWU
+   taking custody of anything.
+2. While the wallet did not exist, the funding sweep skipped that creator, so
+   their share of a completed sale stayed in **WAWU's own Flutterwave
+   balance**. That is WAWU sitting on creator money, which is the exact thing
+   the custody rule exists to prevent. Opening the account at registration
+   moves each share out to its owner as it is earned.
+
+**What did NOT change: WAWU still does not custody anything.** The balance on
+the screen is the one Flutterwave reports, read on every load. Nothing is
+summed in the browser or in the hub and shown as a balance. WAWU instructs
+movements; Flutterwave holds the money.
+
+**What the identity check now protects.** Money LEAVING for an outside bank
+account, which is the act KYC is for. It used to be enforced by the wallet
+simply not existing, which stopped an unverified creator from cashing out and
+also stopped their earnings from ever reaching them. One of those was the
+intent; the other was a side effect.
+
+**Raised, not assumed.** Moving the wallet's opening earlier changes when a
+person's name is sent to Flutterwave. It does not change who holds the money,
+so it is not a CBN licensing question, but it IS a change to the timing of the
+identity flow and the product owner should know it was made deliberately.
+
+**A buyer account still gets nothing**, and is told what would change that
+rather than refused: the wallet endpoint returns a sentence pointing at
+becoming a creator, and the screen renders it with the route.
+
+---
+
+## D9. Earnings said "this month" over an all-time figure
+
+**Chosen.** The earnings card now reads "Earned, all time", and the month name
+that sat in the header bar is gone.
+
+**Why.** `GET /content/mine/earnings` sums every completed purchase, every
+answered paid DM and every spent community credit with **no date filter at
+all**. The screen put the current month's name in the header and "Earned this
+month" over the total. Two period signals, both wrong, over a figure that has
+no period. C7 asks for earnings that render accurately; the number was always
+accurate and the label was not.
+
+**Not done:** building a real monthly window. That is a backend change to an
+endpoint outside this item's scope, and inventing a client-side date filter
+over a total the server computed would produce a figure with no writer.
+
+---
+
+## D14. C3 shareable store links: the link IS `/wawu/<handle>`, and the logged-out visitor is a routed actor
+
+Build brief C3 has no reference image. These are the decisions taken and why.
+
+**The link form.** C3: "every user gets a copyable profile link in the form
+`wawu/their-name`". Taken literally: the public store lives at `/wawu/<handle>`,
+so the copied URL is `https://wawuafrica.com/wawu/adaezeokonkwo` and the label
+rendered on the profile is the same string with the origin stripped. The
+alternative considered was keeping `/profile/<id>` and printing a `wawu/...`
+label over it, which is a lie the first person to paste it into a browser
+discovers. `/wawu` collides with no existing route. The handle is what somebody
+would actually send to a friend; the route resolves a raw wawuId too, so an
+account that has not chosen a handle still has a working link.
+
+**Two routes to one screen, not two screens.** `/profile/<id>` (signed in) and
+`/wawu/<handle>` (public) both normalise through `toProfileView` in
+`src/lib/api/profile.ts` and render the same `ProfileScreen`. C2 forbids a
+second profile template, and a "public version of the profile" is exactly the
+fork it forbids. The differences are the chrome around it and `basePath`, which
+the component already takes as a prop.
+
+**Three gates had to open, not one.** The store route sits outside the `(app)`
+group, so `RequireAuth` never runs on it. That was not enough on its own:
+`ProfileScreen` fires authed reads on mount, an anonymous visitor gets 401s
+back, there is no refresh token to rotate, and `forceSignIn()` in
+`src/lib/api/client.ts` hard-navigated to `/sign-in`. Measured against the live
+backend: without the public-path guard the visitor was on `/sign-in` within
+seconds of landing; with it they stay on the store while
+`/creators/:id/follow` and `/events/mine` both 401 in the background. The
+allow-list is now one module, `src/lib/auth/public-routes.ts`, read by the
+route gate, the shell and the API client, because it used to be two copies
+with a comment asking the next person to keep them in step.
+
+**The landing view is the storefront, with nothing stacked on top of it.**
+"No login wall, no registration prompt, no interstitial" rules out a splash, a
+cookie-style banner and a "you have been invited" panel. So the join call lives
+in the header, where it is reachable without displacing the cover photo, and
+the rest sits below the fold: `ProfileCrossSell` (C2/C10: bills, events,
+trainings, shop, plus "Create an account") followed by a footer carrying the
+link itself, copyable, and the three destinations a visitor with no account can
+actually read (the landing page, terms, privacy).
+
+**Visual language (A5).** Neutral surfaces, one hairline rule under the header,
+white for the emphatic thing on the page (the join button in the header, which
+is the same control the landing page uses, not a second copy of it). Purple is
+left to the two things that are actions in their own right: the copy control
+and the store-link glyph. No new colour, no new radius, no new shadow.
+
+**`isOwner` is false on this route, whoever is looking.** The page has no
+session at render time (it is server-rendered so that a link pasted into
+WhatsApp carries the name, bio and photograph). That is also the right product
+answer: the store link is the public face, and an owner opening their own link
+wants to see what a stranger sees. Editing stays at `/profile`, where the
+session that proves ownership exists.
+
+**Known gaps, stated rather than filled.**
+1. There is no public per-creator content endpoint. `/users/:wawuId/content`
+   is guarded (measured: 401 anonymous) and `/content/public/featured` is
+   platform-wide, so against a real backend the store renders the identity, the
+   prices it knows and the cross-sell, but an empty shelf, while the stat row
+   still says how many pieces exist. Filling it from the featured feed would be
+   presenting an arbitrary subset as somebody's shop, so it is left empty and
+   named here instead.
+2. There is no handle lookup on the contract. The live backend's
+   `/users/public/:wawuId` does accept a handle, but that is not written down,
+   so `resolveStoreRef` falls back to matching against the public creator
+   directory, whose ceiling is one page (50). The directory read also supplies
+   the DISPLAY NAME, which the public aggregate has no field for at all.
+3. Paid actions on a public store (Follow, Message, Tip) do not ask an
+   anonymous visitor to register; they attempt the call and fail. The fix is a
+   prop on those controls, not a second screen, and it is outside this change.

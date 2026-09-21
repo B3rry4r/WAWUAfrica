@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listMyEvents } from "@/lib/api/events";
+import { listEventsByHost } from "@/lib/api/events";
 import { listProfessionals } from "@/lib/api/professionals";
 import { eventDateParts } from "@/lib/event-date";
 import { formatNaira } from "@/lib/format";
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui";
 import { FollowButton } from "@/components/shared/FollowButton";
 import { ProfileActions } from "@/components/profile/ProfileActions";
-import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
+import { ShareProfileButton, storeLinkPath } from "@/components/profile/ShareProfileButton";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { ProfileCrossSell } from "@/components/profile/ProfileCrossSell";
 
@@ -84,7 +84,7 @@ export function ProfileScreen({ view, isOwner, tab, basePath, following = false 
 
   useEffect(() => {
     let alive = true;
-    listMyEvents(view.wawuId, { perPage: 12 })
+    listEventsByHost(view.wawuId, { perPage: 12 })
       .then((page) => alive && setEvents(page.events))
       .catch(() => alive && setEvents([]));
     listProfessionals()
@@ -172,7 +172,11 @@ function ProfileIdentity({
     C2: "store link occupying the website field when the user has no external
     site". Everybody has a store; not everybody has a site of their own.
   */
-  const storePath = `/profile/${view.handle || view.wawuId}`;
+  // The label reads `wawu/<handle>`, so the href is /wawu/<handle>: the
+  // public store route (build brief C3), not the signed-in profile route,
+  // which is where this used to point and where a logged-out visitor
+  // following it would have been bounced to /sign-in.
+  const storePath = storeLinkPath(view.handle || view.wawuId);
   const link = view.website
     ? { label: view.website.replace(/^https?:\/\//, ""), href: view.website, external: true }
     : { label: `wawu/${view.handle || view.wawuId}`, href: storePath, external: false };

@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { isPublicPath } from "@/lib/auth/public-routes";
 import { SessionProvider, useSession } from "@/lib/auth/session-provider";
 import { preloadFlutterwaveCheckout } from "@/lib/flutterwave";
 import { BottomNav } from "./BottomNav";
@@ -61,9 +62,6 @@ interface AppShellProps {
  * genuinely needs a sidebar-less focused layout, that's a per-route decision
  * for that screen's task, not a shell-level exception.
  */
-/** Kept in step with RequireAuth's PUBLIC_ROUTES. */
-const PUBLIC_DOCUMENT_ROUTES = ["/terms", "/privacy/policy"];
-
 export function AppShell({ children, header = true }: AppShellProps) {
   // Warm Flutterwave's script so tapping Pay opens the modal immediately
   // instead of sitting on a dead button while a cross-origin script loads.
@@ -96,7 +94,7 @@ function PublicOrShell({ children, header }: { children: ReactNode; header: bool
   // mount the full shell for a tick, and one tick is all it takes - AppHeader
   // fetches on mount, 401s without a session, and forceSignIn does a hard
   // window.location to /sign-in before hydration ever finishes.
-  if (PUBLIC_DOCUMENT_ROUTES.includes(pathname) && !(hydrated && isAuthenticated)) {
+  if (isPublicPath(pathname) && !(hydrated && isAuthenticated)) {
     return (
       <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-hairline bg-page xl:max-w-[860px]">
         {children}

@@ -2,7 +2,9 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { getCreatorProfile, isFollowing } from "@/lib/api/profile";
+// `toProfileView` is shared with the public store route: two copies of a
+// normaliser is two places for a profile to start rendering differently.
+import { getCreatorProfile, isFollowing, toProfileView } from "@/lib/api/profile";
 import type { CreatorProfile } from "@/types/profile";
 import { PROFILE_TAB_LABEL, type ProfileTab, type ProfileView } from "@/types/profile";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -31,35 +33,6 @@ export default function VisitedProfilePage() {
   );
 }
 
-function toView(p: CreatorProfile): ProfileView {
-  return {
-    wawuId: p.wawuId,
-    name: p.name,
-    handle: p.handle,
-    bio: p.bio,
-    verification: p.verification,
-    avatarUrl: p.avatarUrl,
-    coverUrl: p.coverUrl,
-    location: p.location,
-    memberSince: p.memberSince,
-    website: p.socials.website,
-    // The public aggregate has no separate headline field; `categories[0]` is
-    // what the directory shows under a name, so it is the role line here too
-    // rather than a second invented one.
-    roleLine: p.categories[0],
-    specializations: p.categories,
-    socials: p.socials,
-    stats: {
-      pieces: p.stats.pieces,
-      piecesLabel: p.stats.piecesLabel,
-      followers: p.stats.followers,
-      evg: p.stats.evg,
-    },
-    dm: { enabled: p.dmEnabled, price: p.dmPrice, responseHours: p.dmResponseHours },
-    content: p.content,
-    communities: p.communities,
-  };
-}
 
 function VisitedProfileContent() {
   const params = useParams<{ wawuId: string }>();
@@ -109,7 +82,7 @@ function VisitedProfileContent() {
 
   return (
     <ProfileScreen
-      view={toView(profile)}
+      view={toProfileView(profile)}
       isOwner={false}
       tab={tab}
       basePath={`/profile/${wawuId}`}

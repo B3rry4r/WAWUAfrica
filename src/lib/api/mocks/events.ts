@@ -392,7 +392,11 @@ export async function getMockEvents(params: ListEventsParams): Promise<EventPage
       (params.format === undefined || e.format === params.format) &&
       (params.type === undefined || e.type === params.type) &&
       (params.category === undefined || e.category === params.category) &&
-      (params.featured === undefined || e.featured === params.featured),
+      (params.featured === undefined || e.featured === params.featured) &&
+      // One host's events, for the Events tab on their profile. The fixture
+      // has to honour this too, or the mock build shows every event under
+      // everybody's name, which is the bug the `host` filter exists to fix.
+      (params.host === undefined || e.hostWawuId === params.host),
   ).sort((a, b) =>
     view === "past"
       ? new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()

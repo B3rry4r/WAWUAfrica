@@ -1,3 +1,4 @@
+import { isPublicPath } from "@/lib/auth/public-routes";
 import { sessionStorage } from "@/lib/auth/session-storage";
 import { API_BASE, USE_MOCKS, WAWU_ID_BASE } from "./config";
 
@@ -167,7 +168,22 @@ async function refreshSession(): Promise<boolean> {
 /** The refresh token itself is dead too — there is genuinely no way back in without a fresh sign-in. */
 function forceSignIn(): void {
   sessionStorage.clear();
-  if (typeof window !== "undefined") window.location.href = "/sign-in";
+  if (typeof window === "undefined") return;
+  // A PUBLIC page must not be evicted by a 401.
+  //
+  // This is the third gate a public route has to clear (see
+  // lib/auth/public-routes.ts). The store link at /wawu/:handle renders the
+  // profile screen, which fires authed reads on mount — a visitor with no
+  // session gets 401s back, there is no refresh token to rotate, and this
+  // function used to hard-navigate them to /sign-in before they had read a
+  // word. That is precisely the login wall build brief C3 forbids, and it
+  // fired without any route gate being involved at all.
+  //
+  // On a public path the dead tokens are still cleared (they are dead either
+  // way) and the caller still gets the thrown ApiError to handle; what does
+  // not happen is the navigation.
+  if (isPublicPath(window.location.pathname)) return;
+  window.location.href = "/sign-in";
 }
 
 /**
