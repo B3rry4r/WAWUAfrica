@@ -101,7 +101,7 @@ function Tile({
         thing here deliberately not copied. See DECISIONS.md D10.
       */}
       <Icon name={icon} size={20} color="var(--accent)" strokeWidth={1.9} />
-      <span className="line-clamp-2 text-[11.5px] font-semibold leading-tight text-[var(--text-primary)]">
+      <span className="line-clamp-2 text-[11px] font-medium leading-tight text-[var(--text-primary)]">
         {label}
       </span>
     </Link>

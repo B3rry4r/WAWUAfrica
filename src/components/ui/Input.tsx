@@ -8,10 +8,20 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   hint?: string;
   icon?: IconName;
+  /**
+   * Field radius. "input" (default) is the 14px form field every wizard and
+   * settings screen uses. "pill" is the fully rounded SEARCH field the
+   * approved Services design draws over its hero banner
+   * (refs/mobile/ref-services.png), where a 14px box inside a rounded card
+   * reads as a form the person has to fill in rather than a search they can
+   * type into. A prop rather than a second component: see CLAUDE.md, never
+   * fork a component.
+   */
+  shape?: "input" | "pill";
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, error, hint, icon, className = "", id, ...rest },
+  { label, error, hint, icon, shape = "input", className = "", id, ...rest },
   ref,
 ) {
   // Falls back to a generated id when neither `id` nor `name` is passed —
@@ -37,7 +47,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           ref={ref}
           id={inputId}
           className={[
-            "h-[52px] w-full rounded-input border bg-input text-text-primary placeholder:text-text-disabled",
+            "h-[52px] w-full border bg-input text-text-primary placeholder:text-text-disabled",
+            shape === "pill" ? "rounded-[var(--radius-chip)]" : "rounded-input",
             "px-4 text-[15px] outline-none transition-colors",
             "focus:border-accent focus:ring-2 focus:ring-accent/20",
             icon ? "pl-11" : "",

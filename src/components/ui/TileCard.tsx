@@ -77,6 +77,18 @@ export const TILE_GRID =
 export const ICON_GRID =
   "grid grid-cols-4 items-start gap-x-[6px] gap-y-[18px] sm:grid-cols-6 dt:grid-cols-8";
 
+/*
+  LABEL WEIGHT AND SIZE, set deliberately. Product owner, 21 Sep 2026: "those
+  icons with the fonts... fonts are bold and big please reduce them... All!!!"
+
+  The icon is the thing being recognised on these grids; the label only names
+  it. Bold 15px under a 56px glyph competed with the artwork and made a row of
+  twelve read as twelve headlines. Every layout here now sits at medium weight
+  and 11.5-12.5px, except `action`, which stays semibold 13px because each of
+  its cards is a separate act rather than one entry in a catalogue.
+
+  Do not raise these back without asking.
+*/
 export type TileIconTone = "accent" | "aqua" | "lime" | "coral" | "yellow";
 
 /**
@@ -252,7 +264,7 @@ export function TileCard({
           </span>
         ) : null}
         <span className="flex min-w-0 flex-col gap-[3px]">
-          <span className="text-[14.5px] font-bold leading-tight tracking-[-0.01em] text-text-primary">{title}</span>
+          <span className="text-[13px] font-semibold leading-tight tracking-[-0.01em] text-text-primary">{title}</span>
           {subtitle ? (
             <span className="text-[12px] leading-[1.35] text-text-secondary">{subtitle}</span>
           ) : null}
@@ -315,7 +327,7 @@ export function TileCard({
           </span>
         ) : null}
         <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-          <span className="block truncate text-[13.5px] font-semibold leading-tight text-text-primary">{title}</span>
+          <span className="block truncate text-[12.5px] font-medium leading-tight text-text-primary">{title}</span>
           {subtitle ? (
             <span className="block truncate text-[11.5px] leading-tight text-text-secondary">{subtitle}</span>
           ) : null}
@@ -390,7 +402,7 @@ export function TileCard({
           ) : null}
         </span>
         <span className="flex flex-col gap-0.5">
-          <span className={`block font-bold leading-tight text-text-primary ${size === "sm" ? "text-[13px]" : "text-[15px]"}`}>
+          <span className={`block font-medium leading-tight text-text-primary ${size === "sm" ? "text-[11.5px]" : "text-[12.5px]"}`}>
             {title}
           </span>
           {subtitle ? (
