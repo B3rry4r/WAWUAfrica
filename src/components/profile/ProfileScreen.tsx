@@ -499,7 +499,7 @@ function OverviewTab({
               : `Follow ${view.name.split(" ")[0]} and their first piece reaches you when it lands.`
           }
           action={isOwner ? "Upload something" : "Find similar creators"}
-          actionHref={isOwner ? "/create" : "/explore/creators"}
+          actionHref={isOwner ? "/create/content" : "/explore/creators"}
         />
       )}
 
@@ -544,7 +544,7 @@ function ContentTab({ view, isOwner }: { view: ProfileView; isOwner: boolean }) 
             : `Follow ${view.name.split(" ")[0]} and their first piece reaches you when it lands.`
         }
         action={isOwner ? "Upload something" : "Find similar creators"}
-        actionHref={isOwner ? "/create" : "/explore/creators"}
+        actionHref={isOwner ? "/create/content" : "/explore/creators"}
       />
     );
   }

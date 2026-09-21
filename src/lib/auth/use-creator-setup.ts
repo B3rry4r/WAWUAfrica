@@ -249,7 +249,7 @@ export function useCreatorSetup(): CreatorSetupResult {
               : "Nothing published yet",
         state: uploadState,
         icon: "Upload",
-        href: "/create",
+        href: "/create/content",
         cta: published > 0 ? "Upload another" : inReview > 0 ? "See your library" : "Publish it",
         optional: false,
       },

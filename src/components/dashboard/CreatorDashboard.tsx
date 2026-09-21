@@ -295,7 +295,7 @@ export function CreatorDashboard() {
           </div>
         </div>
 
-        <Button full size="lg" icon="Plus" onClick={() => router.push("/create")}>
+        <Button full size="lg" icon="Plus" onClick={() => router.push("/create/content")}>
           New upload, {slotsLeft} {slotsLeft === 1 ? "slot" : "slots"} left
         </Button>
 

@@ -21,6 +21,7 @@ export { FilePicker } from "./FilePicker";
 export { FullscreenMediaViewer } from "./FullscreenMediaViewer";
 export { StorageMeter } from "./StorageMeter";
 export { TileCard, TILE_GRID, ICON_GRID, TILE_GRADIENTS, tileGradient } from "./TileCard";
+export type { TileCardProps, TileCardSize, TileIconTone } from "./TileCard";
 export { CreatorOnly } from "./CreatorOnly";
 export { HandoffPill } from "./HandoffPill";
 export { Icon } from "./Icon";

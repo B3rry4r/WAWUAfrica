@@ -217,7 +217,7 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
             setDiscarding(true);
             return;
           }
-          router.push("/create");
+          router.push("/create/content");
         }}
         right={<span className="text-[12.5px] font-semibold text-[var(--text-muted)] [font-feature-settings:var(--font-feature-tabular)]">{stepLabel}</span>}
       />
@@ -495,7 +495,7 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
       caption="Your file, price and details are not saved anywhere yet. Closing now loses them."
     >
       <div className="flex flex-col gap-[10px]">
-        <Button full size="lg" variant="danger" onClick={() => router.push("/create")}>
+        <Button full size="lg" variant="danger" onClick={() => router.push("/create/content")}>
           Discard it
         </Button>
         <Button full size="lg" variant="secondary" onClick={() => setDiscarding(false)}>
@@ -778,7 +778,7 @@ function Submitted({
         <Button full size="lg" onClick={() => router.push("/create/library")}>
           Back to your content
         </Button>
-        <Button full variant="ghost" icon="Plus" onClick={() => router.push("/create")}>
+        <Button full variant="ghost" icon="Plus" onClick={() => router.push("/create/content")}>
           Upload another
         </Button>
       </div>
