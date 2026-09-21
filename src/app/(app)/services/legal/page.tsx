@@ -22,7 +22,7 @@ import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSe
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
-import { Button, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill, TileCard, Toast } from "@/components/ui";
+import { Button, ChoiceChips, ErrorState, FilePicker, Icon, Input, Skeleton, StatusPill, Toast } from "@/components/ui";
 import { formatNaira } from "@/lib/format";
 
 /**
@@ -204,20 +204,16 @@ export default function LegalPage() {
             filter stays visible while you read, so changing your mind costs
             one tap.
           */}
-          <div className="wawu-no-scrollbar -mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
-            <div className="flex w-max gap-[10px] py-[6px]">
-              {services.map((s, i) => (
-                <TileCard
-                  key={s.code}
-                  size="sm"
-                  index={i}
-                  title={s.name}
-                  selected={picked?.code === s.code}
-                  onClick={() => setPicked(s)}
-                />
-              ))}
-            </div>
-          </div>
+          <ChoiceChips
+            ariaLabel="Choose a legal service"
+            scroll
+            value={picked?.code ?? null}
+            onSelect={(code) => {
+              const next = services.find((s) => s.code === code);
+              if (next) setPicked(next);
+            }}
+            options={services.map((s) => ({ value: s.code, label: s.name }))}
+          />
 
           {picked ? (
             <div className="flex flex-col gap-[14px] rounded-[var(--radius-card)] border border-[var(--border-hairline)] bg-[var(--surface-card)] p-[18px]">

@@ -4,7 +4,7 @@ import { CATEGORIES, type CategoryId } from "@/lib/categories";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { TileCard } from "@/components/ui/TileCard";
+import { ChoiceChips } from "@/components/ui";
 import { ProfessionalCard } from "@/components/professionals/ProfessionalCard";
 import type { ProfessionalListing } from "@/types/professional";
 
@@ -54,49 +54,31 @@ export default async function ProfessionalsPage({
         </div>
 
         {/*
-          The field filter, as cards rather than a strip of grey pills.
+          The field filter.
 
-          Same treatment as the landing services and the legal list, at the
-          smaller size — a row of these has to stay a filter, not become a
-          second page of content. No icons: professional fields have never had
-          one, and the colour is what separates them. Selected state is an
-          OUTLINE, so picking one does not resize the card and shuffle the row.
+          It was a row of 150x86 gradient cards, one of seven colours cycled by
+          index. The colour carried no meaning and put six unrelated hues on
+          screen before a single practitioner, which is what build brief A5
+          throws out. It is a chip rail now, the same control every other
+          browse filter in the app uses.
 
-          Still scrolls in its own container, so the page body never scrolls
-          sideways.
+          Still links, not client state, so the chosen field stays in the URL
+          and a shared link lands on the same filter. Still scrolls in its own
+          container, so the page body never scrolls sideways.
         */}
-        <div className="wawu-no-scrollbar -mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
-          {/*
-            Vertical padding, not decoration: the selected card is marked with
-            an `outline-offset-2`, and an outline drawn outside the element is
-            clipped by the scroll container unless there is room for it. Without
-            this the chosen field looked cut off along the top and bottom.
-
-            wawu-no-scrollbar for the same reason every other chip row in the
-            app uses it — a horizontal scrollbar under a single row of cards
-            reads as a rendering fault rather than an affordance.
-          */}
-          <div className="flex w-max gap-[10px] py-[6px]">
-            <TileCard
-              size="sm"
-              index={0}
-              title="All"
-              href="/professionals"
-              selected={!active}
-            />
-            {CATEGORIES.map((c, i) => (
-              <TileCard
-                key={c.id}
-                size="sm"
-                // +1 so "All" and the first field do not share a colour.
-                index={i + 1}
-                title={c.name}
-                href={`/professionals?category=${c.id}`}
-                selected={active === c.id}
-              />
-            ))}
-          </div>
-        </div>
+        <ChoiceChips
+          ariaLabel="Filter by field"
+          scroll
+          value={active ?? "all"}
+          options={[
+            { value: "all", label: "All", href: "/professionals" },
+            ...CATEGORIES.map((c) => ({
+              value: c.id as string,
+              label: c.name,
+              href: `/professionals?category=${c.id}`,
+            })),
+          ]}
+        />
 
         {failed ? (
           <ErrorState

@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, isMockModeError, mockRequest } from "./client";
 
 /**
  * Lifestyle Services: Bills Payment, Telemedicine, Legal, and the partner
@@ -79,8 +79,16 @@ export interface BillRecord {
   deliveredAt: string | null;
 }
 
-export const getBillCategories = () =>
-  apiFetch<BillCategory[]>("/api/hub/bills/categories", { authed: true });
+export const getBillCategories = async (): Promise<BillCategory[]> => {
+  try {
+    return await apiFetch<BillCategory[]>("/api/hub/bills/categories", { authed: true });
+  } catch (e) {
+    if (!isMockModeError(e)) throw e;
+    // SEAM: replace with GET /api/hub/bills/categories
+    const { billCategories } = await import("./mocks/bills");
+    return mockRequest([...billCategories], 200);
+  }
+};
 
 export const getBillers = (category: string) =>
   apiFetch<Biller[]>(`/api/hub/bills/categories/${encodeURIComponent(category)}/billers`, {

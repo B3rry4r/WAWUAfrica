@@ -1,7 +1,7 @@
 import { getCategories, getCreators } from "@/lib/api/explore";
 import { isCategoryId } from "@/lib/categories";
 import type { ExploreCategoryId } from "@/types/explore";
-import { TileCard } from "@/components/ui";
+import { ChoiceChips } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { ScreenHeader } from "@/components/layout/ScreenHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -52,28 +52,28 @@ export default async function CategoriesPage({
         </div>
 
         {/*
-          The slider. Vertical padding because the selected card is marked with
-          an outline drawn OUTSIDE the element, which a scroll container clips
-          without room for it, and the scrollbar is hidden the way every other
-          chip row in the app hides it.
+          The filter rail, per build brief C4: "category chips for browsing".
+
+          It used to be a row of 150x86 gradient cards in seven cycling
+          colours, which made a filter look like a gallery and put six colours
+          on screen before a single result. The chips are links, not state, so
+          the chosen category stays in the URL and survives a share or a
+          reload.
         */}
-        <div className="wawu-no-scrollbar -mx-[16px] overflow-x-auto px-[16px] xl:mx-0 xl:px-0">
-          <div className="flex w-max gap-[10px] py-[6px]">
-            <TileCard size="sm" index={0} title="All" href="/explore/categories" selected={!active} />
-            {categories.map((c, i) => (
-              <TileCard
-                key={c.id}
-                size="sm"
-                // +1 so "All" and the first category do not share a colour.
-                index={i + 1}
-                title={c.name}
-                icon={c.icon as IconName}
-                href={`/explore/categories?category=${c.id}`}
-                selected={active === c.id}
-              />
-            ))}
-          </div>
-        </div>
+        <ChoiceChips
+          ariaLabel="Browse by category"
+          scroll
+          value={active ?? "all"}
+          options={[
+            { value: "all", label: "All", href: "/explore/categories" },
+            ...categories.map((c) => ({
+              value: c.id as string,
+              label: c.name,
+              icon: c.icon as IconName,
+              href: `/explore/categories?category=${c.id}`,
+            })),
+          ]}
+        />
 
         {creators.length > 0 ? (
           <div className="grid grid-cols-1 gap-[12px] sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

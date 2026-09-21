@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { TileCard } from "@/components/ui/TileCard";
+import { orderedServices } from "@/lib/platform-services";
 import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
 import { formatNaira } from "@/lib/format";
@@ -55,115 +56,19 @@ const PIPELINE = ["Training", "Payments", "Banking", "Healthcare", "Legal", "Tra
  * Basket and Beauty are separate products with their own marks and brand
  * colours, so they carry a logo rather than an icon.
  */
-const QUICK_SERVICES: {
-  brand: string;
-  label: string;
-  blurb: string;
-  icon: IconName;
-  /** The commissioned icon badge replacing `icon`'s lucide glyph on this rail. */
-  iconImageSrc?: string;
-  href?: string;
-  soon?: boolean;
-  /** The card's own gradient, same treatment the industry cards used. */
-  bg: string;
-}[] = [
-  {
-    brand: "Shop",
-    label: "Creator equipment",
-    blurb: "Cameras, mics, lights and laptops, checked before we stock them.",
-    icon: "ShoppingBag",
-    iconImageSrc: "/icons/services/shop.png",
-    href: "/shop",
-    // Pulled off the live surface for now (product-owner instruction, 12 Sep
-    // 2026) — same treatment as Bills Payment/Loans/BNPL/Pensions/Telemedicine
-    // below. See ShopLayout, which gates the routes themselves the same way.
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,var(--accent-deep),var(--accent))]",
-  },
-  {
-    brand: "Bills Payment",
-    label: "Airtime, power, cable",
-    blurb: "Pay any bill in seconds.",
-    icon: "CreditCard",
-    iconImageSrc: "/icons/services/bills-payment.png",
-    href: "/services/pay",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-aqua))]",
-  },
-  {
-    brand: "Legal",
-    label: "Filings and lawyers",
-    blurb: "CAC and tax filings, or book a lawyer.",
-    icon: "Scale",
-    iconImageSrc: "/icons/services/legal.png",
-    href: "/services/legal",
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.55),var(--accent-deep))]",
-  },
-  {
-    brand: "Loans",
-    label: "Borrow",
-    blurb: "Apply for credit against what you earn here.",
-    icon: "Landmark",
-    iconImageSrc: "/icons/services/loans.png",
-    // Not open yet, same as BNPL. Both halves of the old "Loans/EasyBuy"
-    // entry are coming soon — splitting them was about naming two different
-    // products, not about opening one of them.
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,var(--accent-deep),rgba(148,17,201,0.5))]",
-  },
-  {
-    // Split out of "Loans/EasyBuy" on the product owner's instruction (1 Sep
-    // 2026) and renamed: BNPL and a loan are different products — one is
-    // instalments on a purchase, the other is credit — and one slash was
-    // making them read as a single service.
-    brand: "BNPL",
-    label: "Buy now, pay later",
-    blurb: "Spread the cost of a purchase over monthly payments.",
-    icon: "Smartphone",
-    iconImageSrc: "/icons/services/bnpl.png",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-lime))]",
-  },
-  {
-    brand: "Pensions",
-    label: "Retirement",
-    blurb: "Save for later on irregular income.",
-    icon: "PiggyBank",
-    iconImageSrc: "/icons/services/pensions.png",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-yellow))]",
-  },
-  {
-    brand: "Events",
-    label: "What's on",
-    blurb: "Find what is happening, or list your own.",
-    icon: "CalendarDays",
-    iconImageSrc: "/icons/services/events.png",
-    href: "/events",
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.35),var(--brand-coral))]",
-  },
-  {
-    brand: "Telemedicine",
-    label: "Health cover",
-    blurb: "See a doctor and get covered.",
-    icon: "Stethoscope",
-    iconImageSrc: "/icons/services/telemedicine.png",
-    soon: true,
-    bg: "bg-[linear-gradient(150deg,rgba(11,10,13,0.4),var(--brand-aqua))]",
-  },
+/*
+  The service rail reads PLATFORM_SERVICES (src/lib/platform-services.ts).
 
-];
+  The list used to live here, inline, which is why /services showed a
+  different set with different names and different icons: two lists, one of
+  them read by one page. Product owner, 21 Sep 2026: "services should carry
+  only the services that shows in the landing page." That is only enforceable
+  if there is one list, so this page no longer owns it.
 
-/**
- * Open services lead the grid, "coming soon" ones trail — asked for once the
- * grid stopped captioning them and started just dimming them instead: a
- * dimmed tile in among the live ones needs its position to carry some of
- * what the caption used to say. `sort` is stable, so within each group the
- * order above is preserved.
- */
-const ORDERED_QUICK_SERVICES = [...QUICK_SERVICES].sort(
-  (a, b) => Number(Boolean(a.soon)) - Number(Boolean(b.soon)),
-);
+  The landing makes no catalogue call, so the list's own `soon` flag decides
+  what is open here. /services layers the live catalogue status on top.
+*/
+const ORDERED_QUICK_SERVICES = orderedServices();
 
 /**
  * The two storefronts, as ordinary entries in the services directory.

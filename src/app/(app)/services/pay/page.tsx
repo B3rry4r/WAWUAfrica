@@ -18,7 +18,7 @@ import { openFlutterwaveCheckout, isFlutterwaveCancelled, checkoutCustomerFromSe
 import { useSession } from "@/lib/auth/session-provider";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
 import { ServiceComingSoon, ServiceGateLoading, useServiceLive } from "@/components/services/ServiceGate";
-import { Button, ErrorState, Icon, Input, Skeleton, TileCard } from "@/components/ui";
+import { Button, ErrorState, Icon, Input, Skeleton, TileCard, TILE_GRID, ICON_GRID } from "@/components/ui";
 import type { IconName } from "@/components/ui/Icon";
 import { Callout } from "@/components/ui/Callout";
 import { formatNaira } from "@/lib/format";
@@ -38,18 +38,34 @@ import { formatNaira } from "@/lib/format";
  * change ("Cable Bill Payment" today, something else tomorrow) while the codes
  * are the contract. Anything unmapped still gets a card, with a neutral glyph.
  */
-const CATEGORY_ICON: Record<string, IconName> = {
-  AIRTIME: "Smartphone",
-  MOBILEDATA: "Wifi",
-  INTSERVICE: "Router",
-  CABLEBILLS: "Tv",
-  UTILITYBILLS: "Zap",
-  POWER: "Zap",
+const CATEGORY_ICON: Record<string, string> = {
+  AIRTIME: "/icons/bills/airtime.png",
+  MOBILEDATA: "/icons/bills/data.png",
+  INTSERVICE: "/icons/bills/internet.png",
+  INTERNET: "/icons/bills/internet.png",
+  CABLEBILLS: "/icons/bills/cable-tv.png",
+  CABLETV: "/icons/bills/cable-tv.png",
+  UTILITYBILLS: "/icons/bills/electricity.png",
+  POWER: "/icons/bills/electricity.png",
+  ELECTRICITY: "/icons/bills/electricity.png",
+  SCHOOLFEES: "/icons/bills/education.png",
+  EDUCATION: "/icons/bills/education.png",
+  TAX: "/icons/bills/tax.png",
+  STREAMING: "/icons/bills/streaming.png",
+  DELIVERY: "/icons/bills/delivery.png",
+  DONATION: "/icons/bills/donations.png",
+  DONATIONS: "/icons/bills/donations.png",
+  MERCHANT: "/icons/bills/merchant.png",
 };
 
-function iconFor(category: BillCategory): IconName {
+/**
+ * The fallback is a real icon, not a lucide glyph: a grid where eleven cards
+ * carry the brand art and one carries a thin outline reads as a missing
+ * image. `other-bills` is the supplied art for exactly that case.
+ */
+function iconFor(category: BillCategory): string {
   const code = (category.code ?? category.name).toUpperCase().replace(/[^A-Z]/g, "");
-  return CATEGORY_ICON[code] ?? "Receipt";
+  return CATEGORY_ICON[code] ?? "/icons/bills/other-bills.png";
 }
 
 /** Plain words for a status the customer never chose and should not have to decode. */
@@ -359,14 +375,27 @@ export default function PayPage() {
           <Skeleton variant="row" />
         ) : (
           <Section title="What are you paying for?">
-            <div className="grid grid-cols-2 gap-[10px]">
-              {categories.map((c, i) => (
+            {/*
+              Build brief C6, and the owner's only hand-annotated reference.
+
+              This grid was two columns of full-bleed purple/teal/red/amber
+              blocks, 140px tall each, which on a desktop width stretched into
+              an endless scroll.
+
+              It is now the icon grid the owner asked for by name: "not big
+              cards, just icons and the titles sitting proper". No card, no
+              border, no tile behind the glyph — the supplied brand art IS the
+              control, with its name under it. Same treatment as the landing
+              services row, which is what C6 points at.
+            */}
+            <div className={ICON_GRID}>
+              {categories.map((c) => (
                 <TileCard
                   key={c.id}
-                  size="md"
+                  layout="stacked"
+                  size="sm"
                   title={c.name}
-                  icon={iconFor(c)}
-                  index={i}
+                  iconImageSrc={iconFor(c)}
                   onClick={() => void pickCategory(c)}
                 />
               ))}
@@ -380,13 +409,15 @@ export default function PayPage() {
           {!billers ? (
             <Skeleton variant="row" />
           ) : (
-            <div className="grid grid-cols-2 gap-[10px]">
-              {billers.map((b, i) => (
+            <div className={TILE_GRID}>
+              {billers.map((b) => (
                 <TileCard
                   key={b.biller_code}
-                  size="md"
+                  layout="tile"
                   title={b.name}
-                  index={i + 3}
+                  // No glyph: the billers are MTN, Ikeja Electric, DSTV. A
+                  // lucide icon per row would be an invented meaning, and the
+                  // tile reads fine without one.
                   onClick={() => void pickBiller(b)}
                 />
               ))}

@@ -16,10 +16,10 @@ import { Input } from "@/components/ui/Input";
 import { NairaInput } from "@/components/ui/NairaInput";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Sheet } from "@/components/ui/Sheet";
-import { SpecializationPicker } from "@/components/ui/SpecializationPicker";
 import { ErrorState } from "@/components/ui/Feedback";
 import { ContentGridCard } from "@/components/ui/ContentCard";
 import { ContentThumb } from "@/components/ui/ContentThumb";
+import { TaxonomyPicker } from "@/components/ui";
 
 const stepIcons: Record<ContentType, IconName> = {
   video: "Play",
@@ -397,7 +397,7 @@ export function PublishingWizard({ type, resubmit }: PublishingWizardProps) {
                 a buyer filters on, and a piece tagged with ten things is
                 tagged with none.
               */}
-              <SpecializationPicker
+              <TaxonomyPicker
                 role="creator"
                 value={specializations}
                 onChange={setSpecializations}
@@ -666,7 +666,7 @@ function DetailsStep({
         wall, just vertical. Same picker as the desktop column, so the two
         cannot drift.
       */}
-      <SpecializationPicker
+      <TaxonomyPicker
         role="creator"
         value={specializations}
         onChange={onSpecializations}
