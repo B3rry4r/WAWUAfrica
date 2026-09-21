@@ -65,6 +65,7 @@ export function storeLinkPath(handle: string): string {
 export function ShareProfileButton({
   handle,
   compact = false,
+  tone = "neutral",
   /**
    * "button" is the share control on the profile itself. "row" writes the
    * link out in full with a copy control beside it, for the public store
@@ -84,6 +85,12 @@ export function ShareProfileButton({
   handle: string;
   compact?: boolean;
   display?: "button" | "row" | "inline";
+  /**
+   * Filled accent rather than the neutral outline, for the profile header
+   * where the reference draws Share Profile as the PRIMARY of the two
+   * controls beside the name. Everywhere else it is the quiet one.
+   */
+  tone?: "neutral" | "accent";
 }) {
   const [state, setState] = useState<CopyState>("idle");
   const clean = handle.replace(/^@/, "");
@@ -197,7 +204,11 @@ export function ShareProfileButton({
     <button
       type="button"
       onClick={() => void share()}
-      className="inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[15px] text-[13.5px] font-semibold text-text-primary transition-colors hover:bg-state-hover"
+      className={
+        tone === "accent"
+          ? "inline-flex h-10 items-center gap-2 rounded-full bg-accent px-[15px] text-[13.5px] font-semibold text-on-accent transition-colors hover:bg-accent-hover active:bg-accent-press"
+          : "inline-flex h-10 items-center gap-2 rounded-full border border-hairline bg-tag px-[15px] text-[13.5px] font-semibold text-text-primary transition-colors hover:bg-state-hover"
+      }
     >
       <Icon
         name={state === "copied" ? "Check" : "Share2"}
@@ -205,7 +216,7 @@ export function ShareProfileButton({
         color="currentColor"
         strokeWidth={2.1}
       />
-      {state === "copied" ? "Link copied" : state === "failed" ? "Copy it by hand" : "Share profile"}
+      {state === "copied" ? "Link copied" : state === "failed" ? "Copy it by hand" : "Share Profile"}
     </button>
   );
 }

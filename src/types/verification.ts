@@ -163,12 +163,34 @@ export interface OwnProfileStats {
    */
   sales?: number;
   /**
-   * No real endpoint returns a follower count for the caller's own profile
-   * (that field lives on the separate public-creator-profile aggregate, keyed
-   * by another user's wawuId, not "me"). Undefined means "not available".
+   * The three public figures and the one private one, all from
+   * GET /users/me/profile-stats.
+   *
+   * This comment used to say no endpoint returned a follower count for the
+   * caller's own profile. That was true when it was written and is not now:
+   * profile-stats serves followers, following, posts and a month-scoped view
+   * count, and this client simply never called it. Every one is still
+   * optional, because an endpoint that fails should leave the row short
+   * rather than print a zero nobody earned.
    */
   followers?: string;
+  following?: string;
+  /** Profile opens THIS calendar month. Owner-only: no visitor ever sees it. */
+  monthlyViews?: string;
+  /**
+   * The "Complete your profile" ring, and what is still outstanding.
+   *
+   * `pct` is one of 0, 20, 40, 60, 80, 100: it is five steps, not a
+   * continuous score, and the server owns which five. `missing` names the
+   * ones still open so the card can list them rather than saying "finish
+   * your profile" and leaving somebody to hunt.
+   */
+  completenessPct?: number;
+  completenessMissing?: ProfileStep[];
 }
+
+/** The five things a complete profile has, named by the server. */
+export type ProfileStep = "avatar" | "cover" | "handle" | "bio" | "links";
 
 /** The signed-in user's own profile, read from session + profile records. */
 export interface OwnProfile {
@@ -187,6 +209,8 @@ export interface OwnProfile {
   plan: CreatorTier;
   stats: OwnProfileStats;
   interests: string[];
+  /** The one line under the name. A sentence, never a category. */
+  headline?: string;
   /** The organisation they are part of, beside the location in the header. */
   company?: string;
   /**
@@ -240,6 +264,7 @@ export interface OwnProfileDraft {
    * gain from that and would only add a second way to fail a save.
    */
   company?: string;
+  headline?: string;
   /**
    * Where a creator can be reached. Every one of these is a bare handle now,
    * with or without the "@": the API expands youtube, facebook and linkedin

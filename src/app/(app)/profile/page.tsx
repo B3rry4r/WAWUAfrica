@@ -77,7 +77,9 @@ function toView(p: OwnProfile, content: ProfileContentItem[]): ProfileView {
     // ProfileScreen resolves C1 ids where they are ids and renders the rest
     // as typed, so both shapes survive the taxonomy migration.
     specializations: p.interests,
-    roleLine: p.interests[0],
+    // The account's own sentence, with the first interest category only as a
+    // fallback for profiles written before there was a headline field.
+    roleLine: p.headline ?? p.interests[0],
     socials: p.socials,
     stats: {
       pieces: p.stats.published,
@@ -87,7 +89,18 @@ function toView(p: OwnProfile, content: ProfileContentItem[]): ProfileView {
       // keyed by another user's wawuId - and "0 Followers" on your own page
       // is a claim, not an absence.
       followers: p.stats.followers,
+      following: p.stats.following,
+      // Owner-only. The public aggregate has no view count at all, so a
+      // visitor's row is three figures and the owner's is four.
+      monthlyViews: p.stats.monthlyViews,
     },
+    // Owner-only, and absent rather than zero when the call did not answer:
+    // a dash on a card you came to read beats a confident ₦0.
+    owner: { earningsThisMonth: p.earningsThisMonth, productsSold: p.stats.sales },
+    completeness:
+      p.stats.completenessPct === undefined
+        ? undefined
+        : { pct: p.stats.completenessPct, missing: p.stats.completenessMissing ?? [] },
     // No `dm`: you cannot pay to message yourself, and the paid-action row is
     // the one block the two views legitimately differ on.
     content,

@@ -58,6 +58,11 @@ export async function getMockCreatorProfile(wawuId: string): Promise<CreatorProf
     plan: "basic",
     stats: {
       followers: "2.4k",
+      // A visitor sees three figures, never four: the month-scoped view count
+      // is owner-only on the server, so this fixture must not carry one
+      // either. A mock that showed a visitor something the API will not
+      // serve them is a fixture that lies in the one direction that matters.
+      following: "312",
       piecesLabel: "Pieces",
       pieces: c.pieceCount,
       evg: 640,
@@ -65,6 +70,7 @@ export async function getMockCreatorProfile(wawuId: string): Promise<CreatorProf
     dmEnabled: true,
     dmPrice: 300,
     dmResponseHours: 24,
+    headline: c.field,
     categories: [c.field].filter(Boolean),
     avatarUrl: c.avatarUrl,
     // The portrait doubles as the cover in fixtures. Uploading a separate

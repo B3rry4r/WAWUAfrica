@@ -115,6 +115,7 @@ interface RealPublicCreatorProfile {
   linkedinUrl: string | null;
   websiteUrl: string | null;
   company: string | null;
+  headline?: string | null;
   /**
    * The roles on this profile, ordered by the server: current first, then
    * newest first. Never re-sorted here, because a second ordering is a second
@@ -132,6 +133,13 @@ interface RealPublicCreatorProfile {
   evgScore: number;
   contentCount: number;
   followerCount: number;
+  /**
+   * How many accounts this person follows: the middle figure in the
+   * reference's four-up row. It has been on the aggregate all along; this
+   * client simply never read it, and a comment on the profile screen claimed
+   * no endpoint served one.
+   */
+  followingCount?: number;
   communityCount: number;
 }
 
@@ -237,6 +245,10 @@ function toCreatorProfile(
     plan: real.tier,
     stats: {
       followers: formatFollowerCount(real.followerCount),
+      following:
+        real.followingCount === undefined
+          ? undefined
+          : formatFollowerCount(real.followingCount),
       piecesLabel: "Pieces",
       pieces: real.contentCount,
       evg: real.evgScore,
@@ -417,16 +429,17 @@ export function toProfileView(p: CreatorProfile): ProfileView {
     website: p.socials.website,
     company: p.company,
     experience: p.experience,
-    // The public aggregate has no separate headline field; `categories[0]` is
-    // what the directory shows under a name, so it is the role line here too
-    // rather than a second invented one.
-    roleLine: p.categories[0],
+    // The account's OWN sentence wins over its first interest category. The
+    // category fallback stays for profiles written before the field existed,
+    // but it is a fallback now, not the source.
+    roleLine: p.headline ?? p.categories[0],
     specializations: p.categories,
     socials: p.socials,
     stats: {
       pieces: p.stats.pieces,
       piecesLabel: p.stats.piecesLabel,
       followers: p.stats.followers,
+      following: p.stats.following,
       evg: p.stats.evg,
     },
     dm: { enabled: p.dmEnabled, price: p.dmPrice, responseHours: p.dmResponseHours },

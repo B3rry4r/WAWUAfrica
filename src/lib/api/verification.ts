@@ -9,6 +9,7 @@ import type {
   VerificationOverview,
   VerificationUnavailable,
   VerificationState,
+  ProfileStep,
 } from "@/types/verification";
 import { NO_VERIFICATION } from "@/types/verification";
 import { apiFetch, isMockModeError } from "./client";
@@ -283,6 +284,7 @@ interface HubUserProfileResponse {
   linkedinUrl: string | null;
   websiteUrl: string | null;
   company?: string | null;
+  headline?: string | null;
   /** Server-ordered: current role first, then newest first. Never re-sorted. */
   experience?: ProfileExperience[];
   avatarUrl: string | null;
@@ -290,6 +292,29 @@ interface HubUserProfileResponse {
 }
 
 /** PATCH /api/hub/users/me body — exactly UpdateUserProfileDto's field set. No `name`/`fullName` field exists on this DTO at all (see getOwnProfile's HubUserProfileResponse doc comment) — never invent one. */
+/**
+ * GET /api/hub/users/me/profile-stats.
+ *
+ * Owner-only by construction on the server: it takes the caller's id from the
+ * token and has no parameter that could point it at another account, which is
+ * what keeps the view count off a stranger's screen.
+ */
+interface HubProfileStatsResponse {
+  followerCount: number;
+  followingCount: number;
+  postCount: number;
+  profileViewsThisMonth: number;
+  productsSoldThisMonth: number;
+  profileCompletenessPct: number;
+  profileCompletenessMissing: ProfileStep[];
+}
+
+/** 2400 reads better than 2,400 in a stat cell, and 2.4k better still. */
+function compactCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`;
+  return String(n);
+}
+
 interface UpdateUserProfileBody {
   firstName?: string;
   middleName?: string;
@@ -298,6 +323,7 @@ interface UpdateUserProfileBody {
   bio?: string;
   handle?: string;
   company?: string;
+  headline?: string;
   instagramHandle?: string;
   whatsappHandle?: string;
   xHandle?: string;
@@ -380,6 +406,24 @@ export async function getOwnProfile(): Promise<OwnProfile> {
     const creditsState = await apiFetch<HubCreditsForProfile>("/api/hub/credits", { authed: true });
     const credits = creditsState.creditBalance;
 
+    /*
+      THE FOUR FIGURES THE APPROVED PROFILE DRAWS, from the endpoint that has
+      always served them.
+
+      Posts, Followers, Following and a month-scoped view count all come from
+      here. Nothing in this client called it, so the profile showed
+      Published / Followers / EVG and a comment on the screen claimed no
+      endpoint answered the other two.
+
+      Caught rather than awaited on its own line: these are the decoration on
+      a screen whose subject is the profile. A stats call that fails should
+      leave the row short, not fail the page. `null` is "not answered", which
+      every field below distinguishes from zero.
+    */
+    const stats = await apiFetch<HubProfileStatsResponse>("/api/hub/users/me/profile-stats", {
+      authed: true,
+    }).catch(() => null);
+
     return {
       wawuId: me.wawuUserId,
       firstName: me.firstName ?? "",
@@ -392,9 +436,22 @@ export async function getOwnProfile(): Promise<OwnProfile> {
       accountType,
       verification: toVerificationState(me.verification),
       plan,
-      stats: { published, sales: undefined, followers: undefined },
+      stats: {
+        // `postCount` from the stats endpoint is the authority when it
+        // answers: it counts LIVE pieces, where `published` is the creator
+        // state's slot usage and counts drafts too. The slot figure stays as
+        // the fallback so the row is not empty when the call fails.
+        published: stats?.postCount ?? published,
+        sales: stats ? stats.productsSoldThisMonth : undefined,
+        followers: stats ? compactCount(stats.followerCount) : undefined,
+        following: stats ? compactCount(stats.followingCount) : undefined,
+        monthlyViews: stats ? compactCount(stats.profileViewsThisMonth) : undefined,
+        completenessPct: stats?.profileCompletenessPct,
+        completenessMissing: stats?.profileCompletenessMissing,
+      },
       interests: me.interests ?? [],
       company: me.company ?? undefined,
+      headline: me.headline ?? undefined,
       // `?? []` because a Hub that predates the column sends nothing, and an
       // absent list means "no roles", not a header that cannot render.
       experience: me.experience ?? [],
@@ -447,6 +504,7 @@ export async function saveProfile(draft: OwnProfileDraft): Promise<OwnProfile> {
         // Free text, so it is sent even when empty and clears the field.
         // The URL fields below are the exception, not this.
         company: draft.company ?? "",
+        headline: draft.headline ?? "",
         instagramHandle: draft.socials.instagram ?? "",
         whatsappHandle: draft.socials.whatsapp ?? "",
         xHandle: draft.socials.x ?? "",
