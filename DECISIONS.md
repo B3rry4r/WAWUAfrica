@@ -599,3 +599,231 @@ session that proves ownership exists.
 3. Paid actions on a public store (Follow, Message, Tip) do not ask an
    anonymous visitor to register; they attempt the call and fail. The fix is a
    prop on those controls, not a second screen, and it is outside this change.
+
+---
+
+## D17. C8: notifications become a surface, and the push channel behind it
+
+Build brief C8. The "before" is `refs/bug-notifications-plain.jpg`: identical
+text rows, an icon circle, two lines of grey and a date. There is no target
+image for this screen and none for the admin composer, so both are designed
+from A3 and A5 and every choice is recorded below.
+
+### D17a. The rich notification is NOT MediaCard, and that is a measured call
+
+**Chosen.** A dedicated `NotificationCard` under
+`src/app/(app)/notifications/_components/`, sharing MediaCard's visual grammar
+(same `--radius-card`, same hairline, same overlay-badge positions, same token
+set) and none of its code.
+
+**Rejected.** `MediaCard variant="stacked"`, which was read first and was the
+obvious candidate.
+
+**Why, measured rather than felt.** Three properties of MediaCard make it
+unable to render a notification:
+
+1. its title is `truncate`, i.e. ONE line, clipped. At 14px bold in a 336px
+   card that is roughly 32 characters, so a 45-character headline renders with
+   its end cut off. A notification headline that does not finish is not a
+   notification;
+2. its caption is `line-clamp-2`. C8 asks for "images and **detail**", and two
+   clipped lines at 390px is about 88 characters of detail;
+3. it has no slot for a timestamp or an unread state, which are the two things
+   that make a notification a notification rather than a tile.
+
+**Why not just add props.** That is the house answer ("a variant is a prop"),
+and it is the right one, but this task is scoped **read-only** on
+`src/components/ui/`. Forking was never an option. So the choice was between a
+degraded notification and a separate component for a separate job, and the
+separate component wins. It is not a second copy of MediaCard: there is no
+duplicated logic, no duplicated name, and the `forks` gate is clean.
+
+**If the scope opens.** The right end state is `MediaCard` gaining a
+`titleLines` prop, a `clampCaption={false}` prop and a `meta` slot, after which
+`NotificationCard` collapses into it. Recorded here so the next person does not
+have to rediscover why there are two.
+
+### D17b. The verification prompt promises nothing, and cannot be switched off
+
+**Chosen.** A `verify_reminder` kind, written by
+`VerificationReminderService` (backend), sent to creators and approved
+professionals with no approved `VerificationSubmission`, at most once every 14
+days, stopping the day the account is verified. Copy is present tense only.
+
+**Rejected.** "We will let you know as soon as your verification is approved."
+
+**Why.** That sentence is exactly what the `unbacked_promises` gate exists to
+catch, and it would be a lie here: nothing in this backend emits a
+notification when a verification tier is approved. The emit site would be
+`verification-submission.service.ts` and `admin-professional-review.service.ts`,
+both outside this task's scope. So the prompt states only things that are true
+the moment somebody is approved and are implemented today: the tick renders
+(both services call `WawuIdClient.elevateVerificationTier` on approval, and the
+web client renders `VerificationBadge` from that claim), and
+`/profile/verification` is a built screen that takes a submission.
+
+**Not behind a switch, said out loud.** `verify_reminder` is deliberately
+absent from `SETTINGS_GATE`. It is the state of the reader's own account, not
+marketing, and B1 asks for it to be "persistent, recurring". What stops it
+being spam is the fortnightly interval and the fact that it ends, not a toggle.
+Because an unverified account cannot silence it, the Settings screen now says
+so in plain words rather than leaving it to be discovered.
+
+**No price in the copy.** The two figures (₦4,999 creator, ₦9,999
+professional) live on the verification screen the prompt opens. Repeating a
+price inside a notification is how a stale figure ends up sitting in somebody's
+history for a year.
+
+**Frequency is derived, not stored.** "Have they had one recently" is answered
+by querying the notifications themselves, not by a `lastRemindedAt` column that
+could drift away from what was actually sent.
+
+### D17c. "Offers and news" became real, and the default was flipped. Existing rows were not.
+
+**Chosen.** `NotificationSettings.promotions` now gates the `campaign` kind,
+and its default changed from `false` to `true`. **Existing rows were not
+backfilled.**
+
+**Why the default had to move.** Nothing had ever read this column. It
+defaulted to `false` because that was a safe value for a switch that did
+nothing. C8 asks for a promotion channel "to the whole user base"; shipped
+against a `false` default, that channel would have delivered to nobody and
+looked like it worked. So the brief wins and the default moves, per CLAUDE.md
+("If they ask for something that contradicts a line here, build it").
+
+**Why existing rows were left alone.** A stored `false` cannot be told apart
+from a deliberate opt-out. Most of them are not (rows are created lazily with
+model defaults the first time somebody opens the settings screen), but some
+may be, and an `UPDATE` in a migration would silently re-consent every account
+that has a row. `ALTER COLUMN ... SET DEFAULT` is catalogue-only: no rewrite,
+no row touched.
+
+**OPEN QUESTION for the product owner.** Should the existing rows be
+backfilled to opt-in? It is a consent decision, not a technical one, and it
+decides whether the first campaign reaches most accounts or a minority of them.
+Nothing here guesses at it. The composer surfaces the consequence instead: it
+shows, per segment, both how many accounts match and how many have
+announcements on, so the gap is visible before anybody presses send.
+
+### D17d. A campaign takes an image URL, not an upload
+
+**Chosen.** `imageUrl`, validated as an https URL, with a live preview in the
+composer.
+
+**Rejected.** An admin-side file upload.
+
+**Why.** This backend's presign route (`POST /uploads/presign`) is app-user
+authed; there is no admin-side equivalent, and object storage is not configured
+in this environment. Building a presign route that cannot be exercised, and
+reporting it as an upload, would be scaffolding reported as behaviour. The URL
+field is a complete, working path today. The upload is a named follow-up, not a
+silent gap.
+
+### D17e. The composer: the preview is the real component, and the number is measured twice
+
+No reference image, so: four numbered steps down the page (who, what it says,
+where it goes, what they will see), with the preview and the send door in a
+sticky right-hand column on desktop and stacked underneath on mobile.
+
+**The preview renders `NotificationCard` itself**, fed a real `AppNotification`
+built from the draft. It is not a mock-up of the card, so it cannot drift from
+the card. What you compose is literally what lands.
+
+**Every segment carries two numbers**: how many accounts match, and how many of
+those have announcements switched on. Both are `COUNT(*)` results the backend
+runs when the screen asks (`AdminNotificationsService.audiences`). An admin who
+only ever sees "4,820 people" will believe 4,820 people read it. After a
+dispatch the same two numbers are reported back, plus their difference.
+
+**Sending is a two-step door.** Saving stores a draft and sends nothing.
+Sending asks again, restating the measured recipient count and that there is no
+unsend, because there is not: the notification has been read by the time
+anybody regrets it.
+
+**Destinations are an allowlist served by the backend**, not a URL field. A
+campaign is the highest-reach link in the product; free-form it is an open
+redirect with a distribution list attached. The composer offers only what the
+server will accept, so the two cannot drift.
+
+**Red and amber are not offered as tones.** Those are the app's money and
+deadline colours. A promotion dressed as an emergency teaches people to ignore
+the real one.
+
+**Purple stays an accent (A5).** On the notification list it appears in exactly
+two places: the unread dot, and the one filled CTA on a paid DM about to
+expire. Tone-tinted card borders are gone, and the "Get verified" prompt takes
+a **white** primary button, which A5 explicitly encourages.
+
+### D17f. Two defects found by looking at the render, not the code
+
+1. **`border-danger/40` was never emitted.** Tailwind cannot apply an opacity
+   modifier to a token that is already a full `rgba()` value, so
+   `.border-danger\/40` was absent from the built stylesheet entirely
+   (confirmed by grepping `.next/static/css`). The class did nothing,
+   preflight's `border-color: currentColor` took over, and every danger
+   notification drew a **white** border, the loudest edge on the screen. The
+   token is already 28% alpha; the modifier is gone.
+2. **The creator FAB sat on top of the last notification.** The list had
+   `pb-8`; the FAB floats above the tab bar and covered the oldest card. Now
+   `pb-28`.
+
+Neither was visible in the source. Both came from opening the PNG.
+
+### D17g. Reported, not fixed: three notification settings with no writer
+
+`newReplies` and `communityDigest` are toggles that persist a preference
+nothing reads. There is no "a creator replied to your paid DM" kind and no
+digest job. `promotions` was the third and is now wired (D17c). The other two
+are left in place (they do persist a real preference) and named here rather
+than quietly removed, because removing a control is a product decision and
+faking the mechanism is worse than either.
+
+Also reported: `src/lib/api/mocks/mockSettings` still returns
+`promotions: false`, which is now out of step with the backend default. It is
+outside this task's file scope, so it is named rather than edited.
+
+### D17h. OPEN QUESTION: WAWU Credits. Raised, not built around.
+
+The brief's own reference for this screen,
+`refs/bug-notifications-plain.jpg`, shows a live credits state in the
+notification list: **"Credits trial ending / 0 credits / Your WAWU Credits
+trial ends tomorrow. You have 0 credits left. / [Buy credits]"**. The brief
+says to raise Credits as an open question rather than build around it, so this
+is the raise, and nothing in C8 resolved it in either direction.
+
+**What exists today, and it is real.** Three notification kinds
+(`credits_low`, `trial_ending`, and the credits arm of the community message
+flow), a `CreditsState` table, a `credit-purchase` module, a `credit-spend`
+module, a 7-day trial, a "Buy credits" path into `/communities?topup=1`, and
+the standing rules that credits render as a **COUNT** and split **90/10** for
+every creator, tier-independently.
+
+**What B1 says.** The monetisation table lists **"Community chat tokens, price
+TBC, build configurable"** as one of four paid actions, alongside verification,
+featuring and advertising. It does not mention WAWU Credits by name, does not
+mention a trial, and does not restate the 90/10 split.
+
+**The question, in three parts, and it is the product owner's:**
+
+1. Are "community chat tokens" the WAWU Credits that already exist, renamed?
+   If so the price is not TBC, the purchase path is built, and the brief's row
+   should say so. If they are a *different* instrument, then two currencies
+   now buy the same thing and one of them has to go.
+2. **Does the 7-day free trial survive?** B2 says "No free content. Every
+   listing carries a price." A trial is not a listing, so the rule does not
+   strictly reach it, but a free trial of the messaging currency sits oddly
+   beside it. `trial_ending` is a notification kind with a real emitter
+   (`SchedulerService.warnCreditsTrialEnding`), so answering this either keeps
+   a cron or deletes one.
+3. **Does credits stay at 90/10** now that everything else is a flat 85/15?
+   CLAUDE.md is explicit that this is deliberate and tier-independent and must
+   not be collapsed into the flat rate. Nothing here collapsed it. But it is
+   the only rate in the product that is not 85/15, and it is worth a yes.
+
+**What was deliberately NOT done.** No credits copy was rewritten, no kind was
+removed, no rate or price was invented, and no naira value was put next to a
+credits figure. The two credits kinds render exactly as they did, through
+`formatCredits()`, as a count. If the answer to (1) is "renamed", the change is
+a copy pass over two notification bodies and one settings caption, and it is
+small. It is not small if the answer is "different instrument", which is
+precisely why it is a question and not a guess.

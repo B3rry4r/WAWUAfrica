@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 import { Button } from "@/components/ui/Button";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import { toggleFollow } from "@/lib/api/explore";
 import { isFollowing } from "@/lib/api/profile";
 
@@ -22,6 +24,7 @@ import { isFollowing } from "@/lib/api/profile";
  */
 export function FollowButton({ wawuId, initial, size = "sm" }: { wawuId: string; initial: boolean; size?: ComponentProps<typeof Button>["size"] }) {
   const [following, setFollowing] = useState(initial);
+  const router = useRouter();
   const touched = useRef(false);
 
   useEffect(() => {
@@ -50,6 +53,20 @@ export function FollowButton({ wawuId, initial, size = "sm" }: { wawuId: string;
       size={size}
       variant={following ? "secondary" : "primary"}
       onClick={() => {
+        /*
+          A visitor with no session is sent to sign up rather than shown a
+          follow that did not happen.
+
+          This button now appears on the PUBLIC store link (build brief C3),
+          where there may be nobody signed in. Optimistically flipping to
+          "Following" and then silently rolling back on a 401 tells somebody
+          they followed a creator when they did not, and in a fixture build
+          the mock path made it look like it worked.
+        */
+        if (!sessionStorage.getToken()) {
+          router.push(`/sign-up?next=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
         touched.current = true;
         const next = !following;
         setFollowing(next);

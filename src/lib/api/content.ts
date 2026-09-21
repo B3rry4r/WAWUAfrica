@@ -1,5 +1,6 @@
 import { apiFetch, apiFetchPaginated, isMockModeError } from "./client";
 import { mockContent, mockContentById, mockPurchasedIds } from "./mocks/mockContent";
+import { sessionStorage } from "@/lib/auth/session-storage";
 import type {
   ContentDetailResponse,
   ContentFeedResponse,
@@ -223,8 +224,26 @@ async function getCreatorSummary(
 }
 
 export async function getContent(id: string): Promise<ContentDetailResponse> {
+  /*
+    A visitor with no session reads the PUBLIC route.
+
+    Build brief C3: on a shared store link "registration is required ONLY at
+    checkout". It was required far earlier - tapping any piece bounced the
+    visitor to /sign-in, because the only single-piece read is guarded. So
+    somebody who followed a creator's link could see that work existed and
+    never look at it.
+
+    The public route hands back the same row with no requester, which means a
+    paid piece is locked and `fullAssetUrl` is withheld. Nothing is given
+    away: the visitor sees the title, the preview and the price, which is
+    what they need to decide to buy, and the unlock itself still demands an
+    account.
+  */
+  const anonymous = !sessionStorage.getToken();
   try {
-    const res = await apiFetch<HubContentPieceResponse>(`/api/hub/content/${id}`, { authed: true });
+    const res = anonymous
+      ? await apiFetch<HubContentPieceResponse>(`/api/hub/content/public/${id}`)
+      : await apiFetch<HubContentPieceResponse>(`/api/hub/content/${id}`, { authed: true });
     const content = guardLocked(mapContentPiece(res));
     const summary = await getCreatorSummary(res.creatorWawuId);
     content.creator.isPro = summary.isPro;

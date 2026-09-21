@@ -1,45 +1,39 @@
 import { apiFetch, ApiError } from "@/lib/api/client";
+import type { components, operations } from "@/types/api.generated";
 
 /**
  * A creator's wallet: an account at Flutterwave MFB in their own name.
  *
- * Every figure here comes from the server, which asks Flutterwave. Nothing is
- * summed client-side, because a balance the app worked out itself can disagree
- * with the one the bank will actually pay out.
+ * WAWU DOES NOT HOLD THIS MONEY. The account is the creator's own, opened in
+ * their name under Flutterwave's banking licence, and WAWU only ever
+ * instructs movements on it. That is why every figure below comes from the
+ * server, which asks Flutterwave: a balance this app worked out for itself
+ * can disagree with the one the bank will actually pay, and the creator would
+ * believe ours.
+ *
+ * SHAPES ARE NOT TYPED BY HAND. Every type here is the generated contract
+ * (`src/types/api.generated.ts`, produced from the backend's own OpenAPI), so
+ * a field the API renames cannot quietly keep compiling here.
  */
-export interface Wallet {
-  accountReference: string;
-  /** Their own account number. Anyone can pay into it directly. */
-  accountNumber: string | null;
-  bankName: string | null;
-  availableNgn: number;
-  status: string;
-  createdAt: string;
+type JsonOf<K extends keyof operations, S extends number> = operations[K] extends {
+  responses: Record<S, { content: { "application/json": infer T } }>;
 }
+  ? T
+  : never;
 
-export type WalletEntryKind = "earning" | "withdrawal" | "reversal";
-export type WalletEntryStatus = "pending" | "completed" | "failed";
-
-export interface WalletEntry {
-  id: string;
-  kind: WalletEntryKind;
-  amount: number;
-  status: WalletEntryStatus;
-  reference: string;
-  failureReason: string | null;
-  createdAt: string;
-  settledAt: string | null;
-}
-
-export interface Bank {
-  code: string;
-  name: string;
-}
+export type Wallet = JsonOf<"WalletController_get", 200>;
+export type WalletEntry = JsonOf<"WalletController_history", 200>[number];
+export type WalletEntryKind = WalletEntry["kind"];
+export type WalletEntryStatus = WalletEntry["status"];
+export type Bank = components["schemas"]["Bank"];
+export type ResolvedAccount = JsonOf<"WalletController_resolve", 201>;
+export type WithdrawalReceipt = JsonOf<"WalletController_withdraw", 201>;
 
 /**
- * Thrown when the account has no wallet yet because identity is unverified.
- * A distinct type so the screen can show the "verify first" state rather than
- * an error, which is what it actually is.
+ * Thrown when this account has no wallet and cannot have one yet: a buyer
+ * account looking at a creator's screen. A distinct type so the screen can
+ * show what would make them eligible rather than an error, which is what it
+ * would otherwise look like.
  */
 export class WalletNotReadyError extends Error {}
 
@@ -48,7 +42,7 @@ export async function getWallet(): Promise<Wallet> {
     return await apiFetch<Wallet>("/api/hub/wallet", { authed: true });
   } catch (e) {
     if (e instanceof ApiError && e.status === 400) {
-      throw new WalletNotReadyError(e.message);
+      throw new WalletNotReadyError(e.serverMessage ?? e.message);
     }
     throw e;
   }
@@ -68,10 +62,10 @@ export function getBanks(): Promise<Bank[]> {
  * A POST rather than a GET on purpose: an account number in a URL ends up in
  * proxy logs and browser history, and this one is about to be paid.
  */
-export function resolveAccount(bankCode: string, accountNumber: string): Promise<{
-  accountNumber: string;
-  accountName: string;
-}> {
+export function resolveAccount(
+  bankCode: string,
+  accountNumber: string,
+): Promise<ResolvedAccount> {
   return apiFetch("/api/hub/wallet/resolve-account", {
     method: "POST",
     authed: true,
@@ -79,11 +73,9 @@ export function resolveAccount(bankCode: string, accountNumber: string): Promise
   });
 }
 
-export function withdraw(input: {
-  amount: number;
-  bankCode: string;
-  accountNumber: string;
-}): Promise<{ reference: string; amount: number; accountName: string; status: string }> {
+export function withdraw(
+  input: components["schemas"]["WithdrawDto"],
+): Promise<WithdrawalReceipt> {
   return apiFetch("/api/hub/wallet/withdraw", {
     method: "POST",
     authed: true,

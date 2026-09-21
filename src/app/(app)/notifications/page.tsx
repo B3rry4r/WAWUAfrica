@@ -2,43 +2,41 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon, Skeleton, EmptyState, ErrorState } from "@/components/ui";
+import { Skeleton, EmptyState, ErrorState } from "@/components/ui";
 import { FlowHeader } from "@/components/layout/FlowHeader";
-import type { IconName } from "@/components/ui/Icon";
-import { getNotifications, markAllRead } from "@/lib/api/notifications";
-import { formatNaira, formatCredits } from "@/lib/format";
-import type { AppNotification, NotificationTone } from "@/types/notification";
+import { getNotifications, markAllRead, markRead } from "@/lib/api/notifications";
+import type { AppNotification } from "@/types/notification";
+import { NotificationCard } from "./_components/NotificationCard";
+import { NotificationRow } from "./_components/NotificationRow";
 
-const toneIcon: Record<NotificationTone, IconName> = {
-  danger: "AlertCircle",
-  accent: "TrendingUp",
-  success: "CheckCircle2",
-  warning: "AlertTriangle",
-  info: "Info",
-  neutral: "Bell",
-};
-
-const toneIconClass: Record<NotificationTone, string> = {
-  danger: "text-danger",
-  accent: "text-accent",
-  success: "text-success",
-  warning: "text-warning",
-  info: "text-info",
-  neutral: "text-text-muted",
-};
-
-// Card border tone per design (WAWU Notifications Search.dc.html L50-144): each
-// notification is its own bordered card, tinted by tone -- danger/accent/warning
-// get a colored border, success/info/neutral stay hairline.
-const toneBorderClass: Record<NotificationTone, string> = {
-  danger: "border-danger/40",
-  accent: "border-accent",
-  success: "border-hairline",
-  warning: "border-warning/40",
-  info: "border-hairline",
-  neutral: "border-hairline",
-};
-
+/**
+ * Notifications, rebuilt for build brief C8.
+ *
+ * ── WHAT IT WAS ──────────────────────────────────────────────────────────────
+ * refs/bug-notifications-plain.jpg: identical text rows, an icon circle, two
+ * lines of grey, a date. Nothing on it was worth opening, which is why it was
+ * rejected.
+ *
+ * ── WHAT DECIDES A ROW'S SHAPE ───────────────────────────────────────────────
+ * One rule, and it is a property of the data rather than a switch somebody
+ * flips: a notification with a picture renders as a picture card, and one
+ * without renders compact. That keeps a sale or a refund quick to scan, and
+ * gives an announcement the room it was composed for. It also means the list
+ * can never show an empty image frame, because the frame only exists when
+ * there is an image.
+ *
+ * ── RESTRAINT (brief A5) ─────────────────────────────────────────────────────
+ * Purple appears in exactly three places here: the unread dot, the single
+ * filled CTA on a paid DM about to expire, and nothing else. Tone-tinted card
+ * borders are gone (they put a purple edge on every sale and tip) and the
+ * unread tint is an elevated surface instead of accent-tint. Red survives on
+ * the one thing that is genuinely about to cost somebody money.
+ *
+ * ── EVERY STATE HAS AN EXIT ──────────────────────────────────────────────────
+ * Loading, error (retry), empty (three real destinations) and loaded. Opening
+ * any notification navigates somewhere that resolves it, and marks it read
+ * through a real endpoint on the way.
+ */
 export default function NotificationsPage() {
   const router = useRouter();
   const [items, setItems] = useState<AppNotification[] | null>(null);
@@ -79,8 +77,25 @@ export default function NotificationsPage() {
     }
   };
 
+  /**
+   * Opening a notification clears its own dot, through a real write.
+   *
+   * The optimistic flip is deliberate and safe in this one direction: the
+   * click is navigating away, so there is no screen left to revert on, and
+   * the worst case of a failed write is a dot that comes back on the next
+   * load. That is the right failure for "read", and the opposite of the
+   * optimistic writes on the settings screen, which do revert.
+   */
+  const onOpen = (id: string) => {
+    setItems((prev) => (prev ? prev.map((n) => (n.id === id ? { ...n, read: true } : n)) : prev));
+    void markRead(id).catch(() => {
+      /* MECHANISM: NotificationService.markRead (POST /notifications/:id/read). A
+         failed write leaves the dot lit on the next load, which is honest. */
+    });
+  };
+
   return (
-    <div className="flex min-h-screen flex-col bg-surface-page xl:mx-auto xl:w-full xl:max-w-[700px]">
+    <div className="flex min-h-screen flex-col bg-page xl:mx-auto xl:w-full xl:max-w-[700px]">
       {/* One row, one bar. The back control used to sit in its own block above
           this one — measured 52px higher than the title's centre line and 23px
           out horizontally, which is the reported back-button/title
@@ -93,7 +108,7 @@ export default function NotificationsPage() {
             <button
               type="button"
               onClick={onMarkAllRead}
-              className="shrink-0 text-[13.5px] font-semibold text-accent hover:text-text-primary"
+              className="shrink-0 text-[13.5px] font-semibold text-text-secondary hover:text-text-primary"
             >
               Mark all read
             </button>
@@ -137,18 +152,19 @@ export default function NotificationsPage() {
       ) : (
         <>
           {/* Mobile: grouped by time (Now / Earlier). */}
-          <div className="flex flex-col gap-5 px-4 pb-8 pt-4 xl:hidden">
-            {now.length ? (
-              <NotificationGroup label="Now" items={now} />
-            ) : null}
-            {earlier.length ? <NotificationGroup label="Earlier" items={earlier} /> : null}
+          {/* pb-28, not pb-8: the creator FAB floats bottom-right above the tab
+              bar and was sitting on top of the last card in the list, so the
+              oldest notification could not be read or tapped. */}
+          <div className="flex flex-col gap-5 px-4 pb-28 pt-4 xl:hidden">
+            {now.length ? <NotificationGroup label="Now" items={now} onOpen={onOpen} /> : null}
+            {earlier.length ? <NotificationGroup label="Earlier" items={earlier} onOpen={onOpen} /> : null}
           </div>
 
           {/* Desktop (design D15): grouped by consequence — urgent action first, then money, then everything else. */}
           <div className="hidden flex-col gap-5 px-6 pb-10 pt-5 xl:flex">
-            {needsNow.length ? <NotificationGroup label="Needs you now" items={needsNow} urgent /> : null}
-            {money.length ? <NotificationGroup label="Money" items={money} /> : null}
-            {laterDesktop.length ? <NotificationGroup label="Earlier" items={laterDesktop} /> : null}
+            {needsNow.length ? <NotificationGroup label="Needs you now" items={needsNow} onOpen={onOpen} /> : null}
+            {money.length ? <NotificationGroup label="Money" items={money} onOpen={onOpen} /> : null}
+            {laterDesktop.length ? <NotificationGroup label="Earlier" items={laterDesktop} onOpen={onOpen} /> : null}
           </div>
         </>
       )}
@@ -156,101 +172,27 @@ export default function NotificationsPage() {
   );
 }
 
-function NotificationGroup({ label, items }: { label: string; items: AppNotification[]; urgent?: boolean }) {
+function NotificationGroup({
+  label,
+  items,
+  onOpen,
+}: {
+  label: string;
+  items: AppNotification[];
+  onOpen: (id: string) => void;
+}) {
   return (
     <section className="flex flex-col gap-2">
       <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-text-muted">{label}</span>
       <div className="flex flex-col gap-3">
-        {items.map((n) => (
-          <NotificationRow key={n.id} notification={n} />
-        ))}
+        {items.map((n) =>
+          n.imageUrl ? (
+            <NotificationCard key={n.id} notification={n} onOpen={onOpen} />
+          ) : (
+            <NotificationRow key={n.id} notification={n} onOpen={onOpen} />
+          ),
+        )}
       </div>
     </section>
-  );
-}
-
-// The action buttons are read-only decoration if they don't navigate anywhere
-// (confirmed live: clicking "View earnings" on a real sale notification did
-// nothing). The wire notification carries no thread/target id, so the button
-// routes by `kind` to the screen that actually resolves it -- same pattern as
-// the actionHref props used elsewhere in this app (communities ?topup=1 etc).
-function actionHrefFor(n: AppNotification): string {
-  switch (n.kind) {
-    case "dm_deadline":
-    case "dm_received":
-    case "dm_refunded":
-      return "/messages";
-    case "sale":
-    case "tip_received":
-      return "/earnings";
-    case "credits_low":
-    case "trial_ending":
-      return "/communities?topup=1";
-    case "content_published":
-    case "content_rejected":
-      return "/create/library";
-    // KYC is the creator EARNING gate (BVN/NIN, ID document, payout bank) and
-    // it lives at /kyc. /profile/verification is the public badge ladder — a
-    // different system with a different table and different endpoints — so
-    // this sent every "your payout verification changed" notification to a
-    // screen that says nothing about KYC at all.
-    case "kyc_verified":
-      return "/kyc";
-    default:
-      return "/notifications";
-  }
-}
-
-function NotificationRow({ notification: n }: { notification: AppNotification }) {
-  const router = useRouter();
-  const time = new Date(n.createdAt);
-  const timeLabel =
-    time.toLocaleDateString("en-NG", { day: "numeric", month: "short" }) === new Date().toLocaleDateString("en-NG", { day: "numeric", month: "short" })
-      ? time.toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit" })
-      : time.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
-
-  return (
-    <div
-      className={`flex gap-3 rounded-card border ${toneBorderClass[n.tone]} bg-card px-4 py-3.5 ${
-        n.read ? "" : "bg-accent-tint/40"
-      }`}
-    >
-      <span className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full border border-hairline bg-tag ${toneIconClass[n.tone]}`}>
-        <Icon name={toneIcon[n.tone]} size={17} />
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex items-center gap-2">
-          <span className="min-w-0 flex-1 truncate text-[14.5px] font-semibold">{n.title}</span>
-          {!n.read ? <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-accent" aria-label="Unread" /> : null}
-        </span>
-        {n.amount != null ? (
-          <span className="text-[13px] font-semibold text-accent [font-feature-settings:var(--font-feature-tabular)]">
-            {formatNaira(n.amount)}
-          </span>
-        ) : null}
-        {n.creditsCount != null ? (
-          <span className="text-[13px] font-semibold text-warning">{formatCredits(n.creditsCount)}</span>
-        ) : null}
-        <span className="text-[13px] leading-relaxed text-text-secondary">{n.body}</span>
-        <span className="text-[11.5px] text-text-muted [font-feature-settings:var(--font-feature-tabular)]">
-          {timeLabel}
-        </span>
-        {n.actionLabel ? (
-          <span className="mt-1">
-            <button
-              type="button"
-              onClick={() => router.push(actionHrefFor(n))}
-              className={`inline-flex h-[32px] items-center rounded-button px-3.5 text-[12.5px] font-semibold ${
-                n.kind === "dm_deadline"
-                  ? "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press"
-                  : "border border-hairline bg-tag text-text-secondary hover:bg-surface-hover active:bg-surface-press"
-              }`}
-            >
-              {n.actionLabel}
-            </button>
-          </span>
-        ) : null}
-      </span>
-    </div>
   );
 }

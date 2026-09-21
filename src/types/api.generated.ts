@@ -4567,6 +4567,9 @@ export interface components {
                     creditsCount: number | null;
                     actionLabel: string | null;
                     read: boolean;
+                    imageUrl: string | null;
+                    actionHref: string | null;
+                    campaignId: string | null;
                 }[];
                 pagination: components["schemas"]["PaginationMeta"];
             };
@@ -5710,9 +5713,9 @@ export interface components {
             id: string;
             /** @enum {string} */
             kind: "open" | "private";
+            imageUrl: string | null;
             description: string;
             hostWawuId: string;
-            imageUrl: string | null;
             memberCount: number;
             messagesToday: number;
         };
@@ -5750,11 +5753,11 @@ export interface components {
         };
         CommunityMessage: {
             id: string;
+            imageUrl: string | null;
             senderWawuId: string;
             text: string | null;
             /** Format: date-time */
             sentAt: string;
-            imageUrl: string | null;
             communityId: string;
             costInCredits: number;
             sender?: components["schemas"]["CommunityMessageSender"];
@@ -6212,13 +6215,18 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
+                        withdrawalsEnabled: boolean;
+                        withdrawalsBlockedReason: string | null;
+                        status: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        paidInNgn: number;
+                        pendingInNgn: number;
+                        withdrawnNgn: number;
                         accountReference: string;
                         accountNumber: string | null;
                         bankName: string | null;
                         availableNgn: number;
-                        status: string;
-                        /** Format: date-time */
-                        createdAt: string;
                     };
                 };
             };

@@ -30,7 +30,21 @@ const PUBLIC_PATHS = ["/terms", "/privacy/policy"];
  * under it is public by construction; `/privacy` on its own stays gated,
  * which is why the privacy policy is an exact match above and not a prefix.
  */
-const PUBLIC_PREFIXES = ["/wawu/"];
+const PUBLIC_PREFIXES = ["/wawu/", "/content/"];
+
+/*
+  `/content/` is here because build brief C3 puts registration AT CHECKOUT,
+  and it was being demanded three steps earlier: a visitor who followed a
+  shared store link and tapped a piece was bounced to /sign-in, so they could
+  see that the work existed and never look at it.
+
+  It is safe because the SERVER decides what an anonymous caller sees, not
+  this list. `getContent` reads GET /content/public/:id when there is no
+  token, which passes no requester, so a paid piece comes back locked with no
+  `fullAssetUrl` and anything that is not `live` 404s. The visitor gets the
+  title, the preview and the price - what they need to decide - and the
+  unlock itself still demands an account.
+*/
 
 export function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;

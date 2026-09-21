@@ -39,12 +39,29 @@ interface RealProfileContentRow {
  * whole of "paid stays locked until paid for": nothing on this screen
  * decides it, it only renders what the backend already decided.
  */
-async function getCreatorContent(wawuId: string): Promise<ProfileContentItem[]> {
+async function getCreatorContent(
+  wawuId: string,
+  /**
+   * `true` when nobody is signed in: a shared store link (build brief C3)
+   * opens somebody's shop with no session at all.
+   *
+   * The authed route 401s an anonymous caller, so the store used to render
+   * identity and cross-sell over an EMPTY SHELF - a page whose whole job is
+   * to sell somebody's work could not show any of it. The public route
+   * returns the same rows with no requester, which means every paid piece
+   * comes back locked and no `fullAssetUrl` is served. Free work is
+   * unlocked to everybody either way, which is what free means.
+   */
+  anonymous = false,
+): Promise<ProfileContentItem[]> {
+  const path = anonymous
+    ? `/api/hub/content/public/creator/${wawuId}/content?perPage=50`
+    : `/api/hub/users/${wawuId}/content?perPage=50`;
   try {
-    const { data } = await apiFetchPaginated<RealProfileContentRow>(
-      `/api/hub/users/${wawuId}/content?perPage=50`,
-      { authed: true, cache: "no-store" },
-    );
+    const { data } = await apiFetchPaginated<RealProfileContentRow>(path, {
+      authed: !anonymous,
+      cache: "no-store",
+    });
     return data.map((row) => ({
       id: row.id,
       title: row.title,
@@ -349,7 +366,10 @@ export async function getStoreProfile(ref: string): Promise<CreatorProfile> {
 async function readPublicStore(id: string): Promise<CreatorProfile> {
   const [real, content] = await Promise.all([
     apiFetch<RealPublicCreatorProfile>(`/api/hub/users/public/${encodeURIComponent(id)}`),
-    getCreatorContent(id),
+    // Anonymous: this is the SHARED LINK path, where there is no session at
+    // all. The authed shelf read 401s here, which is why the store used to
+    // show identity and cross-sell over an empty shelf.
+    getCreatorContent(id, true),
   ]);
   return toCreatorProfile(real, content);
 }

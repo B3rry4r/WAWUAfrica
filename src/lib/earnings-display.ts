@@ -1,4 +1,4 @@
-import { formatNaira } from "@/lib/format";
+import { formatCredits, formatNaira } from "@/lib/format";
 import type { EarningsStream, EarningsSummary, EarningsSaleSource } from "@/types/earnings";
 
 /**
@@ -51,7 +51,7 @@ export function earningsStreamRows(summary: EarningsSummary | null): EarningsStr
       stream,
       label: STREAM_LABELS[stream],
       amount,
-      display: isCredits ? `${amount} credits` : formatNaira(amount),
+      display: isCredits ? formatCredits(amount) : formatNaira(amount),
       pct: isCredits || nairaTotal === 0 ? 0 : Math.round((amount / nairaTotal) * 100),
     };
   });
@@ -70,7 +70,9 @@ export function saleSourceLabel(source: EarningsSaleSource): string {
 
 /** Naira for every source except credits, which are a count. */
 export function saleAmountDisplay(source: EarningsSaleSource, amount: number): string {
-  return source === "community_credits" ? `${amount} credits` : formatNaira(amount);
+  // formatCredits, not a template string: one spent credit was rendering as
+  // "1 credits" on the recent-sales list.
+  return source === "community_credits" ? formatCredits(amount) : formatNaira(amount);
 }
 
 /** "2 hours ago" style relative time for a recent-sale row. */
