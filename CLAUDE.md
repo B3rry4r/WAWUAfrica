@@ -7,9 +7,9 @@ contracts in `docs/02_TECHNICAL_CONTEXT.md` as the target shape, not as live end
 
 ## The mobile app is the product, and this web app follows it
 - **The mobile app is the product and the authority.** Its repo is
-  `MOXN-AFRICA/wawu-wmt-mobile`; it is an Expo app (R-3, owner, 1 Oct 2026).
-  The backend changes to fit it. This web app follows it after launch
-  (`DECISIONS.md` in the mobile repo, section "Authority").
+  `MOXN-AFRICA/wawu-wmt-mobile`. The backend changes to fit it. This web app
+  follows it after launch (DECISIONS.md, Authority (owner, 1 Oct 2026), in the
+  mobile repo). The app is built with Expo (R-3, owner, 1 Oct 2026).
 - **Rulings live in the mobile repo's `DECISIONS.md`.** Every ruling id in
   this file (R-1 and so on) is from there. If a note here disagrees with a
   ruling, the ruling wins and the note gets corrected.
@@ -117,18 +117,30 @@ keeps its current behaviour until it follows after launch.
   2026). There is no "Move to wallet" step. This web app still gates earning
   on manual KYC through `creatorGates()`, with "uploading + KYC pending" as a
   normal state, until it follows the mobile app after launch.
-- **Upload limits follow the tick** (R-7, owner, 2 Oct 2026). Free accounts:
-  5 uploads and 1 GB. With a tick: 25 uploads, 10 GB and more reach. Enforced
-  server-side.
-- **Free content is allowed** (R-8, owner, 2 Oct 2026): a Paid/Free switch on
-  uploads, and ₦0 events. Free pieces count toward the upload limit, and fans
-  can still tip.
-- **There is no Shop** (R-2, owner, 1 Oct 2026), and creators don't sell
-  physical products yet (R-9, owner, 2 Oct 2026). Profile tabs are Content,
-  Services and About.
-- The three notes above replace "Maximum 5 items per account, counted across
-  products, content and services, every listing priced (brief B2: no free
-  content)".
+- **Maximum 5 items per account**, counted across products, content and services
+  together. Hard cap, enforced server-side. No free/paid slot split, because
+  every listing carries a price (brief B2: no free content).
+  This is what the web and the backend do today
+  (`MAX_ITEMS_PER_ACCOUNT = 5` in wawu-backend's
+  `src/common/creator-allowance.ts`). Two rulings change it for the mobile
+  app, and the web keeps the line above until it follows after launch:
+  - **Upload limits follow the tick** (R-7, owner, 2 Oct 2026): free accounts
+    get 5 uploads and 1 GB; with a tick, 25 uploads, 10 GB and more reach.
+    Ruled for the mobile app. Nothing enforces a tick tier or a storage limit
+    yet; the web still has the flat 5-item cap.
+  - **Free content is allowed** (R-8, owner, 2 Oct 2026): a Paid/Free switch
+    on uploads, and ₦0 events. Free pieces count toward the upload limit, and
+    fans can still tip. Ruled for the mobile app. The web still refuses ₦0
+    ("Set a price above ₦0 before publishing.", `src/lib/api/creator-content.ts`)
+    and `scripts/check-copy.mjs` still bans the word "free" in copy.
+- **There is no Shop** (R-2, owner, 1 Oct 2026). On the web it is closed
+  (`SHOP_LIVE = false`); removing it from the backend is task OPS-08.
+- **No Shop tab on profiles** (R-9, owner, 2 Oct 2026): creators don't sell
+  physical products yet, and profile tabs are Content, Services and About.
+  Ruled for the mobile app. The web's profile tabs are still Overview, plus
+  Content, Services and Events when the profile has them (`profileTabsFor()`
+  in `src/types/profile.ts`), and its 5-item cap still counts products,
+  until it follows after launch.
 - On this web app KYC is still manual review. Nigeria: BVN + NIN. Elsewhere:
   national-ID equivalent. A Naira wallet needs a Nigerian BVN; people without
   one get dollar and crypto accounts after launch (R-6, R-16).
