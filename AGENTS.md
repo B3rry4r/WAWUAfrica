@@ -128,8 +128,9 @@ keeps its current behaviour until it follows after launch.
     get 5 uploads and 1 GB; with a tick, 25 uploads, 10 GB and more reach.
     Ruled for the mobile app. Today the backend enforces a flat 5-item cap
     and a flat 2 GB storage quota per account, with no tick tier
-    (`STORAGE_BYTES_PER_ACCOUNT` in `src/common/creator-allowance.ts`, checked
-    before every upload is signed in `src/storage/storage.service.ts`).
+    (`STORAGE_BYTES_PER_ACCOUNT` in wawu-backend's
+    `src/common/creator-allowance.ts`, checked before every upload is signed
+    in its `src/storage/storage.service.ts`).
   - **Free content is allowed** (R-8, owner, 2 Oct 2026): a Paid/Free switch
     on uploads, and ₦0 events. Free pieces count toward the upload limit, and
     fans can still tip. Ruled for the mobile app. The web still refuses ₦0
