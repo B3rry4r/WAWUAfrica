@@ -5,7 +5,29 @@ content marketplace. Ground-up rebuild — it replaces the old post-feed app ent
 The backend is also being rewritten against the existing database, so treat API
 contracts in `docs/02_TECHNICAL_CONTEXT.md` as the target shape, not as live endpoints.
 
+## The mobile app is the product, and this web app follows it
+- **The mobile app is the product and the authority.** Its repo is
+  `MOXN-AFRICA/wawu-wmt-mobile`. The backend changes to fit it. This web app
+  follows it after launch (DECISIONS.md, Authority (owner, 1 Oct 2026), in the
+  mobile repo). The app is built with Expo (R-3, owner, 1 Oct 2026).
+- **Rulings live in the mobile repo's `DECISIONS.md`.** Every ruling id in
+  this file (R-1 and so on) is from there. If a note here disagrees with a
+  ruling, the ruling wins and the note gets corrected.
+- **How work is built and verified:** the mobile repo's `docs/WORKFLOW.md`. It
+  covers every repo a task touches, this one included. Task files for web work
+  live in the mobile repo's `tasks/`. Start those sessions with both repos
+  attached.
+- **Until launch, the web keeps working as built.** It stays on Flutterwave
+  (see the wallet note). Where a ruling changes how something works, the mobile
+  app builds it first and the web follows after launch. Web features the mobile
+  design doesn't draw are neither kept nor cut until the owner rules each one
+  (D14, task OPS-07).
+- "Mobile" in "Current phase" below means this web app's mobile-width layout,
+  not the mobile app.
+
 ## Read before writing code
+- The mobile repo's `DECISIONS.md` and `docs/WORKFLOW.md`. They outrank
+  everything below.
 - `docs/00_PLATFORM_MAP.md` — what the app is, what was cut
 - `docs/01_SPEC.md` — the monetization model as it stands today.
 - `docs/02_TECHNICAL_CONTEXT.md` — data model and API contracts
@@ -16,6 +38,9 @@ contracts in `docs/02_TECHNICAL_CONTEXT.md` as the target shape, not as live end
   17 desktop screens, and the flow canvas). Open them.
 
 ## Current phase
+**The mobile app comes first.** New product work is built there, and this web
+app follows it after launch (see the section above). Where the web stands:
+
 **Mobile is built and design-conformant** (audited against every mobile screen;
 product-rule violations, dead ends, and convention drift fixed — see git log).
 **Desktop is built, not pending.** This line used to say desktop "has not
@@ -30,11 +55,15 @@ compared to the built screen. Same account-type and gate rules as mobile.
 
 These are how the product currently works, so code matches itself — not rules to
 quote back at the product owner. If they ask for something that contradicts a
-line here, build it and update the line. The one line to raise before building
-is the wallet note: who custodies creator money decides whether a CBN licence
-is needed, so a change that puts WAWU in custody is worth checking rather than
-assuming.
-- Naira (₦) only. Never dollars.
+line here, build it and update the line. Licensing, custody and regulatory
+questions belong to the owner (R-1, owner, 1 and 2 Oct 2026): no task waits on
+them, and no task reopens them. This paragraph used to name the wallet note as
+the one line to check before building, because custody decided whether a CBN
+licence was needed; R-1 settled that. A note that cites a ruling id says what
+the ruling decided. Some of those describe the mobile app first, and the web
+keeps its current behaviour until it follows after launch.
+- Naira (₦) only at launch. Dollar and crypto accounts come after launch
+  (R-16, owner, 2 Oct 2026). Until then, never dollars.
 - **Revenue split is a flat 85/15, on every stream, with no exceptions.**
   Never invent a rate. WAWU Credits were the last exception, at 90/10; the
   product owner moved them to 85/15 on 21 Sep 2026 ("Credits follow 85 15"),
@@ -42,15 +71,27 @@ assuming.
   opposite and to warn against collapsing the two rates; that warning is
   retired, not merely ignored. There is also no Pro tier to earn a better
   rate with (see the subscription note below).
-- **Creators have a wallet; WAWU does not hold the money.** Each wallet is a
-  Flutterwave *payout subaccount*: an account at Flutterwave MFB in the
-  creator's own name, under Flutterwave's CBN banking licence. Flutterwave
-  custodies it, WAWU only instructs. That distinction is the whole point, and
-  it is what keeps the old concern answered rather than ignored: WAWU holding
-  a cashable balance itself would be a CBN licensing trigger in Nigeria.
-  Flutterwave's balance is authoritative; never sum one client-side or in the
-  hub and show it as the balance. (Built 5 Sep 2026, replacing the earlier
-  "no wallet today" note.)
+- **Wallets run on Fintava, under Loma Bank's licence** (R-1, owner, 1 and 2
+  Oct 2026). Fintava is the technology. The licence is Loma Bank's (Iyin Ekiti
+  MFB). Every WAWU wallet, Naira and crypto, rides on it. Fintava replaces
+  Flutterwave as the money rail. Legal and licensing are the owner's (see
+  above).
+  - **This web app stays on Flutterwave until after launch.** Its wallets
+    today are Flutterwave payout subaccounts (built 5 Sep 2026). Don't move
+    the web to Fintava or take Flutterwave out here before then: that is
+    after-launch work. Backend changes are additive, so nothing the web calls
+    changes behaviour (the protected route suite, task MONEY-01).
+  - **Money held between payer and payee sits in WAWU's merchant wallet**
+    (R-19, owner, 2 Oct 2026). Fintava can't reserve part of a customer's
+    balance, so paid DMs, tickets and bills move the money into WAWU's own
+    Fintava wallet, then on to the payee or back to the payer.
+  - **Fees: the user pays Fintava's fee plus WAWU's fee on top** (R-10, owner,
+    2 Oct 2026). For example, a bank send costs ₦40 (Fintava) + ₦25 (WAWU) =
+    ₦65. The fee quote shows the total, read from config, never from a design.
+  - **The provider's balance is the truth.** Never add up our own records,
+    client-side or in the hub, and show that as a balance.
+  - This replaces the 5 Sep 2026 note, which said each wallet was a
+    Flutterwave payout subaccount and that WAWU never holds the money.
 - **WAWU Credits render as a COUNT** ("48 credits"), never a naira value, never cashable.
 - **"WAWU Credits" is the name.** The build brief's monetisation table calls
   this "community chat tokens"; it is the same instrument, already built, and
@@ -68,13 +109,44 @@ assuming.
   with the referral codes that discounted them. Revenue now comes from discrete
   paid actions: verification, paid featuring, paid advertising, WAWU Credits
   for community chat. This replaced the earlier "a paid subscription unlocks uploading" note.
-- **ONE gate now, not two: manual KYC unlocks EARNING.** That gate is unchanged
-  and was always independent of payment. "Uploading + KYC pending" is a normal
-  state, not an edge case.
+- **Identity checks happen when someone opens a wallet, not at sign-up**
+  (R-6, owner, 2 Oct 2026). Sign-up is email and phone only. "Open your
+  wallet" starts the first time someone taps Wallet or anything that moves
+  money. Earning is not gated on it: a creator without a wallet keeps earning,
+  and the money waits and lands the moment they open one (R-11, owner, 2 Oct
+  2026). There is no "Move to wallet" step. This web app still gates earning
+  on manual KYC through `creatorGates()`, with "uploading + KYC pending" as a
+  normal state, until it follows the mobile app after launch.
 - **Maximum 5 items per account**, counted across products, content and services
   together. Hard cap, enforced server-side. No free/paid slot split, because
   every listing carries a price (brief B2: no free content).
-- KYC is manual review. Nigeria: BVN + NIN. Elsewhere: national-ID equivalent.
+  This is what the web and the backend do today
+  (`MAX_ITEMS_PER_ACCOUNT = 5` in wawu-backend's
+  `src/common/creator-allowance.ts`). Two rulings change it for the mobile
+  app, and the web keeps the line above until it follows after launch:
+  - **Upload limits follow the tick** (R-7, owner, 2 Oct 2026): free accounts
+    get 5 uploads and 1 GB; with a tick, 25 uploads, 10 GB and more reach.
+    Ruled for the mobile app. Today the backend enforces a flat 5-item cap
+    and a flat 2 GB storage quota per account, with no tick tier
+    (`STORAGE_BYTES_PER_ACCOUNT` in wawu-backend's
+    `src/common/creator-allowance.ts`, checked before every upload is signed
+    in its `src/storage/storage.service.ts`).
+  - **Free content is allowed** (R-8, owner, 2 Oct 2026): a Paid/Free switch
+    on uploads, and ₦0 events. Free pieces count toward the upload limit, and
+    fans can still tip. Ruled for the mobile app. The web still refuses ₦0
+    ("Set a price above ₦0 before publishing.", `src/lib/api/creator-content.ts`)
+    and `scripts/check-copy.mjs` still bans the word "free" in copy.
+- **There is no Shop** (R-2, owner, 1 Oct 2026). On the web it is closed
+  (`SHOP_LIVE = false`); removing it from the backend is task OPS-08.
+- **No Shop tab on profiles** (R-9, owner, 2 Oct 2026): creators don't sell
+  physical products yet, and profile tabs are Content, Services and About.
+  Ruled for the mobile app. The web's profile tabs are still Overview, plus
+  Content, Services and Events when the profile has them (`profileTabsFor()`
+  in `src/types/profile.ts`), and its 5-item cap still counts products,
+  until it follows after launch.
+- On this web app KYC is still manual review. Nigeria: BVN + NIN. Elsewhere:
+  national-ID equivalent. A Naira wallet needs a Nigerian BVN; people without
+  one get dollar and crypto accounts after launch (R-6, R-16).
 - WAWUBasket / WAWUBeauty are external apps. Handoff only — never rebuild their
   commerce engine.
 - No jobs, no gigs, no Opportunities section.
