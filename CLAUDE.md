@@ -126,8 +126,10 @@ keeps its current behaviour until it follows after launch.
   app, and the web keeps the line above until it follows after launch:
   - **Upload limits follow the tick** (R-7, owner, 2 Oct 2026): free accounts
     get 5 uploads and 1 GB; with a tick, 25 uploads, 10 GB and more reach.
-    Ruled for the mobile app. Nothing enforces a tick tier or a storage limit
-    yet; the web still has the flat 5-item cap.
+    Ruled for the mobile app. Today the backend enforces a flat 5-item cap
+    and a flat 2 GB storage quota per account, with no tick tier
+    (`STORAGE_BYTES_PER_ACCOUNT` in `src/common/creator-allowance.ts`, checked
+    before every upload is signed in `src/storage/storage.service.ts`).
   - **Free content is allowed** (R-8, owner, 2 Oct 2026): a Paid/Free switch
     on uploads, and ₦0 events. Free pieces count toward the upload limit, and
     fans can still tip. Ruled for the mobile app. The web still refuses ₦0
