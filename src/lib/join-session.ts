@@ -14,6 +14,9 @@
  */
 
 const KEY = "wawu.join.registration";
+const ABANDONED_KEY = "wawu.join.abandoned";
+/** How many walked-away-from references are remembered (the newest win). */
+const ABANDONED_KEEP = 8;
 
 export interface JoinResume {
   /** The registration's reference (the tx_ref). */
@@ -78,6 +81,42 @@ export const joinResume = {
       window.sessionStorage.removeItem(KEY);
     } catch {
       // Nothing to clear.
+    }
+  },
+};
+
+/**
+ * References the person chose to walk away from with "Start again", after the
+ * five minutes of checking found no payment. The server now gives every start
+ * a new reference. An older server (the deploy window) reused an unpaid
+ * registration for the same offer, phone and email, so a fresh form filled in
+ * with the same details could come back with the SAME reference. If a transfer
+ * landed late on that reference, a second window on it would charge it twice
+ * (and the second charge is invisible to the server). The page therefore never
+ * opens a payment window on a reference listed here. Like the resume record it
+ * holds references only, in sessionStorage, and a storage failure is not fatal.
+ */
+export const joinAbandoned = {
+  list(): string[] {
+    try {
+      const raw = window.sessionStorage.getItem(ABANDONED_KEY);
+      if (!raw) return [];
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(isReference).slice(-ABANDONED_KEEP) : [];
+    } catch {
+      return [];
+    }
+  },
+  has(reference: string): boolean {
+    return joinAbandoned.list().includes(reference);
+  },
+  add(reference: string): void {
+    if (!isReference(reference)) return;
+    try {
+      const next = [...joinAbandoned.list().filter((r) => r !== reference), reference].slice(-ABANDONED_KEEP);
+      window.sessionStorage.setItem(ABANDONED_KEY, JSON.stringify(next));
+    } catch {
+      // Non-fatal: the five-minute wait and the confirmation still stand in front of "Start again".
     }
   },
 };
