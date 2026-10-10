@@ -87,9 +87,10 @@ export const joinResume = {
 
 /**
  * References the person chose to walk away from with "Start again", after the
- * five minutes of checking found no payment. The server reuses an unpaid
+ * five minutes of checking found no payment. The server now gives every start
+ * a new reference. An older server (the deploy window) reused an unpaid
  * registration for the same offer, phone and email, so a fresh form filled in
- * with the same details can come back with the SAME reference. If a transfer
+ * with the same details could come back with the SAME reference. If a transfer
  * landed late on that reference, a second window on it would charge it twice
  * (and the second charge is invisible to the server). The page therefore never
  * opens a payment window on a reference listed here. Like the resume record it

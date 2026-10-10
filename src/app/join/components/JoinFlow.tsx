@@ -67,10 +67,12 @@ import { StateCard } from "./StateCard";
  *   3. preceded by one last ask of the status route (paid shows "You're
  *      registered"; an answer it cannot get keeps the person where they are),
  *   4. and it never opens a window on the reference it walked away from. The
- *      server reuses an unpaid registration for the same phone and email, so a
- *      new registration with the same details can come back with the old
- *      reference. That reference is remembered (joinAbandoned) and, if it
- *      comes back, no window opens: the page goes back to checking it.
+ *      server now gives every start a new reference, so with the current
+ *      server a start never comes back with the old one. The guard stays for
+ *      the deploy window: an older server reused an unpaid registration for
+ *      the same phone and email and handed back the old reference. That
+ *      reference is remembered (joinAbandoned) and, if it comes back, no
+ *      window opens: the page goes back to checking it.
  *
  * ── WHAT IS KEPT ───────────────────────────────────────────────────────────
  * The reference (and the transaction id once there is one) in sessionStorage,
@@ -561,9 +563,11 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       });
       reference = started.reference;
 
-      // The server reuses an unpaid registration for the same phone and email, so
-      // starting again can come back with the reference the person walked away
-      // from, and money may have landed on it since. Never open a window on it.
+      // The server now gives every start a new reference. An older server (the
+      // deploy window) reused an unpaid registration for the same phone and
+      // email, so starting again could come back with the reference the person
+      // walked away from, and money may have landed on it since. Never open a
+      // window on it.
       if (joinAbandoned.has(started.reference)) {
         joinResume.set({ reference });
         payLock.current = false;
