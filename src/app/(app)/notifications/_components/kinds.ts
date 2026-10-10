@@ -97,6 +97,10 @@ export function actionHrefFor(n: AppNotification): string {
       return "/kyc";
     case "verify_reminder":
       return "/profile/verification";
+    // The decision on opening a wallet: the page reads where the person stands
+    // (approved, refused with what to fix, stopped) and shows exactly that.
+    case "identity_review":
+      return "/wallet/open";
     default:
       return "/notifications";
   }

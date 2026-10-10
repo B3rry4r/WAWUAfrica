@@ -34,6 +34,10 @@
  *                              VerificationReminderService, at most once per
  *                              account per fortnight, and it stops the day the
  *                              account is verified.
+ * 14. identity_review        — the decision on opening a wallet (approved, refused
+ *                              with what to fix, or stopped), written once per
+ *                              decision by the wallet provider's review. Opens
+ *                              `/wallet/open`, which reads where the person stands.
  */
 export type NotificationKind =
   | "dm_deadline"
@@ -47,7 +51,8 @@ export type NotificationKind =
   | "new_follower"
   | "tip_received"
   | "campaign"
-  | "verify_reminder";
+  | "verify_reminder"
+  | "identity_review";
 
 export type NotificationTone = "danger" | "accent" | "success" | "warning" | "info" | "neutral";
 
