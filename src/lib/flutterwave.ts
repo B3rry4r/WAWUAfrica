@@ -338,7 +338,13 @@ export function shouldRedirectToCheckout(config: FlutterwaveChargeConfig): boole
 export async function openFlutterwaveCheckout(
   config: FlutterwaveChargeConfig,
   customer: CheckoutCustomer,
-  labels: { title: string; description: string },
+  /**
+   * `logo` is optional: an absolute URL for the picture the window shows.
+   * Omitted, it is WAWU's own, as it always was, so every other flow's window
+   * is unchanged. A flow with a different brand (the registration page at
+   * /join) names its own.
+   */
+  labels: { title: string; description: string; logo?: string },
   onReturn?: CheckoutReturn,
   options?: {
     /**
@@ -387,7 +393,7 @@ export async function openFlutterwaveCheckout(
       customizations: {
         title: labels.title,
         description: labels.description,
-        logo: typeof window !== "undefined" ? `${window.location.origin}/wawu-logo-white.png` : undefined,
+        logo: labels.logo ?? (typeof window !== "undefined" ? `${window.location.origin}/wawu-logo-white.png` : undefined),
       },
       ...(config.redirectUrl ? { redirect_url: config.redirectUrl } : {}),
       callback: (response) => {

@@ -590,7 +590,13 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       const result = await openFlutterwaveCheckout(
         { ...started.checkout, redirectUrl: `${window.location.origin}/join/paid` },
         { email: fields.email.trim().toLowerCase(), name: fields.fullName.trim() },
-        { title: "WAWU", description: "Event registration fee" },
+        {
+          title: "WHO MADE THIS?",
+          description: "Pre-registration",
+          // The Who Made This lockup, from the page's own origin (a file at the root of public/,
+          // which site mode serves). Without it the window would show WAWU's logo.
+          logo: `${window.location.origin}/who-made-this-ink.png`,
+        },
         undefined,
         { scriptTimeoutMs: SCRIPT_TIMEOUT_MS },
       );
