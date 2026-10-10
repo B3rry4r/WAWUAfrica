@@ -57,3 +57,10 @@ a { transition: background-color var(--dur-base) var(--ease-soft),
 @media (prefers-reduced-motion: reduce) {
   a { transition: none; }
 }
+
+/*
+  Native date pickers draw their calendar and icon in the colour scheme they
+  are told. Without this the dark default shows a dark icon on a dark field.
+*/
+input[type="date"] { color-scheme: dark; }
+[data-theme="light"] input[type="date"] { color-scheme: light; }

@@ -17,9 +17,11 @@ contracts in `docs/02_TECHNICAL_CONTEXT.md` as the target shape, not as live end
   covers every repo a task touches, this one included. Task files for web work
   live in the mobile repo's `tasks/`. Start those sessions with both repos
   attached.
-- **Until launch, the web keeps working as built.** It stays on Flutterwave
-  (see the wallet note). Where a ruling changes how something works, the mobile
-  app builds it first and the web follows after launch. Web features the mobile
+- **Until launch, the web keeps working as built, except the wallet.** The
+  owner put the website wallet first (R-44, R-45): opening a wallet on Nuvion is
+  built here now (see the wallet note). Everywhere else, where a ruling changes
+  how something works, the mobile app builds it first and the web follows after
+  launch. Web features the mobile
   design doesn't draw are neither kept nor cut until the owner rules each one
   (D14, task OPS-07).
 - "Mobile" in "Current phase" below means this web app's mobile-width layout,
@@ -71,27 +73,35 @@ keeps its current behaviour until it follows after launch.
   opposite and to warn against collapsing the two rates; that warning is
   retired, not merely ignored. There is also no Pro tier to earn a better
   rate with (see the subscription note below).
-- **Wallets run on Fintava, under Loma Bank's licence** (R-1, owner, 1 and 2
-  Oct 2026). Fintava is the technology. The licence is Loma Bank's (Iyin Ekiti
-  MFB). Every WAWU wallet, Naira and crypto, rides on it. Fintava replaces
-  Flutterwave as the money rail. Legal and licensing are the owner's (see
-  above).
-  - **This web app stays on Flutterwave until after launch.** Its wallets
-    today are Flutterwave payout subaccounts (built 5 Sep 2026). Don't move
-    the web to Fintava or take Flutterwave out here before then: that is
-    after-launch work. Backend changes are additive, so nothing the web calls
-    changes behaviour (the protected route suite, task MONEY-01).
-  - **Money held between payer and payee sits in WAWU's merchant wallet**
-    (R-19, owner, 2 Oct 2026). Fintava can't reserve part of a customer's
-    balance, so paid DMs, tickets and bills move the money into WAWU's own
-    Fintava wallet, then on to the payee or back to the payer.
-  - **Fees: the user pays Fintava's fee plus WAWU's fee on top** (R-10, owner,
-    2 Oct 2026). For example, a bank send costs ₦40 (Fintava) + ₦25 (WAWU) =
-    ₦65. The fee quote shows the total, read from config, never from a design.
+- **Wallets run on Nuvion** (R-39, owner, 6 Oct 2026; R-45, owner, 8 Oct
+  2026: "Nuvion is the go-to"). Nuvion is licensed in Nigeria (from Nuvion
+  directly; not to be re-raised). One setting (`WALLET_PROVIDER`) picks the
+  provider and rollback is changing it; Fintava is switched off, not deleted,
+  and stays only for bills, which are off at launch (R-42). Naira first. Money
+  comes in by bank transfer only, into the person's own account number: there
+  is no card or USSD top-up (R-42, R-44).
+  - **Opening a wallet is built on the website** (WEBPAY-01, R-44: payments on
+    the web are the same as the app, through the same Hub routes). The route is
+    `/wallet/open`, in the focused layout, and every call goes through
+    `src/lib/api/money.ts`. The steps are your details (BVN, NIN, ID, proof of
+    address type), your documents (an ID with its back and a proof of address,
+    checked on the page against the server's own limits first), the hosted
+    selfie (drawn only when the server has it switched on), the review, the
+    account number and the transaction PIN. The step is always read from the
+    server, never remembered by the page. A BVN, NIN, ID number, PIN or file
+    goes to its own route and nowhere else: not storage, not a log, not a URL.
+    A person outside Nigeria is never asked for a BVN or NIN (dollar wallets
+    are NUV-09, later). The wallet screen sends a person with no wallet there.
   - **The provider's balance is the truth.** Never add up our own records,
     client-side or in the hub, and show that as a balance.
-  - This replaces the 5 Sep 2026 note, which said each wallet was a
-    Flutterwave payout subaccount and that WAWU never holds the money.
+  - **Held money** (paid questions, tickets) moves through a WAWU operational
+    account on Nuvion (R-42).
+  - **Fees and limits are settings** filled in when Nuvion answers (R-42), never
+    a literal in code or copy.
+  - **The old Flutterwave payout wallet is still here.** `/api/hub/wallet`, its
+    module (`src/lib/api/wallet.ts`) and its page content stay untouched until
+    WALLET-30 removes them; the wallet screen shows them as before for anyone
+    who has one.
 - **WAWU Credits render as a COUNT** ("48 credits"), never a naira value, never cashable.
 - **"WAWU Credits" is the name.** The build brief's monetisation table calls
   this "community chat tokens"; it is the same instrument, already built, and
@@ -101,7 +111,10 @@ keeps its current behaviour until it follows after launch.
   silly trials"). Every metered community message costs a credit, and a sender
   with none is asked to buy some. Balances already granted were untouched: the
   free allowance was withdrawn, not the credits.
-- No DRM, no screenshot-blocking, no liveness/Face-ID. These do not exist in this product.
+- No DRM, no screenshot-blocking, no Face-ID. These do not exist in this
+  product. The one liveness check is the identity partner's own hosted selfie
+  page while opening a wallet (R-39), and it is off unless the server switches
+  it on: the page draws that step only when it is on.
 - **Creator is an ACCOUNT TYPE**, not a trust-tier badge or an earned level.
 - **There is no subscription and no creator tier** (product-owner reversal,
   20 Sep 2026, build brief B1). Registration, profile creation and listing are
@@ -144,9 +157,10 @@ keeps its current behaviour until it follows after launch.
   Content, Services and Events when the profile has them (`profileTabsFor()`
   in `src/types/profile.ts`), and its 5-item cap still counts products,
   until it follows after launch.
-- On this web app KYC is still manual review. Nigeria: BVN + NIN. Elsewhere:
-  national-ID equivalent. A Naira wallet needs a Nigerian BVN; people without
-  one get dollar and crypto accounts after launch (R-6, R-16).
+- On this web app creator KYC is still manual review. Nigeria: BVN + NIN.
+  Elsewhere: national-ID equivalent. Opening a wallet is a separate check, run
+  by the wallet provider's review (see the wallet note). A Naira wallet needs a
+  Nigerian BVN and NIN; people without them get dollar accounts later (NUV-09).
 - WAWUBasket / WAWUBeauty are external apps. Handoff only — never rebuild their
   commerce engine.
 - No jobs, no gigs, no Opportunities section.

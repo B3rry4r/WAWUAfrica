@@ -37,6 +37,9 @@ const OWN_HEADER_ROUTES = [
   "/earnings",
   "/kyc",
   "/onboarding",
+  // Opening a wallet draws its own FlowHeader. NOT "/wallet" itself: that is
+  // the wallet screen and keeps the global header.
+  "/wallet/open",
   // Both render a ScreenHeader (now FlowHeader) and were stacking under the
   // global mobile header. NOT "/explore" itself — that is a nav destination
   // and keeps the global header.

@@ -827,3 +827,52 @@ credits figure. The two credits kinds render exactly as they did, through
 a copy pass over two notification bodies and one settings caption, and it is
 small. It is not small if the answer is "different instrument", which is
 precisely why it is a question and not a guess.
+
+---
+
+## D18. WEBPAY-01: opening a wallet on the website
+
+**Chosen.** One route, `/wallet/open`, in the focused layout. The page never
+remembers a step: it reads `GET /money/wallet` (and the documents and the
+selfie beside it while they matter) on every visit and draws what the server
+says, so a reload, a return from the hosted selfie and a second browser all
+land on the same step. The steps are the details form, the documents, the
+selfie (drawn only when the server has it switched on), the review, the account
+number and the PIN. The wallet screen sends a person with no wallet into it,
+and offers the next step to a person part way through.
+
+**Rejected.** A step counter kept in the page or in storage. It would disagree
+with the server after a refusal, a correction or a second device, and a stored
+step is one more place a person's data could be left behind.
+
+**Choices that carry a reason.**
+- **No mock fallback in `src/lib/api/money.ts`.** A pretend opening that
+  "approves" with nothing behind it is the false success `client.ts` warns
+  about for anything touching money. With no backend the screens show the
+  unreachable state.
+- **The BVN, NIN and ID number live only in the form's state.** They show
+  their last 4 once typed, go in the one call that sends them, and are cleared
+  when the server has taken them. A correction after a refusal starts with the
+  numbers empty and the rest kept for that visit only.
+- **The two sides of an ID are held in the page until the person sends them.**
+  The server takes both in one request and keeps no copy of a file to wait for
+  the other side. `FilePicker` gained a `hold` prop for this (choose, check,
+  hand up; nothing uploaded), rather than a second picker.
+- **Files are checked on the page against the limits the server states**
+  (`maxBytes`, `acceptedTypes` from `GET /money/identity/documents`), never
+  against numbers typed in here. The server still reads the bytes and has the
+  last word; each of its refusals is shown from its `reason.code`.
+- **A person outside Nigeria is never asked for a BVN or NIN.** The country
+  comes first; any other country, "I don't have a Nigerian BVN" and a phone the
+  server says is not Nigerian all end at "Not available yet", with no field
+  drawn. Dollar wallets are NUV-09, later.
+- **`Select` is a new shared primitive.** The verification flow and sign-up
+  each wrote the same native select by hand; a third copy would have been the
+  drift `docs/05_CONVENTIONS.md` forbids.
+- **The wallet screen sends a person to `/wallet/open` only when nothing has
+  been sent and the old payout wallet has nothing to show.** A creator with a
+  payout wallet keeps it, with the opening offered above it.
+
+**Not done, deliberately.** Nothing for adding money, paying or the balance
+(WEBPAY-02 and later), no dollar wallet, no card. The old Flutterwave module
+and its screen are untouched until WALLET-30.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   getWallet,
   getWalletHistory,
@@ -9,8 +10,11 @@ import {
   type WalletEntry,
 } from "@/lib/api/wallet";
 import { describeError } from "@/lib/api/errors";
+import { getMoneyWallet, type MoneyWallet } from "@/lib/api/money";
+import { stageOf } from "@/lib/wallet-opening";
 import { formatNaira } from "@/lib/format";
 import { Button, Callout, Icon, Skeleton, StatusPill } from "@/components/ui";
+import { OpenWalletEntry } from "./OpenWalletEntry";
 import { WithdrawSheet } from "./WithdrawSheet";
 
 /**
@@ -42,6 +46,32 @@ export function WalletScreen() {
   const [error, setError] = useState<string | null>(null);
   const [withdrawing, setWithdrawing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  /**
+   * The wallet the Hub's money routes know of: null until read, and null if the
+   * read fails (this screen then behaves exactly as it did before). It decides
+   * whether a person with no wallet is sent into opening one.
+   */
+  const [money, setMoney] = useState<MoneyWallet | null>(null);
+  const [moneyRead, setMoneyRead] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    getMoneyWallet()
+      .then((w) => alive && setMoney(w))
+      .catch(() => alive && setMoney(null))
+      .finally(() => alive && setMoneyRead(true));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // No wallet of any kind and nothing sent yet: this screen has nothing to
+  // show, so it sends the person to where a wallet is opened.
+  const sendToOpening = !loading && moneyRead && money !== null && notReady !== null && stageOf(money) === "details";
+  useEffect(() => {
+    if (sendToOpening) router.replace("/wallet/open");
+  }, [sendToOpening, router]);
 
   /**
    * Hands over the account number.
@@ -86,7 +116,7 @@ export function WalletScreen() {
     void load();
   }, [load]);
 
-  if (loading) {
+  if (loading || !moneyRead || sendToOpening) {
     return (
       <div className={PAGE}>
         <Skeleton className="h-[188px] w-full" />
@@ -109,9 +139,14 @@ export function WalletScreen() {
         </Button>
       </div>
 
+      {/* Where a wallet is opened, and where an opening that is part way carries on.
+          Only drawn for a person whose wallet the Hub's money routes run. */}
+      {money ? <OpenWalletEntry wallet={money} /> : null}
+
       {/* Not an error: an account that cannot have a wallet yet, told what
-          would change that. */}
-      {notReady ? (
+          would change that. Not shown where the money routes open a wallet
+          for anyone: there it isn't true. */}
+      {notReady && money?.openingFlow !== "review" ? (
         <Callout tone="info" title="Wallets come with a creator account">
           <p className="m-0">{notReady}</p>
           <div className="mt-[12px]">

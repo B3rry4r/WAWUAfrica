@@ -27,14 +27,30 @@ export class ApiError extends Error {
   readonly code?: string;
   /** The backend's own explanation, verbatim — undefined when it sent none. */
   readonly serverMessage?: string;
+  /**
+   * The money routes' structured refusal (`reason` in the error envelope):
+   * a stable `code` to switch on, never the sentence, plus the few numbers a
+   * code can carry (`retryAfterSeconds`, `triesLeft`). Undefined for every
+   * route that does not send one.
+   */
+  readonly reason?: ApiErrorReason;
 
-  constructor(message: string, status: number, code?: string, serverMessage?: string) {
+  constructor(message: string, status: number, code?: string, serverMessage?: string, reason?: ApiErrorReason) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.serverMessage = serverMessage;
+    this.reason = reason;
   }
+}
+
+/** The `reason` object of a money refusal: see docs/contract/CONVENTIONS.md section 3 in the backend. */
+export interface ApiErrorReason {
+  code: string;
+  message?: string;
+  retryAfterSeconds?: number;
+  triesLeft?: number;
 }
 
 /**
@@ -101,6 +117,11 @@ interface ApiRequestOptions extends Omit<RequestInit, "body"> {
   token?: string;
   /** Override the origin this call hits (default: API_BASE from ./config). Used to call WAWU ID directly. */
   baseUrl?: string;
+  /**
+   * Overrides the 8 second wait for an answer. A file upload moves megabytes
+   * before the server can reply, so it needs longer than a JSON read does.
+   */
+  timeoutMs?: number;
 }
 
 /** Every Hub API success response wraps its payload as {statusCode, message, data}. */
@@ -229,7 +250,9 @@ export async function apiFetchPaginated<T>(
  * a bare status page — so the caller can tell "the server explained itself"
  * apart from "the server said nothing", rather than inventing a sentence.
  */
-async function readErrorBody(res: Response): Promise<{ message?: string; code?: string }> {
+async function readErrorBody(
+  res: Response,
+): Promise<{ message?: string; code?: string; reason?: ApiErrorReason }> {
   let data: unknown;
   try {
     data = await res.json();
@@ -237,7 +260,7 @@ async function readErrorBody(res: Response): Promise<{ message?: string; code?: 
     return {};
   }
   if (typeof data !== "object" || data === null) return {};
-  const body = data as { message?: unknown; code?: unknown; error?: unknown };
+  const body = data as { message?: unknown; code?: unknown; error?: unknown; reason?: unknown };
   let message: string | undefined;
   if (typeof body.message === "string" && body.message.trim()) message = body.message.trim();
   else if (Array.isArray(body.message)) {
@@ -245,25 +268,42 @@ async function readErrorBody(res: Response): Promise<{ message?: string; code?: 
     if (parts.length) message = parts.join(". ");
   } else if (typeof body.error === "string" && body.error.trim()) message = body.error.trim();
   const code = typeof body.code === "string" ? body.code : undefined;
-  return { message, code };
+  return { message, code, reason: readReason(body.reason) };
+}
+
+/** Keeps only the parts of a money refusal's `reason` the client switches on. */
+function readReason(raw: unknown): ApiErrorReason | undefined {
+  if (typeof raw !== "object" || raw === null) return undefined;
+  const r = raw as { code?: unknown; message?: unknown; retryAfterSeconds?: unknown; triesLeft?: unknown };
+  if (typeof r.code !== "string" || !r.code) return undefined;
+  return {
+    code: r.code,
+    message: typeof r.message === "string" ? r.message : undefined,
+    retryAfterSeconds: typeof r.retryAfterSeconds === "number" ? r.retryAfterSeconds : undefined,
+    triesLeft: typeof r.triesLeft === "number" ? r.triesLeft : undefined,
+  };
 }
 
 /** Shared fetch + timeout + auth + error-handling core for apiFetch/apiFetchPaginated. */
 async function rawFetch(path: string, options: ApiRequestOptions, isRetry = false): Promise<unknown> {
   if (USE_MOCKS) throw new MockModeError();
 
-  const { body, authed, token, baseUrl, ...rest } = options;
+  const { body, authed, token, baseUrl, timeoutMs, ...rest } = options;
   const isAuthedCall = Boolean(authed || token);
 
+  // A FormData body is sent as it is and the browser writes the multipart
+  // Content-Type itself, boundary included; setting it by hand would drop the
+  // boundary and the server could not read the parts.
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
   const headers = new Headers(rest.headers);
-  if (body !== undefined) headers.set("Content-Type", "application/json");
+  if (body !== undefined && !isForm) headers.set("Content-Type", "application/json");
   if (isAuthedCall) {
     const sessionToken = token ?? sessionStorage.getToken();
     if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs ?? REQUEST_TIMEOUT_MS);
 
   let res: Response;
   try {
@@ -271,7 +311,7 @@ async function rawFetch(path: string, options: ApiRequestOptions, isRetry = fals
       ...rest,
       headers,
       signal: controller.signal,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
     });
   } catch (e) {
     // fetch only rejects when the request never completed — there is no
@@ -304,8 +344,8 @@ async function rawFetch(path: string, options: ApiRequestOptions, isRetry = fals
     // server's reason in exactly the same envelope a 200 does
     // ({statusCode, message, data}) — dropping it is what left the UI with
     // nothing to say but "check your connection".
-    const { message: serverMessage, code } = await readErrorBody(res);
-    throw new ApiError(serverMessage ?? `Request failed (${res.status})`, res.status, code, serverMessage);
+    const { message: serverMessage, code, reason } = await readErrorBody(res);
+    throw new ApiError(serverMessage ?? `Request failed (${res.status})`, res.status, code, serverMessage, reason);
   }
 
   if (res.status === 204) return undefined;

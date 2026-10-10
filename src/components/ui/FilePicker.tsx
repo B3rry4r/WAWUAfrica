@@ -25,21 +25,47 @@ function humanSize(bytes: number): string {
   where an upload flow should be asking for one thing only.
 */
 
-export interface FilePickerProps {
-  /** Where the object is stored. Must be one the backend allows. */
-  folder: UploadFolder;
+interface FilePickerBaseProps {
   /** `accept` for the underlying input, e.g. "image/*,video/mp4". */
   accept?: string;
   label: string;
   hint?: string;
-  /** Fires with the stored file once the upload genuinely completes. */
-  onUploaded: (file: UploadedFile) => void;
   /** Fires when the chosen file is removed. */
   onCleared?: () => void;
   /** Offers a camera capture on mobile (used by KYC ID capture). */
   capture?: boolean;
   disabled?: boolean;
 }
+
+/**
+ * HOLD MODE: the picker chooses and checks a file, and the caller sends it.
+ *
+ * Opening a wallet sends the two sides of an ID in one request, so a front
+ * cannot be uploaded the moment it is picked: the caller has to hold it until
+ * the back is chosen too. In this mode nothing is uploaded here. The file is
+ * checked against `check` (a type and size test the caller supplies, from the
+ * limits the server stated) and handed up; the row shows it as ready to send.
+ */
+export interface FilePickerHold {
+  /** The file the caller is holding, or null. The caller owns it. */
+  file: File | null;
+  /** The chosen file, after `check` found nothing wrong; null when it is removed. */
+  onChange: (file: File | null) => void;
+  /** Why a chosen file can't go, or null when it can. Runs before `onChange`. */
+  check?: (file: File) => string | null;
+}
+
+export type FilePickerProps = FilePickerBaseProps &
+  (
+    | {
+        /** Where the object is stored. Must be one the backend allows. */
+        folder: UploadFolder;
+        /** Fires with the stored file once the upload genuinely completes. */
+        onUploaded: (file: UploadedFile) => void;
+        hold?: undefined;
+      }
+    | { hold: FilePickerHold; folder?: undefined; onUploaded?: undefined }
+  );
 
 /**
  * The one real file input in the app.
@@ -57,6 +83,7 @@ export function FilePicker({
   label,
   hint,
   onUploaded,
+  hold,
   onCleared,
   capture = false,
   disabled = false,
@@ -87,6 +114,7 @@ export function FilePicker({
   const [lastFile, setLastFile] = useState<File | null>(null);
 
   const send = async (file: File) => {
+    if (!folder || !onUploaded) return;
     const controller = new AbortController();
     abortRef.current = controller;
     setError(null);
@@ -111,6 +139,12 @@ export function FilePicker({
     // Reset so re-picking the same file still fires a change event.
     e.target.value = "";
     if (!file) return;
+    if (hold) {
+      const problem = hold.check?.(file) ?? null;
+      setError(problem);
+      if (!problem) hold.onChange(file);
+      return;
+    }
     setLastFile(file);
     await send(file);
   };
@@ -124,8 +158,29 @@ export function FilePicker({
   const clear = () => {
     setUploaded(null);
     setError(null);
+    hold?.onChange(null);
     onCleared?.();
   };
+
+  // A held picture is shown back to the person (a blurred or cropped shot is
+  // caught here, not after a rejection). The object URL is freed when the file
+  // changes or the picker goes.
+  const heldFile = hold?.file ?? null;
+  const [heldPreview, setHeldPreview] = useState<string | null>(null);
+  useEffect(() => {
+    if (!heldFile || !heldFile.type.startsWith("image/")) {
+      setHeldPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(heldFile);
+    setHeldPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [heldFile]);
+  const chosen: { name: string; size: number; note: string } | null = heldFile
+    ? { name: heldFile.name, size: heldFile.size, note: "ready to send" }
+    : uploaded
+      ? { name: uploaded.name, size: uploaded.size, note: "uploaded" }
+      : null;
 
   return (
     <div className="flex flex-col gap-[10px]">
@@ -139,19 +194,29 @@ export function FilePicker({
         tabIndex={-1}
       />
 
-      {uploaded ? (
+      {chosen ? (
         <div className="flex items-center gap-[12px] rounded-[var(--radius-input)] border border-[var(--border-decor)] bg-[var(--decor-tint)] p-[13px_14px]">
-          <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[var(--surface-card)]">
-            <Icon name="Check" size={17} color="var(--accent)" strokeWidth={2.6} />
-          </span>
+          {heldPreview ? (
+            // A local blob URL of the person's own picture: next/image has nothing to optimise here.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={heldPreview}
+              alt=""
+              className="h-[38px] w-[38px] shrink-0 rounded-[11px] border border-hairline object-cover"
+            />
+          ) : (
+            <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[var(--surface-card)]">
+              <Icon name="Check" size={17} color="var(--accent)" strokeWidth={2.6} />
+            </span>
+          )}
           <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-            <span className="truncate text-[14px] font-semibold text-[var(--text-primary)]">{uploaded.name}</span>
-            <span className="text-[12px] text-[var(--text-muted)]">{humanSize(uploaded.size)} · uploaded</span>
+            <span className="truncate text-[14px] font-semibold text-[var(--text-primary)]">{chosen.name}</span>
+            <span className="text-[12px] text-[var(--text-muted)]">{humanSize(chosen.size)} · {chosen.note}</span>
           </span>
           <button
             type="button"
             onClick={clear}
-            aria-label={`Remove ${uploaded.name}`}
+            aria-label={`Remove ${chosen.name}`}
             className="grid h-[32px] w-[32px] shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--text-muted)] hover:bg-state-hover hover:text-danger active:bg-state-press"
           >
             <Icon name="X" size={16} strokeWidth={2.2} />

@@ -38,6 +38,8 @@ export { QrCode } from "./QrCode";
 export { ProfileHeader } from "./ProfileHeader";
 export type { ProfileStat } from "./ProfileHeader";
 export { SectionHeader } from "./SectionHeader";
+export { Select } from "./Select";
+export type { SelectOption, SelectProps } from "./Select";
 export { Sheet } from "./Sheet";
 export { Skeleton } from "./Skeleton";
 export { SocialIcon } from "./SocialIcon";
