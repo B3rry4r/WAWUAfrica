@@ -26,6 +26,7 @@ import { JoinForm } from "./JoinForm";
 import type { FormNotice } from "./JoinForm";
 import { JoinHeading } from "./JoinHeading";
 import { JoinShell } from "./JoinShell";
+import { LaunchAccessCode } from "./LaunchAccessCode";
 import { StateCard } from "./StateCard";
 
 /**
@@ -37,7 +38,7 @@ import { StateCard } from "./StateCard";
  *   paying       the Flutterwave window is open
  *   verifying    asking the server where a payment stands
  *   checking     not settled yet ("Checking your payment"); asks again by itself
- *   registered   paid, with the person's first name and reference
+ *   registered   paid, with the launch access code (the short reference) and how to keep it
  *   already      that phone or email had already paid before this one started
  *   extra        registered, and THIS payment was a second one (kept to be refunded)
  *   support      the server refused the payment in a way only a person can settle
@@ -642,7 +643,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         >
           <p className="m-0">
             That phone number or email has already paid for this event, so you have not been charged again. Sign up in
-            the WAWU app with it and your plan will be waiting.
+            the Who Made This app with it and your plan will be waiting.
           </p>
         </StateCard>
       );
@@ -725,17 +726,8 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
 
     case "registered": {
       body = (
-        <StateCard icon="Check" tone="success" title={`You're registered, ${phase.firstName}`}>
-          <div className="flex flex-col items-center gap-1 rounded-input border border-hairline bg-input px-5 py-3">
-            <span className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-text-muted">Your reference</span>
-            <span
-              data-testid="short-reference"
-              className="font-mono text-[28px] font-bold leading-[1.15] tracking-[0.12em] text-text-primary"
-            >
-              {shortReference(phase.reference)}
-            </span>
-          </div>
-          <p className="m-0">Sign up in the WAWU app with this phone number or email and your plan will be waiting.</p>
+        <StateCard icon="Check" tone="success" title="YOUR WHO MADE THIS? LAUNCH ACCESS CODE" wide>
+          <LaunchAccessCode code={shortReference(phase.reference)} />
         </StateCard>
       );
       break;

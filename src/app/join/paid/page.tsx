@@ -8,7 +8,7 @@ import { JoinFlow } from "../components/JoinFlow";
  * the address and finishes the server check. See JoinFlow.
  */
 export const metadata: Metadata = {
-  title: { absolute: "Join WAWU" },
+  title: { absolute: "WHO MADE THIS? Pre-registration" },
   robots: { index: false, follow: false },
 };
 
