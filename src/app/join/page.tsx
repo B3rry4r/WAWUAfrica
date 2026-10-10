@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { JoinFlow } from "./components/JoinFlow";
 
 /**
@@ -35,10 +34,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * No Suspense and no search-params hook here on purpose: either one makes
+ * Next send an empty page and draw everything with JavaScript, which on a slow
+ * venue connection is a blank screen. Rendered plainly, the static HTML already
+ * holds the logo, the heading and the form's skeleton.
+ */
 export default function JoinPage() {
-  return (
-    <Suspense fallback={null}>
-      <JoinFlow />
-    </Suspense>
-  );
+  return <JoinFlow />;
 }

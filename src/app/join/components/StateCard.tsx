@@ -48,9 +48,11 @@ export function StateCard({ icon, tone = "neutral", spin = false, title, childre
           className={spin ? "[animation:wawuSpin_900ms_linear_infinite]" : undefined}
         />
       </span>
-      <h1 className="m-0 text-[22px] font-bold leading-tight tracking-[-0.02em] text-text-primary dt:text-[26px]">{title}</h1>
+      <h1 className="m-0 max-w-full break-words text-[22px] font-bold leading-tight tracking-[-0.02em] text-text-primary [overflow-wrap:anywhere] dt:text-[26px]">
+        {title}
+      </h1>
       {children ? (
-        <div className="flex max-w-[40ch] flex-col gap-3 text-[14.5px] leading-[1.55] text-text-secondary">{children}</div>
+        <div className="flex max-w-[40ch] flex-col gap-3 break-words text-[14.5px] leading-[1.55] text-text-secondary">{children}</div>
       ) : null}
       {actions ? <div className="mt-2 flex w-full flex-col gap-2.5">{actions}</div> : null}
     </section>

@@ -10,6 +10,8 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   options: readonly string[];
   /** Shown as the first, empty choice. Leave out when a value is always required. */
   placeholder?: string;
+  /** 16px text below the desktop breakpoint, so iPhone Safari does not zoom on focus. Off by default. */
+  noZoom?: boolean;
 }
 
 /**
@@ -21,12 +23,14 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
  * thing drawn by hand, because `appearance-none` removes the browser's.
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { label, error, hint, options, placeholder, className = "", id, ...rest },
+  { label, error, hint, options, placeholder, noZoom = false, className = "", id, "aria-describedby": describedBy, ...rest },
   ref,
 ) {
   const generatedId = useId();
   const selectId = id ?? rest.name ?? generatedId;
   const empty = rest.value === "" || rest.value === undefined;
+  const messageId = `${selectId}-message`;
+  const described = [describedBy, error || hint ? messageId : undefined].filter(Boolean).join(" ") || undefined;
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       {label ? (
@@ -39,11 +43,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           ref={ref}
           id={selectId}
           className={[
-            "h-[52px] w-full appearance-none rounded-input border bg-input pl-4 pr-11 text-[15px] outline-none transition-colors",
+            noZoom
+              ? "h-[52px] w-full appearance-none rounded-input border bg-input pl-4 pr-11 text-[16px] dt:text-[15px] outline-none transition-colors"
+              : "h-[52px] w-full appearance-none rounded-input border bg-input pl-4 pr-11 text-[15px] outline-none transition-colors",
             "focus:border-accent focus:ring-2 focus:ring-accent/20",
             empty && placeholder ? "text-text-muted" : "text-text-primary",
             error ? "border-danger" : "border-hairline",
           ].join(" ")}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={described}
           {...rest}
         >
           {placeholder ? <option value="">{placeholder}</option> : null}
@@ -61,8 +69,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
         />
       </div>
-      {error ? <span className="text-[12.5px] text-danger">{error}</span> : null}
-      {!error && hint ? <span className="text-[12px] text-text-muted">{hint}</span> : null}
+      {error ? (
+        <span id={messageId} className="text-[12.5px] text-danger">
+          {error}
+        </span>
+      ) : null}
+      {!error && hint ? (
+        <span id={messageId} className="text-[12px] text-text-muted">
+          {hint}
+        </span>
+      ) : null}
     </div>
   );
 });

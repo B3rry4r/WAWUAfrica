@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { JoinFlow } from "../components/JoinFlow";
 
 /**
@@ -14,9 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function JoinPaidPage() {
-  return (
-    <Suspense fallback={null}>
-      <JoinFlow mode="return" />
-    </Suspense>
-  );
+  return <JoinFlow mode="return" />;
 }

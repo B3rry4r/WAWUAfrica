@@ -35,8 +35,18 @@ export const MAKES_MAX = 60;
  */
 const NIGERIAN_MOBILE = /^[789][01]\d{8}$/;
 
-function nationalDigits(phone: string): string {
-  return phone.replace(/\D/g, "").replace(/^0+/, "");
+/**
+ * The digits of the number itself, without the trunk zero and, for Nigeria,
+ * without a country code that came with it. People paste what their phone
+ * shows: "0803 123 4567", "+234 803 123 4567" or "2348031234567" are the same
+ * number. The field has already dropped the plus sign and spaces; a leading
+ * "234" (with or without a trunk zero after it) is the country code, because
+ * no Nigerian mobile number starts with a 2.
+ */
+function nationalDigits(phone: string, dialCode: string): string {
+  const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
+  if (dialCode === DEFAULT_DIAL_CODE && /^234\d{10,11}$/.test(digits)) return digits.slice(3).replace(/^0+/, "");
+  return digits;
 }
 
 export function validateJoin(f: JoinFields): JoinErrors {
@@ -46,7 +56,7 @@ export function validateJoin(f: JoinFields): JoinErrors {
   if (name.length < 2 || !/\p{L}/u.test(name)) errors.fullName = "Enter your name.";
   else if (name.length > 120) errors.fullName = "That name is too long.";
 
-  const digits = nationalDigits(f.phone);
+  const digits = nationalDigits(f.phone, f.dialCode);
   if (f.dialCode === DEFAULT_DIAL_CODE) {
     if (!NIGERIAN_MOBILE.test(digits)) errors.phone = "Enter a Nigerian mobile number, for example 803 123 4567.";
   } else if (digits.length < 6 || digits.length > 14) {
@@ -62,7 +72,7 @@ export function validateJoin(f: JoinFields): JoinErrors {
 
 /** The phone the way the API takes it: dial code plus digits, no zeros in between. */
 export function phoneOf(f: JoinFields): string {
-  return fullPhoneNumber(f.dialCode, nationalDigits(f.phone));
+  return fullPhoneNumber(f.dialCode, nationalDigits(f.phone, f.dialCode));
 }
 
 export function firstNameOf(fullName: string): string {
