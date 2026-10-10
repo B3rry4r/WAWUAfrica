@@ -15,7 +15,7 @@ import { JoinFlow } from "./components/JoinFlow";
  */
 const TITLE = "WHO MADE THIS? Pre-registration";
 const DESCRIPTION =
-  "Get 50% OFF your subscription to WHO MADE THIS?, the creator and professional monetization platform. Launching October 17, 2026.";
+  "Get a ONE-OFF subscription to WHO MADE THIS?, the creator and professional monetization platform. Launching October 17, 2026.";
 /** The Who Made This lockup on the site's dark background, 1200 x 630. Root of public/: production serves only root-level files. */
 const SHARE_IMAGE = "/who-made-this-og.png";
 
