@@ -21,6 +21,12 @@ export interface CalloutProps {
    * a narrow rail or a form column that is already capped.
    */
   full?: boolean;
+  /**
+   * "md" is for the one line on a screen that must not be missed (the price
+   * someone pays without their code): larger text and icon, same colours.
+   * Defaults to "sm", the size every other notice uses.
+   */
+  size?: "sm" | "md";
   className?: string;
 }
 
@@ -46,8 +52,9 @@ const TONES: Record<CalloutTone, { icon: IconName; surface: string; iconColor: s
  * whole content column, which at 1280px is a 1000px-wide, 47px-tall rectangle
  * with a sentence floating in the middle of it. See `full` for the exception.
  */
-export function Callout({ icon, title, children, tone = "neutral", full = false, className = "" }: CalloutProps) {
+export function Callout({ icon, title, children, tone = "neutral", full = false, size = "sm", className = "" }: CalloutProps) {
   const t = TONES[tone];
+  const md = size === "md";
   return (
     <div
       className={`flex items-start gap-[10px] rounded-input border px-[14px] py-[13px] ${t.surface} ${
@@ -55,11 +62,11 @@ export function Callout({ icon, title, children, tone = "neutral", full = false,
       } ${className}`}
     >
       <span className="mt-[1px] shrink-0">
-        <Icon name={icon ?? t.icon} size={15} color={t.iconColor} strokeWidth={2} />
+        <Icon name={icon ?? t.icon} size={md ? 18 : 15} color={t.iconColor} strokeWidth={2} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-        {title ? <span className="text-[13px] font-semibold text-text-primary">{title}</span> : null}
-        <span className="text-[12.5px] leading-[1.5] text-text-secondary">{children}</span>
+        {title ? <span className={`${md ? "text-[15px]" : "text-[13px]"} font-semibold text-text-primary`}>{title}</span> : null}
+        <span className={`${md ? "text-[15px] leading-[1.45]" : "text-[12.5px] leading-[1.5]"} text-text-secondary`}>{children}</span>
       </span>
     </div>
   );
