@@ -1,8 +1,8 @@
 /**
  * Which parts of the site a request may reach.
  *
- * On production wawuafrica.com is, for now, only the event registration link
- * (owner, 10 Oct 2026): everything else is unreachable. `SITE_MODE` says which:
+ * On production wawuafrica.com serves only the event registration link (owner,
+ * 10 Oct 2026, R-48): everything else is unreachable. `SITE_MODE` says which:
  *
  *   join-only   /join and what it needs, nothing else
  *   full        the whole site, as before
