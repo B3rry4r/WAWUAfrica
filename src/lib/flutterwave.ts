@@ -41,6 +41,7 @@ interface FlutterwaveCheckoutOptions {
   payment_options: string;
   customer: { email: string; name?: string; phone_number?: string };
   customizations: { title: string; description: string; logo?: string };
+  redirect_url?: string;
   callback: (response: FlutterwaveCallbackResponse) => void;
   onclose: (incomplete?: boolean) => void;
 }
@@ -152,6 +153,13 @@ export interface FlutterwaveChargeConfig {
   currency?: string;
   customerEmail?: string;
   customerName?: string;
+  /**
+   * Where Flutterwave sends the browser back after a payment that leaves the
+   * page (a bank app, a 3-D Secure page, a USSD hand-off). Optional: callers
+   * that omit it behave exactly as before. The page named here must finish
+   * the verify on its own, because the page that opened the modal is gone.
+   */
+  redirectUrl?: string;
 }
 
 export interface CheckoutCustomer {
@@ -315,6 +323,7 @@ export async function openFlutterwaveCheckout(
         description: labels.description,
         logo: typeof window !== "undefined" ? `${window.location.origin}/wawu-logo-white.png` : undefined,
       },
+      ...(config.redirectUrl ? { redirect_url: config.redirectUrl } : {}),
       callback: (response) => {
         if (settled) return;
         const status = (response.status ?? "").toLowerCase();

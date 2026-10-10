@@ -86,6 +86,17 @@
 
 ---
 
+## E. Event registration link (`/join`, R-48, no account)
+
+A person at a WAWU event scans a QR code or taps a shared link, fills in name, phone, email (state and what they make are optional), ticks the consent line and pays the event fee (the price comes from the API, never the page) in the Flutterwave window. They land on "You're registered, <first name>" with a reference, and are told to sign up in the WAWU app with the same phone number or email. No sign-in, password or code; the sign-up page is not part of this flow.
+
+- Routes: `/join` (the page) and `/join/paid` (where a payment that left the page returns to; it finishes the server check from the reference in the address). Both sit outside the app shell and the auth layout.
+- Calls: `src/lib/api/waitlist.ts` (`GET /waitlist/offers/current`, `POST /waitlist/registrations`, `POST /waitlist/registrations/verify`, `GET /waitlist/registrations/:reference`).
+- Refusals, each in plain words: already registered (before any payment), offer closed, no offer open, payment cancelled ("You have not been charged"), payment not confirmed yet ("Checking your payment" with a retry of the check, never a second charge once a transaction id exists), network failure.
+- Kept in the browser: the reference and, once Flutterwave returns one, the transaction id (sessionStorage). Never a name, phone or email.
+
+---
+
 ## D. What this doc deliberately does not cover
 
 - Exact screen layouts, spacing, or visual design — that's the Claude Design pass, working batch by batch from this flow list.
