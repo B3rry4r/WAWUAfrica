@@ -21,6 +21,8 @@ interface StateCardProps {
   children?: ReactNode;
   /** The way out: buttons or a link. Every state that stops the person has one. */
   actions?: ReactNode;
+  /** Lets the body run the card's full width instead of a short line length (the launch access code screen). */
+  wide?: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ interface StateCardProps {
  * `role="status"` makes a screen reader announce the change when the page
  * swaps from the form to "Checking your payment" or "You're registered".
  */
-export function StateCard({ icon, tone = "neutral", spin = false, title, children, actions }: StateCardProps) {
+export function StateCard({ icon, tone = "neutral", spin = false, title, children, actions, wide = false }: StateCardProps) {
   const t = TONES[tone];
   return (
     <section
@@ -52,7 +54,11 @@ export function StateCard({ icon, tone = "neutral", spin = false, title, childre
         {title}
       </h1>
       {children ? (
-        <div className="flex max-w-[40ch] flex-col gap-3 break-words text-[14.5px] leading-[1.55] text-text-secondary">{children}</div>
+        <div
+          className={`flex ${wide ? "w-full" : "max-w-[40ch]"} flex-col gap-3 break-words text-[14.5px] leading-[1.55] text-text-secondary`}
+        >
+          {children}
+        </div>
       ) : null}
       {actions ? <div className="mt-2 flex w-full flex-col gap-2.5">{actions}</div> : null}
     </section>
