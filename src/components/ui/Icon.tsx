@@ -1,10 +1,13 @@
 import type { LucideIcon } from "lucide-react";
-import * as Icons from "lucide-react";
+import type * as Lucide from "lucide-react";
 import type { ComponentProps } from "react";
+import { ICON_SET } from "./icon-set.generated";
+import { findIcon } from "./icon-lookup";
+import { LateIcon } from "./LateIcon";
 
-export type IconName = keyof typeof Icons;
+export type IconName = keyof typeof Lucide;
 
-interface IconProps extends Omit<ComponentProps<LucideIcon>, "name" | "size" | "color" | "strokeWidth"> {
+export interface IconProps extends Omit<ComponentProps<LucideIcon>, "name" | "size" | "color" | "strokeWidth"> {
   name: IconName;
   size?: number;
   color?: string;
@@ -12,40 +15,18 @@ interface IconProps extends Omit<ComponentProps<LucideIcon>, "name" | "size" | "
 }
 
 /**
- * A few backend-supplied kebab-case icon ids (partner-service.icon: free-text
- * column, e.g. 'building-office') have no literal PascalCase counterpart in
- * lucide-react's export map — alias those to the closest real icon.
- */
-const ICON_ALIASES: Record<string, string> = {
-  "building-office": "Building2",
-};
-
-/**
- * Resolves an icon name against lucide-react's PascalCase export map.
- * Handles the app's own PascalCase names (e.g. "Stamp") directly, and
- * normalizes backend-supplied kebab-case ids (e.g. "shield-check" ->
- * "ShieldCheck") so real API data renders instead of silently vanishing.
- */
-function resolveIcon(name: string): LucideIcon | undefined {
-  const exact = Icons[name as keyof typeof Icons] as LucideIcon | undefined;
-  if (exact) return exact;
-  const pascal = name
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
-  const converted = Icons[pascal as keyof typeof Icons] as LucideIcon | undefined;
-  if (converted) return converted;
-  const alias = ICON_ALIASES[name.toLowerCase()];
-  return alias ? (Icons[alias as keyof typeof Icons] as LucideIcon | undefined) : undefined;
-}
-
-/**
  * Thin wrapper over lucide-react so components address icons by name,
  * mirroring the design system's Icon primitive.
+ *
+ * The icons come from `icon-set.generated.ts`: the ones the app's source names,
+ * imported one by one, so a page carries those and not the whole library (the
+ * whole library was about 144 kB gzipped on every page, /join included; see
+ * scripts/build-icon-set.mjs). A name that is not in that set can only have
+ * come from data at run time, and is handed to LateIcon, which fetches the full
+ * library after the page has rendered.
  */
 export function Icon({ name, size = 18, color = "currentColor", strokeWidth = 2, ...rest }: IconProps) {
-  const Cmp = resolveIcon(name);
-  if (!Cmp) return null;
+  const Cmp = findIcon(ICON_SET, name);
+  if (!Cmp) return <LateIcon name={name} size={size} color={color} strokeWidth={strokeWidth} {...rest} />;
   return <Cmp width={size} height={size} color={color} strokeWidth={strokeWidth} {...rest} aria-hidden="true" />;
 }
