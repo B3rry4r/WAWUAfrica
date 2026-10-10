@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { Icon } from "./Icon";
 
 /**
@@ -45,6 +45,15 @@ interface PhoneInputProps {
   hint?: string;
   placeholder?: string;
   disabled?: boolean;
+  /** Id for the number field. The label points at it; a caller can focus it by this id. */
+  id?: string;
+  /**
+   * What is wrong with the number. Drawn under the field, tied to it with
+   * `aria-describedby`, and the field reports `aria-invalid`.
+   */
+  error?: string;
+  /** 16px text below the desktop breakpoint, so iPhone Safari does not zoom on focus. Off by default. */
+  noZoom?: boolean;
 }
 
 /**
@@ -65,7 +74,14 @@ export function PhoneInput({
   hint,
   placeholder = "801 234 5678",
   disabled,
+  id,
+  error,
+  noZoom = false,
 }: PhoneInputProps) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const messageId = `${inputId}-message`;
+  const text = noZoom ? "text-[16px] dt:text-[15px]" : "text-[15px]";
   // Several countries share +1, so the option value carries the country too.
   const options = useMemo(
     () => DIAL_CODES.map((d) => ({ ...d, key: `${d.country}|${d.code}` })),
@@ -75,7 +91,9 @@ export function PhoneInput({
 
   return (
     <div className="flex flex-col gap-[8px]">
-      <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{label}</span>
+      <label htmlFor={inputId} className="text-[13px] font-semibold text-[var(--text-secondary)]">
+        {label}
+      </label>
       <div className="flex gap-[8px]">
         <div className="relative shrink-0">
           <select
@@ -83,7 +101,7 @@ export function PhoneInput({
             value={`${selected.country}|${selected.code}`}
             onChange={(e) => onDialCodeChange(e.target.value.split("|")[1])}
             disabled={disabled}
-            className="h-[52px] w-[112px] appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] pl-[12px] pr-[26px] font-[var(--font-sans)] text-[15px] text-[var(--text-primary)]"
+            className={`h-[52px] w-[112px] appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] pl-[12px] pr-[26px] font-[var(--font-sans)] ${text} text-[var(--text-primary)]`}
           >
             {options.map((o) => (
               <option key={o.key} value={o.key}>
@@ -100,8 +118,11 @@ export function PhoneInput({
           />
         </div>
         <input
+          id={inputId}
           type="tel"
           inputMode="tel"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || hint ? messageId : undefined}
           value={value}
           disabled={disabled}
           placeholder={placeholder}
@@ -124,10 +145,20 @@ export function PhoneInput({
             const trimmed = e.target.value.replace(/^0+/, "");
             if (trimmed !== e.target.value) onValueChange(trimmed);
           }}
-          className="h-[52px] min-w-0 flex-1 rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          className={`h-[52px] min-w-0 flex-1 rounded-[var(--radius-input)] border ${
+            error ? "border-danger" : "border-[var(--border-hairline)]"
+          } bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] ${text} text-[var(--text-primary)] placeholder:text-[var(--text-muted)]`}
         />
       </div>
-      {hint ? <span className="text-[12px] text-[var(--text-muted)]">{hint}</span> : null}
+      {error ? (
+        <span id={messageId} className="text-[12.5px] text-danger">
+          {error}
+        </span>
+      ) : hint ? (
+        <span id={messageId} className="text-[12px] text-[var(--text-muted)]">
+          {hint}
+        </span>
+      ) : null}
     </div>
   );
 }

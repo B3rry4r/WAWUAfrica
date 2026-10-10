@@ -6,6 +6,16 @@ export function formatNaira(amount: number): string {
 }
 
 /**
+ * An amount the API sends in integer kobo (the `...Kobo` fields), as naira.
+ * Whole-naira amounts read as "₦2,000"; an amount with kobo keeps both
+ * decimals ("₦2,000.50"), so nothing is ever rounded on the way to a screen.
+ */
+export function formatNairaFromKobo(kobo: number): string {
+  if (kobo % 100 === 0) return formatNaira(kobo / 100);
+  return `₦${(kobo / 100).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+/**
  * WAWU Credits are prepaid message units — a COUNT, never a currency value and
  * never cashable. Do not add a naira conversion here.
  */

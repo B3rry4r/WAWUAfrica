@@ -244,7 +244,15 @@ async function readErrorBody(res: Response): Promise<{ message?: string; code?: 
     const parts = body.message.filter((m): m is string => typeof m === "string" && Boolean(m.trim()));
     if (parts.length) message = parts.join(". ");
   } else if (typeof body.error === "string" && body.error.trim()) message = body.error.trim();
-  const code = typeof body.code === "string" ? body.code : undefined;
+  // Hub money-style routes explain a refusal as `reason: { code, message }`
+  // (backend docs/contract/CONVENTIONS.md, section 3). A top-level `code`
+  // (WAWU ID's shape) still wins when both are present.
+  const reason = (body as { reason?: unknown }).reason;
+  const reasonCode =
+    typeof reason === "object" && reason !== null && typeof (reason as { code?: unknown }).code === "string"
+      ? (reason as { code: string }).code
+      : undefined;
+  const code = typeof body.code === "string" ? body.code : reasonCode;
   return { message, code };
 }
 

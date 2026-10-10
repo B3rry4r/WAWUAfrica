@@ -40,6 +40,9 @@ never in a `useEffect` on mount.
 - Tailwind for layout and spacing; tokens for colour, radius, elevation.
 - No inline hex. No magic pixel values — use the spacing scale.
 
+## Icons
+`<Icon name="Check" />` draws from `src/components/ui/icon-set.generated.ts`: the lucide icons whose names appear as string literals anywhere in `src/`, imported one by one, so a page carries those and not the whole library (about 144 kB gzipped). After you add an icon name, run `npm run build:icons`; `npm run check:icons` fails when the file is out of date. A name that only exists at run time (an id from the backend) is not in the set; `Icon` hands it to `LateIcon`, which loads the full library after the page has rendered, so it appears a moment late and never breaks hydration.
+
 ## Money
 - All amounts are integers in Naira. Never floats.
 - Format through `formatNaira()` in `lib/format.ts`. Never string-concatenate ₦.

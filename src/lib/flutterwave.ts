@@ -41,6 +41,7 @@ interface FlutterwaveCheckoutOptions {
   payment_options: string;
   customer: { email: string; name?: string; phone_number?: string };
   customizations: { title: string; description: string; logo?: string };
+  redirect_url?: string;
   callback: (response: FlutterwaveCallbackResponse) => void;
   onclose: (incomplete?: boolean) => void;
 }
@@ -77,6 +78,41 @@ export class FlutterwaveUnavailableError extends Error {
   }
 }
 
+/**
+ * Thrown only when a caller asked for a load limit (`scriptTimeoutMs`) and the
+ * checkout script had not arrived in time. A hung request is not a blocked
+ * one: the connection is slow or stalled, so the right words are "did not
+ * load, try again", not "could not reach Flutterwave". Callers that pass no
+ * limit never see it.
+ */
+export class FlutterwaveScriptTimeoutError extends Error {
+  constructor() {
+    super("The payment window did not load in time.");
+    this.name = "FlutterwaveScriptTimeoutError";
+  }
+}
+
+/**
+ * Flutterwave's callback fired and the payment was not reported as complete.
+ *
+ * It keeps what the callback actually said (`status`, and the `transactionId`
+ * if one came with it), because a caller that has to decide whether money may
+ * have moved needs both: a transaction id means a charge exists whatever the
+ * status says. The message is the one this module always used for this case,
+ * so callers that only read the message behave as before.
+ */
+export class FlutterwaveNotConfirmedError extends Error {
+  readonly status: string;
+  readonly transactionId: string | null;
+
+  constructor(status: string, transactionId: string | null) {
+    super("Flutterwave did not confirm the payment.");
+    this.name = "FlutterwaveNotConfirmedError";
+    this.status = status;
+    this.transactionId = transactionId;
+  }
+}
+
 export function isFlutterwaveCancelled(e: unknown): boolean {
   return e instanceof FlutterwaveCancelledError;
 }
@@ -89,14 +125,37 @@ let scriptPromise: Promise<void> | null = null;
  * same in-flight promise; a failed load is not cached, so a later attempt
  * can retry after a transient network problem.
  */
-function loadCheckoutScript(): Promise<void> {
+function loadCheckoutScript(timeoutMs?: number): Promise<void> {
   if (typeof window === "undefined") {
     return Promise.reject(new FlutterwaveUnavailableError());
   }
   if (window.FlutterwaveCheckout) return Promise.resolve();
-  if (scriptPromise) return scriptPromise;
+  const loading = scriptPromise ?? startScriptLoad();
+  if (!timeoutMs) return loading;
 
-  scriptPromise = new Promise<void>((resolve, reject) => {
+  // A caller that wants a limit gets one without cutting the shared load short
+  // for anyone else: this races the same promise, and a timeout only stops THIS
+  // caller waiting. The request itself is left alone on purpose. A browser
+  // reuses a stalled request for the same address, so starting a second
+  // <script> would just join the first; a retry instead waits on the same load
+  // again, and if it arrived in the meantime the retry opens the window at once.
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new FlutterwaveScriptTimeoutError()), timeoutMs);
+    loading.then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
+
+function startScriptLoad(): Promise<void> {
+  const attempt = new Promise<void>((resolve, reject) => {
     // A dead <script id> left in the DOM is worse than none: the next attempt
     // finds it, attaches a listener to a tag whose load/error event already
     // fired, and waits forever. Always start from a clean element.
@@ -105,8 +164,9 @@ function loadCheckoutScript(): Promise<void> {
     const script = document.createElement("script");
     const fail = () => {
       // Not cached, and the element goes with it, so a later attempt is a real
-      // retry rather than a permanent hang.
-      scriptPromise = null;
+      // retry rather than a permanent hang. Only clears the cache if it still
+      // holds THIS attempt: a newer one must not be wiped by an older failure.
+      if (scriptPromise === attempt) scriptPromise = null;
       script.remove();
       reject(new FlutterwaveUnavailableError());
     };
@@ -126,8 +186,8 @@ function loadCheckoutScript(): Promise<void> {
     script.async = true;
     document.body.appendChild(script);
   });
-
-  return scriptPromise;
+  scriptPromise = attempt;
+  return attempt;
 }
 
 /**
@@ -152,6 +212,13 @@ export interface FlutterwaveChargeConfig {
   currency?: string;
   customerEmail?: string;
   customerName?: string;
+  /**
+   * Where Flutterwave sends the browser back after a payment that leaves the
+   * page (a bank app, a 3-D Secure page, a USSD hand-off). Optional: callers
+   * that omit it behave exactly as before. The page named here must finish
+   * the verify on its own, because the page that opened the modal is gone.
+   */
+  redirectUrl?: string;
 }
 
 export interface CheckoutCustomer {
@@ -273,6 +340,13 @@ export async function openFlutterwaveCheckout(
   customer: CheckoutCustomer,
   labels: { title: string; description: string },
   onReturn?: CheckoutReturn,
+  options?: {
+    /**
+     * Give up on the checkout script after this long and reject with
+     * `FlutterwaveScriptTimeoutError`. Omitted: wait as long as the browser does.
+     */
+    scriptTimeoutMs?: number;
+  },
 ): Promise<CheckoutResult> {
   if (shouldRedirectToCheckout(config)) {
     if (!onReturn) {
@@ -288,7 +362,7 @@ export async function openFlutterwaveCheckout(
     return new Promise<CheckoutResult>(() => {});
   }
 
-  await loadCheckoutScript();
+  await loadCheckoutScript(options?.scriptTimeoutMs);
 
   const checkout = window.FlutterwaveCheckout;
   if (!checkout) throw new FlutterwaveUnavailableError();
@@ -315,6 +389,7 @@ export async function openFlutterwaveCheckout(
         description: labels.description,
         logo: typeof window !== "undefined" ? `${window.location.origin}/wawu-logo-white.png` : undefined,
       },
+      ...(config.redirectUrl ? { redirect_url: config.redirectUrl } : {}),
       callback: (response) => {
         if (settled) return;
         const status = (response.status ?? "").toLowerCase();
@@ -325,7 +400,7 @@ export async function openFlutterwaveCheckout(
           resolve({ transaction_id: String(transactionId), tx_ref: response.tx_ref ?? config.txRef });
         } else {
           settled = true;
-          reject(new Error("Flutterwave did not confirm the payment."));
+          reject(new FlutterwaveNotConfirmedError(status, transactionId ? String(transactionId) : null));
         }
         modal?.close();
       },
