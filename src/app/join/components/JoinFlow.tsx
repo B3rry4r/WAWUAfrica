@@ -10,7 +10,7 @@ import {
   openFlutterwaveCheckout,
 } from "@/lib/flutterwave";
 import { formatNairaFromKobo } from "@/lib/format";
-import { isReference, isTransactionId, joinResume, shortReference } from "@/lib/join-session";
+import { isReference, isTransactionId, joinAbandoned, joinResume, shortReference } from "@/lib/join-session";
 import {
   getCurrentOffer,
   getRegistrationStatus,
@@ -56,6 +56,20 @@ import { StateCard } from "./StateCard";
  * that names the support address and the person's reference. A transaction id
  * is checked with the server, whatever status word came with it.
  * The stored reference is not cleared while the outcome is unknown.
+ *
+ * ── "START AGAIN" (a reload while the payment window was open) ────────────
+ * A reload leaves a reference and no transaction id, and money may still be on
+ * its way (a bank transfer lands late). So the way back to the form is:
+ *   1. not drawn while the page is still checking; it appears only after the
+ *      five minutes of asking the status route have ended without a paid answer,
+ *   2. behind one more question in plain words ("Keep checking" is the main button),
+ *   3. preceded by one last ask of the status route (paid shows "You're
+ *      registered"; an answer it cannot get keeps the person where they are),
+ *   4. and it never opens a window on the reference it walked away from. The
+ *      server reuses an unpaid registration for the same phone and email, so a
+ *      new registration with the same details can come back with the old
+ *      reference. That reference is remembered (joinAbandoned) and, if it
+ *      comes back, no window opens: the page goes back to checking it.
  *
  * ── WHAT IS KEPT ───────────────────────────────────────────────────────────
  * The reference (and the transaction id once there is one) in sessionStorage,
@@ -118,7 +132,15 @@ type Phase =
   | { kind: "form" }
   | { kind: "paying" }
   | { kind: "verifying" }
-  | { kind: "checking"; reference: string; transactionId: string | null; negative: Negative | null; from: From }
+  | {
+      kind: "checking";
+      reference: string;
+      transactionId: string | null;
+      negative: Negative | null;
+      from: From;
+      /** The server handed back a registration the person walked away from, so no window was opened on it. */
+      held?: boolean;
+    }
   | { kind: "registered"; firstName: string; reference: string }
   | { kind: "already" }
   | { kind: "extra"; reference: string }
@@ -217,6 +239,17 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   const [rechecking, setRechecking] = useState(false);
   /** True once "Checking your payment" has gone five minutes without an answer. */
   const [stillChecking, setStillChecking] = useState(false);
+  /** True once the five minutes of asking have ended and the last answer was not "paid". */
+  const [pollEnded, setPollEnded] = useState(false);
+  /** Bumped by "Keep checking": the status route is asked by itself for another five minutes. */
+  const [pollRound, setPollRound] = useState(0);
+  /** "Start again" was tapped and the person is being asked once more. */
+  const [confirming, setConfirming] = useState(false);
+  /** The last status check before starting again is in flight. */
+  const [restarting, setRestarting] = useState(false);
+  /** That last status check could not be answered, so the person stays where they are. */
+  const [restartFailed, setRestartFailed] = useState(false);
+  const keepCheckingRef = useRef<HTMLButtonElement>(null);
   const booted = useRef(false);
   /**
    * One registration call and one window, however fast the taps come. State
@@ -388,16 +421,26 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   checkingRef.current = checking;
   const checkingReference = checking?.reference ?? null;
 
+  // A checking screen for another reference starts clean.
+  useEffect(() => {
+    setPollRound(0);
+    setStillChecking(false);
+    setPollEnded(false);
+    setConfirming(false);
+    setRestartFailed(false);
+  }, [checkingReference]);
+
   useEffect(() => {
     if (!checkingReference) return;
-    setStillChecking(false);
+    setPollEnded(false);
     let live = true;
     let ticks = 0;
     const timer = setInterval(async () => {
       const current = checkingRef.current;
       if (!current) return;
       ticks += 1;
-      if (ticks >= POLL_FOR_MS / POLL_EVERY_MS) clearInterval(timer);
+      const last = ticks >= POLL_FOR_MS / POLL_EVERY_MS;
+      if (last) clearInterval(timer);
       const out = await askStatus(current.reference);
       if (!live) return;
       apply(
@@ -405,6 +448,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         { reference: current.reference, transactionId: current.transactionId, negative: current.negative, from: current.from },
         true,
       );
+      if (last) setPollEnded(true);
     }, POLL_EVERY_MS);
     const flag = setTimeout(() => setStillChecking(true), POLL_FOR_MS);
     return () => {
@@ -412,7 +456,12 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       clearInterval(timer);
       clearTimeout(flag);
     };
-  }, [checkingReference, apply]);
+  }, [checkingReference, pollRound, apply]);
+
+  // The question about starting again moves focus to the safe answer.
+  useEffect(() => {
+    if (confirming) keepCheckingRef.current?.focus();
+  }, [confirming]);
 
   async function checkAgain() {
     if (!checking || rechecking) return;
@@ -421,6 +470,42 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     const out = await inspect(ev, false);
     setRechecking(false);
     apply(out, ev, true);
+  }
+
+  /** "Keep checking": back to the checking screen, asked once now and by itself for another five minutes. */
+  function keepChecking() {
+    setConfirming(false);
+    setRestartFailed(false);
+    setPollEnded(false);
+    setPollRound((n) => n + 1);
+    void checkAgain();
+  }
+
+  /**
+   * "Start again", confirmed. The status route is asked one last time first.
+   * Paid shows the registration. Only a plain "not paid" begins a new
+   * registration, and the reference left behind is remembered so no window
+   * ever opens on it again.
+   */
+  async function startAgain() {
+    if (!checking || restarting) return;
+    setRestarting(true);
+    setRestartFailed(false);
+    const ev: Evidence = { reference: checking.reference, transactionId: checking.transactionId, negative: checking.negative, from: checking.from };
+    const out = await askStatus(ev.reference);
+    setRestarting(false);
+    if (out.kind === "unknown") {
+      setRestartFailed(true);
+      return;
+    }
+    if (out.kind === "notPaid" || out.kind === "noSuchRegistration") {
+      joinAbandoned.add(ev.reference);
+      joinResume.clear();
+      setConfirming(false);
+      void showForm();
+      return;
+    }
+    apply(out, ev);
   }
 
   // ── the form ─────────────────────────────────────────────────────────────
@@ -474,6 +559,17 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         makes: fields.makes.trim() || undefined,
       });
       reference = started.reference;
+
+      // The server reuses an unpaid registration for the same phone and email, so
+      // starting again can come back with the reference the person walked away
+      // from, and money may have landed on it since. Never open a window on it.
+      if (joinAbandoned.has(started.reference)) {
+        joinResume.set({ reference });
+        payLock.current = false;
+        setSubmitting(false);
+        setPhase({ kind: "checking", reference, transactionId: null, negative: null, from: "window", held: true });
+        return;
+      }
 
       // The server's amount is the truth. If it is not the fee the button showed
       // (the price changed while the form was open), no window opens: the
@@ -665,8 +761,48 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       break;
 
     case "checking": {
-      const { reference, transactionId, negative, from } = phase;
-      const canRestart = from === "stored" && !transactionId;
+      const { reference, transactionId, negative, from, held } = phase;
+      const stored = from === "stored" && !transactionId;
+      const canRestart = stored && pollEnded;
+
+      if (canRestart && confirming) {
+        body = (
+          <StateCard
+            icon="TriangleAlert"
+            tone="warning"
+            title="Start again?"
+            actions={
+              <>
+                <Button full ref={keepCheckingRef} onClick={keepChecking}>
+                  Keep checking
+                </Button>
+                <Button full variant="secondary" loading={restarting} onClick={() => void startAgain()}>
+                  Start again
+                </Button>
+              </>
+            }
+          >
+            <p className="m-0">
+              Only start again if no money left your account. If it did, email{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-accent-hover underline underline-offset-2">
+                {SUPPORT_EMAIL}
+              </a>{" "}
+              with your reference{" "}
+              <span data-testid="confirm-reference" className="whitespace-nowrap font-mono font-bold tracking-[0.08em] text-text-primary">
+                {shortReference(reference)}
+              </span>
+              .
+            </p>
+            {restartFailed ? (
+              <p className="m-0" data-testid="restart-failed">
+                We could not check just now. Check your connection and try again.
+              </p>
+            ) : null}
+          </StateCard>
+        );
+        break;
+      }
+
       body = (
         <StateCard
           icon="Clock"
@@ -682,8 +818,8 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
                   full
                   variant="ghost"
                   onClick={() => {
-                    joinResume.clear();
-                    void showForm();
+                    setRestartFailed(false);
+                    setConfirming(true);
                   }}
                 >
                   I have not paid. Start again
@@ -692,10 +828,15 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
             </>
           }
         >
-          {canRestart ? (
+          {held ? (
             <p className="m-0">
-              You started a payment on this device. If you finished paying, check again. If you did not pay, you can
-              start again.
+              A payment you started with these details has not been settled yet, so we have not opened a new one.
+            </p>
+          ) : stored ? (
+            <p className="m-0">
+              {canRestart
+                ? "You started a payment on this device. If you finished paying, check again. If you did not pay, you can start again."
+                : "You started a payment on this device. We are checking whether it went through. Check again in a moment."}
             </p>
           ) : negative && !transactionId ? (
             <p className="m-0">We are making sure no payment was taken. Check again in a moment.</p>
@@ -705,7 +846,9 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
               twice. Check again in a moment.
             </p>
           )}
-          {stillChecking ? (
+          {held ? (
+            <SupportLine reference={reference} />
+          ) : stillChecking ? (
             <p className="m-0" data-testid="still-checking">
               Still checking. If money left your account, email{" "}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-accent-hover underline underline-offset-2">
