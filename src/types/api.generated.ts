@@ -6838,7 +6838,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The offer people can register for now. */
+        /** The offer open for registration. */
         get: operations["WaitlistPublicController_currentOffer"];
         put?: never;
         post?: never;
@@ -12165,7 +12165,7 @@ export interface components {
             tierName: string;
             products: number;
             days: number;
-            closesAt: string;
+            closesAt: string | null;
         };
         WaitlistCheckoutView: {
             publicKey: string;

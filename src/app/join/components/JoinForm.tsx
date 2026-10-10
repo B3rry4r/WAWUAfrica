@@ -4,7 +4,6 @@ import type { FormEvent } from "react";
 import { Button, Callout, Checkbox, Icon, Input, PhoneInput, Select } from "@/components/ui";
 import type { CalloutTone } from "@/components/ui";
 import { subdivisionsFor } from "@/lib/geo";
-import type { OfferSummary } from "@/lib/api/waitlist";
 import { MAKES_MAX } from "./join-fields";
 import type { JoinErrors, JoinFields } from "./join-fields";
 
@@ -17,7 +16,8 @@ export interface FormNotice {
 
 
 interface JoinFormProps {
-  offer: OfferSummary;
+  /** The fee as the API sent it ("₦2,000"): it is drawn on the pay button and nowhere else. */
+  price: string;
   fields: JoinFields;
   /** Errors to show. The parent decides which fields have been touched. */
   errors: JoinErrors;
@@ -31,13 +31,14 @@ interface JoinFormProps {
 const NIGERIAN_STATES = subdivisionsFor("Nigeria");
 
 /**
- * The offer and the form: everything a person at an event fills in before they
- * pay. One column at every width; the page shell caps it, so it is a phone
- * form on a phone and a centred card on a laptop.
+ * The form: everything a person at an event fills in before they pay. One
+ * column at every width; the page shell caps it, so it is a phone form on a
+ * phone and a centred card on a laptop.
  *
- * The button names the price the API sent. Nothing here is a literal amount.
+ * There is no offer card. The button names the price the API sent and nothing
+ * else on the page does. Nothing here is a literal amount.
  */
-export function JoinForm({ offer, fields, errors, notice, submitting, onChange, onBlurField, onSubmit }: JoinFormProps) {
+export function JoinForm({ price, fields, errors, notice, submitting, onChange, onBlurField, onSubmit }: JoinFormProps) {
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!submitting) onSubmit();
@@ -50,15 +51,6 @@ export function JoinForm({ offer, fields, errors, notice, submitting, onChange, 
         <h1 className="m-0 text-[34px] font-bold leading-[1.05] tracking-[-0.035em] text-text-primary dt:text-[44px]">
           Register for WAWU
         </h1>
-      </div>
-
-      <div className="flex items-center justify-between gap-4 rounded-card border border-hairline bg-card px-5 py-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-[15px] font-semibold text-text-primary">{offer.name}</span>
-          {offer.includes ? <span className="text-[13px] text-text-secondary">{offer.includes}</span> : null}
-          {offer.closes ? <span className="text-[12.5px] text-text-muted">{offer.closes}</span> : null}
-        </div>
-        <span className="shrink-0 text-[28px] font-bold tracking-[-0.03em] text-text-primary">{offer.price}</span>
       </div>
 
       <form onSubmit={submit} noValidate className="flex flex-col gap-5 rounded-card border border-hairline bg-card p-5 dt:p-6">
@@ -148,7 +140,7 @@ export function JoinForm({ offer, fields, errors, notice, submitting, onChange, 
 
         <div className="flex flex-col gap-3">
           <Button type="submit" size="lg" full loading={submitting} icon={submitting ? undefined : "Lock"}>
-            {submitting ? "Starting secure payment" : `Pay ${offer.price}`}
+            {submitting ? "Starting secure payment" : `Pay ${price}`}
           </Button>
           <p className="m-0 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-text-muted">
             <Icon name="ShieldCheck" size={14} />

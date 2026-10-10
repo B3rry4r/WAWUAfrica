@@ -88,12 +88,13 @@
 
 ## E. Event registration link (`/join`, R-48, no account)
 
-A person at a WAWU event scans a QR code or taps a shared link, fills in name, phone, email (state and what they make are optional), ticks the consent line and pays the event fee (the price comes from the API, never the page) in the Flutterwave window. They land on "You're registered, <first name>" with a reference, and are told to sign up in the WAWU app with the same phone number or email. No sign-in, password or code; the sign-up page is not part of this flow.
+A person at a WAWU event scans a QR code or taps a shared link, fills in name, phone, email (state and what they make are optional), ticks the consent line and pays the event fee (the price comes from the API, never the page) in the Flutterwave window. They land on "You're registered, <first name>" with a short reference to read out to support (the first 8 characters of the random part of the full reference, upper-cased, in two groups of 4, for example "4733 1BA7"), and are told to sign up in the WAWU app with the same phone number or email. No sign-in, password or code; the sign-up page is not part of this flow.
 
 - Routes: `/join` (the page) and `/join/paid` (where a payment that left the page returns to; it finishes the server check from the reference in the address). Both sit outside the app shell and the auth layout.
 - Calls: `src/lib/api/waitlist.ts` (`GET /waitlist/offers/current`, `POST /waitlist/registrations`, `POST /waitlist/registrations/verify`, `GET /waitlist/registrations/:reference`).
 - Refusals, each in plain words: already registered (before any payment), offer closed, no offer open, payment cancelled ("You have not been charged"), payment not confirmed yet ("Checking your payment" with a retry of the check, never a second charge once a transaction id exists), network failure.
-- Kept in the browser: the reference and, once Flutterwave returns one, the transaction id (sessionStorage). Never a name, phone or email.
+- There is no offer card. The page is the logo, the "Event registration" eyebrow, the "Register for WAWU" heading and the form; the price (from the API) is on the pay button and nowhere else. The page never names the offer, says what the fee includes, how long the plan lasts or when it starts, or when registration closes.
+- Kept in the browser: the reference and, once Flutterwave returns one, the transaction id (sessionStorage). Never a name, phone or email. The full reference is what is stored, sent and put in the `/join/paid` address; only the registered screen shortens it, and the full reference starts with the short form so support can match it in the admin export.
 
 ---
 

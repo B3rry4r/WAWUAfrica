@@ -4,13 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button, Skeleton } from "@/components/ui";
 import { FlutterwaveCancelledError, FlutterwaveUnavailableError, openFlutterwaveCheckout } from "@/lib/flutterwave";
-import { isReference, isTransactionId, joinResume } from "@/lib/join-session";
+import { isReference, isTransactionId, joinResume, shortReference } from "@/lib/join-session";
 import {
   getCurrentOffer,
   getRegistrationStatus,
   refusalOf,
   startRegistration,
-  summariseOffer,
+  offerPrice,
   verifyRegistration,
 } from "@/lib/api/waitlist";
 import type { WaitlistOffer } from "@/lib/api/waitlist";
@@ -26,7 +26,7 @@ import { StateCard } from "./StateCard";
  *
  * ── THE STATES ─────────────────────────────────────────────────────────────
  *   loading      reading the open offer (or resuming a registration)
- *   form         the offer and the fields
+ *   form         the fields and the pay button (the price is only on the button)
  *   paying       the Flutterwave window is open
  *   verifying    a transaction id came back, the server is re-checking it
  *   checking     the check did not settle yet ("Checking your payment")
@@ -300,7 +300,6 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading">
           <div className="h-[16px] w-[140px]"><Skeleton variant="media" /></div>
           <div className="h-[44px] w-[260px]"><Skeleton variant="media" /></div>
-          <div className="h-[84px]"><Skeleton variant="card" /></div>
           <div className="h-[420px]"><Skeleton variant="card" /></div>
         </div>
       );
@@ -438,8 +437,11 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         <StateCard icon="Check" tone="success" title={`You're registered, ${phase.firstName}`}>
           <div className="flex flex-col items-center gap-1 rounded-input border border-hairline bg-input px-5 py-3">
             <span className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-text-muted">Your reference</span>
-            <span className="break-all font-mono text-[15px] font-semibold tracking-[0.04em] text-text-primary">
-              {phase.reference}
+            <span
+              data-testid="short-reference"
+              className="font-mono text-[28px] font-bold leading-[1.15] tracking-[0.12em] text-text-primary"
+            >
+              {shortReference(phase.reference)}
             </span>
           </div>
           <p className="m-0">Sign up in the WAWU app with this phone number or email and your plan will be waiting.</p>
@@ -467,7 +469,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     case "form":
       body = offer ? (
         <JoinForm
-          offer={summariseOffer(offer)}
+          price={offerPrice(offer)}
           fields={fields}
           errors={visibleErrors}
           notice={notice}

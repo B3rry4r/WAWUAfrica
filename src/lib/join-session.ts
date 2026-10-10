@@ -35,6 +35,20 @@ export function isTransactionId(value: unknown): value is string {
   return typeof value === "string" && TRANSACTION_SHAPE.test(value);
 }
 
+/**
+ * The short form of a reference for a person to read out: the first 8
+ * characters of its random part, upper-cased, in two groups of 4
+ * ("wawu-join-47331ba7..." is "4733 1BA7"). It is only for the eye. The full
+ * reference stays in sessionStorage, in the /join/paid address and in every
+ * API call, and it starts with these 8 characters, so support can match a
+ * spoken one against the admin export.
+ */
+export function shortReference(reference: string): string {
+  const random = reference.replace(/^wawu-join-/i, "").replace(/[^A-Za-z0-9]/g, "");
+  const head = random.slice(0, 8).toUpperCase();
+  return head.length > 4 ? `${head.slice(0, 4)} ${head.slice(4)}` : head;
+}
+
 export const joinResume = {
   get(): JoinResume | null {
     try {

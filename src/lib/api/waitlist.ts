@@ -76,28 +76,14 @@ export async function getRegistrationStatus(
   return { paid: r.status === "paid", failed: r.status === "failed", firstName: r.firstName };
 }
 
-/** What the form shows about the offer: every figure is the API's. */
-export interface OfferSummary {
-  name: string;
-  /** "₦2,000". */
-  price: string;
-  /** "Registration closes 31 October". */
-  closes: string | null;
-  /** "Includes the Verify plan for 30 days." The plan's own price is never shown. */
-  includes: string | null;
-}
-
-export function summariseOffer(offer: WaitlistOffer): OfferSummary {
-  const closesAt = new Date(offer.closesAt);
-  const closes = Number.isNaN(closesAt.getTime())
-    ? null
-    : `Registration closes ${closesAt.toLocaleDateString("en-NG", { day: "numeric", month: "long", timeZone: "Africa/Lagos" })}`;
-  return {
-    name: offer.name,
-    price: formatNairaFromKobo(offer.priceKobo),
-    closes,
-    includes: offer.tierName && offer.days > 0 ? `Includes the ${offer.tierName} plan for ${offer.days} days.` : null,
-  };
+/**
+ * The fee, from the API ("₦2,000"). It is drawn on the pay button and nowhere
+ * else: the page has no offer card, and it says nothing about the offer's
+ * name, what the fee includes, how long the plan lasts or when registration
+ * closes (the API still sends those; the page does not read them).
+ */
+export function offerPrice(offer: WaitlistOffer): string {
+  return formatNairaFromKobo(offer.priceKobo);
 }
 
 /** A field the server refused, so the page can say so under that field. */
