@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { isOpenInJoinOnly, siteModeFrom } from "@/lib/site-mode";
+import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
 
 /**
  * Site mode (see lib/site-mode.ts). In `full` mode this does nothing. In
- * `join-only` mode every path that is not the registration link, the privacy
- * document it links to, or a static file it needs gets a 307 to /join: pages,
- * the app, sign-in and sign-up, admin, /payment/return and any /api path alike.
- * 307 keeps the method, so a stray POST is not silently turned into a GET.
+ * `join-only` mode every path that is not the landing page, the registration
+ * link, the privacy document it links to, or a file those pages need gets a 307
+ * to /join: pages, the app, sign-in and sign-up, admin, /payment/return and any
+ * /api path alike. 307 keeps the method, so a stray POST is not silently turned
+ * into a GET.
  *
- * The variables are read through bracket access so the build cannot freeze
- * them: changing SITE_MODE (or the deployment's VERCEL_ENV) changes behaviour
- * without a rebuild of the code.
+ * The mode is read from the environment on every request (currentSiteMode), so
+ * changing SITE_MODE (or the deployment's VERCEL_ENV) changes behaviour without
+ * a rebuild of the code.
  */
 export function middleware(request: NextRequest) {
-  const mode = siteModeFrom({ SITE_MODE: process.env["SITE_MODE"], VERCEL_ENV: process.env["VERCEL_ENV"] });
-  if (mode === "full" || isOpenInJoinOnly(request.nextUrl.pathname)) return NextResponse.next();
+  if (currentSiteMode() === "full" || isOpenInJoinOnly(request.nextUrl.pathname)) return NextResponse.next();
 
   return redirectToJoin(request);
 }

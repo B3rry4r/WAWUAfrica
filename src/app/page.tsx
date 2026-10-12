@@ -1,6 +1,7 @@
 import { SessionProvider } from "@/lib/auth/session-provider";
 import { LandingContent } from "@/app/(marketing)/components/LandingContent";
 import { SoundFab, SoundResume } from "@/components/layout/SoundToggle";
+import { currentSiteMode } from "@/lib/site-mode";
 
 /**
  * `/` — the marketing landing page, for everyone, signed in or not.
@@ -14,15 +15,26 @@ import { SoundFab, SoundResume } from "@/components/layout/SoundToggle";
  *
  * This was forced dynamic because LandingContent fetched featured content,
  * which meant a build-time fetch (or its failure) got baked in and served to
- * every visitor until the next deploy. That fetch is gone — the page now has
- * no server data at all — so it can be prerendered again. Put the directive
- * back if anything here starts fetching.
+ * every visitor until the next deploy. That fetch went away and the page was
+ * prerendered for a while. It is forced dynamic again, for a different reason.
+ *
+ * Which links the landing page draws depends on the site mode (lib/site-mode.ts):
+ * on production wawuafrica.com only the landing page and the registration link
+ * are open, so the landing page's sign-up buttons go to /join and nothing on it
+ * leads into a closed part of the site (owner, 12 Oct 2026). The mode comes
+ * from SITE_MODE / VERCEL_ENV, which must be able to change behaviour without a
+ * rebuild (the middleware reads them on every request for the same reason). A
+ * prerendered page would freeze whichever mode the build ran in, so this page
+ * reads the mode when it renders, with the same function the middleware uses.
+ * The page has no server data, so rendering it per request is cheap.
  */
+export const dynamic = "force-dynamic";
 
 export default function Page() {
+  const mode = currentSiteMode();
   return (
     <SessionProvider>
-      <LandingContent />
+      <LandingContent mode={mode} />
       {/*
         The same toggle the app shell carries, so the theme follows a visitor
         from the landing page into the product without restarting — one

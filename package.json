@@ -13,6 +13,7 @@
     "contract:types": "openapi-typescript contract/openapi.json -o src/types/api.generated.ts",
     "sync-agent-rules": "bash scripts/sync-agent-rules.sh",
     "check:copy": "node scripts/check-copy.mjs",
+    "check:site-mode": "node --no-warnings --experimental-strip-types scripts/check-site-mode.mjs",
     "check:icons": "node scripts/build-icon-set.mjs --check",
     "build:icons": "node scripts/build-icon-set.mjs",
     "check:qr": "node scripts/check-qr.mjs",
