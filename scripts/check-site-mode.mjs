@@ -100,7 +100,7 @@ const EXPECTED_OPEN_PUBLIC = [
   "/wawu-hero-desktop-creators.png", "/wawu-hero-desktop-professionals.png", "/wawu-hero-mobile-creators.png", "/wawu-hero-mobile-professionals.png",
   "/wawu-icon-dark.png", "/wawu-icon-white.png", "/wawu-icon-white.svg", "/wawu-logo-dark.png", "/wawu-logo-dark.svg", "/wawu-logo-white.png", "/wawu-logo-white.svg",
   "/wawu-mascot-gospel.webp", "/wawu-theme.mp3", "/wawubasket-icon.png", "/wawubasket-logo.png", "/wawubeauty-icon.png", "/wawubeauty-logo.png",
-  "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
+  "/who-made-this-conference.webp", "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
   ...serviceIcons,
 ].sort();
 function walk(dir) {
@@ -112,6 +112,11 @@ function walk(dir) {
 const publicFiles = walk(join(root, "public")).map((f) => "/" + relative(join(root, "public"), f).split("\\").join("/"));
 const openPublic = publicFiles.filter((p) => isOpenInJoinOnly(p)).sort();
 eq("public/: the files join-only serves are exactly the expected list", openPublic, EXPECTED_OPEN_PUBLIC);
+// The /join hero picture (HERO_IMAGE in join-content.ts) is a root file in public/ and join-only serves it.
+const heroSrc = /HERO_IMAGE[^=]*=\s*\{[^}]*?src:\s*"(\/[^"]+)"/s.exec(readFileSync(join(root, "src/app/join/components/join-content.ts"), "utf8"))?.[1];
+check("join: the hero picture is named in join-content.ts", typeof heroSrc === "string");
+check("join: the hero picture exists in public/", publicFiles.includes(heroSrc));
+check("join: the hero picture is open in join-only", isOpenInJoinOnly(heroSrc ?? "/none"));
 check("public/: the landing page's icons exist", serviceIcons.every((p) => publicFiles.includes(p)), serviceIcons.filter((p) => !publicFiles.includes(p)).join(", "));
 
 // ---------------------------------------------------------------- landing: files it asks for (ruling 2)

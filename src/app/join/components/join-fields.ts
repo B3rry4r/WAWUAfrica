@@ -1,4 +1,5 @@
 import { DEFAULT_DIAL_CODE, fullPhoneNumber } from "@/components/ui";
+import { CITY_CHOICES, CRAFT_CHOICES } from "./join-content";
 
 /** What the form holds. Lives in component state only; never written to storage. */
 export interface JoinFields {
@@ -7,8 +8,13 @@ export interface JoinFields {
   /** The number without the dial code. */
   phone: string;
   email: string;
-  state: string;
-  makes: string;
+  /** What the person makes or does: one of CRAFT_CHOICES, "" until chosen. */
+  craft: string;
+  /** The conference city they will attend: one of CITY_CHOICES, "" until chosen. */
+  city: string;
+  /** "Send me launch and conference updates ..." (optional). */
+  updates: boolean;
+  /** The privacy line. Required: the server refuses a registration without it. */
   consent: boolean;
 }
 
@@ -17,16 +23,14 @@ export const EMPTY_FIELDS: JoinFields = {
   dialCode: DEFAULT_DIAL_CODE,
   phone: "",
   email: "",
-  state: "",
-  makes: "",
+  craft: "",
+  city: "",
+  updates: false,
   consent: false,
 };
 
-export type JoinFieldName = "fullName" | "phone" | "email" | "consent";
+export type JoinFieldName = "fullName" | "phone" | "email" | "craft" | "city" | "consent";
 export type JoinErrors = Partial<Record<JoinFieldName, string>>;
-
-/** The longest "what you make" the backend takes. */
-export const MAKES_MAX = 60;
 
 /**
  * A Nigerian mobile after the dial code: 10 digits, network prefix 7, 8 or 9
@@ -64,6 +68,9 @@ export function validateJoin(f: JoinFields): JoinErrors {
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) errors.email = "Enter a valid email address.";
+
+  if (!CRAFT_CHOICES.includes(f.craft)) errors.craft = "Choose what you make or do.";
+  if (!CITY_CHOICES.includes(f.city)) errors.city = "Choose a city.";
 
   if (!f.consent) errors.consent = "Tick this box to register.";
 
