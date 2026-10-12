@@ -19,15 +19,20 @@ import { formatNairaFromKobo } from "@/lib/format";
 export const WAS_PRICE_KOBO = 1_000_000;
 export const WAS_PRICE = formatNairaFromKobo(WAS_PRICE_KOBO);
 
-/** The hero picture the owner is sending. `null` until it arrives: the hero then draws its empty frame. */
+/** The hero picture: the owner's conference poster (12 Oct 2026), a 1200 by 1500 WebP copy of the original, 4:5 like its frame. */
 export interface HeroImage {
-  /** A file at the ROOT of public/ (production serves only root-level files). */
+  /** A file at the ROOT of public/ (production serves only root-level files), listed in scripts/check-site-mode.mjs. */
   src: string;
   alt: string;
   width: number;
   height: number;
 }
-export const HERO_IMAGE: HeroImage | null = null;
+export const HERO_IMAGE: HeroImage | null = {
+  src: "/who-made-this-conference.webp",
+  alt: "The WAWU conference poster. Who made this? Put your Name on it. Lagos, Abuja, Enugu and Port Harcourt, for builders, creators, founders, innovators and culture makers.",
+  width: 1200,
+  height: 1500,
+};
 
 /** The conference locations, in the owner's order. "Online" is the fifth. */
 export const CONFERENCE_CITIES = ["Lagos", "Abuja", "Port Harcourt", "Enugu"] as const;

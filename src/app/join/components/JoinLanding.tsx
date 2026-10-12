@@ -150,7 +150,7 @@ function HeroSlot() {
   return (
     <div
       data-slot="hero-image"
-      className={`relative aspect-[4/5] w-full max-w-[460px] overflow-hidden rounded-[28px] border border-hairline bg-[radial-gradient(120%_90%_at_70%_0%,var(--accent-tint-strong),transparent_70%)] dt:ml-auto ${HERO_IMAGE ? "" : "hidden dt:block"}`}
+      className={`relative aspect-[4/5] w-full max-w-[460px] overflow-hidden rounded-[28px] border border-hairline bg-[radial-gradient(120%_90%_at_70%_0%,var(--accent-tint-strong),transparent_70%)] dt:ml-auto dt:max-w-[540px] ${HERO_IMAGE ? "" : "hidden dt:block"}`}
     >
       {HERO_IMAGE ? (
         <img
@@ -158,6 +158,8 @@ function HeroSlot() {
           alt={HERO_IMAGE.alt}
           width={HERO_IMAGE.width}
           height={HERO_IMAGE.height}
+          fetchPriority="high"
+          decoding="async"
           className="h-full w-full object-cover"
         />
       ) : null}
