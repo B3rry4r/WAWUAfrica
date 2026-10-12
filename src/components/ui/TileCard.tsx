@@ -162,6 +162,14 @@ export interface TileCardProps {
   onClick?: () => void;
   /** Greys the card and drops the link — for a service that is not open yet. */
   disabled?: boolean;
+  /**
+   * `layout="stacked"` only: drops the link and the press behaviour but keeps
+   * the card exactly as it looks, no greying. For a tile that is open in the
+   * product but leads somewhere this surface does not serve (the landing page
+   * in join-only mode, where the app screens are closed): it stays as the
+   * picture it is, and is not a button that does nothing.
+   */
+  inert?: boolean;
   /** Filter state, when a row of these is acting as a filter. */
   selected?: boolean;
   /** Picks the gradient. Pass the item's index. */
@@ -226,6 +234,7 @@ export function TileCard({
   href,
   onClick,
   disabled = false,
+  inert = false,
   selected = false,
   index = 0,
   gradientClass,
@@ -435,7 +444,7 @@ export function TileCard({
       // sitting close together.
       size === "sm" ? "w-full dt:w-auto" : size === "lg" ? "w-[160px] dt:w-[175px]" : "w-full",
       selected ? "outline outline-2 outline-offset-4 outline-[var(--accent)]" : "",
-      disabled ? "brightness-[0.45]" : "transition-transform duration-200 hover:scale-[1.05]",
+      disabled ? "brightness-[0.45]" : inert ? "" : "transition-transform duration-200 hover:scale-[1.05]",
       className,
     ].join(" ");
 
@@ -479,7 +488,7 @@ export function TileCard({
       </>
     );
 
-    if (disabled) return <div className={stackedShell}>{stackedBody}</div>;
+    if (disabled || inert) return <div className={stackedShell}>{stackedBody}</div>;
     if (href) {
       return (
         <Link href={href} className={`${stackedShell} no-underline`}>

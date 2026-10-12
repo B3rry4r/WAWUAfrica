@@ -7,6 +7,8 @@ import { orderedServices } from "@/lib/platform-services";
 import { LandingAuthCta } from "./LandingAuthCta";
 import type { IconName } from "@/components/ui/Icon";
 import { formatNaira } from "@/lib/format";
+import { pageHref, signUpHref } from "@/lib/site-mode";
+import type { SiteMode } from "@/lib/site-mode";
 import { EarningsCalculator } from "./EarningsCalculator";
 import { FaqAccordion } from "./FaqAccordion";
 import { HeroRotatingWord } from "./HeroRotatingWord";
@@ -252,6 +254,25 @@ const COMPARE_ROWS: CompareRow[] = [
   { feature: "No fee to join or list", wawu: true, others: [false, false, false] },
 ];
 
+/**
+ * The footer's link columns. `signup` marks a sign-up or get-started link,
+ * which goes to /join in join-only mode; every other link is drawn only if it
+ * lands on an open page or an in-page anchor (see pageHref in lib/site-mode.ts).
+ */
+const FOOTER_COLUMNS: { label: string; links: { label: string; href: string; signup?: true }[] }[] = [
+  {
+    label: "Creators",
+    links: [
+      { label: "Sign in", href: "/sign-in" },
+      { label: "Sign up", href: "/sign-up", signup: true },
+      { label: "Join the Movement", href: "/sign-up?type=creator", signup: true },
+      { label: "What it costs", href: "#pricing" },
+    ],
+  },
+  { label: "Resources", links: [{ label: "Explore", href: "/explore" }, { label: "Learn", href: "/learn" }, { label: "Services", href: "/services" }] },
+  { label: "Company", links: [{ label: "Terms and privacy", href: "/terms" }] },
+];
+
 const FAQ = [
   { q: "What % of earnings does the platform take?", a: "WAWUAfrica takes 15% as standard. You keep 85% of everything you earn: content unlocks, paid DMs, tips and storefront sales. There is no listing fee, no monthly platform fee and no subscription." },
   { q: "Do I need to be verified to publish?", a: "No. Creator is an account type, pick it at signup or switch to it later, and publishing costs nothing. KYC is separate and only gates when you can receive payouts." },
@@ -293,7 +314,28 @@ function CheckOrX({ value, accent }: { value: string | boolean; accent?: boolean
   return <span className={`text-[13px] leading-snug ${accent ? "font-semibold text-text-primary" : "text-text-secondary"}`}>{value}</span>;
 }
 
-export async function LandingContent() {
+/**
+ * `mode` is the site mode (lib/site-mode.ts), decided per request by the page.
+ * In `full` it draws every link as it always has. In `join-only` (production,
+ * owner 12 Oct 2026) the sign-up and get-started buttons go to /join, links
+ * into the closed parts of the site (Sign in, Creators, Resources, Learn more,
+ * the footer's app links, the service tiles that open an app screen) are not
+ * drawn, and in-page anchors and the open pages (/terms) stay.
+ */
+export async function LandingContent({ mode }: { mode: SiteMode }) {
+  const signUp = signUpHref(mode, "/sign-up");
+  const signUpCreator = signUpHref(mode, "/sign-up?type=creator");
+  const learnHref = pageHref(mode, "/learn");
+  const marketingLinks = [
+    { label: "Creators", href: pageHref(mode, "/explore") },
+    { label: "Resources", href: pageHref(mode, "/learn") },
+  ].filter((l): l is { label: string; href: string } => l.href !== null);
+  const footerColumns = FOOTER_COLUMNS.map((col) => ({
+    label: col.label,
+    links: col.links
+      .map((l) => ({ label: l.label, href: l.signup ? signUpHref(mode, l.href) : pageHref(mode, l.href) }))
+      .filter((l): l is { label: string; href: string } => l.href !== null),
+  })).filter((col) => col.links.length > 0);
   return (
     <div className="relative min-h-screen overflow-x-clip bg-page">
       <div className="wawu-gridlines" aria-hidden="true" />
@@ -301,12 +343,15 @@ export async function LandingContent() {
       {/* Floating pill nav */}
       <header className="fixed left-1/2 top-3.5 z-50 flex w-[min(1240px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-full border border-hairline bg-[rgba(19,19,22,0.78)] py-2 pl-5 pr-2 backdrop-blur-xl dt:top-5 dt:gap-8 dt:py-2.5 dt:pl-7 dt:pr-2.5">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[22px] w-auto object-contain dt:h-[24px]" />
-        <nav className="hidden items-center gap-7 dt:flex" aria-label="Marketing">
-          <a href="/explore" className="text-[14px] font-medium text-text-secondary hover:text-text-primary">Creators</a>
-          <a href="/learn" className="text-[14px] font-medium text-text-secondary hover:text-text-primary">Resources</a>
-        </nav>
+        {marketingLinks.length > 0 ? (
+          <nav className="hidden items-center gap-7 dt:flex" aria-label="Marketing">
+            {marketingLinks.map((l) => (
+              <a key={l.label} href={l.href} className="text-[14px] font-medium text-text-secondary hover:text-text-primary">{l.label}</a>
+            ))}
+          </nav>
+        ) : null}
         <span className="flex-1" />
-        <LandingAuthCta />
+        <LandingAuthCta mode={mode} />
       </header>
 
       <main className="relative z-10">
@@ -407,21 +452,29 @@ export async function LandingContent() {
             off to the flex row, which is free to use the full desktop width.
           */}
           <div className="mx-auto mt-4 grid max-w-[360px] grid-cols-4 place-items-center gap-0 dt:mt-4 dt:flex dt:max-w-none dt:flex-row dt:flex-wrap dt:justify-center dt:gap-0">
-            {ORDERED_QUICK_SERVICES.map((service) => (
-              <TileCard
-                key={service.brand}
-                layout="stacked"
-                size="sm"
-                title={service.brand}
-                icon={service.icon}
-                iconImageSrc={service.iconImageSrc}
-                // Not yet openable, so deliberately not a link: a card
-                // that navigates nowhere is worse than one saying so.
-                // Also the "visually disabled" signal now that there is no
-                // "Coming soon" caption to say it in words.
-                {...(service.href && !service.soon ? { href: service.href } : { disabled: true })}
-              />
-            ))}
+            {ORDERED_QUICK_SERVICES.map((service) => {
+              // A service that is open in the product but whose screen is
+              // closed in this mode (join-only) keeps its look and loses its
+              // link (`inert`); one that is not open at all is dimmed
+              // (`disabled`), as it always was.
+              const open = Boolean(service.href) && !service.soon;
+              const href = open && service.href ? pageHref(mode, service.href) : null;
+              return (
+                <TileCard
+                  key={service.brand}
+                  layout="stacked"
+                  size="sm"
+                  title={service.brand}
+                  icon={service.icon}
+                  iconImageSrc={service.iconImageSrc}
+                  // Not yet openable, so deliberately not a link: a card
+                  // that navigates nowhere is worse than one saying so.
+                  // Also the "visually disabled" signal now that there is no
+                  // "Coming soon" caption to say it in words.
+                  {...(href ? { href } : open ? { inert: true } : { disabled: true })}
+                />
+              );
+            })}
           </div>
         </section>
 
@@ -590,7 +643,7 @@ export async function LandingContent() {
               ))}
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-3.5">
-              <WhitePill href="/sign-up?type=creator">Cash in on your WOW</WhitePill>
+              <WhitePill href={signUpCreator}>Cash in on your WOW</WhitePill>
               <Button size="lg" variant="secondary" href="#pricing">See what it costs</Button>
             </div>
           </div>
@@ -624,7 +677,7 @@ export async function LandingContent() {
                 ))}
               </div>
               <div className="mt-9">
-                <WhitePill href="/sign-up?type=creator">Start monetizing today</WhitePill>
+                <WhitePill href={signUpCreator}>Start monetizing today</WhitePill>
               </div>
             </div>
             <EarningsCalculator />
@@ -677,7 +730,7 @@ export async function LandingContent() {
                     </span>
                   ))}
                 </div>
-                <Button full href="/sign-up?type=creator" className="mt-auto">Start at no charge</Button>
+                <Button full href={signUpCreator} className="mt-auto">Start at no charge</Button>
               </div>
 
               <div className="flex flex-col gap-4 rounded-card border border-hairline bg-card p-6">
@@ -712,7 +765,7 @@ export async function LandingContent() {
                     </span>
                   ))}
                 </div>
-                <Button full variant="secondary" href="/sign-up" className="mt-auto">Join now</Button>
+                <Button full variant="secondary" href={signUp} className="mt-auto">Join now</Button>
               </div>
             </div>
           </div>
@@ -843,8 +896,8 @@ export async function LandingContent() {
                 See how WAWU stacks up, and find out why creators are switching.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3.5">
-                <WhitePill href="/sign-up?type=creator">Get access</WhitePill>
-                <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
+                <WhitePill href={signUpCreator}>Get access</WhitePill>
+                {learnHref ? <Button size="lg" variant="secondary" href={learnHref}>Learn more</Button> : null}
               </div>
             </div>
 
@@ -947,8 +1000,8 @@ export async function LandingContent() {
                 ))}
               </div>
               <div className="mt-9 flex flex-wrap justify-center gap-3.5">
-                <WhitePill href="/sign-up?type=creator">Join the Movement</WhitePill>
-                <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
+                <WhitePill href={signUpCreator}>Join the Movement</WhitePill>
+                {learnHref ? <Button size="lg" variant="secondary" href={learnHref}>Learn more</Button> : null}
               </div>
             </div>
           </div>
@@ -1036,7 +1089,7 @@ export async function LandingContent() {
                 ))}
               </div>
               <div className="mt-8 flex flex-wrap gap-3.5">
-                <WhitePill href="/sign-up?type=creator">Join the Movement</WhitePill>
+                <WhitePill href={signUpCreator}>Join the Movement</WhitePill>
                 <Button size="lg" variant="secondary" href="#comparison">See the difference</Button>
               </div>
             </div>
@@ -1078,8 +1131,8 @@ export async function LandingContent() {
                 Own Your WOW
               </h2>
               <div className="mt-9 flex flex-wrap justify-center gap-3.5">
-                <WhitePill href="/sign-up?type=creator">Join WAWU</WhitePill>
-                <Button size="lg" variant="secondary" href="/learn">Learn more</Button>
+                <WhitePill href={signUpCreator}>Join WAWU</WhitePill>
+                {learnHref ? <Button size="lg" variant="secondary" href={learnHref}>Learn more</Button> : null}
               </div>
             </div>
           </div>
@@ -1090,16 +1143,12 @@ export async function LandingContent() {
       <footer className="relative z-10 flex flex-col gap-7 border-t border-hairline px-5 pb-12 pt-9 dt:mx-auto dt:max-w-[1240px] dt:px-0">
         <img src="/wawu-logo-white.png" alt="WAWU" className="h-[20px] w-auto self-start object-contain opacity-80" />
         <div className="grid grid-cols-2 gap-x-5 gap-y-7 dt:grid-cols-4">
-          {[
-            { label: "Creators", links: [["Sign in", "/sign-in"], ["Sign up", "/sign-up"], ["Join the Movement", "/sign-up?type=creator"], ["What it costs", "#pricing"]] },
-            { label: "Resources", links: [["Explore", "/explore"], ["Learn", "/learn"], ["Services", "/services"]] },
-            { label: "Company", links: [["Terms and privacy", "/terms"]] },
-          ].map((col) => (
+          {footerColumns.map((col) => (
             <div key={col.label} className="flex flex-col gap-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-text-muted">{col.label}</span>
-              {col.links.map(([label, href]) => (
-                <Link key={label} href={href} className="text-[13.5px] text-text-secondary hover:text-text-primary">
-                  {label}
+              {col.links.map((l) => (
+                <Link key={l.label} href={l.href} className="text-[13.5px] text-text-secondary hover:text-text-primary">
+                  {l.label}
                 </Link>
               ))}
             </div>
