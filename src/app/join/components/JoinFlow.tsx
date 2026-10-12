@@ -22,9 +22,9 @@ import {
 import type { WaitlistOffer } from "@/lib/api/waitlist";
 import { EMPTY_FIELDS, phoneOf, validateJoin } from "./join-fields";
 import type { JoinErrors, JoinFields } from "./join-fields";
-import { JoinForm } from "./JoinForm";
+import { JoinForm, JoinFormSkeleton } from "./JoinForm";
 import type { FormNotice } from "./JoinForm";
-import { JoinHeading } from "./JoinHeading";
+import { JoinLanding } from "./JoinLanding";
 import { JoinShell } from "./JoinShell";
 import { LaunchAccessCode } from "./LaunchAccessCode";
 import { StateCard } from "./StateCard";
@@ -33,12 +33,13 @@ import { StateCard } from "./StateCard";
  * /join and /join/paid: one flow, one state machine.
  *
  * ── THE STATES ─────────────────────────────────────────────────────────────
- *   loading      reading the open offer (the heading and a skeleton of the form)
- *   form         the fields and the pay button (the price is only on the button)
+ *   loading      reading the open offer (the whole page, with a skeleton of the form)
+ *   form         the whole page and the form: the fields and the pay button (owner's
+ *                redesign, 12 Oct 2026; the fee is the API's, beside the owner's "was" price)
  *   paying       the Flutterwave window is open
  *   verifying    asking the server where a payment stands
  *   checking     not settled yet ("Checking your payment"); asks again by itself
- *   registered   paid, with the launch access code (the short reference) and how to keep it
+ *   registered   paid, with the launch access code (the short reference), how to keep it, and a share link
  *   already      that phone or email had already paid before this one started
  *   extra        registered, and THIS payment was a second one (kept to be refunded)
  *   support      the server refused the payment in a way only a person can settle
@@ -528,6 +529,8 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       phone: "phone",
       dialCode: "phone",
       email: "email",
+      craft: "craft",
+      city: "city",
       consent: "consent",
     };
     const cleared = (Object.keys(patch) as Array<keyof JoinFields>).map((k) => edited[k]).filter(Boolean) as Array<keyof JoinErrors>;
@@ -558,8 +561,9 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         fullName: fields.fullName.trim(),
         phone: phoneOf(fields),
         email: fields.email.trim().toLowerCase(),
-        state: fields.state || undefined,
-        makes: fields.makes.trim() || undefined,
+        craft: fields.craft,
+        city: fields.city,
+        updatesOptIn: fields.updates,
       });
       reference = started.reference;
 
@@ -672,20 +676,12 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
 
   // ── what to draw ─────────────────────────────────────────────────────────
 
-  let body: React.ReactNode;
+  let body: React.ReactNode = null;
+  /** The whole page (loading, form): drawn as it is, not inside the compact frame. */
+  let landing: React.ReactNode = null;
   switch (phase.kind) {
     case "loading":
-      body = (
-        <div className="flex flex-col gap-6" aria-busy="true">
-          <JoinHeading />
-          <div className="flex flex-col gap-5 rounded-card border border-hairline bg-card p-5 dt:p-6" aria-hidden="true">
-            <div className="h-[72px]"><Skeleton variant="media" /></div>
-            <div className="h-[72px]"><Skeleton variant="media" /></div>
-            <div className="h-[72px]"><Skeleton variant="media" /></div>
-            <div className="h-[56px]"><Skeleton variant="media" /></div>
-          </div>
-        </div>
-      );
+      landing = <JoinLanding price={null} form={<JoinFormSkeleton />} />;
       break;
 
     case "unreachable":
@@ -880,7 +876,8 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     case "registered": {
       body = (
         <StateCard icon="Check" tone="success" title="YOUR WHO MADE THIS? LAUNCH ACCESS CODE" wide>
-          <LaunchAccessCode code={shortReference(phase.reference)} />
+          {/* The fee is shown only when this visit read it and the server confirmed it was the amount charged. */}
+          <LaunchAccessCode code={shortReference(phase.reference)} price={offer ? offerPrice(offer) : null} />
         </StateCard>
       );
       break;
@@ -976,21 +973,27 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       break;
 
     case "form":
-      body = offer ? (
-        <JoinForm
+      landing = offer ? (
+        <JoinLanding
           price={offerPrice(offer)}
-          fields={fields}
-          errors={visibleErrors}
-          notice={notice}
-          submitting={submitting}
-          attempt={attempt}
-          onChange={change}
-          onBlurField={(name) => setTouched((t) => ({ ...t, [name]: true }))}
-          onSubmit={() => void pay()}
+          scrollToForm={notice !== null}
+          form={
+            <JoinForm
+              price={offerPrice(offer)}
+              fields={fields}
+              errors={visibleErrors}
+              notice={notice}
+              submitting={submitting}
+              attempt={attempt}
+              onChange={change}
+              onBlurField={(name) => setTouched((t) => ({ ...t, [name]: true }))}
+              onSubmit={() => void pay()}
+            />
+          }
         />
       ) : null;
       break;
   }
 
-  return <JoinShell>{body}</JoinShell>;
+  return landing ? <>{landing}</> : <JoinShell>{body}</JoinShell>;
 }

@@ -5,9 +5,11 @@ import { JoinFlow } from "./components/JoinFlow";
  * wawuafrica.com/join: the event registration link.
  *
  * A waiting list, not an account: a person scans a QR code or taps a shared
- * link, fills in a short form, pays the event fee and is told they are
- * registered. No sign-in, no password, no code. The sign-up page is a
- * different thing and is not touched by any of this.
+ * link, reads the page, fills in a short form, pays the pre-registration fee
+ * and is told they are registered. There is no free route. No sign-in, no
+ * password, no code. The sign-up page is a different thing and is not touched
+ * by any of this. The page is the owner's redesign of 12 Oct 2026 (no date
+ * anywhere: "this October").
  *
  * The share card is written out in full, images included, because a page's
  * `openGraph` replaces the root layout's rather than merging with it. Without
@@ -15,7 +17,7 @@ import { JoinFlow } from "./components/JoinFlow";
  */
 const TITLE = "WHO MADE THIS? Pre-registration";
 const DESCRIPTION =
-  "Get a ONE-OFF subscription to WHO MADE THIS?, the creator and professional monetization platform. Launching October 17, 2026.";
+  "Pre-register once for the PUT YOUR NAME ON IT conference in Lagos, Abuja, Port Harcourt and Enugu, and for WHO MADE THIS?, the creator and professional monetization platform launching this October.";
 /** The Who Made This lockup on the site's dark background, 1200 x 630. Root of public/: production serves only root-level files. */
 const SHARE_IMAGE = "/who-made-this-og.png";
 
@@ -41,7 +43,7 @@ export const metadata: Metadata = {
  * No Suspense and no search-params hook here on purpose: either one makes
  * Next send an empty page and draw everything with JavaScript, which on a slow
  * venue connection is a blank screen. Rendered plainly, the static HTML already
- * holds the logo, the heading and the form's skeleton.
+ * holds the whole page and the form's skeleton.
  */
 export default function JoinPage() {
   return <JoinFlow />;

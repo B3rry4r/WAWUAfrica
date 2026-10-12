@@ -15,7 +15,19 @@ import type { components, operations } from "@/types/api.generated";
  * The backend explains each refusal as `reason.code` (client.ts puts it on
  * `ApiError.code`). The page switches on that code, never on a message.
  */
-type RegistrationBody = components["schemas"]["CreateWaitlistRegistrationDto"];
+/**
+ * The three fields the owner's redesign added (JOIN-V2: the craft, the city
+ * and the updates answer) are in the backend's contract, but this repo's pinned
+ * copy (`contract/openapi.json`) predates them, so they are declared here until
+ * `npm run contract:sync` is next run. That refresh also brings in every route
+ * the backend has added since, which is not this task's change; once it has
+ * run, the intersection below can be dropped.
+ */
+type RegistrationBody = components["schemas"]["CreateWaitlistRegistrationDto"] & {
+  craft?: string;
+  city?: string;
+  updatesOptIn?: boolean;
+};
 
 export type WaitlistOffer = operations["WaitlistPublicController_currentOffer"]["responses"][200]["content"]["application/json"];
 export type WaitlistStart = operations["WaitlistPublicController_register"]["responses"][200]["content"]["application/json"];
@@ -37,7 +49,7 @@ export function getCurrentOffer(): Promise<WaitlistOffer> {
  */
 export async function startRegistration(
   offer: WaitlistOffer,
-  input: Pick<RegistrationBody, "fullName" | "phone" | "email" | "state" | "makes">,
+  input: Pick<RegistrationBody, "fullName" | "phone" | "email" | "craft" | "city" | "updatesOptIn">,
 ): Promise<{ reference: string; amountKobo: number; checkout: FlutterwaveChargeConfig }> {
   const body: RegistrationBody = { offerId: offer.id, ...input, consent: true };
   const started = await apiFetch<WaitlistStart>("/api/hub/waitlist/registrations", { method: "POST", body });
@@ -88,10 +100,11 @@ export async function getRegistrationStatus(
 }
 
 /**
- * The fee, from the API ("₦2,000"). It is drawn on the pay button and nowhere
- * else: the page has no offer card, and it says nothing about the offer's
- * name, what the fee includes, how long the plan lasts or when registration
- * closes (the API still sends those; the page does not read them).
+ * The fee, from the API ("₦2,000"). The page draws it on the hero button, the
+ * offer card, the pay button, the questions and the sticky bar, always beside
+ * the owner's struck-through "was" price (join-content.ts). It never says the
+ * offer's name, how long the plan lasts or when registration closes (the API
+ * still sends those; the page does not read them).
  */
 export function offerPrice(offer: WaitlistOffer): string {
   return formatNairaFromKobo(offer.priceKobo);

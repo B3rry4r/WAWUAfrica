@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button, Callout } from "@/components/ui";
+import { ShareLink } from "./ShareLink";
+import { SlashedPrice } from "./SlashedPrice";
+import { WAS_PRICE } from "./join-content";
 
 /** How long the button says "Copied" before it goes back to "Copy code". */
 const COPIED_FOR_MS = 2_500;
@@ -10,7 +13,12 @@ const COPIED_FOR_MS = 2_500;
  * Everything on the screen after payment that comes under the heading: the
  * code, the button that copies it, and the owner's words (10 Oct 2026), kept
  * exactly: the capitals, the curly apostrophes, the emoji and the figure in
- * the IMPORTANT line.
+ * the IMPORTANT line. The launch date in them is "this October" since the
+ * owner's redesign (12 Oct 2026: no date anywhere), the standard fee is the
+ * owner's "was" figure from join-content.ts, and a share link ends the screen.
+ * `price` is the fee this visit confirmed was charged; with it, the screen shows
+ * the slashed price, and without it (a return from a bank app, where the offer
+ * was never read) it says nothing about what was paid.
  *
  * The code is the short reference of the registration ("XXXX XXXX"), shown
  * large in a monospace face so it is easy to read out and to write down.
@@ -20,7 +28,7 @@ const COPIED_FOR_MS = 2_500;
  * in-app browser, a denied permission) the code is selected instead, so the
  * person can copy it by hand and nothing pretends it worked.
  */
-export function LaunchAccessCode({ code }: { code: string }) {
+export function LaunchAccessCode({ code, price = null }: { code: string; price?: string | null }) {
   const codeRef = useRef<HTMLSpanElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copied, setCopied] = useState(false);
@@ -82,19 +90,28 @@ export function LaunchAccessCode({ code }: { code: string }) {
 
       <p className="m-0 text-[18px] font-bold leading-[1.3] tracking-[-0.01em] text-text-primary">Keep your unique ID safe! 🔐</p>
 
+      {price ? (
+        <p className="m-0 flex flex-wrap items-baseline justify-center gap-x-2 text-[15.5px] text-text-secondary">
+          <span>Pre-registration paid:</span>
+          <SlashedPrice price={price} className="text-text-primary" />
+          <span>It covers your verification.</span>
+        </p>
+      ) : null}
+
       <p className="m-0">
-        Your code is your key to redeeming your subscription discount when WHO MADE THIS? officially launches on October
-        17, 2026.
+        Your code is your key to redeeming your subscription discount when WHO MADE THIS? officially launches this October.
       </p>
 
       <Callout tone="warning" size="md" full className="text-left">
         <strong className="font-bold text-text-primary">IMPORTANT:</strong> Without this code, you’ll pay the standard
-        subscription fee of ₦10,000.
+        subscription fee of {WAS_PRICE}.
       </Callout>
 
       <p className="m-0 text-[15.5px] font-semibold leading-[1.45] text-text-primary">
         Keep it safe. Don’t lose it. Your code, your discount!
       </p>
+
+      <ShareLink />
     </div>
   );
 }

@@ -57,3 +57,10 @@ a { transition: background-color var(--dur-base) var(--ease-soft),
 @media (prefers-reduced-motion: reduce) {
   a { transition: none; }
 }
+
+/* /join: the page's call-to-action links glide to the form. Toggled by the page itself
+   (JoinLanding) so no other screen changes; reduced motion keeps the plain jump. */
+@keyframes wawuBlink { 50% { opacity: 0 } }
+@media (prefers-reduced-motion: no-preference) {
+  html.join-smooth { scroll-behavior: smooth; }
+}

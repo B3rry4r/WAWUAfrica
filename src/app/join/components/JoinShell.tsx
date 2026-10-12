@@ -1,19 +1,18 @@
 import type { ReactNode } from "react";
 
 /**
- * The frame every /join screen sits in: the Who Made This logo, a soft purple
- * glow, and one centred column.
+ * The frame the /join screens that are not the page sit in (a payment being
+ * opened or checked, the launch access code, a refusal): the Who Made This
+ * logo, a soft purple glow, and one centred column.
  *
- * Standalone on purpose. /join lives outside every route group (no app shell,
- * no auth layout, no session provider), so a person who scanned a QR code at
- * an event sees the logo and the registration, and nothing to tap that leads
- * away from it. The logo is a picture, not a link, for the same reason: one
- * mis-tap must not drop someone out of a half-finished payment.
- *
- * Both logo files are drawn and the stylesheet picks one, because the white
- * lockup disappears on the light theme and the ink one on the dark theme. They
- * are the owner's horizontal lockups from the brand pack, kept at the ROOT of
- * public/ because production serves only root-level static files (site mode).
+ * Dark only, like the rest of the website (owner, 12 Oct 2026). Standalone on
+ * purpose. /join lives outside every route group (no app shell, no auth
+ * layout, no session provider), so a person in the middle of a payment sees
+ * the logo and the screen, and nothing to tap that leads away from it. The
+ * logo is a picture, not a link, for the same reason: one mis-tap must not
+ * drop someone out of a half-finished payment. It is the owner's white
+ * lockup, kept at the ROOT of public/ because production serves only
+ * root-level static files (site mode).
  */
 export function JoinShell({ children }: { children: ReactNode }) {
   return (
@@ -28,14 +27,7 @@ export function JoinShell({ children }: { children: ReactNode }) {
           alt="Who Made This"
           width={1009}
           height={295}
-          className="h-[46px] w-auto object-contain [[data-theme=light]_&]:hidden dt:h-[56px]"
-        />
-        <img
-          src="/who-made-this-ink.png"
-          alt="Who Made This"
-          width={1009}
-          height={295}
-          className="hidden h-[46px] w-auto object-contain [[data-theme=light]_&]:block dt:h-[56px]"
+          className="h-[46px] w-auto object-contain dt:h-[56px]"
         />
       </header>
       <main className="relative z-10 mx-auto w-full max-w-[520px] px-4 pb-16 pt-8 dt:pt-14">{children}</main>
