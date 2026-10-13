@@ -5,6 +5,7 @@ import { USE_MOCKS } from "@/lib/api/config";
 import { getAdminToken } from "@/lib/api/notifications";
 import { AdminSignIn } from "./AdminSignIn";
 import { CampaignComposer } from "./CampaignComposer";
+import { EmailTab } from "./EmailTab";
 
 /**
  * The admin push composer (build brief C8), deliberately OUTSIDE the `(app)`
@@ -31,18 +32,53 @@ import { CampaignComposer } from "./CampaignComposer";
 export default function AdminNotificationsPage() {
   const [signedIn, setSignedIn] = useState(false);
   const [ready, setReady] = useState(false);
+  const [tab, setTab] = useState<"push" | "email">("push");
 
   // localStorage is only readable after mount, so the first paint must not
   // guess at the answer.
   useEffect(() => {
     setSignedIn(USE_MOCKS || getAdminToken() !== null);
+    if (window.location.hash === "#email") setTab("email");
     setReady(true);
   }, []);
 
   return (
     <main className="min-h-screen bg-page text-text-primary">
       {!ready ? null : signedIn ? (
-        <CampaignComposer />
+        <>
+          <nav className="mx-auto flex max-w-[1180px] gap-2 px-4 pt-5" role="tablist" aria-label="Notification channels">
+            {(
+              [
+                ["push", "Push"],
+                ["email", "Email"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={tab === key}
+                onClick={() => {
+                  setTab(key);
+                  window.history.replaceState(null, "", key === "email" ? "#email" : window.location.pathname);
+                }}
+                className={`rounded-button px-4 py-2 text-[14px] font-semibold transition-colors ${
+                  tab === key ? "bg-accent text-on-accent" : "bg-card text-text-secondary hover:bg-elevated"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          {tab === "push" ? (
+            <CampaignComposer />
+          ) : (
+            <div className="mx-auto max-w-[1180px] px-4 py-6">
+              <h1 className="m-0 mb-4 text-[22px] font-semibold tracking-[-0.02em] text-text-primary">Email campaigns</h1>
+              <EmailTab />
+            </div>
+          )}
+        </>
       ) : (
         <AdminSignIn onSignedIn={() => setSignedIn(true)} />
       )}
