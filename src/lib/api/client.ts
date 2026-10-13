@@ -264,7 +264,10 @@ async function rawFetch(path: string, options: ApiRequestOptions, isRetry = fals
   const isAuthedCall = Boolean(authed || token);
 
   const headers = new Headers(rest.headers);
-  if (body !== undefined) headers.set("Content-Type", "application/json");
+  // A FormData body (a file upload) goes through as it is: the browser writes
+  // the multipart boundary into Content-Type itself. Everything else is JSON.
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+  if (body !== undefined && !isForm) headers.set("Content-Type", "application/json");
   if (isAuthedCall) {
     const sessionToken = token ?? sessionStorage.getToken();
     if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
@@ -279,7 +282,7 @@ async function rawFetch(path: string, options: ApiRequestOptions, isRetry = fals
       ...rest,
       headers,
       signal: controller.signal,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
     });
   } catch (e) {
     // fetch only rejects when the request never completed — there is no

@@ -82,10 +82,23 @@ export function isOpenPageInJoinOnly(pathname: string): boolean {
   return OPEN_PAGES.has(trimmed(pathname));
 }
 
+/**
+ * The admin dashboard pages: `/admin` and everything under it (owner, 13 Oct
+ * 2026, the email campaign tool at /admin/notifications). They stay reachable
+ * in join-only mode because the admin sign-in protects them: every call they
+ * make needs an admin token from the Hub, and the pages show a sign-in form
+ * first. Whole segments only, so `/administrator` and `/adminx` stay closed.
+ * Never linked from the landing page (see `pageHref`, which does not use this).
+ */
+function isAdminPath(path: string): boolean {
+  return path === "/admin" || path.startsWith("/admin/");
+}
+
 /** True when join-only mode lets this path through. Every other path is sent to /join. */
 export function isOpenInJoinOnly(pathname: string): boolean {
   const path = trimmed(pathname);
   if (OPEN_PAGES.has(path)) return true;
+  if (isAdminPath(path)) return true;
   if (path.startsWith("/_next/static/") || path === "/_next/image") return true;
   if (path === "/robots.txt") return true;
   if (LANDING_FILES.has(path) || LANDING_SERVICE_ICON.test(path)) return true;

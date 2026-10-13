@@ -6,7 +6,8 @@
  * registration link and nothing else (owner, 10 and 12 Oct 2026). This checks:
  *
  *   mode      which mode applies for which environment
- *   open      the exact paths join-only lets through, and a long list that it
+ *   open      the exact paths join-only lets through (the admin dashboard, /admin and
+ *             everything under it, is one of them: the admin sign-in protects it), and a long list that it
  *             must keep closed (a profile path ending ".png", a nested path,
  *             /icons/bills ...). Every file in public/ is classified, so a new
  *             file cannot become reachable by accident.
@@ -67,6 +68,8 @@ const mustBeOpen = [
   "/robots.txt",
   "/wawu-logo-white.png", "/wawu-icon-white.svg", "/wawu-hero-desktop-creators.png", "/wawu-hero-mobile-professionals.png",
   "/who-made-this-ink.png", "/og-image.png", "/favicon.ico", "/icon.png", "/apple-icon.png",
+  // the admin dashboard (the admin sign-in protects it): /admin and everything under it
+  "/admin", "/admin/", "/admin/notifications", "/admin/notifications/", "/admin/x/y",
   "/wawu-theme.mp3",
   ...serviceIcons,
 ];
@@ -74,7 +77,9 @@ for (const p of mustBeOpen) check(`open: ${p}`, isOpenInJoinOnly(p));
 
 const mustStayClosed = [
   // the app and everything behind it
-  "/home", "/explore", "/learn", "/learn/x", "/sign-in", "/sign-up", "/admin", "/admin/x", "/api/anything", "/api/hub/waitlist/offers/current",
+  "/home", "/explore", "/learn", "/learn/x", "/sign-in", "/sign-up", "/api/anything", "/api/hub/waitlist/offers/current",
+  // admin is whole segments only
+  "/administrator", "/adminx/y", "/x/admin", "/api/hub/admin/notifications/email/campaigns",
   "/payment/return", "/wallet", "/events", "/services", "/services/legal", "/services/pay", "/shop", "/tickets", "/wawu/ada", "/communities",
   // a profile whose handle ends in a file extension is a page, not a file
   "/wawu/ada.png", "/wawu/ada.png/", "/wawu/ada.mp3",
@@ -232,11 +237,11 @@ if (base && mode) {
   console.log(`live: ${anchors.length} links and ${own} files fetched in ${mode} mode`);
 
   if (mode === "join-only") {
-    for (const p of ["/home", "/explore", "/learn", "/sign-in", "/sign-up", "/admin", "/api/anything", "/wawu/ada.png", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4"]) {
+    for (const p of ["/home", "/explore", "/learn", "/sign-in", "/sign-up", "/administrator", "/api/anything", "/wawu/ada.png", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4"]) {
       const r = await get(p);
       check(`live: ${p} is still closed (307 to /join)`, r.status === 307 && /\/join$/.test(r.headers.get("location") ?? ""), `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
-    for (const p of ["/join", "/join/paid", "/terms"]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
+    for (const p of ["/join", "/join/paid", "/terms", "/admin/notifications"]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
   }
 }
 
