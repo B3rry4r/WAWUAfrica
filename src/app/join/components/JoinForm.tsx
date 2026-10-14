@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import type { FormEvent } from "react";
 import { Button, Callout, Checkbox, Icon, Input, PhoneInput, Select, Skeleton } from "@/components/ui";
 import type { CalloutTone } from "@/components/ui";
+import type { ReferralVerdict } from "@/lib/join-referral";
+import { formatNairaFromKobo } from "@/lib/format";
 import { CITY_CHOICES, CRAFT_CHOICES } from "./join-content";
 import type { JoinErrors, JoinFields } from "./join-fields";
 
@@ -15,8 +17,16 @@ export interface FormNotice {
 }
 
 interface JoinFormProps {
-  /** The fee as the API sent it ("₦2,000"): drawn on the pay button. */
+  /** What the person pays, as the API sent it ("₦2,000", or the referral code's price): drawn on the button. */
   price: string;
+  /** The standard fee, as the API sent it ("₦2,000"): what a code that is full or off falls back to. */
+  standardPrice: string;
+  /** What the server said about the referral code in the field (REF-01). */
+  referral: ReferralVerdict;
+  /** True when the code applies at price 0: the button completes the registration and no payment window opens. */
+  noPayment: boolean;
+  /** The person left the code field: check a short code now. */
+  onReferralBlur: () => void;
   fields: JoinFields;
   /** Errors to show. The parent decides which fields have been touched. */
   errors: JoinErrors;
@@ -54,7 +64,21 @@ const FIELD_LABELS: Array<[keyof JoinErrors, string]> = [
  * Fields are 16px on phones (`noZoom`), because iPhone Safari zooms the page
  * when a smaller field takes focus.
  */
-export function JoinForm({ price, fields, errors, notice, submitting, attempt, onChange, onBlurField, onSubmit }: JoinFormProps) {
+export function JoinForm({
+  price,
+  standardPrice,
+  referral,
+  noPayment,
+  onReferralBlur,
+  fields,
+  errors,
+  notice,
+  submitting,
+  attempt,
+  onChange,
+  onBlurField,
+  onSubmit,
+}: JoinFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   // After a submit that found problems, land on the first one. The errors are
@@ -170,6 +194,33 @@ export function JoinForm({ price, fields, errors, notice, submitting, attempt, o
         noZoom
       />
 
+      <Input
+        label="Referral code (optional)"
+        name="referralCode"
+        autoComplete="off"
+        autoCapitalize="characters"
+        spellCheck={false}
+        value={fields.referralCode}
+        onChange={(e) => onChange({ referralCode: e.target.value })}
+        onBlur={onReferralBlur}
+        error={referral.kind === "unknown" ? referral.message : undefined}
+        hint={referralHint(referral, standardPrice)}
+        maxLength={30}
+        disabled={submitting}
+        noZoom
+      />
+      {referral.kind === "applies" ? (
+        <p role="status" className="m-0 -mt-3 flex items-center gap-1.5 text-[13.5px] font-semibold text-success">
+          <Icon name="BadgeCheck" size={16} />
+          {referral.code} applied. You pay {formatNairaFromKobo(referral.priceKobo)}.
+        </p>
+      ) : referral.kind === "notApplied" ? (
+        <p role="status" className="m-0 -mt-3 flex items-center gap-1.5 text-[13.5px] font-semibold text-warning">
+          <Icon name="CircleAlert" size={16} />
+          The {referral.code} offer is full. You will pay the standard {standardPrice}.
+        </p>
+      ) : null}
+
       <div className="flex flex-col">
         <Checkbox
           id="updates"
@@ -200,16 +251,32 @@ export function JoinForm({ price, fields, errors, notice, submitting, attempt, o
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button type="submit" size="lg" full loading={submitting} icon={submitting ? undefined : "Lock"}>
-          {submitting ? "Starting secure payment" : `Pay ${price}`}
+        <Button type="submit" size="lg" full loading={submitting} icon={submitting ? undefined : noPayment ? "Check" : "Lock"}>
+          {noPayment
+            ? submitting
+              ? "Completing registration"
+              : "Complete registration"
+            : submitting
+              ? "Starting secure payment"
+              : `Pay ${price}`}
         </Button>
-        <p className="m-0 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-text-muted">
-          <Icon name="ShieldCheck" size={14} />
-          Secure payment by Flutterwave: card, bank transfer or USSD.
-        </p>
+        {noPayment ? null : (
+          <p className="m-0 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-text-muted">
+            <Icon name="ShieldCheck" size={14} />
+            Secure payment by Flutterwave: card, bank transfer or USSD.
+          </p>
+        )}
       </div>
     </form>
   );
+}
+
+/** The quiet line under the code field while nothing has been decided yet. */
+function referralHint(referral: ReferralVerdict, standardPrice: string): string | undefined {
+  if (referral.kind === "checking") return "Checking the code...";
+  if (referral.kind === "unchecked") return `We could not check the code just now. It is checked again when you register. Without it you pay ${standardPrice}.`;
+  if (referral.kind === "none") return "Have a code from your community? Enter it to see your price.";
+  return undefined;
 }
 
 /** The form's first paint, while the open offer is being read. */

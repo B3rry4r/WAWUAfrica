@@ -13,13 +13,15 @@ interface SlashedPriceProps {
  * figure struck through, the fee that is paid beside it. The paid amount is
  * the API's; the struck figure is the owner's marketing number
  * (`WAS_PRICE` in join-content.ts). A screen reader hears one plain sentence
- * instead of two prices.
+ * instead of two prices. The big figure wraps under the struck one when the
+ * card is too narrow for both side by side (a 320 px phone), so it never
+ * runs past the card or the page.
  */
 export function SlashedPrice({ price, size = "inline", className = "" }: SlashedPriceProps) {
   if (!price) return null;
   const hero = size === "hero";
   return (
-    <span className={`inline-flex items-baseline ${hero ? "gap-3" : "gap-1.5"} ${className}`}>
+    <span className={`inline-flex items-baseline ${hero ? "flex-wrap gap-x-3 gap-y-1" : "gap-1.5"} ${className}`}>
       <span className="sr-only">{`Slashed from ${WAS_PRICE} to ${price}`}</span>
       <s
         aria-hidden="true"

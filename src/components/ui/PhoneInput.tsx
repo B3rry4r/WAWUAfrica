@@ -145,7 +145,7 @@ export function PhoneInput({
             const trimmed = e.target.value.replace(/^0+/, "");
             if (trimmed !== e.target.value) onValueChange(trimmed);
           }}
-          className={`h-[52px] min-w-0 flex-1 rounded-[var(--radius-input)] border ${
+          className={`h-[52px] w-0 min-w-0 flex-1 rounded-[var(--radius-input)] border ${
             error ? "border-danger" : "border-[var(--border-hairline)]"
           } bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] ${text} text-[var(--text-primary)] placeholder:text-[var(--text-muted)]`}
         />

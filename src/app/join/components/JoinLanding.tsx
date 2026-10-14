@@ -27,6 +27,8 @@ interface JoinLandingProps {
   form: ReactNode;
   /** Bring the form into view when the page opens (a notice is waiting in it, after a cancelled payment). */
   scrollToForm?: boolean;
+  /** A referral code applies at price 0 (REF-01): the page says "registration", not "payment". */
+  noPayment?: boolean;
 }
 
 const WIDTH = "mx-auto w-full max-w-[1120px] px-4 dt:px-8";
@@ -42,7 +44,7 @@ const LABEL = "m-0 text-[12px] font-bold uppercase tracking-[0.14em] text-accent
  * Every call to action leads to the form, and the form leads to payment.
  * There is no date anywhere and no free route.
  */
-export function JoinLanding({ price, form, scrollToForm = false }: JoinLandingProps) {
+export function JoinLanding({ price, form, scrollToForm = false, noPayment = false }: JoinLandingProps) {
   const formRef = useRef<HTMLElement>(null);
 
   // Call-to-action links glide to the form (see globals.css); put back on the way out.
@@ -60,15 +62,16 @@ export function JoinLanding({ price, form, scrollToForm = false }: JoinLandingPr
       <Hero price={price} />
       <Locations />
       <section ref={formRef} id={FORM_ID} className="scroll-mt-4 border-y border-hairline bg-card py-12 dt:py-20">
-        <div className={`${WIDTH} grid gap-10 dt:grid-cols-[1fr_minmax(0,520px)] dt:items-start dt:gap-16`}>
-          <Offer price={price} />
-          <div>{form}</div>
+        {/* One explicit column on phones: an implicit one is sized by its widest content (the phone field), which pushed the offer and the form past the page's right edge. */}
+        <div className={`${WIDTH} grid grid-cols-1 gap-10 dt:grid-cols-[1fr_minmax(0,520px)] dt:items-start dt:gap-16`}>
+          <Offer price={price} noPayment={noPayment} />
+          <div className="min-w-0">{form}</div>
         </div>
       </section>
       <OneStage />
       <HowItWorks />
       <Who />
-      <Questions price={price} />
+      <Questions price={noPayment ? null : price} noPayment={noPayment} />
       <Sponsor />
       <Footer />
       <StickyBar price={price} watch={FORM_ID} />
@@ -204,9 +207,9 @@ function Locations() {
 
 // ── the offer (beside the form) ─────────────────────────────────────────────
 
-function Offer({ price }: { price: string | null }) {
+function Offer({ price, noPayment }: { price: string | null; noPayment: boolean }) {
   return (
-    <div className="flex flex-col gap-5 dt:sticky dt:top-8">
+    <div className="flex min-w-0 flex-col gap-5 dt:sticky dt:top-8">
       <h2 className={H2}>Lock your spot before the doors open.</h2>
       <p className="m-0 max-w-[44ch] text-[16.5px] leading-[1.55] text-text-secondary">
         Pre-register now and your verified profile is waiting the moment the app goes live. Same phone number, nothing to
@@ -229,7 +232,7 @@ function Offer({ price }: { price: string | null }) {
         </p>
         <p className="m-0 flex items-start gap-2.5 text-[15px] font-semibold leading-[1.45] text-text-primary">
           <Icon name="BadgeCheck" size={20} className="mt-[1px] flex-none text-accent-soft" />
-          {price ? `Your ${price}` : "Your payment"} covers your verification.
+          {noPayment ? "Your registration" : price ? `Your ${price}` : "Your payment"} covers your verification.
         </p>
       </div>
       <ul className="m-0 grid list-none gap-3 p-0">
@@ -322,17 +325,17 @@ function Who() {
 
 // ── questions ───────────────────────────────────────────────────────────────
 
-function Questions({ price }: { price: string | null }) {
+function Questions({ price, noPayment }: { price: string | null; noPayment: boolean }) {
   const items: Array<{ q: ReactNode; a: ReactNode }> = [
     {
       q: "Is the app live yet?",
       a: "Not yet. WHO MADE THIS? goes live this October. Pre-register now and we will message you on WhatsApp the moment it opens.",
     },
     {
-      q: price ? `What do I get for ${price}?` : "What do I get for my payment?",
+      q: noPayment ? "What do I get?" : price ? `What do I get for ${price}?` : "What do I get for my payment?",
       a: (
         <>
-          One payment{price ? <> of <SlashedPrice price={price} /></> : null} gives you conference access, early access to the
+          {noPayment ? "Your registration" : <>One payment{price ? <> of <SlashedPrice price={price} /></> : null}</>} gives you conference access, early access to the
           platform, a verified profile for a year, founding member status, WAWU Creative Studio AI tools, global payments,
           free training in Arts, Tech, Business and Finance, and access to creative hubs.
         </>

@@ -1,4 +1,5 @@
 import { apiFetch, isMockModeError } from "./client";
+import { adminRoleFromToken } from "@/lib/admin-role";
 import { mockNotifications, mockCampaignAudiences, mockCampaignDestinations, mockCampaigns, recordMockCampaign, dispatchMockCampaign } from "./mocks/mockNotifications";
 import type { NotificationsResponse, NotificationsWireResponse } from "@/types/notification";
 import type {
@@ -74,6 +75,11 @@ export function getAdminToken(): string | null {
   } catch {
     return null;
   }
+}
+
+/** The role of the admin who is signed in (superadmin, finance, support, reviewer), or null. Decides what a page draws; the Hub still checks every call. */
+export function getAdminRole(): string | null {
+  return adminRoleFromToken(getAdminToken());
 }
 
 export function setAdminToken(token: string | null): void {

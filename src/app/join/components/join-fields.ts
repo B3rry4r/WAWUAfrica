@@ -16,6 +16,8 @@ export interface JoinFields {
   updates: boolean;
   /** The privacy line. Required: the server refuses a registration without it. */
   consent: boolean;
+  /** An optional referral code (REF-01): upper case letters and digits; "" when none. The server decides what it is worth. */
+  referralCode: string;
 }
 
 export const EMPTY_FIELDS: JoinFields = {
@@ -27,6 +29,7 @@ export const EMPTY_FIELDS: JoinFields = {
   city: "",
   updates: false,
   consent: false,
+  referralCode: "",
 };
 
 export type JoinFieldName = "fullName" | "phone" | "email" | "craft" | "city" | "consent";

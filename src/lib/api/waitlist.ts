@@ -27,11 +27,47 @@ type RegistrationBody = components["schemas"]["CreateWaitlistRegistrationDto"] &
   craft?: string;
   city?: string;
   updatesOptIn?: boolean;
+  /** REF-01: an optional referral code. Left out, the registration is exactly what it was before codes. */
+  referralCode?: string;
 };
 
 export type WaitlistOffer = operations["WaitlistPublicController_currentOffer"]["responses"][200]["content"]["application/json"];
-export type WaitlistStart = operations["WaitlistPublicController_register"]["responses"][200]["content"]["application/json"];
 export type WaitlistStatus = operations["WaitlistPublicController_status"]["responses"][200]["content"]["application/json"];
+
+/**
+ * REF-01 widened the register answer three ways, all declared here until
+ * `npm run contract:sync` next copies the backend's contract: `flutterwaveConfig`
+ * is absent when the registration is already complete (a referral code at price
+ * 0 opens no payment window), `completed` then carries what the page shows next,
+ * and `referral` says what became of a code that was sent.
+ */
+export type WaitlistStart = Omit<
+  operations["WaitlistPublicController_register"]["responses"][200]["content"]["application/json"],
+  "flutterwaveConfig"
+> & {
+  flutterwaveConfig?: operations["WaitlistPublicController_register"]["responses"][200]["content"]["application/json"]["flutterwaveConfig"];
+  completed?: { status: "paid"; firstName: string; accessCode: string };
+  referral?: { code: string; applied: boolean; reason?: "full" | "inactive" };
+};
+
+/** GET /waitlist/referral-codes/:code: does it apply, and what would the person pay. */
+export interface WaitlistReferralCheck {
+  code: string;
+  applies: boolean;
+  /** Only when `applies` is false. */
+  reason?: "full" | "inactive";
+  /** What the person would pay, in whole kobo (the code's price, or the standard price). 0 means no payment. */
+  priceKobo: number;
+}
+
+/**
+ * GET /waitlist/referral-codes/:code, before paying. Never carries the limit,
+ * the count or the community. An unknown code is a 404 `referral_unknown`
+ * (see `refusalOf`).
+ */
+export function checkReferralCode(code: string): Promise<WaitlistReferralCheck> {
+  return apiFetch<WaitlistReferralCheck>(`/api/hub/waitlist/referral-codes/${encodeURIComponent(code)}`);
+}
 
 /** GET /waitlist/offers/current: the offer open now, or a 404 `no_open_offer`. */
 export function getCurrentOffer(): Promise<WaitlistOffer> {
@@ -49,22 +85,35 @@ export function getCurrentOffer(): Promise<WaitlistOffer> {
  */
 export async function startRegistration(
   offer: WaitlistOffer,
-  input: Pick<RegistrationBody, "fullName" | "phone" | "email" | "craft" | "city" | "updatesOptIn">,
-): Promise<{ reference: string; amountKobo: number; checkout: FlutterwaveChargeConfig }> {
+  input: Pick<RegistrationBody, "fullName" | "phone" | "email" | "craft" | "city" | "updatesOptIn" | "referralCode">,
+): Promise<{
+  reference: string;
+  amountKobo: number;
+  /** The payment window's settings; null when the registration is already complete (no payment). */
+  checkout: FlutterwaveChargeConfig | null;
+  /** Present when the registration is complete at once (a referral code at price 0): no window, show the access code. */
+  completed: { firstName: string } | null;
+  /** What became of the code, when one was sent. */
+  referral: { code: string; applied: boolean; reason?: "full" | "inactive" } | null;
+}> {
   const body: RegistrationBody = { offerId: offer.id, ...input, consent: true };
   const started = await apiFetch<WaitlistStart>("/api/hub/waitlist/registrations", { method: "POST", body });
   const f = started.flutterwaveConfig;
   return {
     reference: started.reference,
     amountKobo: started.amountKobo,
-    checkout: {
-      publicKey: f.publicKey,
-      txRef: f.txRef,
-      amount: f.amount,
-      currency: f.currency,
-      customerEmail: f.customerEmail,
-      customerName: f.customerName,
-    },
+    checkout: f
+      ? {
+          publicKey: f.publicKey,
+          txRef: f.txRef,
+          amount: f.amount,
+          currency: f.currency,
+          customerEmail: f.customerEmail,
+          customerName: f.customerName,
+        }
+      : null,
+    completed: started.completed ? { firstName: started.completed.firstName } : null,
+    referral: started.referral ?? null,
   };
 }
 
@@ -110,6 +159,10 @@ export function offerPrice(offer: WaitlistOffer): string {
   return formatNairaFromKobo(offer.priceKobo);
 }
 
+/** The words for a code the server does not have: the same the server sends, kept for when it sends none. */
+export const REFERRAL_UNKNOWN_WORDS =
+  "We do not recognise that referral code. Check it, or leave it empty to pay the standard price.";
+
 /** A field the server refused, so the page can say so under that field. */
 export type RefusedField = "fullName" | "phone" | "email" | "consent";
 
@@ -134,7 +187,8 @@ type WaitlistCode =
   | "phone_invalid"
   | "email_invalid"
   | "name_invalid"
-  | "consent_required";
+  | "consent_required"
+  | "referral_unknown";
 
 export type Refusal =
   | {
@@ -149,6 +203,8 @@ export type Refusal =
         | "payment_check_unavailable";
     }
   | { kind: "field"; field: RefusedField; message: string }
+  /** REF-01: a referral code the server does not have. Nothing was charged; the page says so under the code field. */
+  | { kind: "referral_unknown"; message: string }
   | { kind: "rate_limited" | "payments_unavailable" | "invalid" | "unreachable" | "unknown"; message: string };
 
 const WAITLIST_CODES: readonly WaitlistCode[] = [
@@ -165,6 +221,7 @@ const WAITLIST_CODES: readonly WaitlistCode[] = [
   "phone_invalid",
   "email_invalid",
   "consent_required",
+  "referral_unknown",
 ];
 
 function isWaitlistCode(code: string): code is WaitlistCode {
@@ -206,6 +263,8 @@ export function refusalOf(e: unknown): Refusal {
           return field("email");
         case "consent_required":
           return field("consent");
+        case "referral_unknown":
+          return { kind: "referral_unknown", message: e.serverMessage ?? REFERRAL_UNKNOWN_WORDS };
         default: {
           const unmapped: never = code;
           void unmapped;
