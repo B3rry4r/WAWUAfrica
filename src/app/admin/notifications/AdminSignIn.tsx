@@ -14,7 +14,7 @@ import { describeError } from "@/lib/api/errors";
  * algorithm). So this is a real sign-in, not a role check on the signed-in
  * user, and it is the only way onto this screen.
  */
-export function AdminSignIn({ onSignedIn }: { onSignedIn: () => void }) {
+export function AdminSignIn({ onSignedIn, title = "Push notifications" }: { onSignedIn: () => void; title?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,7 +41,7 @@ export function AdminSignIn({ onSignedIn }: { onSignedIn: () => void }) {
           <Icon name="Megaphone" size={18} />
         </span>
         <h1 className="m-0 text-[22px] font-semibold tracking-[-0.02em] text-text-primary">
-          Push notifications
+          {title}
         </h1>
         <p className="m-0 text-[13.5px] leading-relaxed text-text-secondary">
           Sign in with your WAWU admin account. This is a different login from the app.

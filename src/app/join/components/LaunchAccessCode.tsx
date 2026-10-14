@@ -28,7 +28,7 @@ const COPIED_FOR_MS = 2_500;
  * in-app browser, a denied permission) the code is selected instead, so the
  * person can copy it by hand and nothing pretends it worked.
  */
-export function LaunchAccessCode({ code, price = null }: { code: string; price?: string | null }) {
+export function LaunchAccessCode({ code, price = null, noPayment = false }: { code: string; price?: string | null; noPayment?: boolean }) {
   const codeRef = useRef<HTMLSpanElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copied, setCopied] = useState(false);
@@ -92,7 +92,7 @@ export function LaunchAccessCode({ code, price = null }: { code: string; price?:
 
       {price ? (
         <p className="m-0 flex flex-wrap items-baseline justify-center gap-x-2 text-[15.5px] text-text-secondary">
-          <span>Pre-registration paid:</span>
+          <span>{noPayment ? "Pre-registration:" : "Pre-registration paid:"}</span>
           <SlashedPrice price={price} className="text-text-primary" />
           <span>It covers your verification.</span>
         </p>

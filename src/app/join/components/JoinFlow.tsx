@@ -12,13 +12,25 @@ import {
 import { formatNairaFromKobo } from "@/lib/format";
 import { isReference, isTransactionId, joinAbandoned, joinResume, shortReference } from "@/lib/join-session";
 import {
+  checkReferralCode,
   getCurrentOffer,
   getRegistrationStatus,
   offerPrice,
   refusalOf,
+  REFERRAL_UNKNOWN_WORDS,
   startRegistration,
   verifyRegistration,
 } from "@/lib/api/waitlist";
+import {
+  cleanReferral,
+  isNoPayment,
+  looksLikeReferral,
+  payKoboFor,
+  referralFromSearch,
+  storedReferral,
+  storeReferral,
+} from "@/lib/join-referral";
+import type { ReferralVerdict } from "@/lib/join-referral";
 import type { WaitlistOffer } from "@/lib/api/waitlist";
 import { EMPTY_FIELDS, phoneOf, validateJoin } from "./join-fields";
 import type { JoinErrors, JoinFields } from "./join-fields";
@@ -92,6 +104,9 @@ const SCRIPT_TIMEOUT_MS = 15_000;
 
 /** A 429 on the offer load is retried by itself after these waits, then handed back to the person. */
 const BUSY_RETRY_MS = [2_000, 4_000, 8_000];
+
+/** How long after the last key press a referral code is checked with the server (REF-01). */
+const REFERRAL_CHECK_MS = 450;
 
 /** The two statuses that mean "Flutterwave says no charge was made". Anything else is not trusted as that. */
 type Negative = "cancelled" | "failed";
@@ -253,6 +268,10 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   const [restarting, setRestarting] = useState(false);
   /** That last status check could not be answered, so the person stays where they are. */
   const [restartFailed, setRestartFailed] = useState(false);
+  /** What the server said about the referral code in the field (REF-01); the price on the page follows it. */
+  const [referral, setReferral] = useState<ReferralVerdict>({ kind: "none" });
+  /** What this visit's registration was charged, in kobo (0 for a referral code at price 0): the success screen shows it. */
+  const [chargedKobo, setChargedKobo] = useState<number | null>(null);
   const keepCheckingRef = useRef<HTMLButtonElement>(null);
   const booted = useRef(false);
   /**
@@ -386,6 +405,15 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
 
     const stored = joinResume.get();
 
+    // REF-01: a code in the address (?ref=CODE) is kept for the visit, so it survives a reload;
+    // without one, the code kept earlier in this visit is put back in the field.
+    if (mode === "form") {
+      const fromAddress = referralFromSearch(window.location.search);
+      if (fromAddress !== null) storeReferral(fromAddress);
+      const initial = fromAddress ?? storedReferral();
+      if (initial !== null) setFields((f) => ({ ...f, referralCode: initial }));
+    }
+
     if (mode === "return") {
       // Flutterwave sent the browser back. Whatever status word is in the
       // address, the server decides what was paid: this never says "not
@@ -418,6 +446,45 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     }
     void showForm();
   }, [mode, conclude, showForm]);
+
+  // ── the referral code asks the server what it is worth (REF-01) ───────────
+  // Only while the form is on screen, a moment after the last key press. The
+  // price on the page changes only once the server says the code applies.
+
+  const code = fields.referralCode;
+  const onForm = phase.kind === "form";
+  useEffect(() => {
+    if (!onForm) return;
+    if (!looksLikeReferral(code)) {
+      setReferral({ kind: "none" });
+      return;
+    }
+    setReferral((r) => (r.kind !== "none" && "code" in r && r.code === code ? r : { kind: "checking", code }));
+    let live = true;
+    const timer = setTimeout(async () => {
+      try {
+        const r = await checkReferralCode(code);
+        if (!live) return;
+        setReferral(
+          r.applies
+            ? { kind: "applies", code: r.code, priceKobo: r.priceKobo }
+            : { kind: "notApplied", code: r.code, reason: r.reason ?? "full", priceKobo: r.priceKobo },
+        );
+      } catch (e) {
+        if (!live) return;
+        const refusal = refusalOf(e);
+        setReferral(
+          refusal.kind === "referral_unknown"
+            ? { kind: "unknown", code, message: refusal.message }
+            : { kind: "unchecked", code },
+        );
+      }
+    }, REFERRAL_CHECK_MS);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [code, onForm]);
 
   // ── "Checking your payment" asks by itself ───────────────────────────────
 
@@ -522,7 +589,10 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   // What the server said wins over our own wording for the same field.
   Object.assign(visibleErrors, serverErrors);
 
-  function change(patch: Partial<JoinFields>) {
+  function change(input: Partial<JoinFields>) {
+    // The code is kept as upper case letters and digits, and for the visit.
+    const patch = input.referralCode === undefined ? input : { ...input, referralCode: cleanReferral(input.referralCode) };
+    if (patch.referralCode !== undefined) storeReferral(patch.referralCode);
     setFields((f) => ({ ...f, ...patch }));
     const edited: Partial<Record<keyof JoinFields, keyof JoinErrors>> = {
       fullName: "fullName",
@@ -543,13 +613,20 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     }
   }
 
+  /** A short code, left: say so now instead of waiting for the server (it would only say it does not know it). */
+  function referralBlurred() {
+    if (code !== "" && !looksLikeReferral(code)) setReferral({ kind: "unknown", code, message: REFERRAL_UNKNOWN_WORDS });
+  }
+
   async function pay() {
     if (payLock.current) return;
     setSubmitted(true);
-    if (Object.keys(allErrors).length > 0 || !offer) {
+    // A code the server has already said it does not know is fixed (or emptied) before anything starts.
+    if (Object.keys(allErrors).length > 0 || !offer || referral.kind === "unknown") {
       setAttempt((n) => n + 1);
       return;
     }
+    const expectedKobo = payKoboFor(offer.priceKobo, referral);
 
     payLock.current = true;
     setSubmitting(true);
@@ -564,6 +641,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         craft: fields.craft,
         city: fields.city,
         updatesOptIn: fields.updates,
+        ...(fields.referralCode !== "" ? { referralCode: fields.referralCode } : {}),
       });
       reference = started.reference;
 
@@ -580,17 +658,41 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         return;
       }
 
+      // A referral code at price 0 completes the registration at once: nothing to pay, no window.
+      if (started.completed) {
+        joinResume.set({ reference });
+        setChargedKobo(started.amountKobo);
+        setSubmitting(false);
+        setPhase({ kind: "registered", firstName: started.completed.firstName, reference });
+        return;
+      }
+
       // The server's amount is the truth. If it is not the fee the button showed
-      // (the price changed while the form was open), no window opens: the
-      // button is updated and the person decides again.
-      if (started.amountKobo !== offer.priceKobo || Math.round(started.checkout.amount * 100) !== started.amountKobo) {
-        setOffer({ ...offer, priceKobo: started.amountKobo });
+      // (the price changed while the form was open, or a code filled up or was
+      // switched off meanwhile), no window opens: the button is updated and the
+      // person decides again.
+      if (
+        !started.checkout ||
+        started.amountKobo !== expectedKobo ||
+        Math.round(started.checkout.amount * 100) !== started.amountKobo
+      ) {
+        if (started.referral) {
+          const sent = started.referral.code;
+          setReferral(
+            started.referral.applied
+              ? { kind: "applies", code: sent, priceKobo: started.amountKobo }
+              : { kind: "notApplied", code: sent, reason: started.referral.reason ?? "full", priceKobo: started.amountKobo },
+          );
+        } else {
+          setOffer({ ...offer, priceKobo: started.amountKobo });
+        }
         payLock.current = false;
         setSubmitting(false);
         setNotice({ tone: "warning", text: `The fee is now ${formatNairaFromKobo(started.amountKobo)}. Tap Pay to continue.` });
         return;
       }
 
+      setChargedKobo(started.amountKobo);
       joinResume.set({ reference });
       setPhase({ kind: "paying" });
       setSubmitting(false);
@@ -656,6 +758,12 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
           return;
         case "no_open_offer":
           setPhase({ kind: "none" });
+          return;
+        case "referral_unknown":
+          // Nothing was started. The words go under the code field and focus moves there.
+          setReferral({ kind: "unknown", code: fields.referralCode, message: refusal.message });
+          setPhase({ kind: "form" });
+          setAttempt((n) => n + 1);
           return;
         default:
           break;
@@ -877,7 +985,11 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       body = (
         <StateCard icon="Check" tone="success" title="YOUR WHO MADE THIS? LAUNCH ACCESS CODE" wide>
           {/* The fee is shown only when this visit read it and the server confirmed it was the amount charged. */}
-          <LaunchAccessCode code={shortReference(phase.reference)} price={offer ? offerPrice(offer) : null} />
+          <LaunchAccessCode
+            code={shortReference(phase.reference)}
+            price={chargedKobo !== null ? formatNairaFromKobo(chargedKobo) : offer ? offerPrice(offer) : null}
+            noPayment={chargedKobo === 0}
+          />
         </StateCard>
       );
       break;
@@ -975,11 +1087,16 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     case "form":
       landing = offer ? (
         <JoinLanding
-          price={offerPrice(offer)}
+          price={formatNairaFromKobo(payKoboFor(offer.priceKobo, referral))}
+          noPayment={isNoPayment(offer.priceKobo, referral)}
           scrollToForm={notice !== null}
           form={
             <JoinForm
-              price={offerPrice(offer)}
+              price={formatNairaFromKobo(payKoboFor(offer.priceKobo, referral))}
+              standardPrice={offerPrice(offer)}
+              referral={referral}
+              noPayment={isNoPayment(offer.priceKobo, referral)}
+              onReferralBlur={referralBlurred}
               fields={fields}
               errors={visibleErrors}
               notice={notice}
