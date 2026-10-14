@@ -55,6 +55,11 @@ function Switch({ on, busy, label, onToggle }: { on: boolean; busy: boolean; lab
   );
 }
 
+/** The state of a code as text, for a role that cannot switch it. */
+function StateText({ on }: { on: boolean }) {
+  return <span className={`inline-block w-[50px] text-[14px] font-semibold ${on ? "text-success" : "text-text-muted"}`}>{on ? "On" : "Off"}</span>;
+}
+
 function CopyLink({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   async function copy() {
@@ -143,7 +148,7 @@ function EditRow({ row, onDone }: { row: ReferralCodeRow; onDone: (changed: bool
   );
 }
 
-function CodeRow({ row, onChanged }: { row: ReferralCodeRow; onChanged: () => void }) {
+function CodeRow({ row, canWrite, onChanged }: { row: ReferralCodeRow; canWrite: boolean; onChanged: () => void }) {
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +176,11 @@ function CodeRow({ row, onChanged }: { row: ReferralCodeRow; onChanged: () => vo
       <div className="col-span-2 flex items-center justify-between gap-3 dt:col-span-1 dt:block">
         <span className="text-[16px] font-extrabold tracking-[0.02em] text-text-primary">{row.code}</span>
         <span className="dt:hidden">
-          <Switch on={row.active} busy={busy} label={`${row.code} is ${row.active ? "on" : "off"}`} onToggle={() => void toggle()} />
+          {canWrite ? (
+            <Switch on={row.active} busy={busy} label={`${row.code} is ${row.active ? "on" : "off"}`} onToggle={() => void toggle()} />
+          ) : (
+            <StateText on={row.active} />
+          )}
         </span>
       </div>
       <div className={`${cell} col-span-2 dt:col-span-1`}>
@@ -197,21 +206,27 @@ function CodeRow({ row, onChanged }: { row: ReferralCodeRow; onChanged: () => vo
         <span className="text-[14px] text-text-primary">{formatNairaFromKobo(row.paidKobo)}</span>
       </div>
       <div className="hidden dt:block">
-        <Switch on={row.active} busy={busy} label={`${row.code} is ${row.active ? "on" : "off"}`} onToggle={() => void toggle()} />
+        {canWrite ? (
+          <Switch on={row.active} busy={busy} label={`${row.code} is ${row.active ? "on" : "off"}`} onToggle={() => void toggle()} />
+        ) : (
+          <StateText on={row.active} />
+        )}
       </div>
       <div className="col-span-2 flex flex-wrap gap-2 dt:col-span-1">
         <CopyLink code={row.code} />
-        <button type="button" onClick={() => setEditing((v) => !v)} className={BUTTON} aria-expanded={editing}>
-          <Icon name="Pencil" size={15} />
-          Edit
-        </button>
+        {canWrite ? (
+          <button type="button" onClick={() => setEditing((v) => !v)} className={BUTTON} aria-expanded={editing}>
+            <Icon name="Pencil" size={15} />
+            Edit
+          </button>
+        ) : null}
       </div>
       {error ? (
         <p role="alert" className="col-span-2 m-0 text-[13px] text-danger dt:col-span-8">
           {error}
         </p>
       ) : null}
-      {editing ? (
+      {canWrite && editing ? (
         <EditRow
           row={row}
           onDone={(changed) => {
@@ -356,8 +371,21 @@ function NewCode({ onCreated }: { onCreated: () => void }) {
   );
 }
 
-/** The codes: their numbers, an on/off switch, edit, copy link, and a form for a new one. */
-export function CodesPanel({ codes, onChanged }: { codes: ReferralCodeRow[] | null; onChanged: () => void | Promise<void> }) {
+/**
+ * The codes: their numbers, copy link, and, for a role that may change codes
+ * (`canWrite`, superadmin), an on/off switch, edit and a form for a new one.
+ * Any other role sees the state of each code as text and nothing that the Hub
+ * would refuse.
+ */
+export function CodesPanel({
+  codes,
+  canWrite,
+  onChanged,
+}: {
+  codes: ReferralCodeRow[] | null;
+  canWrite: boolean;
+  onChanged: () => void | Promise<void>;
+}) {
   return (
     <section aria-labelledby="codes-title" className="flex flex-col gap-4">
       <h2 id="codes-title" className="m-0 text-[17px] font-bold text-text-primary">
@@ -372,17 +400,20 @@ export function CodesPanel({ codes, onChanged }: { codes: ReferralCodeRow[] | nu
           <span>Held</span>
           <span>Money paid</span>
           <span className="w-[50px]">On</span>
-          <span className="w-[200px]" />
+          {/* As wide as the buttons under it: Copy link and Edit, or Copy link alone for a role that cannot edit. */}
+          <span className={canWrite ? "w-[200px]" : "w-[108px]"} />
         </div>
         {codes === null ? (
           <p className="m-0 px-4 py-4 text-[13.5px] text-text-muted">Loading...</p>
         ) : codes.length === 0 ? (
-          <p className="m-0 px-4 py-4 text-[13.5px] text-text-muted">No codes yet. Make the first one below.</p>
+          <p className="m-0 px-4 py-4 text-[13.5px] text-text-muted">
+            {canWrite ? "No codes yet. Make the first one below." : "No codes yet."}
+          </p>
         ) : (
-          codes.map((c) => <CodeRow key={c.id} row={c} onChanged={() => void onChanged()} />)
+          codes.map((c) => <CodeRow key={c.id} row={c} canWrite={canWrite} onChanged={() => void onChanged()} />)
         )}
       </div>
-      <NewCode onCreated={() => void onChanged()} />
+      {canWrite ? <NewCode onCreated={() => void onChanged()} /> : null}
     </section>
   );
 }

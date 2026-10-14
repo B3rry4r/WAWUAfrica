@@ -62,9 +62,10 @@ export function JoinLanding({ price, form, scrollToForm = false, noPayment = fal
       <Hero price={price} />
       <Locations />
       <section ref={formRef} id={FORM_ID} className="scroll-mt-4 border-y border-hairline bg-card py-12 dt:py-20">
-        <div className={`${WIDTH} grid gap-10 dt:grid-cols-[1fr_minmax(0,520px)] dt:items-start dt:gap-16`}>
+        {/* One explicit column on phones: an implicit one is sized by its widest content (the phone field), which pushed the offer and the form past the page's right edge. */}
+        <div className={`${WIDTH} grid grid-cols-1 gap-10 dt:grid-cols-[1fr_minmax(0,520px)] dt:items-start dt:gap-16`}>
           <Offer price={price} noPayment={noPayment} />
-          <div>{form}</div>
+          <div className="min-w-0">{form}</div>
         </div>
       </section>
       <OneStage />
@@ -208,7 +209,7 @@ function Locations() {
 
 function Offer({ price, noPayment }: { price: string | null; noPayment: boolean }) {
   return (
-    <div className="flex flex-col gap-5 dt:sticky dt:top-8">
+    <div className="flex min-w-0 flex-col gap-5 dt:sticky dt:top-8">
       <h2 className={H2}>Lock your spot before the doors open.</h2>
       <p className="m-0 max-w-[44ch] text-[16.5px] leading-[1.55] text-text-secondary">
         Pre-register now and your verified profile is waiting the moment the app goes live. Same phone number, nothing to

@@ -5,7 +5,8 @@ import { Icon } from "@/components/ui";
 import { describeError } from "@/lib/api/errors";
 import { formatNairaFromKobo } from "@/lib/format";
 import { getJoinSummary, listReferralCodes } from "@/lib/api/referrals";
-import { setAdminToken } from "@/lib/api/notifications";
+import { getAdminRole, setAdminToken } from "@/lib/api/notifications";
+import { canChangeReferralCodes } from "@/lib/admin-role";
 import type { JoinSummary, ReferralCodeRow } from "@/lib/api/referrals";
 import { CodesPanel } from "./CodesPanel";
 import { PeoplePanel } from "./PeoplePanel";
@@ -37,12 +38,15 @@ function Share({ part, whole }: { part: number; whole: number }) {
  * The page after sign-in: the whole offer in numbers (counted by the server,
  * every paid registration since it opened, with or without a code), the codes,
  * and the people. Reading is for superadmin, finance and support; changing a
- * code is superadmin only, and the Hub says no to anyone else.
+ * code is superadmin only, and the Hub says no to anyone else. The page does not
+ * draw the controls that change a code for a role that cannot use them.
  */
 export function ReferralsDashboard({ onSignedOut }: { onSignedOut: () => void }) {
   const [summary, setSummary] = useState<JoinSummary | null>(null);
   const [codes, setCodes] = useState<ReferralCodeRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Read once per sign-in: the page mounts only after the token is read from storage, and a new sign-in mounts it again.
+  const [canWrite] = useState(() => canChangeReferralCodes(getAdminRole()));
 
   const refresh = useCallback(async () => {
     try {
@@ -154,7 +158,7 @@ export function ReferralsDashboard({ onSignedOut }: { onSignedOut: () => void })
         )}
       </section>
 
-      <CodesPanel codes={codes} onChanged={refresh} />
+      <CodesPanel codes={codes} canWrite={canWrite} onChanged={refresh} />
       <PeoplePanel codes={codes ?? []} onSignedOut={onSignedOut} />
     </div>
   );
