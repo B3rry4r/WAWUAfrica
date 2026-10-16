@@ -1,0 +1,106 @@
+name: Branch checks
+
+# OPS-CI (15 Oct 2026). The checks, on GitHub, for every task branch: typecheck,
+# lint, the repo's tests, the copy and site-mode checks, and a production build.
+# Agents run only what they touched and read this result; a red run means the
+# task is not done.
+#
+# The gates and the baseline run in gates.yml. They are red on main already
+# (pre-existing, not part of this workflow).
+#
+# Each job's last log line is "RESULT <job>: <status>".
+
+on:
+  push:
+    branches: ['wmt/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One run per branch (per pull request for pull_request runs): a newer push
+  # cancels the older run.
+  group: branch-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        if: ${{ !cancelled() }}
+        run: npm run lint
+
+      - name: Tests (node:test, one file at a time; this repo has no runner)
+        if: ${{ !cancelled() }}
+        run: |
+          # The resolve hook lets Node's type stripping read the repo's
+          # extensionless imports (the command each test file's header gives).
+          HOOK='data:text/javascript,import{register}from"node:module";register("data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){return await n(s+\".ts\",c)}}",import.meta.url);'
+          failed=0
+          count=0
+          for f in $(git ls-files 'src/**/*.test.ts' 'src/*.test.ts'); do
+            count=$((count + 1))
+            echo "::group::$f"
+            node --no-warnings --experimental-strip-types --import "$HOOK" "$f" || failed=1
+            echo "::endgroup::"
+          done
+          echo "test files run: $count"
+          [ "$count" -gt 0 ] && [ "$failed" = 0 ]
+
+      - name: Copy rules (npm run check:copy)
+        if: ${{ !cancelled() }}
+        run: npm run check:copy
+
+      - name: Site mode (npm run check:site-mode)
+        if: ${{ !cancelled() }}
+        run: npm run check:site-mode
+
+      - name: Result
+        id: result
+        if: always()
+        run: 'echo "RESULT checks: ${{ job.status }}"'
+
+  build:
+    name: build (production)
+    runs-on: ubuntu-latest
+    env:
+      # The production deployment's mode. No secrets are needed.
+      VERCEL_ENV: production
+      # A production build refuses to run with no API base (src/lib/api/config.ts).
+      # These are placeholders (the .env.example values for local services);
+      # nothing is called while building.
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+      NEXT_PUBLIC_WAWU_ID_BASE_URL: http://localhost:4001
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Production build (next build)
+        run: npm run build
+
+      - name: Result
+        id: result
+        if: always()
+        run: 'echo "RESULT build: ${{ job.status }}"'
