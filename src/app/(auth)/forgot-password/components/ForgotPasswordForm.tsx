@@ -8,7 +8,11 @@ import { Input } from "@/components/ui/Input";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { requestPasswordReset } from "@/lib/api/auth";
 
-export function ForgotPasswordForm() {
+/**
+ * `signInHref` is where "back to sign in" leads. null means the site does not
+ * serve a sign-in page right now (join-only mode): those links are not drawn.
+ */
+export function ForgotPasswordForm({ signInHref = "/sign-in" }: { signInHref?: string | null }) {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -34,13 +38,15 @@ export function ForgotPasswordForm() {
   return (
     <div className="flex min-h-screen flex-col xl:min-h-0">
       <div className="flex items-center gap-3 px-[18px] pb-3.5 pt-4 xl:px-0">
-        <Link
-          href="/sign-in"
-          aria-label="Back"
-          className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press"
-        >
-          <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
-        </Link>
+        {signInHref ? (
+          <Link
+            href={signInHref}
+            aria-label="Back"
+            className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press"
+          >
+            <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
+          </Link>
+        ) : null}
         <span className="flex-1 text-[16px] font-semibold">Forgot password</span>
       </div>
 
@@ -59,9 +65,11 @@ export function ForgotPasswordForm() {
               <Button full variant="secondary" size="lg" onClick={() => setSent(false)}>
                 Use a different email
               </Button>
-              <Button full size="lg" href="/sign-in">
-                Back to sign in
-              </Button>
+              {signInHref ? (
+                <Button full size="lg" href={signInHref}>
+                  Back to sign in
+                </Button>
+              ) : null}
             </div>
           </div>
         ) : (
@@ -93,9 +101,11 @@ export function ForgotPasswordForm() {
           <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
             {submitting ? "Sending…" : "Send reset link"}
           </Button>
-          <Button full variant="ghost" href="/sign-in">
-            Back to sign in
-          </Button>
+          {signInHref ? (
+            <Button full variant="ghost" href={signInHref}>
+              Back to sign in
+            </Button>
+          ) : null}
         </div>
       ) : null}
     </div>

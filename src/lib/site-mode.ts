@@ -14,9 +14,12 @@
  * `SITE_MODE=full` in Vercel reopens everything with no code change. A typo in
  * the value falls back to that default, which on production is the closed one.
  *
- * Pure functions, no imports: the middleware calls them in the Edge runtime,
- * and scripts/check-site-mode.mjs loads this file as it stands.
+ * Pure functions; the one import is the app-link list (app-links.ts, itself
+ * import-free). The middleware calls them in the Edge runtime, and
+ * scripts/check-site-mode.mjs loads this file as it stands.
  */
+import { isAppLinkFile, isAppLinkPath } from "./app-links";
+
 export type SiteMode = "join-only" | "full";
 
 export function siteModeFrom(env: { SITE_MODE?: string; VERCEL_ENV?: string }): SiteMode {
@@ -46,6 +49,19 @@ export function currentSiteMode(): SiteMode {
  * has to stay open or that link would end on /join.
  */
 const OPEN_PAGES = new Set(["/", "/join", "/join/paid", "/privacy/policy", "/terms"]);
+
+/**
+ * The pages WAWU's own emails link to (LINKS-01). They worked before join-only
+ * mode closed them, so they are open again, unchanged, until the app draws its
+ * own screens for them:
+ *
+ *   /reset-password   "Reset Password" in the password-reset email
+ *   /forgot-password  "Secure My Account" in the sign-in alert email
+ *
+ * Kept apart from OPEN_PAGES on purpose: the landing page may link to an open
+ * page (pageHref), and it must not start linking to these.
+ */
+const EMAIL_LINK_PAGES = new Set(["/reset-password", "/forgot-password"]);
 
 /**
  * Files at the ROOT of the site with a static extension: images and icons
@@ -98,6 +114,9 @@ function isAdminPath(path: string): boolean {
 export function isOpenInJoinOnly(pathname: string): boolean {
   const path = trimmed(pathname);
   if (OPEN_PAGES.has(path)) return true;
+  if (EMAIL_LINK_PAGES.has(path)) return true;
+  // The app links (/r/<code>, /selfie) and the two files phones read to check them.
+  if (isAppLinkPath(path) || isAppLinkFile(path)) return true;
   if (isAdminPath(path)) return true;
   if (path.startsWith("/_next/static/") || path === "/_next/image") return true;
   if (path === "/robots.txt") return true;

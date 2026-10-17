@@ -5,10 +5,12 @@ import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
 /**
  * Site mode (see lib/site-mode.ts). In `full` mode this does nothing. In
  * `join-only` mode every path that is not the landing page, the registration
- * link, the privacy document it links to, or a file those pages need gets a 307
- * to /join: pages, the app, sign-in and sign-up, admin, /payment/return and any
- * /api path alike. 307 keeps the method, so a stray POST is not silently turned
- * into a GET.
+ * link, the privacy document it links to, a file those pages need, the two
+ * pages WAWU's emails link to (/reset-password, /forgot-password) or an app
+ * link (/r/<code>, /selfie and the two /.well-known files, see app-links.ts)
+ * gets a 307 to /join: pages, the app, sign-in and sign-up, /payment/return
+ * and any /api path alike. 307 keeps the method, so a stray POST is not
+ * silently turned into a GET.
  *
  * The mode is read from the environment on every request (currentSiteMode), so
  * changing SITE_MODE (or the deployment's VERCEL_ENV) changes behaviour without

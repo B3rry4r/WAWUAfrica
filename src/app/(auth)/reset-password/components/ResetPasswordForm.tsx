@@ -9,7 +9,12 @@ import { Input } from "@/components/ui/Input";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { saveNewPassword } from "@/lib/api/auth";
 
-export function ResetPasswordForm() {
+/**
+ * `signInHref` is where "sign in" leads. null means the site does not serve a
+ * sign-in page right now (join-only mode): the links to it are not drawn and the
+ * page points the person to the app instead.
+ */
+export function ResetPasswordForm({ signInHref = "/sign-in" }: { signInHref?: string | null }) {
   const router = useRouter();
   // WAWU ID's forgot-password (email-link path) builds the reset URL as
   // /reset-password?token=...&email=... — see auth.service.ts resetPasswordByToken.
@@ -53,12 +58,17 @@ export function ResetPasswordForm() {
             Your new password is active. Next time you sign in, use the one you just set.
           </p>
           <StatusPill kind="success">All done</StatusPill>
+          {signInHref ? null : (
+            <p className="m-0 max-w-[290px] text-[15px] leading-normal text-text-secondary">Open the WAWU app to sign in.</p>
+          )}
         </div>
-        <div className="px-5 pb-[26px] pt-4">
-          <Button full size="lg" onClick={() => router.push("/sign-in")}>
-            Sign in
-          </Button>
-        </div>
+        {signInHref ? (
+          <div className="px-5 pb-[26px] pt-4">
+            <Button full size="lg" onClick={() => router.push(signInHref)}>
+              Sign in
+            </Button>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -66,13 +76,15 @@ export function ResetPasswordForm() {
   return (
     <div className="flex min-h-screen flex-col xl:min-h-0">
       <div className="flex items-center gap-3 px-[18px] pb-3.5 pt-4 xl:px-0">
-        <Link
-          href="/sign-in"
-          aria-label="Back"
-          className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press"
-        >
-          <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
-        </Link>
+        {signInHref ? (
+          <Link
+            href={signInHref}
+            aria-label="Back"
+            className="grid h-[34px] w-[34px] place-items-center rounded-button border border-hairline bg-tag hover:bg-surface-hover active:bg-surface-press"
+          >
+            <Icon name="ChevronLeft" size={18} color="var(--text-primary)" strokeWidth={2.2} />
+          </Link>
+        ) : null}
         <span className="flex-1 text-[16px] font-semibold">Set a new password</span>
       </div>
 
@@ -123,9 +135,11 @@ export function ResetPasswordForm() {
         <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
           {submitting ? "Saving…" : "Save new password"}
         </Button>
-        <Button full variant="ghost" href="/sign-in">
-          Back to sign in
-        </Button>
+        {signInHref ? (
+          <Button full variant="ghost" href={signInHref}>
+            Back to sign in
+          </Button>
+        ) : null}
       </div>
     </div>
   );

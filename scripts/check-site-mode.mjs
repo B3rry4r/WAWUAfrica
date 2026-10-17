@@ -27,12 +27,26 @@
  *     VERCEL_ENV=production npx next start -p 6471      (join-only, the default there)
  *     npm run check:site-mode -- --base http://localhost:6471 --mode join-only
  *
+ *   links     the app links (LINKS-01): /r/<code>, /selfie and the two /.well-known
+ *             files are open, nothing wider is, and the two pages WAWU's emails link
+ *             to (/reset-password, /forgot-password) are open and draw no link into
+ *             the closed sign-in page.
+ *
  * The script loads src/lib/site-mode.ts and src/lib/platform-services.ts as
- * they stand (Node strips their types; both are free of runtime imports).
+ * they stand (Node strips their types). site-mode.ts imports app-links.ts
+ * without an extension, as the app's bundler does, so a resolve hook that adds
+ * ".ts" is registered first (the same one the repo's test runner uses).
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { register } from "node:module";
+
+register(
+  "data:text/javascript,export async function resolve(s,c,n){try{return await n(s,c)}catch(e){return await n(s+'.ts',c)}}",
+  import.meta.url,
+);
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const {
@@ -71,6 +85,10 @@ const mustBeOpen = [
   // the admin dashboard (the admin sign-in protects it): /admin and everything under it
   "/admin", "/admin/", "/admin/notifications", "/admin/notifications/", "/admin/x/y",
   "/wawu-theme.mp3",
+  // the pages WAWU's own emails link to, and the app links with the files phones read (LINKS-01)
+  "/reset-password", "/reset-password/", "/forgot-password", "/forgot-password/",
+  "/r/lennox", "/r/LOGO-ART_2", "/r/lennox/", "/selfie", "/selfie/",
+  "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json",
   ...serviceIcons,
 ];
 for (const p of mustBeOpen) check(`open: ${p}`, isOpenInJoinOnly(p));
@@ -91,6 +109,12 @@ const mustStayClosed = [
   "/landing-video.mp4", "/landing-video-mobile.mp4", "/wawu-services.mp4", "/business-playbook-the-naija-way.pdf", "/mock/creators/x.png",
   "/join/anything", "/join/paid/x", "/terms/x", "/privacy", "/privacy/policy/x", "/index.html", "/_next/data/x/home.json", "/_next/static", "/_next",
   "/who-made-this-white.png/x", "/who-made-this-white.png.map", "/images/who-made-this-white.png", "//", "/%2e%2e/sign-in", "/home/",
+  // the email pages and app links open exactly these paths and nothing wider (LINKS-01)
+  "/reset-password/x", "/forgot-password/x", "/reset", "/activate", "/activate/x",
+  "/r", "/r/", "/r//", "/r/a/b", "/r/a.png", "/r/a%20b", "/rr/x", "/x/r/lennox", "/R/lennox", "/r/" + "a".repeat(81),
+  "/selfie/x", "/selfies", "/x/selfie",
+  "/.well-known", "/.well-known/", "/.well-known/security.txt", "/.well-known/assetlinks.json.map", "/.well-known/assetlinks.json/x",
+  "/.well-known/apple-app-site-association/x",
 ];
 for (const p of mustStayClosed) check(`closed: ${p}`, !isOpenInJoinOnly(p));
 
@@ -154,7 +178,7 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
+const CLOSED_LINKS = ["/reset-password", "/forgot-password", "/r/lennox", "/selfie", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
 const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
@@ -242,6 +266,43 @@ if (base && mode) {
       check(`live: ${p} is still closed (307 to /join)`, r.status === 307 && /\/join$/.test(r.headers.get("location") ?? ""), `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
     for (const p of ["/join", "/join/paid", "/terms", "/admin/notifications"]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
+  }
+
+  // The pages WAWU's emails link to and the app links (LINKS-01): open in both modes, and in join-only mode the
+  // email pages draw no link into the closed sign-in page (in full mode they still do, unchanged).
+  for (const p of ["/reset-password?token=t&email=a%40b.c", "/forgot-password"]) {
+    const r = await get(p);
+    check(`live: ${p.split("?")[0]} answers 200 in ${mode}`, r.status === 200, `status ${r.status}`);
+    const page = await r.text();
+    const signIn = /href="\/sign-in"/.test(page);
+    check(`live: ${p.split("?")[0]} ${mode === "full" ? "still links to /sign-in" : "draws no link to /sign-in"}`, mode === "full" ? signIn : !signIn);
+  }
+  for (const [p, wawuAddress] of [["/r/lennox", "wawu://r/lennox"], ["/selfie", "wawu://selfie"]]) {
+    const r = await get(p);
+    check(`live: ${p} answers 200 in ${mode}`, r.status === 200, `status ${r.status}`);
+    const page = await r.text();
+    check(`live: ${p} says "Open in the WAWU app"`, page.includes("Open in the WAWU app"));
+    check(`live: ${p} opens ${wawuAddress}`, page.includes(`href="${wawuAddress}"`));
+    check(`live: ${p} is not indexed`, /name="robots" content="noindex/.test(page));
+  }
+  for (const p of ["/r/a.b", "/r/a%20b"]) check(`live: ${p} is not an invite (${mode})`, (await get(p)).status !== 200);
+  {
+    const aasa = await get("/.well-known/apple-app-site-association");
+    check(`live: apple-app-site-association answers 200, not a redirect (${mode})`, aasa.status === 200, `status ${aasa.status}`);
+    check("live: apple-app-site-association is JSON", /application\/json/.test(aasa.headers.get("content-type") ?? ""));
+    const body = await aasa.json();
+    const details = body?.applinks?.details;
+    check("live: apple-app-site-association has a details list", Array.isArray(details));
+    for (const d of details ?? []) {
+      eq("live: apple-app-site-association lists only the app paths", d.components, [{ "/": "/r/*" }, { "/": "/selfie" }]);
+      check("live: apple-app-site-association names the app", Array.isArray(d.appIDs) && d.appIDs.every((id) => /^[A-Z0-9]{10}\.africa\.wawu\.wmt$/.test(id)));
+    }
+    const links = await get("/.well-known/assetlinks.json");
+    check(`live: assetlinks.json answers 200, not a redirect (${mode})`, links.status === 200, `status ${links.status}`);
+    check("live: assetlinks.json is JSON", /application\/json/.test(links.headers.get("content-type") ?? ""));
+    const list = await links.json();
+    check("live: assetlinks.json is a list", Array.isArray(list));
+    for (const entry of list ?? []) check("live: assetlinks.json names the app", entry?.target?.package_name === "africa.wawu.wmt" && entry.target.sha256_cert_fingerprints.length > 0);
   }
 }
 
