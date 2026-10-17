@@ -27,8 +27,8 @@
  *     VERCEL_ENV=production npx next start -p 6471      (join-only, the default there)
  *     npm run check:site-mode -- --base http://localhost:6471 --mode join-only
  *
- *   links     the app links (LINKS-01): /r/<code>, /selfie and the two /.well-known
- *             files are open, nothing wider is, and the two pages WAWU's emails link
+ *   links     the app links (LINKS-01): /r/<code>, /selfie, /activate, /receipt/<code>,
+ *             /u/<handle>, /c/<slug> and the two /.well-known files are open, nothing wider is, and the two pages WAWU's emails link
  *             to (/reset-password, /forgot-password) are open and draw no link into
  *             the closed sign-in page.
  *
@@ -88,6 +88,8 @@ const mustBeOpen = [
   // the pages WAWU's own emails link to, and the app links with the files phones read (LINKS-01)
   "/reset-password", "/reset-password/", "/forgot-password", "/forgot-password/",
   "/r/lennox", "/r/LOGO-ART_2", "/r/lennox/", "/selfie", "/selfie/",
+  "/activate", "/activate/", "/receipt/7K3M9QX2B4TV", "/receipt/7K3M-9QX2-B4TV", "/receipt/7K3M9QX2B4TV/",
+  "/u/ada", "/u/Ada_Obi.2", "/u/ada.png", "/u/ada/", "/c/aba-tailors", "/c/Aba-Tailors-2", "/c/room/",
   "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json",
   ...serviceIcons,
 ];
@@ -110,9 +112,12 @@ const mustStayClosed = [
   "/join/anything", "/join/paid/x", "/terms/x", "/privacy", "/privacy/policy/x", "/index.html", "/_next/data/x/home.json", "/_next/static", "/_next",
   "/who-made-this-white.png/x", "/who-made-this-white.png.map", "/images/who-made-this-white.png", "//", "/%2e%2e/sign-in", "/home/",
   // the email pages and app links open exactly these paths and nothing wider (LINKS-01)
-  "/reset-password/x", "/forgot-password/x", "/reset", "/activate", "/activate/x",
+  "/reset-password/x", "/forgot-password/x", "/reset", "/activate/x", "/activate.html",
   "/r", "/r/", "/r//", "/r/a/b", "/r/a.png", "/r/a%20b", "/rr/x", "/x/r/lennox", "/R/lennox", "/r/" + "a".repeat(81),
   "/selfie/x", "/selfies", "/x/selfie",
+  "/receipt", "/receipt/", "/receipt//", "/receipt/a/b", "/receipt/a.png", "/receipt/a_b", "/receipt/-a", "/receipt/a-", "/receipt/a--b", "/receipt/" + "a".repeat(65), "/receipts/x", "/x/receipt/a",
+  "/u", "/u/", "/u//", "/u/a/b", "/u/.", "/u/..", "/u/...", "/u/a b", "/u/a-b", "/u/a%20b", "/u/@ada", "/u/" + "a".repeat(31), "/us/x", "/x/u/ada",
+  "/c", "/c/", "/c//", "/c/a/b", "/c/a.png", "/c/a_b", "/c/-a", "/c/a-", "/c/a--b", "/c/" + "a".repeat(65), "/cc/x", "/x/c/room", "/communities/x",
   "/.well-known", "/.well-known/", "/.well-known/security.txt", "/.well-known/assetlinks.json.map", "/.well-known/assetlinks.json/x",
   "/.well-known/apple-app-site-association/x",
 ];
@@ -178,7 +183,7 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/reset-password", "/forgot-password", "/r/lennox", "/selfie", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
+const CLOSED_LINKS = ["/reset-password", "/forgot-password", "/r/lennox", "/selfie", "/activate", "/receipt/7K3M9QX2B4TV", "/u/ada", "/c/aba-tailors", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
 const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
@@ -277,7 +282,14 @@ if (base && mode) {
     const signIn = /href="\/sign-in"/.test(page);
     check(`live: ${p.split("?")[0]} ${mode === "full" ? "still links to /sign-in" : "draws no link to /sign-in"}`, mode === "full" ? signIn : !signIn);
   }
-  for (const [p, wawuAddress] of [["/r/lennox", "wawu://r/lennox"], ["/selfie", "wawu://selfie"]]) {
+  for (const [p, wawuAddress] of [
+    ["/r/lennox", "wawu://r/lennox"],
+    ["/selfie", "wawu://selfie"],
+    ["/activate?token=t&email=a%40b.c", "wawu://activate"],
+    ["/receipt/7K3M9QX2B4TV", "wawu://receipt/7K3M9QX2B4TV"],
+    ["/u/ada.obi", "wawu://u/ada.obi"],
+    ["/c/aba-tailors", "wawu://c/aba-tailors"],
+  ]) {
     const r = await get(p);
     check(`live: ${p} answers 200 in ${mode}`, r.status === 200, `status ${r.status}`);
     const page = await r.text();
@@ -286,6 +298,7 @@ if (base && mode) {
     check(`live: ${p} is not indexed`, /name="robots" content="noindex/.test(page));
   }
   for (const p of ["/r/a.b", "/r/a%20b"]) check(`live: ${p} is not an invite (${mode})`, (await get(p)).status !== 200);
+  for (const p of ["/receipt/a.b", "/receipt/a%20b", "/u/...", "/u/a-b", "/c/a_b", "/c/a--b", "/activate/x"]) check(`live: ${p} is not an app link (${mode})`, (await get(p)).status !== 200);
   {
     const aasa = await get("/.well-known/apple-app-site-association");
     check(`live: apple-app-site-association answers 200, not a redirect (${mode})`, aasa.status === 200, `status ${aasa.status}`);
@@ -294,7 +307,9 @@ if (base && mode) {
     const details = body?.applinks?.details;
     check("live: apple-app-site-association has a details list", Array.isArray(details));
     for (const d of details ?? []) {
-      eq("live: apple-app-site-association lists only the app paths", d.components, [{ "/": "/r/*" }, { "/": "/selfie" }]);
+      eq("live: apple-app-site-association lists only the app paths", d.components, [
+        { "/": "/r/*" }, { "/": "/selfie" }, { "/": "/activate" }, { "/": "/receipt/*" }, { "/": "/u/*" }, { "/": "/c/*" },
+      ]);
       check("live: apple-app-site-association names the app", Array.isArray(d.appIDs) && d.appIDs.every((id) => /^[A-Z0-9]{10}\.africa\.wawu\.wmt$/.test(id)));
     }
     const links = await get("/.well-known/assetlinks.json");

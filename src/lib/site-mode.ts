@@ -115,7 +115,7 @@ export function isOpenInJoinOnly(pathname: string): boolean {
   const path = trimmed(pathname);
   if (OPEN_PAGES.has(path)) return true;
   if (EMAIL_LINK_PAGES.has(path)) return true;
-  // The app links (/r/<code>, /selfie) and the two files phones read to check them.
+  // The app links (/r/<code>, /selfie, /activate, /receipt/<code>, /u/<handle>, /c/<slug>) and the two files phones read to check them.
   if (isAppLinkPath(path) || isAppLinkFile(path)) return true;
   if (isAdminPath(path)) return true;
   if (path.startsWith("/_next/static/") || path === "/_next/image") return true;

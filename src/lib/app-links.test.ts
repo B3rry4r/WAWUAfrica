@@ -20,6 +20,9 @@ import {
   inviteCodeFrom,
   isAppLinkFile,
   isAppLinkPath,
+  profileHandleFrom,
+  receiptCodeFrom,
+  roomSlugFrom,
 } from "./app-links";
 
 const PRINT = Array.from({ length: 32 }, (_, i) => (i * 7 + 3).toString(16).padStart(2, "0").toUpperCase()).join(":");
@@ -36,11 +39,42 @@ test("anything else is not an invite", () => {
   }
 });
 
-test("the app links are /r/<code> and /selfie, nothing wider", () => {
-  assert.equal(isAppLinkPath("/selfie"), true);
-  assert.equal(isAppLinkPath("/selfie/"), true);
-  assert.equal(isAppLinkPath("/r/lennox"), true);
-  for (const path of ["/selfie/x", "/selfies", "/join", "/join/paid", "/reset-password", "/wawu/lennox", "/.well-known/x", "/r"]) {
+test("a receipt is /receipt/ and one code, never the invite path", () => {
+  assert.equal(receiptCodeFrom("/receipt/7K3M9QX2B4TV"), "7K3M9QX2B4TV");
+  assert.equal(receiptCodeFrom("/receipt/7k3m-9qx2-b4tv/"), "7k3m-9qx2-b4tv");
+  // an invite path is not a receipt, and a receipt path is not an invite
+  assert.equal(receiptCodeFrom("/r/7K3M9QX2B4TV"), null);
+  assert.equal(inviteCodeFrom("/receipt/7K3M9QX2B4TV"), null);
+  for (const path of ["/receipt", "/receipt/", "/receipt//", "/receipt/a/b", "/receipt/a.png", "/receipt/a_b", "/receipt/-a", "/receipt/a-", "/receipt/a--b", "/receipt/a b", "/receipt/" + "a".repeat(65), "/receipts/x", "/x/receipt/a"]) {
+    assert.equal(receiptCodeFrom(path), null, path);
+  }
+  assert.equal(receiptCodeFrom("/receipt/" + "a".repeat(64)), "a".repeat(64));
+});
+
+test("a profile is /u/ and one handle: letters, digits, dots and underscores, up to 30", () => {
+  assert.equal(profileHandleFrom("/u/ada"), "ada");
+  assert.equal(profileHandleFrom("/u/Ada_Obi.2/"), "Ada_Obi.2");
+  assert.equal(profileHandleFrom("/u/ada.png"), "ada.png");
+  assert.equal(profileHandleFrom("/u/" + "a".repeat(30)), "a".repeat(30));
+  for (const path of ["/u", "/u/", "/u//", "/u/a/b", "/u/.", "/u/..", "/u/...", "/u/a b", "/u/a-b", "/u/@ada", "/u/a%20b", "/u/" + "a".repeat(31), "/us/x", "/x/u/ada", "/wawu/ada"]) {
+    assert.equal(profileHandleFrom(path), null, path);
+  }
+});
+
+test("a room is /c/ and one slug: letters and digits in groups joined by single hyphens, up to 64", () => {
+  assert.equal(roomSlugFrom("/c/aba-tailors"), "aba-tailors");
+  assert.equal(roomSlugFrom("/c/Aba-Tailors-2/"), "Aba-Tailors-2");
+  assert.equal(roomSlugFrom("/c/" + "a".repeat(64)), "a".repeat(64));
+  for (const path of ["/c", "/c/", "/c//", "/c/a/b", "/c/a.png", "/c/a_b", "/c/-a", "/c/a-", "/c/a--b", "/c/a b", "/c/" + "a".repeat(65), "/cc/x", "/x/c/room", "/communities/x"]) {
+    assert.equal(roomSlugFrom(path), null, path);
+  }
+});
+
+test("the app links are the six paths, nothing wider", () => {
+  for (const path of ["/selfie", "/selfie/", "/r/lennox", "/activate", "/activate/", "/receipt/7K3M9QX2B4TV", "/u/ada", "/c/aba-tailors"]) {
+    assert.equal(isAppLinkPath(path), true, path);
+  }
+  for (const path of ["/selfie/x", "/selfies", "/activate/x", "/activated", "/join", "/join/paid", "/reset-password", "/wawu/lennox", "/.well-known/x", "/r", "/receipt", "/u", "/c", "/u/a-b", "/c/a_b"]) {
     assert.equal(isAppLinkPath(path), false, path);
   }
 });
@@ -56,6 +90,10 @@ test("the two files phones read are the only /.well-known paths", () => {
 test("the button opens the app's own address", () => {
   assert.equal(appAddressFor("/r/lennox"), "wawu://r/lennox");
   assert.equal(appAddressFor("/selfie"), "wawu://selfie");
+  assert.equal(appAddressFor("/activate"), "wawu://activate");
+  assert.equal(appAddressFor("/receipt/7K3M9QX2B4TV"), "wawu://receipt/7K3M9QX2B4TV");
+  assert.equal(appAddressFor("/u/ada.obi"), "wawu://u/ada.obi");
+  assert.equal(appAddressFor("/c/aba-tailors"), "wawu://c/aba-tailors");
 });
 
 test("an Apple team id is exactly 10 capitals or digits", () => {
@@ -71,9 +109,16 @@ test("fingerprints are 32 colon separated bytes; others are left out; repeats ar
 test("iOS is given the app paths and only those, once a team id is set", () => {
   const file = appleAppSiteAssociation({ APPLE_TEAM_ID: "AB12CD34EF" });
   assert.deepEqual(file, {
-    applinks: { details: [{ appIDs: [`AB12CD34EF.${APP_ID}`], components: [{ "/": "/r/*" }, { "/": "/selfie" }] }] },
+    applinks: {
+      details: [
+        {
+          appIDs: [`AB12CD34EF.${APP_ID}`],
+          components: [{ "/": "/r/*" }, { "/": "/selfie" }, { "/": "/activate" }, { "/": "/receipt/*" }, { "/": "/u/*" }, { "/": "/c/*" }],
+        },
+      ],
+    },
   });
-  assert.deepEqual(APP_LINK_PATTERNS, ["/r/*", "/selfie"]);
+  assert.deepEqual(APP_LINK_PATTERNS, ["/r/*", "/selfie", "/activate", "/receipt/*", "/u/*", "/c/*"]);
 });
 
 test("with no team id the iOS file names no app", () => {

@@ -7,7 +7,8 @@ import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
  * `join-only` mode every path that is not the landing page, the registration
  * link, the privacy document it links to, a file those pages need, the two
  * pages WAWU's emails link to (/reset-password, /forgot-password) or an app
- * link (/r/<code>, /selfie and the two /.well-known files, see app-links.ts)
+ * link (/r/<code>, /selfie, /activate, /receipt/<code>, /u/<handle>, /c/<slug>
+ * and the two /.well-known files, see app-links.ts)
  * gets a 307 to /join: pages, the app, sign-in and sign-up, /payment/return
  * and any /api path alike. 307 keeps the method, so a stray POST is not
  * silently turned into a GET.
