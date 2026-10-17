@@ -2,7 +2,7 @@
  * The website paths that are APP LINKS (LINKS-01).
  *
  * An app link is an https address on wawuafrica.com that the WAWU app opens
- * when it is installed. Six exist, and only these six:
+ * when it is installed. Seven exist, and only these seven:
  *
  *   /r/<code>        an invite, as a person shares it (the app claims the code)
  *   /selfie          where the hosted selfie page sends a person back to
@@ -11,11 +11,20 @@
  *   /receipt/<code>  a receipt's check address (its own path, never /r/)
  *   /u/<handle>      a profile, as a person shares it
  *   /c/<slug>        a community room, as the Hub issues the link
+ *   /content/<id>    a piece of content, as its Share sends it (FIX-60)
  *
  * Without the app installed, each path shows a small "Open in the WAWU app"
  * page (src/components/open-in-app). Every other website route is outside this
  * file and unchanged. /join stays the registration campaign; nothing here
  * touches it.
+ *
+ * /content/<id> is the one path the website's own app already has a page for
+ * ((app)/content/[id], the full site's content page). The fallback page
+ * therefore cannot sit on that path: in join-only mode the middleware
+ * rewrites /content/<id> to CONTENT_FALLBACK_PREFIX + <id>, where the fallback
+ * page lives, and in full mode it does nothing, so the full site keeps its own
+ * content page exactly as built. Only the two .well-known files and join-only
+ * mode know about the fallback; the phones only ever see /content/<id>.
  *
  * The same list drives four things, so they cannot drift apart:
  *   - the join-only middleware lets exactly these paths (and the two files
@@ -62,6 +71,16 @@ export const PROFILE_PREFIX = "/u/";
 /** A community room as its link is issued: /c/<slug>. */
 export const ROOM_PREFIX = "/c/";
 
+/** A piece of content as its Share sends it: /content/<id>. */
+export const CONTENT_PREFIX = "/content/";
+
+/**
+ * Where the fallback page for /content/<id> lives. Internal: join-only mode
+ * rewrites to it and nothing links to it, so it is not an app link and is not
+ * open in join-only mode when asked for directly.
+ */
+export const CONTENT_FALLBACK_PREFIX = "/app-link/content/";
+
 /** The two files the phones read to check the app owns these paths. Served as they are, never redirected. */
 export const AASA_PATH = "/.well-known/apple-app-site-association";
 export const ASSETLINKS_PATH = "/.well-known/assetlinks.json";
@@ -74,6 +93,7 @@ export const APP_LINK_PATTERNS = [
   `${RECEIPT_PREFIX}*`,
   `${PROFILE_PREFIX}*`,
   `${ROOM_PREFIX}*`,
+  `${CONTENT_PREFIX}*`,
 ] as const;
 
 /** Names of the two settings above, so the route files, the checks and the hand-off notes agree. */
@@ -109,6 +129,14 @@ const HANDLE = /^(?=[A-Za-z0-9_.]*[A-Za-z0-9_])[A-Za-z0-9_.]{1,30}$/;
  */
 const ROOM_SLUG = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/;
 const ROOM_SLUG_MAX = 64;
+
+/**
+ * A content id as the app reads one (the Hub's ids are UUIDs): letters, digits,
+ * dash and underscore, 1 to 80 characters, one path segment, no dots. The same
+ * shape as an invite code.
+ */
+const CONTENT_ID = /^[A-Za-z0-9_-]{1,80}$/;
+const CONTENT_ID_MAX = 80;
 
 /** The same path with trailing slashes taken off (the root stays "/"). */
 function trimmed(pathname: string): string {
@@ -163,7 +191,12 @@ export function roomSlugFrom(pathname: string): string | null {
   return segmentAfter(pathname, ROOM_PREFIX, ROOM_SLUG, ROOM_SLUG_MAX);
 }
 
-/** True for the six app links (/r/<code>, /selfie, /activate, /receipt/<code>, /u/<handle>, /c/<slug>), and nothing else. */
+/** The id in /content/<id>, or null when the path is not exactly that. */
+export function contentIdFrom(pathname: string): string | null {
+  return segmentAfter(pathname, CONTENT_PREFIX, CONTENT_ID, CONTENT_ID_MAX);
+}
+
+/** True for the seven app links (/r/<code>, /selfie, /activate, /receipt/<code>, /u/<handle>, /c/<slug>, /content/<id>), and nothing else. */
 export function isAppLinkPath(pathname: string): boolean {
   const path = trimmed(pathname);
   return (
@@ -172,7 +205,8 @@ export function isAppLinkPath(pathname: string): boolean {
     inviteCodeFrom(path) !== null ||
     receiptCodeFrom(path) !== null ||
     profileHandleFrom(path) !== null ||
-    roomSlugFrom(path) !== null
+    roomSlugFrom(path) !== null ||
+    contentIdFrom(path) !== null
   );
 }
 

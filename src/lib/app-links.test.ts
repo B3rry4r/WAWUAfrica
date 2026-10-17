@@ -16,6 +16,8 @@ import {
   appleAppSiteAssociation,
   appleTeamIdFrom,
   assetLinks,
+  CONTENT_FALLBACK_PREFIX,
+  contentIdFrom,
   fingerprintsFrom,
   inviteCodeFrom,
   isAppLinkFile,
@@ -71,11 +73,23 @@ test("a room is /c/ and one slug: letters and digits in groups joined by single 
   }
 });
 
-test("the app links are the six paths, nothing wider", () => {
-  for (const path of ["/selfie", "/selfie/", "/r/lennox", "/activate", "/activate/", "/receipt/7K3M9QX2B4TV", "/u/ada", "/c/aba-tailors"]) {
+test("a piece of content is /content/ and one id: letters, digits, dash and underscore, up to 80", () => {
+  assert.equal(contentIdFrom("/content/3f2b8c1e-9d4a-4e7b-8a61-5c0d2f7e9b14"), "3f2b8c1e-9d4a-4e7b-8a61-5c0d2f7e9b14");
+  assert.equal(contentIdFrom("/content/pdf-1/"), "pdf-1");
+  assert.equal(contentIdFrom("/content/" + "a".repeat(80)), "a".repeat(80));
+  for (const path of ["/content", "/content/", "/content//", "/content/a/b", "/content/a.png", "/content/a b", "/content/a%20b", "/content/" + "a".repeat(81), "/contents/x", "/x/content/a", "/c/a", "/create/content", "/app-link/content/a"]) {
+    assert.equal(contentIdFrom(path), null, path);
+  }
+  // the fallback page's own path is internal: it is not a content link
+  assert.equal(contentIdFrom(`${CONTENT_FALLBACK_PREFIX}abc`), null);
+  assert.equal(isAppLinkPath(`${CONTENT_FALLBACK_PREFIX}abc`), false);
+});
+
+test("the app links are the seven paths, nothing wider", () => {
+  for (const path of ["/selfie", "/selfie/", "/r/lennox", "/activate", "/activate/", "/receipt/7K3M9QX2B4TV", "/u/ada", "/c/aba-tailors", "/content/pdf-1", "/content/3f2b8c1e-9d4a-4e7b-8a61-5c0d2f7e9b14/"]) {
     assert.equal(isAppLinkPath(path), true, path);
   }
-  for (const path of ["/selfie/x", "/selfies", "/activate/x", "/activated", "/join", "/join/paid", "/reset-password", "/wawu/lennox", "/.well-known/x", "/r", "/receipt", "/u", "/c", "/u/a-b", "/c/a_b"]) {
+  for (const path of ["/selfie/x", "/selfies", "/activate/x", "/activated", "/join", "/join/paid", "/reset-password", "/wawu/lennox", "/.well-known/x", "/r", "/receipt", "/u", "/c", "/u/a-b", "/c/a_b", "/content", "/content/a.b", "/content/a/b"]) {
     assert.equal(isAppLinkPath(path), false, path);
   }
 });
@@ -95,6 +109,7 @@ test("the button opens the app's own address", () => {
   assert.equal(appAddressFor("/receipt/7K3M9QX2B4TV"), "wawu://receipt/7K3M9QX2B4TV");
   assert.equal(appAddressFor("/u/ada.obi"), "wawu://u/ada.obi");
   assert.equal(appAddressFor("/c/aba-tailors"), "wawu://c/aba-tailors");
+  assert.equal(appAddressFor("/content/pdf-1"), "wawu://content/pdf-1");
 });
 
 test("an Apple team id is exactly 10 capitals or digits", () => {
@@ -114,12 +129,12 @@ test("iOS is given the app paths and only those, once a team id is set", () => {
       details: [
         {
           appIDs: [`AB12CD34EF.${APP_ID}`],
-          components: [{ "/": "/r/*" }, { "/": "/selfie" }, { "/": "/activate" }, { "/": "/receipt/*" }, { "/": "/u/*" }, { "/": "/c/*" }],
+          components: [{ "/": "/r/*" }, { "/": "/selfie" }, { "/": "/activate" }, { "/": "/receipt/*" }, { "/": "/u/*" }, { "/": "/c/*" }, { "/": "/content/*" }],
         },
       ],
     },
   });
-  assert.deepEqual(APP_LINK_PATTERNS, ["/r/*", "/selfie", "/activate", "/receipt/*", "/u/*", "/c/*"]);
+  assert.deepEqual(APP_LINK_PATTERNS, ["/r/*", "/selfie", "/activate", "/receipt/*", "/u/*", "/c/*", "/content/*"]);
 });
 
 test("with no team id the iOS file names no app", () => {

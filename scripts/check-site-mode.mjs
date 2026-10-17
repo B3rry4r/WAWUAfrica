@@ -29,8 +29,8 @@
  *   (with NEXT_PUBLIC_API_BASE_URL in the environment of both the build and this command, the receipt page is also
  *   checked for its "Check this receipt" button; with none, for the absence of it)
  *
- *   links     the app links (LINKS-01): /r/<code>, /selfie, /activate, /receipt/<code>,
- *             /u/<handle>, /c/<slug> and the two /.well-known files are open, nothing wider is, and the two pages WAWU's emails link
+ *   links     the app links (LINKS-01, FIX-60): /r/<code>, /selfie, /activate, /receipt/<code>,
+ *             /u/<handle>, /c/<slug>, /content/<id> and the two /.well-known files are open, nothing wider is, and the two pages WAWU's emails link
  *             to (/reset-password, /forgot-password) are open and draw no link into
  *             the closed sign-in page.
  *
@@ -92,6 +92,7 @@ const mustBeOpen = [
   "/r/lennox", "/r/LOGO-ART_2", "/r/lennox/", "/selfie", "/selfie/",
   "/activate", "/activate/", "/receipt/7K3M9QX2B4TV", "/receipt/7K3M-9QX2-B4TV", "/receipt/7K3M9QX2B4TV/",
   "/u/ada", "/u/Ada_Obi.2", "/u/ada.png", "/u/ada/", "/c/aba-tailors", "/c/Aba-Tailors-2", "/c/room/",
+  "/content/pdf-1", "/content/3f2b8c1e-9d4a-4e7b-8a61-5c0d2f7e9b14", "/content/pdf-1/",
   "/.well-known/apple-app-site-association", "/.well-known/assetlinks.json",
   ...serviceIcons,
 ];
@@ -120,6 +121,9 @@ const mustStayClosed = [
   "/receipt", "/receipt/", "/receipt//", "/receipt/a/b", "/receipt/a.png", "/receipt/a_b", "/receipt/-a", "/receipt/a-", "/receipt/a--b", "/receipt/" + "a".repeat(65), "/receipts/x", "/x/receipt/a",
   "/u", "/u/", "/u//", "/u/a/b", "/u/.", "/u/..", "/u/...", "/u/a b", "/u/a-b", "/u/a%20b", "/u/@ada", "/u/" + "a".repeat(31), "/us/x", "/x/u/ada",
   "/c", "/c/", "/c//", "/c/a/b", "/c/a.png", "/c/a_b", "/c/-a", "/c/a-", "/c/a--b", "/c/" + "a".repeat(65), "/cc/x", "/x/c/room", "/communities/x",
+  // the fallback page's own path is internal, and a content link has one segment of the right shape
+  "/content", "/content/", "/content//", "/content/a/b", "/content/a.png", "/content/a b", "/content/a%20b", "/content/" + "a".repeat(81), "/contents/x", "/x/content/a", "/create/content",
+  "/app-link", "/app-link/", "/app-link/content", "/app-link/content/pdf-1",
   "/.well-known", "/.well-known/", "/.well-known/security.txt", "/.well-known/assetlinks.json.map", "/.well-known/assetlinks.json/x",
   "/.well-known/apple-app-site-association/x",
 ];
@@ -185,7 +189,7 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/reset-password", "/forgot-password", "/r/lennox", "/selfie", "/activate", "/receipt/7K3M9QX2B4TV", "/u/ada", "/c/aba-tailors", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
+const CLOSED_LINKS = ["/reset-password", "/forgot-password", "/r/lennox", "/selfie", "/activate", "/receipt/7K3M9QX2B4TV", "/u/ada", "/c/aba-tailors", "/content/pdf-1", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
 const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
@@ -291,6 +295,8 @@ if (base && mode) {
     ["/receipt/7K3M9QX2B4TV", "wawu://receipt/7K3M9QX2B4TV"],
     ["/u/ada.obi", "wawu://u/ada.obi"],
     ["/c/aba-tailors", "wawu://c/aba-tailors"],
+    // /content/<id> shares its path with a page of the full site: the fallback page is what join-only mode serves there
+    ...(mode === "join-only" ? [["/content/pdf-1", "wawu://content/pdf-1"], ["/content/3f2b8c1e-9d4a-4e7b-8a61-5c0d2f7e9b14?x=1", "wawu://content/3f2b8c1e-9d4a-4e7b-8a61-5c0d2f7e9b14"]] : []),
   ]) {
     const r = await get(p);
     check(`live: ${p} answers 200 in ${mode}`, r.status === 200, `status ${r.status}`);
@@ -315,6 +321,16 @@ if (base && mode) {
   }
   for (const p of ["/r/a.b", "/r/a%20b"]) check(`live: ${p} is not an invite (${mode})`, (await get(p)).status !== 200);
   for (const p of ["/receipt/a.b", "/receipt/a%20b", "/u/...", "/u/a-b", "/c/a_b", "/c/a--b", "/activate/x"]) check(`live: ${p} is not an app link (${mode})`, (await get(p)).status !== 200);
+  if (mode === "join-only") {
+    for (const p of ["/content/a.b", "/content/a%20b", "/content/a/b", "/content", "/app-link/content/pdf-1"]) {
+      const r = await get(p);
+      check(`live: ${p} is not an app link (join-only, 307 to /join)`, r.status === 307 && /\/join$/.test(r.headers.get("location") ?? ""), `status ${r.status} ${r.headers.get("location") ?? ""}`);
+    }
+  } else {
+    // full mode: the full site's own /content/<id> page answers, not the fallback page
+    const r = await get("/content/pdf-1");
+    check("live: /content/<id> in full mode is the full site's own page, not the fallback", !(await r.text()).includes("Open in the WAWU app"));
+  }
   {
     const aasa = await get("/.well-known/apple-app-site-association");
     check(`live: apple-app-site-association answers 200, not a redirect (${mode})`, aasa.status === 200, `status ${aasa.status}`);
@@ -324,7 +340,7 @@ if (base && mode) {
     check("live: apple-app-site-association has a details list", Array.isArray(details));
     for (const d of details ?? []) {
       eq("live: apple-app-site-association lists only the app paths", d.components, [
-        { "/": "/r/*" }, { "/": "/selfie" }, { "/": "/activate" }, { "/": "/receipt/*" }, { "/": "/u/*" }, { "/": "/c/*" },
+        { "/": "/r/*" }, { "/": "/selfie" }, { "/": "/activate" }, { "/": "/receipt/*" }, { "/": "/u/*" }, { "/": "/c/*" }, { "/": "/content/*" },
       ]);
       check("live: apple-app-site-association names the app", Array.isArray(d.appIDs) && d.appIDs.every((id) => /^[A-Z0-9]{10}\.africa\.wawu\.wmt$/.test(id)));
     }
