@@ -26,6 +26,8 @@
  *
  *     VERCEL_ENV=production npx next start -p 6471      (join-only, the default there)
  *     npm run check:site-mode -- --base http://localhost:6471 --mode join-only
+ *   (with NEXT_PUBLIC_API_BASE_URL in the environment of both the build and this command, the receipt page is also
+ *   checked for its "Check this receipt" button; with none, for the absence of it)
  *
  *   links     the app links (LINKS-01): /r/<code>, /selfie, /activate, /receipt/<code>,
  *             /u/<handle>, /c/<slug> and the two /.well-known files are open, nothing wider is, and the two pages WAWU's emails link
@@ -296,6 +298,20 @@ if (base && mode) {
     check(`live: ${p} says "Open in the WAWU app"`, page.includes("Open in the WAWU app"));
     check(`live: ${p} opens ${wawuAddress}`, page.includes(`href="${wawuAddress}"`));
     check(`live: ${p} is not indexed`, /name="robots" content="noindex/.test(page));
+  }
+  {
+    // The receipt page's second button (LINKS-01 round 3): the Hub's public check page on the API origin the site was
+    // built with (NEXT_PUBLIC_API_BASE_URL, read here from the same environment). With none set, no such button.
+    const page = await (await get("/receipt/7K3M-9QX2-B4TV")).text();
+    const rawApi = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").trim();
+    let apiOrigin = null;
+    try { if (/^https?:$/.test(new URL(rawApi).protocol)) apiOrigin = new URL(rawApi).origin; } catch { /* unset or not an address */ }
+    if (apiOrigin) {
+      check(`live: /receipt/<code> offers "Check this receipt" to ${apiOrigin}/api/hub/r/<code> (${mode})`, page.includes(`href="${apiOrigin}/api/hub/r/7K3M-9QX2-B4TV"`) && page.includes("Check this receipt"));
+      check(`live: /receipt/<code> keeps the app button beside it (${mode})`, page.includes('href="wawu://receipt/7K3M-9QX2-B4TV"'));
+    } else {
+      check(`live: /receipt/<code> draws no "Check this receipt" with no API origin set (${mode})`, !page.includes("Check this receipt") && !page.includes("/api/hub/r/"));
+    }
   }
   for (const p of ["/r/a.b", "/r/a%20b"]) check(`live: ${p} is not an invite (${mode})`, (await get(p)).status !== 200);
   for (const p of ["/receipt/a.b", "/receipt/a%20b", "/u/...", "/u/a-b", "/c/a_b", "/c/a--b", "/activate/x"]) check(`live: ${p} is not an app link (${mode})`, (await get(p)).status !== 200);

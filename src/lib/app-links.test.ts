@@ -21,6 +21,7 @@ import {
   isAppLinkFile,
   isAppLinkPath,
   profileHandleFrom,
+  receiptCheckAddress,
   receiptCodeFrom,
   roomSlugFrom,
 } from "./app-links";
@@ -135,4 +136,18 @@ test("Android is given the app and its fingerprints; with none it names no app",
   ]);
   assert.deepEqual(assetLinks({}), []);
   assert.deepEqual(assetLinks({ ANDROID_SHA256_CERT_FINGERPRINTS: "nonsense" }), []);
+});
+
+test("a receipt's check address is the Hub's /api/hub/r/<code> on the API origin, and only when that origin is usable", () => {
+  assert.equal(receiptCheckAddress("https://api.example.test", "7K3M9QX2B4TV"), "https://api.example.test/api/hub/r/7K3M9QX2B4TV");
+  assert.equal(receiptCheckAddress("https://api.example.test/", "7k3m-9qx2-b4tv"), "https://api.example.test/api/hub/r/7k3m-9qx2-b4tv");
+  assert.equal(receiptCheckAddress("  http://localhost:4000  ", "ABC123"), "http://localhost:4000/api/hub/r/ABC123");
+  // only the origin is kept: a path, query or credentials on the setting are dropped
+  assert.equal(receiptCheckAddress("https://u:p@api.example.test/api/hub?x=1", "ABC123"), "https://api.example.test/api/hub/r/ABC123");
+  for (const base of [undefined, "", "  ", "api.example.test", "javascript:alert(1)", "wawu://x", "ftp://api.example.test", "not a url"]) {
+    assert.equal(receiptCheckAddress(base, "ABC123"), null, String(base));
+  }
+  for (const code of ["", "a/b", "a b", "a.b", "../x", "-a", "a-", "a--b", "a".repeat(65)]) {
+    assert.equal(receiptCheckAddress("https://api.example.test", code), null, code);
+  }
 });

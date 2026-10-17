@@ -133,6 +133,26 @@ export function receiptCodeFrom(pathname: string): string | null {
   return segmentAfter(pathname, RECEIPT_PREFIX, RECEIPT_CODE, RECEIPT_CODE_MAX);
 }
 
+/**
+ * The Hub's public check page for a receipt: {API origin}/api/hub/r/<code> (HTML, never indexed, never cached).
+ * `apiBase` is NEXT_PUBLIC_API_BASE_URL, the origin the website already calls. Only an http(s) origin is used;
+ * unset or anything else gives null, and the page then draws no second button. The code is the one
+ * receiptCodeFrom accepted, so it is one safe path segment.
+ */
+export function receiptCheckAddress(apiBase: string | undefined, code: string): string | null {
+  const raw = (apiBase ?? "").trim();
+  if (!raw || !RECEIPT_CODE.test(code) || code.length > RECEIPT_CODE_MAX) return null;
+  let origin: string;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    origin = url.origin;
+  } catch {
+    return null;
+  }
+  return `${origin}/api/hub/r/${code}`;
+}
+
 /** The handle in /u/<handle>, or null when the path is not exactly that. */
 export function profileHandleFrom(pathname: string): string | null {
   return segmentAfter(pathname, PROFILE_PREFIX, HANDLE, 30);
