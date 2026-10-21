@@ -163,6 +163,14 @@ export function offerPrice(offer: WaitlistOffer): string {
 export const REFERRAL_UNKNOWN_WORDS =
   "We do not recognise that referral code. Check it, or leave it empty to pay the standard price.";
 
+/**
+ * The words for an address that tried too many codes (429 `referral_attempts_limited`):
+ * the same the server sends, kept for when it sends none. It says minutes, not
+ * seconds, because the wait is minutes.
+ */
+export const REFERRAL_PROBING_WORDS =
+  "Too many codes were tried from this connection. Please wait a few minutes and try again, or leave the code empty to pay the standard price.";
+
 /** A field the server refused, so the page can say so under that field. */
 export type RefusedField = "fullName" | "phone" | "email" | "consent";
 
@@ -272,6 +280,9 @@ export function refusalOf(e: unknown): Refusal {
       }
     }
     if (e.status === 429) {
+      if (e.code === "referral_attempts_limited") {
+        return { kind: "rate_limited", message: e.serverMessage ?? REFERRAL_PROBING_WORDS };
+      }
       return { kind: "rate_limited", message: "Busy right now. Wait a few seconds and try again. You have not been charged." };
     }
     if (e.status === 400) return { kind: "invalid", message: e.serverMessage ?? "Check your details and try again." };
