@@ -105,7 +105,7 @@ export function JoinForm({
       onSubmit={submit}
       noValidate
       aria-labelledby="join-form-title"
-      className="flex flex-col gap-5 rounded-card border border-hairline bg-page p-5 shadow-card dt:p-7"
+      className="flex flex-col gap-5 rounded-card border border-hairline bg-page p-4 shadow-card min-[360px]:p-5 dt:p-7"
     >
       <div className="flex flex-col gap-1">
         <h2 id="join-form-title" className="m-0 text-[24px] font-extrabold tracking-[-0.02em] text-text-primary">
@@ -149,6 +149,7 @@ export function JoinForm({
         error={errors.phone}
         disabled={submitting}
         noZoom
+        snug
       />
 
       <Input
@@ -284,7 +285,7 @@ export function JoinFormSkeleton() {
   return (
     <div
       aria-busy="true"
-      className="flex flex-col gap-5 rounded-card border border-hairline bg-page p-5 shadow-card dt:p-7"
+      className="flex flex-col gap-5 rounded-card border border-hairline bg-page p-4 shadow-card min-[360px]:p-5 dt:p-7"
     >
       <div className="flex flex-col gap-1">
         <h2 className="m-0 text-[24px] font-extrabold tracking-[-0.02em] text-text-primary">Reserve my spot</h2>
