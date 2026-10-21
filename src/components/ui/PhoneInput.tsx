@@ -54,6 +54,13 @@ interface PhoneInputProps {
   error?: string;
   /** 16px text below the desktop breakpoint, so iPhone Safari does not zoom on focus. Off by default. */
   noZoom?: boolean;
+  /**
+   * Below 360px wide, give the number the room a 16px field needs for an
+   * 11-digit number typed with its leading zero (the zero only goes when the
+   * field blurs): a narrower country picker and 12px side padding. From 360px
+   * up nothing changes. Off by default.
+   */
+  snug?: boolean;
 }
 
 /**
@@ -77,6 +84,7 @@ export function PhoneInput({
   id,
   error,
   noZoom = false,
+  snug = false,
 }: PhoneInputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -101,7 +109,7 @@ export function PhoneInput({
             value={`${selected.country}|${selected.code}`}
             onChange={(e) => onDialCodeChange(e.target.value.split("|")[1])}
             disabled={disabled}
-            className={`h-[52px] w-[112px] appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] pl-[12px] pr-[26px] font-[var(--font-sans)] ${text} text-[var(--text-primary)]`}
+            className={`h-[52px] ${snug ? "w-[104px] min-[360px]:w-[112px]" : "w-[112px]"} appearance-none rounded-[var(--radius-input)] border border-[var(--border-hairline)] bg-[var(--surface-input)] pl-[12px] pr-[26px] font-[var(--font-sans)] ${text} text-[var(--text-primary)]`}
           >
             {options.map((o) => (
               <option key={o.key} value={o.key}>
@@ -147,7 +155,7 @@ export function PhoneInput({
           }}
           className={`h-[52px] w-0 min-w-0 flex-1 rounded-[var(--radius-input)] border ${
             error ? "border-danger" : "border-[var(--border-hairline)]"
-          } bg-[var(--surface-input)] px-[16px] font-[var(--font-sans)] ${text} text-[var(--text-primary)] placeholder:text-[var(--text-muted)]`}
+          } bg-[var(--surface-input)] ${snug ? "px-[12px] min-[360px]:px-[16px]" : "px-[16px]"} font-[var(--font-sans)] ${text} text-[var(--text-primary)] placeholder:text-[var(--text-muted)]`}
         />
       </div>
       {error ? (
