@@ -60,3 +60,23 @@ export function creatorSplitRate(): number {
 export function creatorSplitPercent(): number {
   return Math.round(CREATOR_SPLIT_RATE * 100);
 }
+
+const LONG_MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/**
+ * A calendar date the API sends as YYYY-MM-DD, as "26 October 2026". Read off
+ * the text itself, never through Date and a locale, so the server render and
+ * the browser always print the same words. Anything that is not a plain date
+ * comes back as null, and the caller leaves the line out.
+ */
+export function formatLongDate(isoDate: string | null | undefined): string | null {
+  const m = isoDate ? /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate) : null;
+  if (!m) return null;
+  const month = LONG_MONTHS[Number(m[2]) - 1];
+  const day = Number(m[3]);
+  if (!month || day < 1 || day > 31) return null;
+  return `${day} ${month} ${m[1]}`;
+}
