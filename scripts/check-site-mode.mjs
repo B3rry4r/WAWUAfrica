@@ -79,6 +79,8 @@ eq("mode: a typo elsewhere is full", siteModeFrom({ SITE_MODE: "ful" }), "full")
 const serviceIcons = PLATFORM_SERVICES.map((s) => s.iconImageSrc);
 const mustBeOpen = [
   "/", "/join", "/join/", "/join/paid", "/terms", "/privacy/policy",
+  // the nine legal documents (owner, 26 Oct 2026): the stores need a public privacy policy address
+  "/legal", "/legal/", "/legal/privacy", "/legal/privacy/", "/legal/terms", "/legal/creator-monetization", "/legal/community-guidelines",
   "/_next/static/chunks/app/page-1.js", "/_next/static/css/a.css", "/_next/static/media/f.woff2", "/_next/image",
   "/robots.txt",
   "/wawu-logo-white.png", "/wawu-icon-white.svg", "/wawu-hero-desktop-creators.png", "/wawu-hero-mobile-professionals.png",
@@ -106,7 +108,9 @@ const mustStayClosed = [
   "/wawu-theme.mp3/x", "/wawu-theme.mp4", "/wawu-theme.mp3.map", "/other.mp3", "/x/wawu-theme.mp3",
   // files and paths that were closed before
   "/landing-video.mp4", "/landing-video-mobile.mp4", "/wawu-services.mp4", "/business-playbook-the-naija-way.pdf", "/mock/creators/x.png",
-  "/join/anything", "/join/paid/x", "/terms/x", "/privacy", "/privacy/policy/x", "/index.html", "/_next/data/x/home.json", "/_next/static", "/_next",
+  "/join/anything", "/join/paid/x", "/terms/x", "/privacy", "/privacy/policy/x",
+  // /legal is one document deep, in lower case, and not a file
+  "/legal/privacy/x", "/legalx", "/legal/Privacy", "/legal/privacy.png", "/legal/a_b", "/x/legal", "/x/legal/privacy", "/index.html", "/_next/data/x/home.json", "/_next/static", "/_next",
   "/who-made-this-white.png/x", "/who-made-this-white.png.map", "/images/who-made-this-white.png", "//", "/%2e%2e/sign-in", "/home/",
   // the two app-link files, and nothing wider under /.well-known
   "/.well-known", "/.well-known/", "/.well-known/security.txt", "/.well-known/change-password", "/.well-known/openid-configuration",
@@ -119,6 +123,9 @@ for (const p of mustStayClosed) check(`closed: ${p}`, !isOpenInJoinOnly(p));
 // only whole pages count as pages
 eq("page: / is a page", isOpenPageInJoinOnly("/"), true);
 eq("page: a file is not a page", isOpenPageInJoinOnly("/wawu-logo-white.png"), false);
+eq("page: /legal is a page", isOpenPageInJoinOnly("/legal"), true);
+eq("page: /legal/privacy is a page", isOpenPageInJoinOnly("/legal/privacy"), true);
+eq("page: /legal/privacy/x is not a page", isOpenPageInJoinOnly("/legal/privacy/x"), false);
 
 // Every file in public/ is either on this list or closed. A new file cannot
 // become reachable without someone editing this list.
@@ -177,7 +184,7 @@ for (const f of referenced) {
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
 const CLOSED_LINKS = ["/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
-const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid"];
+const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
   eq(`full: sign-up ${h} is unchanged`, signUpHref("full", h), h);

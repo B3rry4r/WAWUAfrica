@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Block, LegalSection } from "@/lib/legal/master-agreement";
 import { LEGAL_EFFECTIVE_DATE, LEGAL_UPDATED_DATE, sectionId } from "@/lib/legal/master-agreement";
 import { ProfileBackButton } from "@/components/profile/ProfileBackButton";
@@ -40,6 +41,22 @@ export function LegalDocument({
           Last updated {LEGAL_UPDATED_DATE}
         </span>
       </div>
+
+      <p className="m-0 text-[13px] leading-[1.5] text-[var(--text-muted)]">
+        The full set of WAWU legal documents, including the{" "}
+        <Link href="/legal/privacy" className="text-[var(--accent)] hover:text-[var(--accent-hover)]">
+          Privacy Policy
+        </Link>{" "}
+        and the{" "}
+        <Link href="/legal/terms" className="text-[var(--accent)] hover:text-[var(--accent-hover)]">
+          Terms of Service
+        </Link>
+        , is on the{" "}
+        <Link href="/legal" className="text-[var(--accent)] hover:text-[var(--accent-hover)]">
+          legal documents page
+        </Link>
+        .
+      </p>
 
       {intro ? (
         <p className="m-0 text-[13.5px] leading-[1.55] text-[var(--text-secondary)]">{intro}</p>

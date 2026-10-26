@@ -44,8 +44,20 @@ export function currentSiteMode(): SiteMode {
  * consent line links to; it redirects to the one Master Terms, Privacy and
  * Platform Policy document, so `/terms` (which holds the privacy provisions)
  * has to stay open or that link would end on /join.
+ *
+ * `/legal` and `/legal/<slug>` (owner, 26 Oct 2026) are the nine legal documents.
+ * The app stores need a public privacy policy address that is not behind a
+ * sign-in or a country gate, and `/legal/privacy` is it, so they stay open in
+ * join-only mode too (see `LEGAL_DOCUMENT`).
  */
-const OPEN_PAGES = new Set(["/", "/join", "/join/paid", "/privacy/policy", "/terms"]);
+const OPEN_PAGES = new Set(["/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal"]);
+
+/**
+ * `/legal/<slug>`: exactly one lower-case segment under /legal. A deeper path,
+ * an upper-case or odd character, or a bare `/legalx` is not a legal page. Which
+ * slugs exist is the page's business (an unknown one is a 404 there).
+ */
+const LEGAL_DOCUMENT = /^\/legal\/[a-z0-9-]+$/;
 
 /**
  * Files at the ROOT of the site with a static extension: images and icons
@@ -91,7 +103,8 @@ function trimmed(pathname: string): string {
 
 /** True when join-only mode serves this PAGE (as opposed to a file). */
 export function isOpenPageInJoinOnly(pathname: string): boolean {
-  return OPEN_PAGES.has(trimmed(pathname));
+  const path = trimmed(pathname);
+  return OPEN_PAGES.has(path) || LEGAL_DOCUMENT.test(path);
 }
 
 /**
@@ -109,7 +122,7 @@ function isAdminPath(path: string): boolean {
 /** True when join-only mode lets this path through. Every other path is sent to /join. */
 export function isOpenInJoinOnly(pathname: string): boolean {
   const path = trimmed(pathname);
-  if (OPEN_PAGES.has(path)) return true;
+  if (OPEN_PAGES.has(path) || LEGAL_DOCUMENT.test(path)) return true;
   if (isAdminPath(path)) return true;
   if (path.startsWith("/_next/static/") || path === "/_next/image") return true;
   if (path === "/robots.txt") return true;
