@@ -5,10 +5,12 @@ import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
 /**
  * Site mode (see lib/site-mode.ts). In `full` mode this does nothing. In
  * `join-only` mode every path that is not the landing page, the registration
- * link, the privacy document it links to, or a file those pages need gets a 307
- * to /join: pages, the app, sign-in and sign-up, admin, /payment/return and any
- * /api path alike. 307 keeps the method, so a stray POST is not silently turned
- * into a GET.
+ * link, the privacy document it links to, a file those pages need, or one of
+ * the two app-link files (/.well-known/assetlinks.json and
+ * /.well-known/apple-app-site-association, which must answer 200 for a link to
+ * the site to open the app) gets a 307 to /join: pages, the app, sign-in and
+ * sign-up, admin, /payment/return and any /api path alike. 307 keeps the
+ * method, so a stray POST is not silently turned into a GET.
  *
  * The mode is read from the environment on every request (currentSiteMode), so
  * changing SITE_MODE (or the deployment's VERCEL_ENV) changes behaviour without

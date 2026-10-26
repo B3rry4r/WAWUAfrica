@@ -72,6 +72,18 @@ const ROOT_STATIC_FILE = /^\/[^/]+\.(?:png|jpe?g|gif|webp|avif|svg|ico|woff2?|tt
 const LANDING_SERVICE_ICON = /^\/icons\/services\/[a-z0-9-]+\.png$/;
 const LANDING_FILES = new Set(["/wawu-theme.mp3"]);
 
+/**
+ * The two files that make a link to wawuafrica.com open the WAWU app, so they
+ * must answer 200 with no redirect in every mode: Android's verifier and
+ * Apple's CDN both refuse a redirect, and a redirect to /join would leave the
+ * app's links unverified. Exactly these two paths and nothing wider (no other
+ * file under /.well-known). The same strings are ASSET_LINKS_PATH and
+ * APPLE_APP_SITE_ASSOCIATION_PATH in src/lib/app-links.ts; this file has no
+ * imports, so they are written out here and scripts/check-site-mode.mjs
+ * checks they are equal.
+ */
+const APP_LINK_FILES = new Set(["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association"]);
+
 /** The same path with trailing slashes taken off (the root stays "/"). */
 function trimmed(pathname: string): string {
   return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
@@ -102,6 +114,7 @@ export function isOpenInJoinOnly(pathname: string): boolean {
   if (path.startsWith("/_next/static/") || path === "/_next/image") return true;
   if (path === "/robots.txt") return true;
   if (LANDING_FILES.has(path) || LANDING_SERVICE_ICON.test(path)) return true;
+  if (APP_LINK_FILES.has(path)) return true;
   return ROOT_STATIC_FILE.test(path);
 }
 
