@@ -45,12 +45,20 @@ export function currentSiteMode(): SiteMode {
  * Platform Policy document, so `/terms` (which holds the privacy provisions)
  * has to stay open or that link would end on /join.
  *
+ * `/reset-password` (RESET-WEB, R-123, 31 Oct 2026) is the page the password-reset
+ * mail links to: WAWU ID mails `https://wawuafrica.com/reset-password?token=...&email=...`,
+ * and a link that ends on /join means nobody can reset a password. Exactly that
+ * path (the query is not part of the pathname); /forgot-password, /sign-in, /login
+ * and /auth/* stay closed. It is the one page of the closed site that does work:
+ * it sets the new password with the token from the link and tells the person to
+ * sign in again in the app (see src/app/reset-password/page.tsx).
+ *
  * `/legal` and `/legal/<slug>` (owner, 26 Oct 2026) are the nine legal documents.
  * The app stores need a public privacy policy address that is not behind a
  * sign-in or a country gate, and `/legal/privacy` is it, so they stay open in
  * join-only mode too (see `LEGAL_DOCUMENT`).
  */
-const OPEN_PAGES = new Set(["/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal"]);
+const OPEN_PAGES = new Set(["/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal", "/reset-password"]);
 
 /**
  * `/legal/<slug>`: exactly one lower-case segment under /legal. A deeper path,

@@ -5,7 +5,8 @@ import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
 /**
  * Site mode (see lib/site-mode.ts). In `full` mode this does nothing. In
  * `join-only` mode every path that is not the landing page, the registration
- * link, the privacy document it links to, a file those pages need, or one of
+ * link, the privacy document it links to, the password-reset page the reset
+ * mail links to (/reset-password, R-123), a file those pages need, or one of
  * the two app-link files (/.well-known/assetlinks.json and
  * /.well-known/apple-app-site-association, which must answer 200 for a link to
  * the site to open the app) gets a 307 to /join: pages, the app, sign-in and
