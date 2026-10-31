@@ -75,6 +75,18 @@ export default async function LegalIndexPage() {
             </li>
           );
         })}
+        <li className="border-b border-[var(--border-hairline)] last:border-b-0">
+          <Link
+            href="/legal/delete-account"
+            className="flex min-h-[56px] items-center gap-3 p-[12px_15px] hover:bg-[var(--state-hover)]"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
+              <span className="text-[15px] font-semibold text-[var(--text-primary)]">Delete your account</span>
+              <span className="text-[12px] text-[var(--text-muted)]">Ask for your account and data to be deleted</span>
+            </span>
+            <Icon name="ChevronRight" size={18} color="var(--text-muted)" />
+          </Link>
+        </li>
       </ul>
     </>
   );
