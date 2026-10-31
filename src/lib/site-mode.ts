@@ -77,12 +77,17 @@ const ROOT_STATIC_FILE = /^\/[^/]+\.(?:png|jpe?g|gif|webp|avif|svg|ico|woff2?|tt
  *                                /icons/unused stay closed.
  *   /wawu-theme.mp3              the WAWU theme the sound button plays. Fetched
  *                                only when somebody taps the button.
+ *   /play/background-audio.mp4   Google Play's foreground-service video (owner,
+ *                                31 Oct 2026): the public link the Play form
+ *                                asks for, a recording of the app's background
+ *                                audio. Linked from no page. /play and every
+ *                                other path under it stay closed.
  *
  * A path with a further segment or another extension is not matched, and no
- * page lives under /icons, so neither can open a page.
+ * page lives under /icons or /play, so neither can open a page.
  */
 const LANDING_SERVICE_ICON = /^\/icons\/services\/[a-z0-9-]+\.png$/;
-const LANDING_FILES = new Set(["/wawu-theme.mp3"]);
+const LANDING_FILES = new Set(["/wawu-theme.mp3", "/play/background-audio.mp4"]);
 
 /**
  * The two files that make a link to wawuafrica.com open the WAWU app, so they

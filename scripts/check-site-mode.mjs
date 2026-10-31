@@ -88,6 +88,8 @@ const mustBeOpen = [
   // the admin dashboard (the admin sign-in protects it): /admin and everything under it
   "/admin", "/admin/", "/admin/notifications", "/admin/notifications/", "/admin/x/y",
   "/wawu-theme.mp3",
+  // Google Play's foreground-service video (owner, 31 Oct 2026): this one file, linked from no page
+  "/play/background-audio.mp4", "/play/background-audio.mp4/",
   // the two files that make a link to the site open the app (no redirect in any mode)
   "/.well-known/assetlinks.json", "/.well-known/apple-app-site-association",
   ...serviceIcons,
@@ -106,6 +108,9 @@ const mustStayClosed = [
   "/icons/bills/airtime.png", "/icons/unused/sports.png", "/icons/services", "/icons/services/", "/icons/services/x/y.png", "/icons/services/legal.png/x",
   "/icons/services/legal.PNG", "/icons/services/legal.png.map", "/icons/services/legal.jpg", "/icons/services/Legal.png", "/icons/other/legal.png",
   "/wawu-theme.mp3/x", "/wawu-theme.mp4", "/wawu-theme.mp3.map", "/other.mp3", "/x/wawu-theme.mp3",
+  // the Play video's one path, and nothing wider
+  "/play", "/play/", "/play/other.mp4", "/play/background-audio.mp3", "/play/background-audio.mp4/x", "/play/background-audio.mp4.map", "/play/Background-Audio.mp4",
+  "/play/x/background-audio.mp4", "/x/play/background-audio.mp4", "/background-audio.mp4",
   // files and paths that were closed before
   "/landing-video.mp4", "/landing-video-mobile.mp4", "/wawu-services.mp4", "/business-playbook-the-naija-way.pdf", "/mock/creators/x.png",
   "/join/anything", "/join/paid/x", "/terms/x", "/privacy", "/privacy/policy/x",
@@ -133,7 +138,7 @@ const EXPECTED_OPEN_PUBLIC = [
   "/email-header.png", "/landing-poster.jpg", "/og-image.png", "/services-hero.jpg",
   "/wawu-hero-desktop-creators.png", "/wawu-hero-desktop-professionals.png", "/wawu-hero-mobile-creators.png", "/wawu-hero-mobile-professionals.png",
   "/wawu-icon-dark.png", "/wawu-icon-white.png", "/wawu-icon-white.svg", "/wawu-logo-dark.png", "/wawu-logo-dark.svg", "/wawu-logo-white.png", "/wawu-logo-white.svg",
-  "/wawu-mascot-gospel.webp", "/wawu-theme.mp3", "/wawubasket-icon.png", "/wawubasket-logo.png", "/wawubeauty-icon.png", "/wawubeauty-logo.png",
+  "/play/background-audio.mp4", "/wawu-mascot-gospel.webp", "/wawu-theme.mp3", "/wawubasket-icon.png", "/wawubasket-logo.png", "/wawubeauty-icon.png", "/wawubeauty-logo.png",
   "/who-made-this-conference.webp", "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
   ...serviceIcons,
 ].sort();
