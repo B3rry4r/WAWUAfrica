@@ -220,7 +220,7 @@ const APP_FINGERPRINTS = [
 ];
 // the Android intent filters' paths: pathPrefix "/r/", path "/selfie", and so on
 const APP_PATHS = [
-  { kind: "prefix", path: "/r/" }, { kind: "exact", path: "/selfie" }, { kind: "exact", path: "/activate" },
+  { kind: "prefix", path: "/r/" }, { kind: "exact", path: "/selfie" }, { kind: "exact", path: "/activate" }, { kind: "exact", path: "/reset-password" },
   { kind: "prefix", path: "/receipt/" }, { kind: "prefix", path: "/u/" }, { kind: "prefix", path: "/c/" }, { kind: "prefix", path: "/content/" },
 ];
 eq("applinks: the assetlinks path", appLinks.ASSET_LINKS_PATH, "/.well-known/assetlinks.json");
@@ -240,7 +240,7 @@ check("assetlinks: the two fingerprints differ", new Set(APP_FINGERPRINTS).size 
 const aasa = appLinks.appleAppSiteAssociation();
 eq("aasa: one applinks entry for the app", aasa.applinks.details.map((d) => d.appIDs), [[APP_IOS_ID]]);
 const iosPatterns = aasa.applinks.details[0].components.map((c) => c["/"]);
-eq("aasa: the paths, in the app's order", iosPatterns, ["/r/*", "/selfie", "/activate", "/receipt/*", "/u/*", "/c/*", "/content/*"]);
+eq("aasa: the paths, in the app's order", iosPatterns, ["/r/*", "/selfie", "/activate", "/reset-password", "/receipt/*", "/u/*", "/c/*", "/content/*"]);
 eq("aasa: nothing but a path in each component", aasa.applinks.details[0].components.map((c) => Object.keys(c)), iosPatterns.map(() => ["/"]));
 
 // Android and iOS claim the same set: ask both matchers about the same paths. Android: path is an exact match,
@@ -250,7 +250,7 @@ const iosClaims = (p) => iosPatterns.some((pat) => new RegExp("^" + pat.split("*
 for (const p of [
   "/r/", "/r/abc", "/r/abc/def", "/r", "/rx", "/R/abc", "/selfie", "/selfie/", "/selfie/x", "/selfies", "/activate", "/activate/x", "/activated",
   "/receipt/1", "/receipt/", "/receipt", "/receipts/1", "/u/ada", "/u/", "/u", "/users/ada", "/c/1", "/c/", "/c", "/cx/1", "/content/xyz", "/content/", "/content",
-  "/contents/x", "/", "/home", "/join", "/wawu/ada", "/.well-known/assetlinks.json",
+  "/contents/x", "/reset-password", "/reset-password/", "/reset-password/x", "/reset-passwords", "/reset", "/", "/home", "/join", "/wawu/ada", "/.well-known/assetlinks.json",
 ]) eq(`applinks: Android and iOS agree on ${p}`, iosClaims(p), androidClaims(p));
 check("applinks: the matchers claim /r/abc and not /home (the probe works)", iosClaims("/r/abc") && !iosClaims("/home"));
 
