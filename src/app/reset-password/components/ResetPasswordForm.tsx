@@ -7,9 +7,18 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { StateCard } from "@/app/join/components/StateCard";
 import { saveNewPassword } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 
-export function ResetPasswordForm() {
+/**
+ * `appOnly` is join-only mode (src/lib/site-mode.ts, R-123): the web has no
+ * sign-in then, so this page never links to one. It ends by sending the person
+ * back to the Who Made This? app, and a link that has expired or was already
+ * used says so and sends them to the app's Forgot password for a new one.
+ * Without it the form is exactly what it was.
+ */
+export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
   const router = useRouter();
   // WAWU ID's forgot-password (email-link path) builds the reset URL as
   // /reset-password?token=...&email=... — see auth.service.ts resetPasswordByToken.
@@ -22,6 +31,9 @@ export function ResetPasswordForm() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // WAWU ID answers 401 "Invalid or expired reset token" for a token that is
+  // wrong, past its hour, or already used (it deletes every token on success).
+  const [linkDead, setLinkDead] = useState(false);
 
   const passwordValid = password.length >= 8;
   const confirmValid = confirm === password && confirm.length >= 8;
@@ -35,11 +47,90 @@ export function ResetPasswordForm() {
       await saveNewPassword({ password, confirmPassword: confirm, token, email });
       setDone(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not update your password. Try again.");
+      if (appOnly && e instanceof ApiError && e.status === 401) setLinkDead(true);
+      else setError(e instanceof Error ? e.message : "Could not update your password. Try again.");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (appOnly) {
+    // A link with no token or no address cannot work either: the same screen.
+    if (linkDead || !token || !email) {
+      return (
+        <StateCard icon="Clock" tone="warning" title="This link has expired">
+          <p className="m-0">This link has expired or was already used.</p>
+          <p className="m-0">Go back to the Who Made This? app, tap Forgot password and ask for a new link.</p>
+        </StateCard>
+      );
+    }
+    if (done) {
+      return (
+        <StateCard icon="CircleCheck" tone="success" title="Password changed">
+          <p className="m-0">
+            Your password is changed. Go back to the Who Made This? app and sign in with your new password.
+          </p>
+        </StateCard>
+      );
+    }
+    return (
+      <section className="flex flex-col gap-6 rounded-card border border-hairline bg-card px-6 py-8 dt:px-9 dt:py-10">
+        <div className="flex flex-col gap-2.5">
+          <h1 className="m-0 text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-text-primary">
+            Set a new password
+          </h1>
+          <p className="m-0 text-[14.5px] leading-[1.55] text-text-secondary">
+            Choose a new password, then go back to the Who Made This? app and sign in with it.
+          </p>
+        </div>
+        <div className="flex flex-col gap-4">
+          <Input
+            label="New password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            noZoom
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError(null);
+            }}
+            placeholder="At least 8 characters"
+            hint="At least 8 characters."
+            error={password ? (passwordValid ? undefined : "Too short, use at least 8 characters.") : undefined}
+          />
+          <Input
+            label="Confirm new password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            noZoom
+            value={confirm}
+            onChange={(e) => {
+              setConfirm(e.target.value);
+              setError(null);
+            }}
+            placeholder="Type it once more"
+            error={confirm ? (confirmValid ? undefined : "Passwords do not match.") : undefined}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            className="flex items-center gap-[7px] self-start text-[12.5px] font-semibold text-text-secondary hover:text-accent-hover"
+          >
+            <Icon name={showPassword ? "EyeOff" : "Eye"} size={15} color="var(--text-muted)" strokeWidth={2.2} />
+            {showPassword ? "Hide passwords" : "Show passwords"}
+          </button>
+          {error ? (
+            <p role="alert" className="m-0 text-[13px] font-medium text-danger">
+              {error}
+            </p>
+          ) : null}
+        </div>
+        <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
+          {submitting ? "Saving…" : "Save new password"}
+        </Button>
+      </section>
+    );
+  }
 
   if (done) {
     return (

@@ -83,6 +83,8 @@ const mustBeOpen = [
   "/legal", "/legal/", "/legal/privacy", "/legal/privacy/", "/legal/terms", "/legal/creator-monetization", "/legal/community-guidelines",
   "/_next/static/chunks/app/page-1.js", "/_next/static/css/a.css", "/_next/static/media/f.woff2", "/_next/image",
   "/robots.txt",
+  // the page the password-reset mail links to (RESET-WEB, R-123): exactly this path, the query is not part of it
+  "/reset-password", "/reset-password/",
   "/wawu-logo-white.png", "/wawu-icon-white.svg", "/wawu-hero-desktop-creators.png", "/wawu-hero-mobile-professionals.png",
   "/who-made-this-ink.png", "/og-image.png", "/favicon.ico", "/icon.png", "/apple-icon.png",
   // the admin dashboard (the admin sign-in protects it): /admin and everything under it
@@ -99,6 +101,10 @@ for (const p of mustBeOpen) check(`open: ${p}`, isOpenInJoinOnly(p));
 const mustStayClosed = [
   // the app and everything behind it
   "/home", "/explore", "/learn", "/learn/x", "/sign-in", "/sign-up", "/api/anything", "/api/hub/waitlist/offers/current",
+  // the reset page is the one door; the rest of the sign-in side stays shut (RESET-WEB, R-123)
+  "/forgot-password", "/forgot-password/", "/login", "/sign-in/", "/sign-up/", "/auth", "/auth/login", "/auth/sign-in", "/auth/forgot-password", "/auth/reset-password", "/auth/signup",
+  "/reset-password/x", "/reset-password/abc/def", "/reset-passwords", "/reset-password.html", "/reset", "/Reset-Password", "/x/reset-password", "/sign-in/reset-password",
+  "/api/reset-password", "/api/auth/reset-password", "/activate", "/verify-email",
   // admin is whole segments only
   "/administrator", "/adminx/y", "/x/admin", "/api/hub/admin/notifications/email/campaigns",
   "/payment/return", "/wallet", "/events", "/services", "/services/legal", "/services/pay", "/shop", "/tickets", "/wawu/ada", "/communities",
@@ -131,6 +137,10 @@ eq("page: a file is not a page", isOpenPageInJoinOnly("/wawu-logo-white.png"), f
 eq("page: /legal is a page", isOpenPageInJoinOnly("/legal"), true);
 eq("page: /legal/privacy is a page", isOpenPageInJoinOnly("/legal/privacy"), true);
 eq("page: /legal/privacy/x is not a page", isOpenPageInJoinOnly("/legal/privacy/x"), false);
+eq("page: /reset-password is a page", isOpenPageInJoinOnly("/reset-password"), true);
+eq("page: /reset-password/ is a page", isOpenPageInJoinOnly("/reset-password/"), true);
+eq("page: /reset-password/x is not a page", isOpenPageInJoinOnly("/reset-password/x"), false);
+eq("page: /forgot-password is not a page", isOpenPageInJoinOnly("/forgot-password"), false);
 
 // Every file in public/ is either on this list or closed. A new file cannot
 // become reachable without someone editing this list.
@@ -188,8 +198,8 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
-const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
+const CLOSED_LINKS = ["/forgot-password", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
+const KEPT_LINKS = ["/reset-password", "/reset-password?token=abc&email=ada%40example.test", "#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
   eq(`full: sign-up ${h} is unchanged`, signUpHref("full", h), h);
@@ -352,11 +362,29 @@ if (base && mode) {
   }
 
   if (mode === "join-only") {
-    for (const p of ["/home", "/explore", "/learn", "/sign-in", "/sign-up", "/administrator", "/api/anything", "/wawu/ada.png", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4"]) {
+    for (const p of ["/forgot-password", "/login", "/auth/reset-password", "/auth/login", "/reset-password/x", "/home", "/explore", "/learn", "/sign-in", "/sign-up", "/administrator", "/api/anything", "/wawu/ada.png", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4"]) {
       const r = await get(p);
       check(`live: ${p} is still closed (307 to /join)`, r.status === 307 && /\/join$/.test(r.headers.get("location") ?? ""), `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
     for (const p of ["/join", "/join/paid", "/terms", "/admin/notifications"]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
+  }
+
+  // the password-reset page (RESET-WEB, R-123): open in join-only with its query kept, and the page itself sends nobody into the closed site
+  {
+    const path = "/reset-password?token=abc123&email=ada%40example.test";
+    const r = await get(path);
+    check(`live: ${path} answers 200 in ${mode} (no redirect)`, r.status === 200, `status ${r.status} ${r.headers.get("location") ?? ""}`);
+    const page = await r.text();
+    check(`live: the reset page has its title and form in ${mode}`, page.includes("Set a new password") && page.includes("Save new password"));
+    const hrefs = [...page.matchAll(/<a\s[^>]*?href="([^"]*)"/g)].map((m) => m[1]);
+    if (mode === "join-only") {
+      check("live: the reset page in join-only mode links to no closed page", hrefs.every((h) => h.startsWith("#") || /^\/(?:join|terms|privacy\/policy|legal)\b/.test(h) || /^https?:/.test(h)), hrefs.join(" "));
+      check("live: the reset page in join-only mode says to sign in in the app", page.includes("Who Made This?"));
+    } else {
+      check("live: the reset page in full mode still links back to sign in", hrefs.includes("/sign-in"), hrefs.join(" "));
+    }
+    const bare = await get("/reset-password");
+    check(`live: /reset-password with no query answers 200 in ${mode}`, bare.status === 200, `status ${bare.status}`);
   }
 }
 

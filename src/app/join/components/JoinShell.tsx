@@ -13,8 +13,12 @@ import type { ReactNode } from "react";
  * drop someone out of a half-finished payment. It is the owner's white
  * lockup, kept at the ROOT of public/ because production serves only
  * root-level static files (site mode).
+ *
+ * `themedLogo` (RESET-WEB, R-123) is for /reset-password, the one page here the
+ * design walks in a light theme too: it draws the ink lockup instead of the white
+ * one when the page is light. /join passes nothing and is unchanged.
  */
-export function JoinShell({ children }: { children: ReactNode }) {
+export function JoinShell({ children, themedLogo = false }: { children: ReactNode; themedLogo?: boolean }) {
   return (
     <div className="relative min-h-[100dvh] overflow-x-clip bg-page">
       <div
@@ -27,8 +31,19 @@ export function JoinShell({ children }: { children: ReactNode }) {
           alt="Who Made This"
           width={1009}
           height={295}
-          className="h-[46px] w-auto object-contain dt:h-[56px]"
+          className={`h-[46px] w-auto object-contain dt:h-[56px]${themedLogo ? " [[data-theme=light]_&]:hidden" : ""}`}
         />
+        {themedLogo ? (
+          // The ink lockup for a light page: the white one disappears on it. Only a page that can be light asks for this.
+          <img
+            src="/who-made-this-ink.png"
+            loading="lazy"
+            alt="Who Made This"
+            width={1009}
+            height={295}
+            className="hidden h-[46px] w-auto object-contain dt:h-[56px] [[data-theme=light]_&]:block"
+          />
+        ) : null}
       </header>
       <main className="relative z-10 mx-auto w-full max-w-[520px] px-4 pb-16 pt-8 dt:pt-14">{children}</main>
     </div>
