@@ -46,6 +46,9 @@ export const APP_LINK_PATHS: readonly { kind: "exact" | "prefix"; path: string }
   { kind: "prefix", path: "/r/" },
   { kind: "exact", path: "/selfie" },
   { kind: "exact", path: "/activate" },
+  // RESET-APP (R-123), HELD: the Forgot password email's link opens the app's New password screen. Merge this only when the
+  // build that has that screen is on phones: an iPhone on an older build would open the app on a route it does not have.
+  { kind: "exact", path: "/reset-password" },
   { kind: "prefix", path: "/receipt/" },
   { kind: "prefix", path: "/u/" },
   { kind: "prefix", path: "/c/" },
