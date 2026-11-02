@@ -87,6 +87,29 @@ const config: Config = {
         "verify-creator-tint": "var(--verify-creator-tint)",
         "verify-professional": "var(--verify-professional)",
         "verify-professional-tint": "var(--verify-professional-tint)",
+
+        // THE BRAND SITE (BRAND-SITE, owner 2 Nov 2026): wawuafrica.com's
+        // public pages. Light theme with deep purple sections. Defined in
+        // src/app/(site)/site.css and scoped to .wawu-site, so nothing here
+        // touches the app's dark-first tokens above.
+        site: {
+          purple: "var(--site-purple)",
+          "purple-hover": "var(--site-purple-hover)",
+          "purple-tint": "var(--site-purple-tint)",
+          deep: "var(--site-deep)",
+          ink: "var(--site-ink)",
+          paper: "var(--site-paper)",
+          lilac: "var(--site-lilac)",
+          line: "var(--site-line)",
+          mute: "var(--site-mute)",
+          body: "var(--site-body)",
+          green: "var(--site-green)",
+          "green-deep": "var(--site-green-deep)",
+          mint: "var(--site-mint)",
+        },
+      },
+      fontFamily: {
+        site: ["var(--font-site)", "var(--font-sans)", "system-ui", "sans-serif"],
       },
       borderColor: {
         hairline: "var(--border-hairline)",
@@ -114,6 +137,12 @@ const config: Config = {
         float: "var(--shadow-float)",
         sheet: "var(--shadow-sheet)",
         accent: "var(--shadow-accent)",
+        // The brand site (src/app/(site)/site.css).
+        "site-screen": "var(--site-shadow-screen)",
+        "site-phone": "var(--site-shadow-phone)",
+        "site-logo": "var(--site-shadow-logo)",
+        "site-tile-purple": "var(--site-shadow-tile-purple)",
+        "site-tile-green": "var(--site-shadow-tile-green)",
       },
       backdropBlur: {
         veil: "var(--blur-veil)",

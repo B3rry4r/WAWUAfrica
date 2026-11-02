@@ -125,7 +125,7 @@ export default function SettingsPage() {
         {
           title: "About",
           rows: [
-            { title: "About WAWU", icon: "Info", href: "/about" },
+            { title: "About WAWU", icon: "Info", href: "/settings/about" },
           ],
         },
       ]

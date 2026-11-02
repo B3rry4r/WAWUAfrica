@@ -1,0 +1,63 @@
+/**
+ * The brand site's facts in one place (BRAND-SITE, owner 2 Nov 2026).
+ *
+ * No imports: scripts/check-site-mode.mjs loads this file as it stands (Node
+ * strips the types) to prove every link the site draws lands on an open page.
+ */
+
+export const SITE_URL = "https://wawuafrica.com";
+export const COMPANY = "WAWU Technology Ltd";
+export const CONTACT_EMAIL = "support@wawuafrica.com";
+export const WHATSAPP_DISPLAY = "+234 705 072 2222";
+export const WHATSAPP_URL = "https://wa.me/2347050722222";
+
+/** The registration link (R-48). Every Register button on the site goes here. */
+export const REGISTER_HREF = "/join";
+
+export interface SiteLink {
+  label: string;
+  href: string;
+}
+
+/** The pages of the brand site, in the order the sitemap lists them. */
+export const SITE_PAGES: readonly SiteLink[] = [
+  { label: "Home", href: "/" },
+  { label: "WHO MADE THIS?", href: "/who-made-this" },
+  { label: "VOICES", href: "/voices" },
+  { label: "About", href: "/about" },
+  { label: "Partners", href: "/partners" },
+  { label: "Press", href: "/press" },
+  { label: "Careers", href: "/careers" },
+  { label: "Contact", href: "/contact" },
+];
+
+/** The header's links. Press and Careers live in the footer. */
+export const HEADER_NAV: readonly SiteLink[] = [
+  { label: "WHO MADE THIS?", href: "/who-made-this" },
+  { label: "VOICES", href: "/voices" },
+  { label: "About", href: "/about" },
+  { label: "Partners", href: "/partners" },
+  { label: "Contact", href: "/contact" },
+];
+
+export const FOOTER_APPS: readonly SiteLink[] = [
+  { label: "WHO MADE THIS?", href: "/who-made-this" },
+  { label: "VOICES", href: "/voices" },
+];
+
+export const FOOTER_COMPANY: readonly SiteLink[] = [
+  { label: "About", href: "/about" },
+  { label: "Partners", href: "/partners" },
+  { label: "Careers", href: "/careers" },
+  { label: "Press", href: "/press" },
+  { label: "Contact", href: "/contact" },
+];
+
+/** The existing legal pages: the nine documents under /legal and the master terms. */
+export const FOOTER_LEGAL: readonly SiteLink[] = [
+  { label: "Privacy", href: "/legal/privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "All legal documents", href: "/legal" },
+];
+
+export const CONFERENCE_CITIES: readonly string[] = ["Lagos", "Abuja", "Port Harcourt"];

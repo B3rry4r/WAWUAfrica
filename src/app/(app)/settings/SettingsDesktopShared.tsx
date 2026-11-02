@@ -65,7 +65,7 @@ const ACCOUNT_ROWS: CategoryRow[] = [
   { key: "verification", label: "Verification ticks", icon: "ShieldCheck", href: "/profile/verification" },
   { key: "privacy", label: "Privacy", icon: "Lock", href: "/privacy" },
   { key: "saved", label: "Saved", icon: "Bookmark", href: "/saved" },
-  { key: "about", label: "About and partners", icon: "Info", href: "/about" },
+  { key: "about", label: "About and partners", icon: "Info", href: "/settings/about" },
   { key: "sign-out", label: "Sign out", icon: "LogOut", href: "#", action: "sign-out", danger: true },
   { key: "delete-account", label: "Delete account", icon: "Trash2", href: "/settings/delete-account", internal: "delete-account", danger: true },
 ];

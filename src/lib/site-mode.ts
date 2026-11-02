@@ -53,12 +53,26 @@ export function currentSiteMode(): SiteMode {
  * it sets the new password with the token from the link and tells the person to
  * sign in again in the app (see src/app/reset-password/page.tsx).
  *
+ * The brand site (BRAND-SITE, owner 2 Nov 2026): `/`, `/who-made-this`, `/voices`,
+ * `/about`, `/partners`, `/press`, `/careers` and `/contact` are the public pages
+ * of wawuafrica.com. They are plain pages with no data and no sign-in, so they
+ * are safe to leave open. Their pictures and downloads are root files in public/
+ * (`/wawu-brand-*`, `/wawu-partner-*`, `/wawu-wmt-screen-*`, `/wawu-og-*`), which
+ * the root-file rule below already serves; `/sitemap.xml` is open next to
+ * `/robots.txt`. `/about` used to be the signed-in app's About page; that page is
+ * now `/settings/about` (closed in join-only like the rest of the app).
+ *
  * `/legal` and `/legal/<slug>` (owner, 26 Oct 2026) are the nine legal documents.
  * The app stores need a public privacy policy address that is not behind a
  * sign-in or a country gate, and `/legal/privacy` is it, so they stay open in
  * join-only mode too (see `LEGAL_DOCUMENT`).
  */
-const OPEN_PAGES = new Set(["/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal", "/reset-password"]);
+const OPEN_PAGES = new Set([
+  "/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal", "/reset-password",
+  // The brand site (BRAND-SITE, owner 2 Nov 2026): wawuafrica.com becomes the WAWU brand website.
+  // Exactly these eight pages (with "/"), each one segment, no sub-paths.
+  "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact",
+]);
 
 /**
  * `/legal/<slug>`: exactly one lower-case segment under /legal. A deeper path,
@@ -138,7 +152,7 @@ export function isOpenInJoinOnly(pathname: string): boolean {
   if (OPEN_PAGES.has(path) || LEGAL_DOCUMENT.test(path)) return true;
   if (isAdminPath(path)) return true;
   if (path.startsWith("/_next/static/") || path === "/_next/image") return true;
-  if (path === "/robots.txt") return true;
+  if (path === "/robots.txt" || path === "/sitemap.xml") return true;
   if (LANDING_FILES.has(path) || LANDING_SERVICE_ICON.test(path)) return true;
   if (APP_LINK_FILES.has(path)) return true;
   return ROOT_STATIC_FILE.test(path);
