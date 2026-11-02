@@ -25,13 +25,13 @@ Shared pieces are in `src/app/(site)/_components/`; the look is `src/app/(site)/
 
 ## Partner logos (`/partners`, and the strip on `/`)
 
-Files are at the root of `public/` (`wawu-partner-<slug>.png`), trimmed of white space and sized in `src/lib/site/partners.ts` so each logo has about the same visual weight. The wall shows them grey until the pointer is over a tile on a device that has one; on a phone they stay in colour.
+Files are at the root of `public/` (`wawu-partner-<slug>.png`), trimmed of white space and sized in `src/lib/site/partners.ts` so each logo has about the same visual weight. Every logo is shown in its own colours, as supplied, on one tile each (white tiles; a black tile for Dreamax). On a phone the wall is two tiles to a row, with the very long Soueast logo taking a whole row.
 
 Order: ISN Hubs, Pistis Life and Leadership Institute (PLLI), Enterprise Development Centre (Pan-Atlantic University), Development Bank of Nigeria, Learning Curve, Soueast, Canva, Flixora, Africa Trade Gateway, Federal Ministry of Youth Development, PenCom, Nuvion, Dreamax, Alison.
 
 - The Enterprise Development Centre and Pan-Atlantic University logo is one file.
-- ISN Hubs came as a 116 x 69 picture (86 x 39 after trimming) and is drawn at that size, so it is soft on a high-density screen. A larger file would fix it.
-- Dreamax came white on black. The wall uses it inverted (black on white); `wawu-partner-dreamax-white.png` is the white mark on a clear background for the featured partnership.
+- ISN Hubs came as a 116 x 69 picture (86 x 39 after trimming) and is drawn at that exact pixel size, the largest it stays sharp. A larger file from ISN Hubs would let it grow to match the others.
+- Dreamax came white on black and is shown as supplied: `wawu-partner-dreamax-white.png` (the white mark on a clear background) on a black tile. The same file is used in the featured partnership.
 
 ## Pictures and downloads
 

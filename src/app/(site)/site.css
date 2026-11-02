@@ -182,18 +182,3 @@ body:has(.wawu-site) {
     white-space: normal;
   }
 }
-
-/* ---- the logo wall: calm by default, full colour on hover and focus ---- */
-@media (hover: hover) {
-  .site-logo-img {
-    filter: grayscale(1) contrast(1.15);
-    opacity: 1;
-    transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
-  }
-  .site-logo-tile:hover .site-logo-img,
-  .site-logo-tile:focus-within .site-logo-img {
-    filter: none;
-    opacity: 1;
-    transform: scale(1.04);
-  }
-}

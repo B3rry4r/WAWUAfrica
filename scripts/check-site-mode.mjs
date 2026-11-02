@@ -176,7 +176,7 @@ const EXPECTED_OPEN_PUBLIC = [
   "/who-made-this-conference.webp", "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
   // the brand site (BRAND-SITE, owner 2 Nov 2026): logo pack (SVG and PNG), partner logos, app screens, link-preview pictures
   ...["wordmark-colour", "wordmark-purple", "wordmark-white", "icon-colour", "icon-purple", "icon-white"].flatMap((n) => [`/wawu-brand-${n}.svg`, `/wawu-brand-${n}.png`]),
-  ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "flixora", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`),
+  ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "flixora", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`),
   ...["home", "profile", "feed", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
   "/wawu-og-brand.png", "/wawu-og-who-made-this.png", "/wawu-og-voices.png",
   ...serviceIcons,
@@ -289,9 +289,12 @@ eq("brand: the partners, in the owner's order", PARTNERS.map((p) => p.slug), ["i
 for (const p of PARTNERS) {
   check(`brand: partner logo ${p.src} exists in public/`, publicFiles.includes(p.src));
   check(`brand: partner logo ${p.src} is open in join-only`, isOpenInJoinOnly(p.src));
-  check(`brand: partner ${p.slug} has a name and a drawn size`, p.name.length > 2 && p.width > 0 && p.height > 0 && p.width <= 200 && p.height <= 80);
+  check(`brand: partner ${p.slug} has a name and a drawn size`, p.name.length > 2 && p.width > 0 && p.height > 0 && p.width <= 240 && p.height <= 110);
 }
 check("brand: the white Dreamax mark exists", publicFiles.includes("/wawu-partner-dreamax-white.png"));
+check("brand: Dreamax is shown as supplied, white on a black tile (not inverted)", PARTNERS.find((p) => p.slug === "dreamax")?.tile === "black" && PARTNERS.find((p) => p.slug === "dreamax")?.src === "/wawu-partner-dreamax-white.png");
+check("brand: the logo wall draws logos in their own colours (no grey filter)", !/grayscale|site-logo-img/.test(readFileSync(join(root, "src/app/(site)/_components/LogoWall.tsx"), "utf8") + readFileSync(join(root, "src/app/(site)/site.css"), "utf8")));
+check("brand: the old inverted Dreamax file is gone", !publicFiles.includes("/wawu-partner-dreamax.png"));
 
 // the press downloads: six marks, each an SVG and a PNG, in public/ and open
 eq("brand: six press marks", PRESS_ASSETS.length, 6);

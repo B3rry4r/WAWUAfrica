@@ -3,23 +3,46 @@ import { cn } from "@/lib/cn";
 import { PARTNERS } from "@/lib/site/partners";
 
 /**
- * The partner logos: one white tile each, so the logos that came on white
- * backgrounds sit on white, with every logo drawn at about the same visual
- * weight (sizes in src/lib/site/partners.ts). Grey and quiet until the
- * pointer is over a tile on a device that has one; on a phone they stay in
- * colour. `compact` is the smaller strip on the home page.
+ * On a phone the wall is two tiles to a row. A `wide` logo takes the whole
+ * row, and so does a tile that would be left alone beside one, so a row is
+ * never half empty. From a tablet up every tile is the same width and the
+ * last row is centred.
+ */
+function phoneRowSpans(): boolean[] {
+  const full = PARTNERS.map((p) => p.wide === true);
+  let column = 0;
+  PARTNERS.forEach((_, i) => {
+    if (full[i]) {
+      if (column === 1) full[i - 1] = true;
+      column = 0;
+    } else {
+      column = (column + 1) % 2;
+    }
+  });
+  if (column === 1) full[PARTNERS.length - 1] = true;
+  return full;
+}
+
+/**
+ * The partner logos, each in its own colours, as supplied, on one tile each:
+ * white for the logos that came on white, black for Dreamax, whose logo is
+ * white on black. Every logo is drawn at about the same visual weight (sizes in
+ * src/lib/site/partners.ts). `compact` is the shorter strip on the home page.
  */
 export function LogoWall({ compact = false, className }: { compact?: boolean; className?: string }) {
+  const full = phoneRowSpans();
   return (
     <ul className={cn("m-0 flex list-none flex-wrap justify-center gap-3 p-0 sm:gap-4", className)}>
-      {PARTNERS.map((partner) => (
+      {PARTNERS.map((partner, i) => (
         <li
           key={partner.slug}
           className={cn(
-            "site-logo-tile grid place-items-center rounded-[20px] border border-site-line bg-white transition duration-200 hover:-translate-y-0.5 hover:border-site-purple hover:shadow-site-logo motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+            "site-logo-tile grid place-items-center rounded-[22px] border transition duration-200 hover:-translate-y-0.5 hover:shadow-site-logo motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+            partner.tile === "black" ? "border-black bg-black" : "border-site-line bg-white hover:border-site-purple",
+            full[i] ? "w-full md:w-[calc(33.333%-11px)]" : "w-[calc(50%-6px)] md:w-[calc(33.333%-11px)]",
             compact
-              ? "h-[88px] w-[calc(50%-6px)] px-4 sm:h-[96px] sm:w-[calc(33.333%-11px)] md:w-[calc(25%-12px)] lg:w-[calc(14.2857%-14px)]"
-              : "h-[112px] w-[calc(50%-6px)] px-5 sm:h-[124px] sm:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]",
+              ? "h-[120px] px-3 lg:w-[calc(20%-13px)]"
+              : "h-[140px] px-5 lg:w-[calc(25%-12px)]",
           )}
         >
           <Image
@@ -28,7 +51,7 @@ export function LogoWall({ compact = false, className }: { compact?: boolean; cl
             width={partner.width}
             height={partner.height}
             unoptimized
-            className={cn("site-logo-img h-auto max-w-full", compact && "scale-[0.85]")}
+            className="h-auto max-w-full"
           />
         </li>
       ))}
