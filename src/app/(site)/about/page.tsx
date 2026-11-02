@@ -35,7 +35,7 @@ export default function AboutPage() {
       />
 
       <section className="py-20 sm:py-28">
-        <Wrap className="grid gap-14 lg:grid-cols-2 lg:gap-20">
+        <Wrap className="grid grid-cols-1 gap-14 lg:grid-cols-2 lg:gap-20">
           <div>
             <h2 className="m-0 mb-5 text-[clamp(1.9rem,4vw,2.8rem)] font-extrabold leading-[1] tracking-[-0.035em] text-site-deep">What we do.</h2>
             <p className="m-0 max-w-[52ch] text-[clamp(1.1rem,2vw,1.3rem)] leading-relaxed text-site-body">

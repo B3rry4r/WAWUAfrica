@@ -177,7 +177,7 @@ const EXPECTED_OPEN_PUBLIC = [
   // the brand site (BRAND-SITE, owner 2 Nov 2026): logo pack (SVG and PNG), partner logos, app screens, link-preview pictures
   ...["wordmark-colour", "wordmark-purple", "wordmark-white", "icon-colour", "icon-purple", "icon-white"].flatMap((n) => [`/wawu-brand-${n}.svg`, `/wawu-brand-${n}.png`]),
   ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "flixora", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`),
-  ...["home", "profile", "feed", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
+  ...["home", "feed", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
   "/wawu-og-brand.png", "/wawu-og-who-made-this.png", "/wawu-og-voices.png",
   ...serviceIcons,
 ].sort();
@@ -314,7 +314,16 @@ for (const f of siteNamed) {
   check(`brand: ${f} exists in public/`, publicFiles.includes(f));
   check(`brand: ${f} is open in join-only`, isOpenInJoinOnly(f));
 }
-for (const id of ["home", "profile", "feed", "creator", "unlock"]) check(`brand: app screen ${id} exists`, publicFiles.includes(`/wawu-wmt-screen-${id}.webp`));
+for (const id of ["home", "feed", "creator", "unlock"]) check(`brand: app screen ${id} exists`, publicFiles.includes(`/wawu-wmt-screen-${id}.webp`));
+// SLIDER 3 shows a Shop tab on the profile and R-9 says there is no Shop tab: it is not on the site (lead ruling, 2 Nov 2026)
+check("brand: the SLIDER 3 profile screen is not in public/", !publicFiles.includes("/wawu-wmt-screen-profile.webp"));
+check("brand: no source names the SLIDER 3 profile screen", !siteSources.some((f) => /screen-profile|["'`]profile["'`]\s*\|/.test(readFileSync(f, "utf8")) || /slider[ _-]?3/i.test(readFileSync(f, "utf8"))));
+// the VOICES page says only what the boss's example says: nothing about anonymity, masked voices, emoji or typed replies, or recording live
+{
+  const voices = readFileSync(join(root, "src/app/(site)/voices/page.tsx"), "utf8");
+  check("brand: the VOICES page makes no claim the example does not", !/anonym|masked|emoji|typed repl|recorded live|your voice, live/i.test(voices));
+  check("brand: the VOICES page says others reply with reactions and comments", voices.includes("Others can reply with reactions and comments."));
+}
 check("brand: the app screen the owner struck out (SLIDER 2: a physical card, To cash) is not used", !siteSources.some((f) => /slider[ _-]?2/i.test(readFileSync(f, "utf8"))));
 const ogFiles = [...readFileSync(join(root, "src/app/(site)/_lib/page-metadata.ts"), "utf8").matchAll(/"(\/wawu-og-[a-z-]+\.png)"/g)].map((m) => m[1]);
 eq("brand: the three link-preview pictures", ogFiles.sort(), ["/wawu-og-brand.png", "/wawu-og-voices.png", "/wawu-og-who-made-this.png"]);
@@ -505,6 +514,18 @@ if (base && mode) {
     check(`live: ${page.href} asked for its own files`, own >= 4, `${own} files`);
   }
   console.log(`live: ${siteConfig.SITE_PAGES.length} pages, ${totalLinks} links and ${totalFiles} different files fetched in ${mode} mode`);
+
+  // the theme tune and Google Play's background-audio video are served in either mode (the old landing page fetched the tune; the Play form links the video)
+  {
+    const mp3 = await get("/wawu-theme.mp3");
+    check(`live: /wawu-theme.mp3 answers 200 in ${mode}`, mp3.status === 200, `status ${mp3.status} ${mp3.headers.get("location") ?? ""}`);
+    check("live: /wawu-theme.mp3 is audio", /^audio\//i.test(mp3.headers.get("content-type") ?? ""), mp3.headers.get("content-type") ?? "no content-type");
+    await mp3.arrayBuffer();
+    const mp4 = await get("/play/background-audio.mp4");
+    check(`live: /play/background-audio.mp4 answers 200 in ${mode}`, mp4.status === 200, `status ${mp4.status} ${mp4.headers.get("location") ?? ""}`);
+    check("live: /play/background-audio.mp4 is video/mp4", /^video\/mp4\b/i.test(mp4.headers.get("content-type") ?? ""), mp4.headers.get("content-type") ?? "no content-type");
+    await mp4.arrayBuffer();
+  }
 
   // the sitemap and robots.txt are open and say what they should
   {

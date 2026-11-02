@@ -124,7 +124,7 @@ coverage gap to state rather than to paper over.
 | `/learn/guides`, `/learn/guides/[id]`, `/learn/playbook` | |
 | `/shop/browse/[category]`, `/shop/product/[slug]`, `/shop/checkout`, `/shop/orders`, `/shop/orders/[orderId]`, `/shop/wow` | Only the Marketplace landing is referenced |
 | `/sign-in`, `/sign-up`, `/forgot-password`, `/reset-password` | |
-| `/about`, `/terms`, `/privacy`, `/privacy/policy`, `/privacy/blocked` | |
+| `/settings/about`, `/terms`, `/privacy`, `/privacy/policy`, `/privacy/blocked` | |
 | `/payment/return` | Flutterwave return leg |
 
 ## Uncertainty worth recording

@@ -34,9 +34,9 @@ const HOW_IT_WORKS = [
 
 const FAQ = [
   { question: "Does it cost anything to join?", answer: "Signing up costs nothing. A verified tick is a paid extra: it shows people you are real and lifts your upload limits." },
-  { question: "When does it open?", answer: "Soon. WHO MADE THIS? is coming to the App Store and Google Play, and this page will carry the store links the day it opens." },
+  { question: "When does it go live?", answer: "WHO MADE THIS? is coming soon on the App Store and Google Play." },
   { question: "Who is it for?", answer: "Creators, professionals, founders, artists and builders: anyone with something to show or sell." },
-  { question: "Where do I get it?", answer: "On the App Store and Google Play. Register now and you will be first to know." },
+  { question: "Where do I get it?", answer: "On the Google Play Store and the Apple App Store, coming soon." },
 ] as const;
 
 export default function WhoMadeThisPage() {
@@ -80,7 +80,7 @@ export default function WhoMadeThisPage() {
 
       <section aria-labelledby="screens-title" className="border-y border-site-line bg-white py-20 sm:py-28">
         <Wrap>
-          <SectionHead eyebrow="In the app" title={<span id="screens-title">See it.</span>} lead="Five screens from WHO MADE THIS?: your wallet, your profile, the feed, creators and paid work." />
+          <SectionHead eyebrow="In the app" title={<span id="screens-title">See it.</span>} lead="Four screens from WHO MADE THIS?: your wallet, the feed, creators and paid work." />
           <div className="mt-12">
             <ScreenGallery />
           </div>

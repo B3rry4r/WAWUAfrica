@@ -7,7 +7,7 @@ wawuafrica.com is the WAWU brand website: a landing site for the company and its
 | Path | File | What it is |
 |---|---|---|
 | `/` | `src/app/(site)/page.tsx` | Home: hero with the rotating word, marquee, known for, the two apps, conference, how we build, partner strip, build with WAWU |
-| `/who-made-this` | `src/app/(site)/who-made-this/page.tsx` | App page: what it is, five app screens, how it works, conference, questions |
+| `/who-made-this` | `src/app/(site)/who-made-this/page.tsx` | App page: what it is, four app screens, how it works, conference, questions |
 | `/voices` | `src/app/(site)/voices/page.tsx` | App page in VOICES green (the only green on the site) |
 | `/about` | `src/app/(site)/about/page.tsx` | What we do, how we build, the apps, the company (WAWU Technology Ltd, no address) |
 | `/partners` | `src/app/(site)/partners/page.tsx` | Who we work with, the Dreamax x WAWU feature, the 14-logo wall, contact |
@@ -35,7 +35,7 @@ Order: ISN Hubs, Pistis Life and Leadership Institute (PLLI), Enterprise Develop
 
 ## Pictures and downloads
 
-- App screens: `wawu-wmt-screen-{home,profile,feed,creator,unlock}.webp`, the owner's store pictures SLIDER 1, 3, 4, 5, 6 cropped to the phone. SLIDER 2 (a physical card and "To cash") is not used.
+- App screens: `wawu-wmt-screen-{home,feed,creator,unlock}.webp`, the owner's store pictures SLIDER 1, 4, 5 and 6 cropped to the phone. SLIDER 2 (a physical card and "To cash") is not used. SLIDER 3 is not used either: it shows a Shop tab on the profile, and R-9 says profiles have no Shop tab.
 - Logo pack: `wawu-brand-{wordmark,icon}-{colour,purple,white}.{svg,png}`. Wordmark 1 is deep purple, 2 white, 3 full colour. BASKET and BEAUTY are not shown.
 - Link previews: `wawu-og-{brand,who-made-this,voices}.png` (1200 x 630).
 - All of these are root files in `public/`, because join-only mode serves root files with a picture extension and nothing deeper. `scripts/check-site-mode.mjs` lists them.
@@ -58,6 +58,6 @@ Order: ISN Hubs, Pistis Life and Leadership Institute (PLLI), Enterprise Develop
 - "Live 24 Oct / 26 Oct" chips are gone (not live): "Coming soon on the App Store and Google Play" and Register.
 - "Sign up free" became "Signing up costs nothing" (the copy check bans the word "free").
 - A verified tick "unlocks uploading" was wrong (R-7: free accounts upload too, the tick lifts limits): "lifts your upload limits".
-- VOICES "vote" became "react" (reactions are emojis and replies are typed; only a sponsored Voice Poll asks a question). "Get hired" became "offer your services".
+- The VOICES page says only what the boss's example says (Talk, Listen, Vote; speak, no typing; others reply with reactions and comments); the launch date is now "coming soon". "Get hired" became "offer your services".
 - Every `tbd` highlight is gone: no address (the company name only), no partnership form, no press kit placeholder.
 - New: partner logo wall, the Dreamax x WAWU feature (the slides' text, not the slide pictures), app screens, FAQ on both app pages, per-page title, description and link-preview picture, sitemap.

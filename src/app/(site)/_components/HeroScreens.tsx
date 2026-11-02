@@ -12,7 +12,7 @@ export function HeroScreens() {
         <ScreenTile id="home" priority sizes="(min-width: 1024px) 270px, 200px" />
       </div>
       <div className="site-float absolute right-0 top-0 w-[56%] rotate-[4deg] [--site-tilt:4deg]">
-        <ScreenTile id="profile" priority sizes="(min-width: 1024px) 270px, 200px" />
+        <ScreenTile id="feed" priority sizes="(min-width: 1024px) 270px, 200px" />
       </div>
     </div>
   );

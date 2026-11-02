@@ -13,29 +13,28 @@ import { OG_IMAGES, pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
   title: "VOICES · Everybody gets a voice · WAWU",
-  description: "VOICES is a voice-first app by WAWU where everybody gets a voice. Talk, listen, react and gist.",
+  description: "VOICES is a voice-first app by WAWU where everybody gets a voice. Talk, listen, vote and gist.",
   path: "/voices",
   image: OG_IMAGES.voices,
   imageAlt: "VOICES, an app by WAWU",
 });
 
 const WHAT_IT_IS = [
-  { title: "Talk.", body: "Say what you think in your own voice, recorded live in the app." },
+  { title: "Talk.", body: "Say what you think in your own voice." },
   { title: "Listen.", body: "Hear what people are saying about the things that matter." },
-  { title: "React.", body: "Answer with an emoji or a typed reply, and join the gist." },
+  { title: "Vote.", body: "Pick a side, see where the conversation is heading, and join in." },
 ] as const;
 
 const HOW_IT_WORKS = [
   { title: "Pick a topic.", body: "Choose the things you care about." },
   { title: "Speak.", body: "Record your voice. No typing needed." },
-  { title: "Join the gist.", body: "Hear others, react and reply." },
+  { title: "Discuss and vote.", body: "Hear others, react and vote." },
 ] as const;
 
 const FAQ = [
-  { question: "When does it open?", answer: "Soon. VOICES is coming to the App Store and Google Play, and this page will carry the store links the day it opens." },
-  { question: "Do I have to type?", answer: "No. You post by speaking. Replies are typed, and reactions are emojis." },
-  { question: "Can I stay anonymous?", answer: "Yes. You can post as Anonymous, with a masked voice and no trace on your profile." },
-  { question: "Where do I get it?", answer: "On the App Store and Google Play. Register now and you will be first to know." },
+  { question: "When does it go live?", answer: "VOICES is coming soon on the App Store and Google Play." },
+  { question: "Do I have to type?", answer: "No. You speak. Others can reply with reactions and comments." },
+  { question: "Where do I get it?", answer: "On the Google Play Store and the Apple App Store, coming soon." },
 ] as const;
 
 export default function VoicesPage() {
@@ -48,7 +47,7 @@ export default function VoicesPage() {
         sub={
           <>
             <span className="mb-2 block text-[clamp(1.6rem,3.4vw,2.2rem)] font-extrabold tracking-[-0.02em] text-white">VOICES</span>
-            Everybody gets a voice. Talk, listen, react and gist.
+            Everybody gets a voice. Talk, listen, vote and gist.
           </>
         }
         aside={
@@ -57,7 +56,7 @@ export default function VoicesPage() {
               <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white text-site-green">
                 <MicIcon className="h-7 w-7" />
               </span>
-              <span className="text-[17px] font-bold text-white">Your voice, live</span>
+              <span className="text-[17px] font-bold text-white">Everybody gets a voice.</span>
             </div>
             <WaveBars className="h-[130px]" barClassName="bg-site-mint" />
           </div>

@@ -27,7 +27,7 @@ export function AppTiles() {
             <ArrowIcon className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
           </span>
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -right-4 w-[56%] max-w-[300px] rotate-[7deg] transition-transform duration-500 group-hover:rotate-[4deg] motion-reduce:transition-none sm:right-6 sm:w-[44%]">
-            <ScreenTile id="profile" sizes="(min-width: 768px) 260px, 50vw" className="shadow-site-phone" />
+            <ScreenTile id="unlock" sizes="(min-width: 768px) 260px, 50vw" className="shadow-site-phone" />
           </div>
         </Link>
       </li>
@@ -40,7 +40,7 @@ export function AppTiles() {
           <StoreStatus app="voices" tone="dark" linkless className="self-start text-[13px]" />
           <p className="m-0 mt-8 text-[clamp(3.4rem,8vw,5.5rem)] font-extrabold leading-[0.9] tracking-[-0.045em]">Say it.</p>
           <p className="m-0 mt-3 text-[18px] font-bold tracking-[0.02em]">VOICES</p>
-          <p className="m-0 mt-2 max-w-[24ch] text-[17px] leading-snug text-white/90">Everybody gets a voice. Talk, listen, react and gist.</p>
+          <p className="m-0 mt-2 max-w-[24ch] text-[17px] leading-snug text-white/90">Everybody gets a voice. Talk, listen, vote and gist.</p>
           <span className="relative z-10 mt-6 inline-flex items-center gap-2 text-[16px] font-bold">
             See the app
             <ArrowIcon className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
