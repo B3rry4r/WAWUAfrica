@@ -1,12 +1,12 @@
 import { PlusIcon } from "./Icons";
 
-export interface FaqItem {
+export interface SiteFaqItem {
   question: string;
   answer: string;
 }
 
 /** Questions and answers as native <details>: they open without script and by keyboard. */
-export function Faq({ items }: { items: readonly FaqItem[] }) {
+export function Faq({ items }: { items: readonly SiteFaqItem[] }) {
   return (
     <div className="border-t border-site-line">
       {items.map((item) => (

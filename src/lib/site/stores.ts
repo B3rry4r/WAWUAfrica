@@ -1,11 +1,10 @@
 /**
  * Where the two apps can be downloaded (BRAND-SITE, owner 2 Nov 2026).
  *
- * Neither app is in the stores yet, so every link is null and the site says
- * "Coming soon on the App Store and Google Play" with a Register button.
- * To turn a store on, replace its null with the store address (one line);
- * the page then draws that store's button and drops the "coming soon" line
- * once the app has at least one live link. Nothing else changes.
+ * Neither app is in the stores yet, so every link is null and each page says
+ * which stores the app is headed for, with a Register button. To turn a store
+ * on, set its entry to the store address (one line): the page then draws that
+ * store's button in place of that line. Nothing else changes.
  *
  * No imports (scripts/check-site-mode.mjs loads this file).
  */

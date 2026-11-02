@@ -2,7 +2,7 @@
  * The few icons the brand site draws, as inline SVG so the pages carry no
  * icon library. All are decorative (aria-hidden); the label sits beside them.
  */
-interface IconProps {
+interface SiteIconProps {
   className?: string;
 }
 
@@ -17,7 +17,7 @@ const base = {
   focusable: false,
 };
 
-export function ArrowIcon({ className }: IconProps) {
+export function ArrowIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M5 12h14M13 6l6 6-6 6" />
@@ -25,7 +25,7 @@ export function ArrowIcon({ className }: IconProps) {
   );
 }
 
-export function MenuIcon({ className }: IconProps) {
+export function MenuIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M4 7h16M4 12h16M4 17h16" />
@@ -33,7 +33,7 @@ export function MenuIcon({ className }: IconProps) {
   );
 }
 
-export function CloseIcon({ className }: IconProps) {
+export function CloseIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M6 6l12 12M18 6L6 18" />
@@ -41,7 +41,7 @@ export function CloseIcon({ className }: IconProps) {
   );
 }
 
-export function PlusIcon({ className }: IconProps) {
+export function PlusIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M12 5v14M5 12h14" />
@@ -49,7 +49,7 @@ export function PlusIcon({ className }: IconProps) {
   );
 }
 
-export function MailIcon({ className }: IconProps) {
+export function MailIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <rect x="3" y="5" width="18" height="14" rx="3" />
@@ -58,7 +58,7 @@ export function MailIcon({ className }: IconProps) {
   );
 }
 
-export function ChatIcon({ className }: IconProps) {
+export function ChatIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M20 11.5a7.5 7.5 0 0 1-11 6.6L4 19.5l1.4-4.6A7.5 7.5 0 1 1 20 11.5z" />
@@ -66,7 +66,7 @@ export function ChatIcon({ className }: IconProps) {
   );
 }
 
-export function DownloadIcon({ className }: IconProps) {
+export function DownloadIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
@@ -74,7 +74,7 @@ export function DownloadIcon({ className }: IconProps) {
   );
 }
 
-export function CheckIcon({ className }: IconProps) {
+export function CheckIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M5 12.5l4.5 4.5L19 7.5" />
@@ -83,7 +83,7 @@ export function CheckIcon({ className }: IconProps) {
 }
 
 /** The four-point star between the words of the marquee. */
-export function SparkIcon({ className }: IconProps) {
+export function SparkIcon({ className }: SiteIconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" className={className}>
       <path d="M12 0c.9 6.6 5.4 11.1 12 12-6.6.9-11.1 5.4-12 12-.9-6.6-5.4-11.1-12-12C6.6 11.1 11.1 6.6 12 0z" />
@@ -91,7 +91,7 @@ export function SparkIcon({ className }: IconProps) {
   );
 }
 
-export function PlayDotIcon({ className }: IconProps) {
+export function PlayDotIcon({ className }: SiteIconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" className={className}>
       <circle cx="12" cy="12" r="6" />
@@ -99,7 +99,7 @@ export function PlayDotIcon({ className }: IconProps) {
   );
 }
 
-export function TagIcon({ className }: IconProps) {
+export function TagIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M20.5 13.2l-7.3 7.3a2 2 0 0 1-2.8 0L3 13.1V4h9.1l8.4 8.4a1 1 0 0 1 0 .8z" />
@@ -108,7 +108,7 @@ export function TagIcon({ className }: IconProps) {
   );
 }
 
-export function MicIcon({ className }: IconProps) {
+export function MicIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <rect x="9" y="3" width="6" height="12" rx="3" />
@@ -117,7 +117,7 @@ export function MicIcon({ className }: IconProps) {
   );
 }
 
-export function CoinIcon({ className }: IconProps) {
+export function CoinIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <circle cx="12" cy="12" r="9" />
@@ -126,7 +126,7 @@ export function CoinIcon({ className }: IconProps) {
   );
 }
 
-export function HomeIcon({ className }: IconProps) {
+export function HomeIcon({ className }: SiteIconProps) {
   return (
     <svg {...base} className={className}>
       <path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" />

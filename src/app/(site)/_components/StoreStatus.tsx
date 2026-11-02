@@ -3,9 +3,9 @@ import { liveStores, type SiteApp } from "@/lib/site/stores";
 import { DownloadIcon, PlayDotIcon } from "./Icons";
 
 /**
- * Where to get an app. While neither store link is set (src/lib/site/stores.ts)
- * this says "Coming soon on the App Store and Google Play". Once a link is set
- * it draws that store's button instead, so turning a store on is one line.
+ * Where to get an app. With no store link set (src/lib/site/stores.ts) this
+ * names the two stores the app is headed for. A store with a link gets its
+ * button instead, so turning a store on is one line.
  */
 export function StoreStatus({
   app,
