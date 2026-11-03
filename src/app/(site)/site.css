@@ -77,8 +77,8 @@ body:has(.wawu-site) {
   filter: drop-shadow(0 18px 24px rgb(18 6 31 / 0.35));
 }
 .site-frame {
-  /* shadow may spill at the top and sides, never below the frame */
-  clip-path: inset(-48px -48px 0 -48px);
+  /* the shadow may spill on every side, so it fades out with the phone instead of ending in a flat edge at the frame bottom */
+  clip-path: inset(-48px -48px -48px -48px);
 }
 .site-fade {
   -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
@@ -149,6 +149,23 @@ body:has(.wawu-site) {
 .site-marquee:hover .site-marquee-track {
   animation-play-state: paused;
 }
+/* the partner slider: the track holds two copies of the row, so moving it by half its width is exactly one copy */
+@keyframes site-logos {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.site-logo-strip {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+.site-logo-track {
+  animation: site-logos 40s linear infinite;
+}
+.site-logo-wall:hover .site-logo-track,
+.site-logo-wall:focus-within .site-logo-track {
+  animation-play-state: paused;
+}
 .site-rise {
   animation: site-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -177,6 +194,7 @@ body:has(.wawu-site) {
     scroll-behavior: auto;
   }
   .site-marquee-track,
+  .site-logo-track,
   .site-rise,
   .site-pop,
   .site-float,
