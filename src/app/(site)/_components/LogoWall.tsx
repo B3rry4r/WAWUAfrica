@@ -74,14 +74,14 @@ export function LogoWall({ className }: { compact?: boolean; className?: string 
       role="region"
       aria-label="Our partners"
       tabIndex={0}
-      className={cn(
-        "site-logo-strip overflow-x-hidden motion-reduce:overflow-x-auto motion-reduce:[scrollbar-width:thin]",
-        className,
-      )}
+      className={cn("site-logo-wall", className)}
     >
-      <div className="site-logo-track flex w-max items-center py-2">
-        <Logos />
-        <Logos hidden />
+      {/* The mask is on this inner strip, so it never clips the focus ring on the outer wrapper. */}
+      <div tabIndex={-1} className="site-logo-strip overflow-x-hidden motion-reduce:overflow-x-auto motion-reduce:[scrollbar-width:thin]">
+        <div className="site-logo-track flex w-max items-center py-2">
+          <Logos />
+          <Logos hidden />
+        </div>
       </div>
     </div>
   );

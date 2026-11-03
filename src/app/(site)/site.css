@@ -162,8 +162,8 @@ body:has(.wawu-site) {
 .site-logo-track {
   animation: site-logos 40s linear infinite;
 }
-.site-logo-strip:hover .site-logo-track,
-.site-logo-strip:focus-within .site-logo-track {
+.site-logo-wall:hover .site-logo-track,
+.site-logo-wall:focus-within .site-logo-track {
   animation-play-state: paused;
 }
 .site-rise {
