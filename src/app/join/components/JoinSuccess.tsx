@@ -1,4 +1,4 @@
-import { Icon } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import { ShareLink } from "./ShareLink";
 
 interface JoinSuccessProps {
@@ -52,6 +52,10 @@ export function JoinSuccess({ tierName, price, noPayment, reference }: JoinSucce
         <Icon name="Info" size={16} className="mt-[1px] flex-none" />
         If the app asks you to confirm that email or phone number, do that first.
       </p>
+
+      <Button href="/sign-in" full>
+        Sign in on this website
+      </Button>
 
       <ShareLink />
 
