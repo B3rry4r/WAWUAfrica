@@ -171,3 +171,22 @@ export function previewSize(width: number, height: number, max: number = PREVIEW
 
 /** What a draft keeps while a person moves between steps or comes back later (never the picked File itself). */
 export const DRAFT_KEY = "wawu-site-upload-draft";
+
+/** A draft belongs to one person: its storage key carries their WAWU id. */
+export function draftKeyFor(wawuId: string): string {
+  return `${DRAFT_KEY}:${wawuId}`;
+}
+
+/** True for any key a draft was ever stored under, including the old key that carried no id. */
+export function isDraftKey(key: string): boolean {
+  return key === DRAFT_KEY || key.startsWith(`${DRAFT_KEY}:`);
+}
+
+/**
+ * The draft keys to remove from storage: every one that is not the signed-in person's own. With nobody signed in
+ * (`wawuId` null), that is every draft key.
+ */
+export function staleDraftKeys(allKeys: readonly string[], wawuId: string | null): string[] {
+  const own = wawuId ? draftKeyFor(wawuId) : null;
+  return allKeys.filter((k) => isDraftKey(k) && k !== own);
+}

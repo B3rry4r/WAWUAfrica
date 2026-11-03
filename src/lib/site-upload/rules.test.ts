@@ -16,7 +16,11 @@ import {
   SITE_CLIENT_HEADER,
   SITE_CLIENT_VALUE,
   SITE_KINDS,
+  DRAFT_KEY,
   KIND_NOUN,
+  draftKeyFor,
+  isDraftKey,
+  staleDraftKeys,
   PREVIEW_MAX_SIDE,
   PREVIEW_QUALITY,
   WAITING_WALLET_TEXT,
@@ -128,4 +132,18 @@ test("kinds read right in a sentence", () => {
     SITE_KINDS.map((k) => `Choose your ${KIND_NOUN[k]} file`),
     ["Choose your video file", "Choose your audio file", "Choose your PDF file", "Choose your picture file"],
   );
+});
+
+test("a draft is kept per person and nobody else's is ever read or left behind", () => {
+  assert.equal(draftKeyFor("ada-id"), `${DRAFT_KEY}:ada-id`);
+  assert.notEqual(draftKeyFor("ada-id"), draftKeyFor("bola-id"));
+  assert.equal(isDraftKey(DRAFT_KEY), true);
+  assert.equal(isDraftKey(draftKeyFor("x")), true);
+  assert.equal(isDraftKey("wawu-web-session"), false);
+  const keys = [draftKeyFor("ada-id"), draftKeyFor("bola-id"), DRAFT_KEY, "wawu-web-session", "other"];
+  // Bola signed in: Ada's draft and the old id-less one go; Bola's own and everything else stay.
+  assert.deepEqual(staleDraftKeys(keys, "bola-id"), [draftKeyFor("ada-id"), DRAFT_KEY]);
+  // Signed out: every draft goes, nothing else.
+  assert.deepEqual(staleDraftKeys(keys, null), [draftKeyFor("ada-id"), draftKeyFor("bola-id"), DRAFT_KEY]);
+  assert.deepEqual(staleDraftKeys(["wawu-web-session"], "ada-id"), []);
 });

@@ -7,6 +7,7 @@ import { SessionProvider, useSession } from "@/lib/auth/session-provider";
 import { RequireAuth } from "@/components/layout/RequireAuth";
 import { AuthBrandProvider } from "@/app/(auth)/components/AuthBrand";
 import { SiteLogo } from "@/app/(site)/_components/SiteLogo";
+import { clearDrafts } from "@/lib/site-upload/draft";
 import { JOIN_PATH } from "@/lib/site-upload/rules";
 import { UploadAccessProvider, useUploadAccess } from "./UploadAccess";
 
@@ -87,6 +88,8 @@ function SignedInHeader() {
           <button
             type="button"
             onClick={() => {
+              // A draft holds what the person typed and a file name: it goes with the sign-out.
+              clearDrafts(null);
               signOut();
               router.push("/sign-in");
             }}

@@ -16,12 +16,14 @@ import {
   KIND_HINT,
   KIND_LABEL,
   KIND_NOUN,
-  DRAFT_KEY,
+  draftKeyFor,
   SITE_KINDS,
   nairaText,
   sizeText,
   type SiteKind,
 } from "@/lib/site-upload/rules";
+import { useSession } from "@/lib/auth/session-provider";
+import { clearDrafts } from "@/lib/site-upload/draft";
 import { useUploadAccess } from "./UploadAccess";
 
 const KIND_ICON: Record<SiteKind, IconName> = { video: "Video", audio: "Music", pdf: "FileText", image: "Image" };
@@ -42,6 +44,8 @@ type Pricing = "paid" | "none";
  */
 export function UploadWizard() {
   const { reload } = useUploadAccess();
+  const { user } = useSession();
+  const wawuId = user?.wawuId ?? null;
   const [step, setStepState] = useState(0);
   const [restored, setRestored] = useState(false);
   const [kind, setKind] = useState<SiteKind>("video");
@@ -101,8 +105,11 @@ export function UploadWizard() {
   // The draft: what was typed and uploaded stays for this tab, so leaving and coming back loses nothing. The picked
   // picture file itself cannot be kept, so a picture piece asks for the picture again.
   useEffect(() => {
+    if (!wawuId) return;
+    // Another person's draft (or the old key that carried no id) is removed, never read.
+    clearDrafts(wawuId);
     try {
-      const raw = window.sessionStorage.getItem(DRAFT_KEY);
+      const raw = window.sessionStorage.getItem(draftKeyFor(wawuId));
       if (raw) {
         const d = JSON.parse(raw) as {
           kind: SiteKind; asset: UploadedFile | null; cover: UploadedFile | null; title: string; description: string;
@@ -125,28 +132,34 @@ export function UploadWizard() {
     } catch {
       // no storage: the draft just lives in the page
     }
-  }, []);
+  }, [wawuId]);
   const draftReady = useRef(false);
   useEffect(() => {
     if (!draftReady.current) {
       draftReady.current = true;
       return;
     }
+    if (!wawuId) return;
     try {
-      if (done) window.sessionStorage.removeItem(DRAFT_KEY);
-      else window.sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ kind, asset, cover, title, description, specializations, pricing, price }));
+      const key = draftKeyFor(wawuId);
+      const empty = !asset && !cover && !title && !description && specializations.length === 0 && price === null;
+      // Nothing to keep (sent, or started again): the key goes, so no empty draft is left behind.
+      if (done || empty) window.sessionStorage.removeItem(key);
+      else window.sessionStorage.setItem(key, JSON.stringify({ kind, asset, cover, title, description, specializations, pricing, price }));
     } catch {
       // no storage
     }
-  }, [kind, asset, cover, title, description, specializations, pricing, price, done]);
+  }, [wawuId, kind, asset, cover, title, description, specializations, pricing, price, done]);
 
   const startAgain = async () => {
     // Files already uploaded for the draft count in the person's storage until a piece uses them or they are given back.
     for (const f of [asset, cover]) if (f) await releaseUpload(f.key).catch(() => undefined);
-    try {
-      window.sessionStorage.removeItem(DRAFT_KEY);
-    } catch {
-      // no storage
+    if (wawuId) {
+      try {
+        window.sessionStorage.removeItem(draftKeyFor(wawuId));
+      } catch {
+        // no storage
+      }
     }
     setAsset(null);
     pickedFile.current = null;
