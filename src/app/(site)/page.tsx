@@ -55,8 +55,7 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION) }} />
 
       <section className="on-dark relative isolate overflow-hidden bg-site-deep text-white">
-        <div aria-hidden="true" className="site-glow pointer-events-none absolute -right-56 -top-56 -z-10 h-[820px] w-[820px] rounded-full opacity-80" />
-        <div aria-hidden="true" className="site-rings pointer-events-none absolute -right-56 -top-56 -z-10 h-[820px] w-[820px] rounded-full" />
+        <div aria-hidden="true" className="site-hero-gradient pointer-events-none absolute inset-0 -z-10" />
         <Wrap className="grid items-center gap-10 pb-14 pt-12 sm:pt-16 lg:grid-cols-[1.2fr_0.8fr] lg:gap-6 lg:pb-24 lg:pt-20">
           <div className="min-w-0">
             <p className="site-rise m-0 mb-6 text-[13px] font-bold uppercase tracking-[0.16em] text-site-lilac">Built in Africa. Open to the world.</p>

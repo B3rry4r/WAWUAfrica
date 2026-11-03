@@ -1,6 +1,6 @@
 import { WMT_SCREENS, ScreenTile, type ScreenId } from "./ScreenTile";
 
-const ORDER: ScreenId[] = ["home", "feed", "creator", "unlock"];
+const ORDER: ScreenId[] = ["dollar", "explore", "creator", "unlock"];
 
 /**
  * The four screens in a row. On a phone the row scrolls sideways (it can be

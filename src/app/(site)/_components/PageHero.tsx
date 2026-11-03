@@ -33,10 +33,7 @@ export function PageHero({
           <div aria-hidden="true" className="site-glow pointer-events-none absolute -right-40 -top-40 -z-10 h-[620px] w-[620px] rounded-full bg-site-green opacity-30 blur-3xl" />
         </>
       ) : (
-        <>
-          <div aria-hidden="true" className="site-glow pointer-events-none absolute -right-48 -top-48 -z-10 h-[720px] w-[720px] rounded-full opacity-80" />
-          <div aria-hidden="true" className="site-rings pointer-events-none absolute -right-48 -top-48 -z-10 h-[720px] w-[720px] rounded-full" />
-        </>
+        <div aria-hidden="true" className="site-hero-gradient pointer-events-none absolute inset-0 -z-10" />
       )}
       <Wrap className={cn("grid items-center gap-12 pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-24", aside ? "lg:grid-cols-[1.15fr_0.85fr] lg:gap-8" : null)}>
         <div className="min-w-0">
