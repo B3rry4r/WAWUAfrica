@@ -8,7 +8,7 @@
   {
     "id": "walk_creator_pro_about",
     "actor": "creator_pro",
-    "route": "/about",
+    "route": "/settings/about",
     "fullPage": true
   },
   {

@@ -3,26 +3,35 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { Button, Icon } from "@/components/ui";
-import { SlashedPrice } from "./SlashedPrice";
+import { formatNairaFromKobo } from "@/lib/format";
+import type { ReferralVerdict } from "@/lib/join-referral";
+import { payKoboFor } from "@/lib/join-referral";
+import { fromKobo, tierItems } from "@/lib/join-tiers";
+import type { WaitlistTier } from "@/lib/join-tiers";
 import { StickyBar } from "./StickyBar";
+import { TierPicker } from "./TierPicker";
 import { TypedCredit } from "./TypedCredit";
 import {
-  BENEFITS,
   CONFERENCE_CITIES,
   FORM_ID,
   HERO_IMAGE,
   ONLINE,
   SPONSOR_MESSAGE,
   STEPS,
-  WAS_PRICE,
   WHATSAPP_DISPLAY,
   WHATSAPP_NUMBER,
   WHO,
 } from "./join-content";
 
 interface JoinLandingProps {
-  /** The fee as the API sent it ("₦2,000"), or `null` while the offer loads. */
-  price: string | null;
+  /** The three plans as the Hub sent them (the app's live prices), or `null` while they load. */
+  tiers: readonly WaitlistTier[] | null;
+  /** The plan picked (the Hub's "Best" one to start with). */
+  selectedId: string | null;
+  /** Absent on the loading skeleton, which has no plan to pick. */
+  onSelect?: (id: string) => void;
+  /** What the Hub said about the referral code for the picked plan. */
+  referral: ReferralVerdict;
   /** The registration form (or its skeleton). It is drawn inside the form section. */
   form: ReactNode;
   /** Bring the form into view when the page opens (a notice is waiting in it, after a cancelled payment). */
@@ -44,8 +53,14 @@ const LABEL = "m-0 text-[12px] font-bold uppercase tracking-[0.14em] text-accent
  * Every call to action leads to the form, and the form leads to payment.
  * There is no date anywhere and no free route.
  */
-export function JoinLanding({ price, form, scrollToForm = false, noPayment = false }: JoinLandingProps) {
+export function JoinLanding({ tiers, selectedId, onSelect, referral, form, scrollToForm = false, noPayment = false }: JoinLandingProps) {
   const formRef = useRef<HTMLElement>(null);
+  const selected = tiers?.find((t) => t.id === selectedId) ?? null;
+  // The cheapest plan, for the words before a plan is picked ("Plans from ₦2,999").
+  const lowest = tiers ? fromKobo(tiers) : null;
+  const from = lowest === null ? null : formatNairaFromKobo(lowest);
+  // What the picked plan costs now (the code's price when the Hub says it applies).
+  const price = selected ? formatNairaFromKobo(payKoboFor(selected.priceKobo, referral)) : null;
 
   // Call-to-action links glide to the form (see globals.css); put back on the way out.
   useEffect(() => {
@@ -59,29 +74,29 @@ export function JoinLanding({ price, form, scrollToForm = false, noPayment = fal
 
   return (
     <div className="relative overflow-x-clip bg-page text-text-primary">
-      <Hero price={price} />
+      <Hero from={from} />
       <Locations />
       <section ref={formRef} id={FORM_ID} className="scroll-mt-4 border-y border-hairline bg-card py-12 dt:py-20">
         {/* One explicit column on phones: an implicit one is sized by its widest content (the phone field), which pushed the offer and the form past the page's right edge. */}
         <div className={`${WIDTH} grid grid-cols-1 gap-10 dt:grid-cols-[1fr_minmax(0,520px)] dt:items-start dt:gap-16`}>
-          <Offer price={price} noPayment={noPayment} />
+          <Offer tiers={tiers} selectedId={selectedId} onSelect={onSelect} referral={referral} />
           <div className="min-w-0">{form}</div>
         </div>
       </section>
       <OneStage />
       <HowItWorks />
       <Who />
-      <Questions price={noPayment ? null : price} noPayment={noPayment} />
+      <Questions selected={selected} noPayment={noPayment} />
       <Sponsor />
       <Footer />
-      <StickyBar price={price} watch={FORM_ID} />
+      <StickyBar from={from} watch={FORM_ID} />
     </div>
   );
 }
 
 // ── hero ────────────────────────────────────────────────────────────────────
 
-function Hero({ price }: { price: string | null }) {
+function Hero({ from }: { from: string | null }) {
   return (
     <header className="relative isolate overflow-hidden">
       <div
@@ -95,11 +110,11 @@ function Hero({ price }: { price: string | null }) {
       <div className={WIDTH}>
         <div className="flex items-center justify-between gap-3 py-4 dt:py-6">
           <img
-            src="/who-made-this-white.png"
-            alt="Who Made This"
-            width={1009}
-            height={295}
-            className="h-[44px] w-auto object-contain dt:h-[54px]"
+            src="/wawu-brand-wordmark-white.svg"
+            alt="WAWU"
+            width={629}
+            height={144}
+            className="h-[34px] w-auto object-contain dt:h-[42px]"
           />
           <Button href={`#${FORM_ID}`} variant="secondary" size="sm" className="rounded-full">
             Pre-registration open
@@ -108,7 +123,7 @@ function Hero({ price }: { price: string | null }) {
 
         <div className="grid items-center gap-10 pb-12 pt-6 dt:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] dt:gap-12 dt:pb-24 dt:pt-14">
           <div className="flex flex-col items-start gap-5">
-            <p className={LABEL}>The conference · The platform · Launching this October</p>
+            <p className={LABEL}>The conference · The platform · Coming to the App Store and Google Play</p>
             <h1
               aria-label="Put your Name on it."
               className="m-0 text-[clamp(3.4rem,17vw,6.6rem)] font-black uppercase leading-[0.88] tracking-[-0.045em] text-text-primary"
@@ -132,9 +147,9 @@ function Hero({ price }: { price: string | null }) {
             </p>
             <div className="flex flex-col items-start gap-2.5 pt-2">
               <Button href={`#${FORM_ID}`} size="lg" iconRight="ArrowRight" className="text-[16px]">
-                Pre-register{price ? <> for <SlashedPrice price={price} /></> : null}
+                Choose your plan
               </Button>
-              <p className="m-0 text-[13.5px] text-text-secondary">Pay once. Price goes to {WAS_PRICE} after launch.</p>
+              {from ? <p className="m-0 text-[13.5px] text-text-secondary">Three plans, from {from} a year. Pay once.</p> : null}
             </div>
           </div>
           <HeroSlot />
@@ -207,44 +222,25 @@ function Locations() {
 
 // ── the offer (beside the form) ─────────────────────────────────────────────
 
-function Offer({ price, noPayment }: { price: string | null; noPayment: boolean }) {
+function Offer({
+  tiers,
+  selectedId,
+  onSelect,
+  referral,
+}: {
+  tiers: readonly WaitlistTier[] | null;
+  selectedId: string | null;
+  onSelect?: (id: string) => void;
+  referral: ReferralVerdict;
+}) {
   return (
-    <div className="flex min-w-0 flex-col gap-5 dt:sticky dt:top-8">
-      <h2 className={H2}>Lock your spot before the doors open.</h2>
+    <div className="flex min-w-0 flex-col gap-5">
+      <h2 className={H2}>Make it official.</h2>
       <p className="m-0 max-w-[44ch] text-[16.5px] leading-[1.55] text-text-secondary">
-        Pre-register now and your verified profile is waiting the moment the app goes live. Same phone number, nothing to
-        set up.
+        Pick a plan, pay once, then sign in to the WAWU app with the same email or phone number you use here. Your plan is
+        waiting. There is no code to type.
       </p>
-      <div className="flex flex-col gap-3 rounded-card border border-accent bg-accent-tint p-5">
-        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-          {price ? (
-            <SlashedPrice price={price} size="hero" />
-          ) : (
-            <span aria-hidden="true" className="h-[56px] w-[220px] animate-pulse rounded-input bg-tag dt:h-[68px]" />
-          )}
-          <span className="inline-flex h-[26px] items-center rounded-full bg-tag px-3 text-[12.5px] font-bold text-text-primary">
-            once
-          </span>
-        </div>
-        <p className="m-0 text-[15px] leading-[1.5] text-text-secondary">
-          Slashed from {WAS_PRICE}{price ? ` to ${price}` : ""}. After launch it goes back to {WAS_PRICE}, without founding
-          member status.
-        </p>
-        <p className="m-0 flex items-start gap-2.5 text-[15px] font-semibold leading-[1.45] text-text-primary">
-          <Icon name="BadgeCheck" size={20} className="mt-[1px] flex-none text-accent-soft" />
-          {noPayment ? "Your registration" : price ? `Your ${price}` : "Your payment"} covers your verification.
-        </p>
-      </div>
-      <ul className="m-0 grid list-none gap-3 p-0">
-        {BENEFITS.map((b) => (
-          <li key={b} className="flex items-start gap-3 text-[16px] font-semibold leading-[1.35] text-text-primary">
-            <span className="mt-[1px] grid h-[26px] w-[26px] flex-none place-items-center rounded-full bg-accent text-on-accent">
-              <Icon name="Check" size={14} strokeWidth={3} />
-            </span>
-            {b}
-          </li>
-        ))}
-      </ul>
+      <TierPicker tiers={tiers} selectedId={selectedId} onSelect={onSelect} verdict={referral} />
     </div>
   );
 }
@@ -325,30 +321,28 @@ function Who() {
 
 // ── questions ───────────────────────────────────────────────────────────────
 
-function Questions({ price, noPayment }: { price: string | null; noPayment: boolean }) {
+function Questions({ selected, noPayment }: { selected: WaitlistTier | null; noPayment: boolean }) {
+  const gives = selected ? tierItems(selected) : [];
   const items: Array<{ q: ReactNode; a: ReactNode }> = [
     {
       q: "Is the app live yet?",
-      a: "Not yet. WHO MADE THIS? goes live this October. Pre-register now and we will message you on WhatsApp the moment it opens.",
+      a: "Not yet. The WAWU app is coming to the App Store and Google Play. Pre-register now and we will message you on WhatsApp the moment it opens.",
     },
     {
-      q: noPayment ? "What do I get?" : price ? `What do I get for ${price}?` : "What do I get for my payment?",
-      a: (
-        <>
-          {noPayment ? "Your registration" : <>One payment{price ? <> of <SlashedPrice price={price} /></> : null}</>} gives you conference access, early access to the
-          platform, a verified profile for a year, founding member status, WAWU Creative Studio AI tools, global payments,
-          free training in Arts, Tech, Business and Finance, and access to creative hubs.
-        </>
-      ),
+      q: selected ? `What do I get with ${selected.name}?` : "What do I get?",
+      a: selected
+        ? `${selected.name} gives you ${gives.join(", ")}. The same list is in the app. Pick the plan that suits you, and you can see all three above.`
+        : "Each plan lists everything it gives, above: its length, how many products you can publish, points, and an event pass.",
     },
     {
-      q: "Do I have to pay to join the waitlist?",
-      a: (
-        <>
-          Yes. The {price ? `${price} ` : ""}pre-registration is the waitlist, and it covers your verification. It gets you the
-          launch alert and conference updates, and locks your founding price. After launch the price goes back to {WAS_PRICE}.
-        </>
-      ),
+      q: "How does paying work?",
+      a: noPayment
+        ? "Your referral code covers your registration, so there is nothing to pay. Sign in to the WAWU app with the same email or phone number you used here and your plan is waiting."
+        : "You pick a plan and pay once, by card, bank transfer or USSD, through Flutterwave. Then sign in to the WAWU app with the same email or phone number you used here and your plan is waiting. There is no code to type.",
+    },
+    {
+      q: "Does my referral code work on every plan?",
+      a: "No. A referral code gives its price on the plan it belongs to, and the page tells you which plan that is. On any other plan you pay the full price.",
     },
     {
       q: "Where and when is the conference?",
@@ -356,7 +350,7 @@ function Questions({ price, noPayment }: { price: string | null; noPayment: bool
     },
     {
       q: "What does “verified” mean?",
-      a: "A verified profile shows that you are who you say you are, and unlocks uploading and getting paid on WHO MADE THIS?.",
+      a: "A verified profile shows that you are who you say you are, and lifts your upload limits on WHO MADE THIS?.",
     },
     { q: "I want to sponsor or partner.", a: `Message us on WhatsApp: ${WHATSAPP_DISPLAY}.` },
   ];

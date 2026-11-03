@@ -120,3 +120,33 @@ export const joinAbandoned = {
     }
   },
 };
+
+const TIER_KEY = "wawu.join.tier";
+
+/**
+ * The name of the plan a registration is paying for ("Verify Plus"), kept next to its reference so the
+ * success screen can name the plan after a reload or a return from the payment page. A name only: no
+ * person's detail. Never trusted for money (the server's tier decides), and blocked storage is not fatal.
+ */
+export const joinTier = {
+  get(reference: string): string | null {
+    try {
+      const raw = window.sessionStorage.getItem(TIER_KEY);
+      if (!raw) return null;
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed !== "object" || parsed === null) return null;
+      const bag = parsed as { reference?: unknown; name?: unknown };
+      if (bag.reference !== reference || typeof bag.name !== "string") return null;
+      return bag.name.length > 0 && bag.name.length <= 40 ? bag.name : null;
+    } catch {
+      return null;
+    }
+  },
+  set(reference: string, name: string): void {
+    try {
+      window.sessionStorage.setItem(TIER_KEY, JSON.stringify({ reference, name }));
+    } catch {
+      // Non-fatal: the success screen then says "your plan".
+    }
+  },
+};

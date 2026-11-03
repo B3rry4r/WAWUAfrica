@@ -49,6 +49,24 @@ try {
       }),
     }),
   );
+  // JOIN-TIERS: the page also reads the three plans; answer that here too (the same shape the Hub sends).
+  await page.route("**/waitlist/tiers", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        statusCode: 200,
+        message: "",
+        data: {
+          currency: "NGN",
+          bestTier: "verify",
+          tiers: [
+            { id: "verify", name: "Verify", priceKobo: 299900, days: 365, products: 4, bonusPoints: 100, eventPass: { id: "watch_apply", name: "Watch live, apply" }, badge: { id: "verified", numbered: false }, packBonusPercent: 0, best: true },
+          ],
+        },
+      }),
+    }),
+  );
   await page.goto(`${origin}/join`, { waitUntil: "networkidle" });
   const field = page.locator("#phone");
   await field.waitFor({ state: "visible", timeout: 60000 });

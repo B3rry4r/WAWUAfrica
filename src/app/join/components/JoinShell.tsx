@@ -16,9 +16,20 @@ import type { ReactNode } from "react";
  *
  * `themedLogo` (RESET-WEB, R-123) is for /reset-password, the one page here the
  * design walks in a light theme too: it draws the ink lockup instead of the white
- * one when the page is light. /join passes nothing and is unchanged.
+ * one when the page is light.
+ *
+ * `wordmark` (JOIN-TIERS-WEB, owner 3 Nov 2026) draws the WAWU smiling-W wordmark of the brand site
+ * (white) in place of the Who Made This lockup. /join passes it; /reset-password does not and is unchanged.
  */
-export function JoinShell({ children, themedLogo = false }: { children: ReactNode; themedLogo?: boolean }) {
+export function JoinShell({
+  children,
+  themedLogo = false,
+  wordmark = false,
+}: {
+  children: ReactNode;
+  themedLogo?: boolean;
+  wordmark?: boolean;
+}) {
   return (
     <div className="relative min-h-[100dvh] overflow-x-clip bg-page">
       <div
@@ -26,6 +37,10 @@ export function JoinShell({ children, themedLogo = false }: { children: ReactNod
         aria-hidden="true"
       />
       <header className="relative z-10 mx-auto flex w-full max-w-[520px] items-center px-4 pt-5 dt:pt-8">
+        {wordmark ? (
+          <img src="/wawu-brand-wordmark-white.svg" alt="WAWU" width={629} height={144} className="h-[36px] w-auto object-contain dt:h-[44px]" />
+        ) : (
+        <>
         <img
           src="/who-made-this-white.png"
           alt="Who Made This"
@@ -44,6 +59,8 @@ export function JoinShell({ children, themedLogo = false }: { children: ReactNod
             className="hidden h-[46px] w-auto object-contain dt:h-[56px] [[data-theme=light]_&]:block"
           />
         ) : null}
+        </>
+        )}
       </header>
       <main className="relative z-10 mx-auto w-full max-w-[520px] px-4 pb-16 pt-8 dt:pt-14">{children}</main>
     </div>

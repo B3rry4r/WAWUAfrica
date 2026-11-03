@@ -17,10 +17,12 @@ export interface FormNotice {
 }
 
 interface JoinFormProps {
-  /** What the person pays, as the API sent it ("₦2,000", or the referral code's price): drawn on the button. */
+  /** What the person pays, as the API sent it ("₦9,999", or the referral code's price): drawn on the button. */
   price: string;
-  /** The standard fee, as the API sent it ("₦2,000"): what a code that is full or off falls back to. */
+  /** The picked plan's full price, as the API sent it: what a code that is full, off or for another plan falls back to. */
   standardPrice: string;
+  /** The picked plan's name ("Verify Plus"), as the API sent it: said on the button and above it. */
+  tierName: string;
   /** What the server said about the referral code in the field (REF-01). */
   referral: ReferralVerdict;
   /** True when the code applies at price 0: the button completes the registration and no payment window opens. */
@@ -67,6 +69,7 @@ const FIELD_LABELS: Array<[keyof JoinErrors, string]> = [
 export function JoinForm({
   price,
   standardPrice,
+  tierName,
   referral,
   noPayment,
   onReferralBlur,
@@ -205,7 +208,7 @@ export function JoinForm({
         onChange={(e) => onChange({ referralCode: e.target.value })}
         onBlur={onReferralBlur}
         error={referral.kind === "unknown" ? referral.message : undefined}
-        hint={referralHint(referral, standardPrice)}
+        hint={referralHint(referral, standardPrice, tierName)}
         maxLength={30}
         disabled={submitting}
         noZoom
@@ -216,9 +219,11 @@ export function JoinForm({
           {referral.code} applied. You pay {formatNairaFromKobo(referral.priceKobo)}.
         </p>
       ) : referral.kind === "notApplied" ? (
-        <p role="status" className="m-0 -mt-3 flex items-center gap-1.5 text-[13.5px] font-semibold text-warning">
-          <Icon name="CircleAlert" size={16} />
-          The {referral.code} offer is full. You will pay the standard {standardPrice}.
+        <p role="status" className="m-0 -mt-3 flex items-start gap-1.5 text-[13.5px] font-semibold leading-[1.4] text-warning">
+          <Icon name="CircleAlert" size={16} className="mt-[1px] flex-none" />
+          {referral.reason === "other_tier"
+            ? `${referral.message ?? `The ${referral.code} code is for another plan.`} You will pay ${standardPrice}.`
+            : `The ${referral.code} offer is full. You will pay the full ${standardPrice}.`}
         </p>
       ) : null}
 
@@ -252,6 +257,10 @@ export function JoinForm({
       </div>
 
       <div className="flex flex-col gap-3">
+        <p className="m-0 flex items-center justify-between gap-3 rounded-input border border-hairline bg-card px-4 py-3 text-[14.5px] text-text-secondary">
+          <span>Your plan</span>
+          <b className="text-right text-text-primary">{tierName}</b>
+        </p>
         <Button type="submit" size="lg" full loading={submitting} icon={submitting ? undefined : noPayment ? "Check" : "Lock"}>
           {noPayment
             ? submitting
@@ -259,7 +268,7 @@ export function JoinForm({
               : "Complete registration"
             : submitting
               ? "Starting secure payment"
-              : `Pay ${price}`}
+              : `Pay ${price} for ${tierName}`}
         </Button>
         {noPayment ? null : (
           <p className="m-0 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-text-muted">
@@ -273,9 +282,9 @@ export function JoinForm({
 }
 
 /** The quiet line under the code field while nothing has been decided yet. */
-function referralHint(referral: ReferralVerdict, standardPrice: string): string | undefined {
+function referralHint(referral: ReferralVerdict, standardPrice: string, tierName: string): string | undefined {
   if (referral.kind === "checking") return "Checking the code...";
-  if (referral.kind === "unchecked") return `We could not check the code just now. It is checked again when you register. Without it you pay ${standardPrice}.`;
+  if (referral.kind === "unchecked") return `We could not check the code just now. It is checked again when you register. Without it you pay ${standardPrice} for ${tierName}.`;
   if (referral.kind === "none") return "Have a code from your community? Enter it to see your price.";
   return undefined;
 }

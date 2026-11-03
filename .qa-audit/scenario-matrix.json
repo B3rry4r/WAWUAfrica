@@ -49,7 +49,7 @@
       "actor": "creator_pro",
       "entry_state": "cold start, session seeded in localStorage before navigation",
       "branch": "happy",
-      "route": "/about",
+      "route": "/settings/about",
       "drive": "ok",
       "capture": ".qa-audit/captures/walk_creator_pro_about__mobile.png",
       "capability_asserted": null,
