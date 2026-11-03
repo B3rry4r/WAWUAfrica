@@ -1,23 +1,15 @@
-import { formatNairaFromKobo } from "@/lib/format";
-
 /**
- * Everything /join says, in one place (owner's redesign, 12 Oct 2026). The
- * words are the owner's example page, with the changes the owner ruled: no
- * date anywhere ("this October"), the conference cities are exactly Lagos,
- * Abuja, Port Harcourt and Enugu plus Online, "creative hubs" with no number,
- * and no unpaid route (everyone pays the pre-registration fee, which covers
- * their verification).
+ * Everything /join says that is not a plan (owner's redesign, 12 Oct 2026; the plans
+ * are JOIN-TIERS, R-125, 2 and 3 Nov 2026). The words are the owner's example page, with
+ * the changes the owner ruled: no date or month anywhere, the conference cities
+ * are exactly Lagos, Abuja, Port Harcourt and Enugu plus Online, and "creative hubs"
+ * with no number.
  *
- * The fee that is PAID is never written here: it comes from
- * `GET /waitlist/offers/current` and is drawn from what the API sent. The one
- * figure below, `WAS_PRICE_KOBO`, is the owner's marketing "was" price, the
- * number struck through beside the real fee. It is not a backend price and
- * nothing is charged from it.
+ * No price is written here. The three plans, their prices and what each gives come from
+ * `GET /waitlist/tiers` (src/lib/api/waitlist.ts, src/lib/join-tiers.ts), the app's live
+ * figures. There is no "was" price: the old struck-through figure is gone, and a price is
+ * struck through only when a referral code applies to the plan picked.
  */
-
-/** The owner's marketing figure, struck through beside the real fee ("slashed from ₦10,000"). */
-export const WAS_PRICE_KOBO = 1_000_000;
-export const WAS_PRICE = formatNairaFromKobo(WAS_PRICE_KOBO);
 
 /** The hero picture: the owner's conference poster (12 Oct 2026), a 1200 by 1500 WebP copy of the original, 4:5 like its frame. */
 export interface HeroImage {
@@ -56,22 +48,11 @@ export const CRAFT_CHOICES: readonly string[] = [
   "Other",
 ];
 
-export const BENEFITS: readonly string[] = [
-  "Conference access",
-  "Early access to the WHO MADE THIS? platform",
-  "Verified for a full year",
-  "Founding member status",
-  "WAWU Creative Studio AI tools",
-  "Global payments",
-  "Free training in Arts, Tech, Business and Finance",
-  "Access to creative hubs",
-];
-
 export const TYPED_NAMES = ["AMAKA", "TUNDE", "ZAINAB", "CHIDI", "FATIMA", "EMEKA", "BOLA", "HALIMA", "YOU"] as const;
 
 export const STEPS: ReadonlyArray<{ title: string; text: string }> = [
   { title: "Pre-register", text: "Two minutes. Your name, WhatsApp, craft and city." },
-  { title: "This October", text: "The app goes live. Sign in with the same number. Your profile is already verified." },
+  { title: "The app opens", text: "The WAWU app arrives on the App Store and Google Play. Sign in with the same email or phone number. Your plan is waiting." },
   { title: "Make it", text: "Build your profile, upload your work, use the Creative Studio and get paid." },
   { title: "Take the stage", text: "Show up in your city. Put your name on it, in front of everyone." },
 ];

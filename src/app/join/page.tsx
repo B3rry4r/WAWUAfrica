@@ -9,7 +9,7 @@ import { JoinFlow } from "./components/JoinFlow";
  * and is told they are registered. There is no free route. No sign-in, no
  * password, no code. The sign-up page is a different thing and is not touched
  * by any of this. The page is the owner's redesign of 12 Oct 2026 (no date
- * anywhere: "this October").
+ * or month anywhere).
  *
  * The share card is written out in full, images included, because a page's
  * `openGraph` replaces the root layout's rather than merging with it. Without
@@ -17,7 +17,7 @@ import { JoinFlow } from "./components/JoinFlow";
  */
 const TITLE = "WHO MADE THIS? Pre-registration";
 const DESCRIPTION =
-  "Pre-register once for the PUT YOUR NAME ON IT conference in Lagos, Abuja, Port Harcourt and Enugu, and for WHO MADE THIS?, the creator and professional monetization platform launching this October.";
+  "Pre-register once for the PUT YOUR NAME ON IT conference in Lagos, Abuja, Port Harcourt and Enugu, and for WHO MADE THIS?, the creator and professional monetization platform, coming to the App Store and Google Play.";
 /** The Who Made This lockup on the site's dark background, 1200 x 630. Root of public/: production serves only root-level files. */
 const SHARE_IMAGE = "/who-made-this-og.png";
 
