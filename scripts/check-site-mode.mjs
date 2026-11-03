@@ -312,8 +312,15 @@ for (const p of PARTNERS) {
   check(`brand: partner ${p.slug} has a name and a drawn size`, p.name.length > 2 && p.width > 0 && p.height > 0 && p.width <= 240 && p.height <= 110);
 }
 check("brand: the white Dreamax mark exists", publicFiles.includes("/wawu-partner-dreamax-white.png"));
-check("brand: Dreamax is shown as supplied, white on a black tile (not inverted)", PARTNERS.find((p) => p.slug === "dreamax")?.tile === "black" && PARTNERS.find((p) => p.slug === "dreamax")?.src === "/wawu-partner-dreamax-white.png");
-check("brand: the logo wall draws logos in their own colours (no grey filter)", !/grayscale|site-logo-img/.test(readFileSync(join(root, "src/app/(site)/_components/LogoWall.tsx"), "utf8") + readFileSync(join(root, "src/app/(site)/site.css"), "utf8")));
+// Owner, 3 Nov 2026 ("the partner logos should be horizontal in a slider and should be black and white and smaller"): the
+// logos are drawn in black and white on every device, with no colour on hover. This replaces the 2 Nov check that kept them in
+// their own colours. Dreamax still uses the supplied white mark, drawn dark so it reads on the light section.
+check("brand: Dreamax uses the supplied white mark (not the old inverted file)", PARTNERS.find((p) => p.slug === "dreamax")?.src === "/wawu-partner-dreamax-white.png");
+{
+  const wall = readFileSync(join(root, "src/app/(site)/_components/LogoWall.tsx"), "utf8");
+  check("brand: the partner logos are black and white (owner, 3 Nov 2026)", /\bgrayscale\b/.test(wall));
+  check("brand: no logo turns to colour on hover", !/hover:(grayscale-0|filter-none|saturate)/.test(wall));
+}
 check("brand: the old inverted Dreamax file is gone", !publicFiles.includes("/wawu-partner-dreamax.png"));
 
 // the press downloads: six marks, each an SVG and a PNG, in public/ and open
