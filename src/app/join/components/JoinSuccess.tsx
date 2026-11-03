@@ -20,11 +20,12 @@ interface JoinSuccessProps {
  * it. The registration reference stays on screen small, for support only.
  */
 export function JoinSuccess({ tierName, price, noPayment, reference }: JoinSuccessProps) {
-  const plan = tierName ?? "plan";
   return (
     <div className="flex w-full flex-col items-center gap-5">
       <div className="flex w-full flex-col items-center gap-1 rounded-input border border-accent bg-accent-tint px-4 py-4 text-center">
-        <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent-soft">Your plan</span>
+        {tierName ? (
+          <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-accent-soft">Your plan</span>
+        ) : null}
         <span data-testid="success-plan" className="text-[28px] font-extrabold leading-[1.1] tracking-[-0.02em] text-text-primary">
           {tierName ?? "Your plan"}
         </span>
@@ -43,7 +44,7 @@ export function JoinSuccess({ tierName, price, noPayment, reference }: JoinSucce
         <li className="flex items-start gap-3">
           <span className="grid h-[28px] w-[28px] flex-none place-items-center rounded-full bg-accent text-[14px] font-extrabold text-on-accent">2</span>
           <span className="pt-[3px] text-[15.5px] leading-[1.45] text-text-primary">
-            Your {plan} plan is waiting.
+            {tierName ? `Your ${tierName} plan is waiting.` : "Your plan is waiting."}
           </span>
         </li>
       </ol>
