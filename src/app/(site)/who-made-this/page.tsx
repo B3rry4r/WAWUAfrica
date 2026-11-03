@@ -57,7 +57,7 @@ export default function WhoMadeThisPage() {
               <ScreenTile id="unlock" sizes="(min-width: 1024px) 250px, 200px" />
             </div>
             <div className="site-float absolute right-0 top-0 w-[56%] rotate-[4deg] [--site-tilt:4deg]">
-              <ScreenTile id="feed" sizes="(min-width: 1024px) 250px, 200px" />
+              <ScreenTile id="me" sizes="(min-width: 1024px) 250px, 200px" />
             </div>
           </div>
         }
@@ -80,7 +80,7 @@ export default function WhoMadeThisPage() {
 
       <section aria-labelledby="screens-title" className="border-y border-site-line bg-white py-20 sm:py-28">
         <Wrap>
-          <SectionHead eyebrow="In the app" title={<span id="screens-title">See it.</span>} lead="Four screens from WHO MADE THIS?: your wallet, the feed, creators and paid work." />
+          <SectionHead eyebrow="In the app" title={<span id="screens-title">See it.</span>} lead="Four screens from WHO MADE THIS?: your wallet, Explore, creators and paid work." />
           <div className="mt-12">
             <ScreenGallery />
           </div>

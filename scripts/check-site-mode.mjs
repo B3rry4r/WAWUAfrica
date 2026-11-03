@@ -104,7 +104,7 @@ const mustBeOpen = [
   // the brand site (BRAND-SITE, owner 2 Nov 2026): the eight pages, with and without a trailing slash, and the sitemap
   "/who-made-this", "/who-made-this/", "/voices", "/voices/", "/about", "/about/", "/partners", "/partners/", "/press", "/press/", "/careers", "/careers/", "/contact", "/contact/",
   "/sitemap.xml",
-  "/wawu-brand-wordmark-white.svg", "/wawu-brand-icon-colour.png", "/wawu-partner-canva.png", "/wawu-wmt-screen-home.webp", "/wawu-og-brand.png",
+  "/wawu-brand-wordmark-white.svg", "/wawu-brand-icon-colour.png", "/wawu-partner-canva.png", "/wawu-wmt-screen-today.webp", "/wawu-og-brand.png",
   // Google Play's foreground-service video (owner, 31 Oct 2026): this one file, linked from no page
   "/play/background-audio.mp4", "/play/background-audio.mp4/",
   // the two files that make a link to the site open the app (no redirect in any mode)
@@ -197,7 +197,7 @@ const EXPECTED_OPEN_PUBLIC = [
   // the brand site (BRAND-SITE, owner 2 Nov 2026): logo pack (SVG and PNG), partner logos, app screens, link-preview pictures
   ...["wordmark-colour", "wordmark-purple", "wordmark-white", "icon-colour", "icon-purple", "icon-white"].flatMap((n) => [`/wawu-brand-${n}.svg`, `/wawu-brand-${n}.png`]),
   ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "flixora", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`),
-  ...["home", "feed", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
+  ...["today", "wallet", "dollar", "explore", "me", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
   "/wawu-og-brand.png", "/wawu-og-who-made-this.png", "/wawu-og-voices.png",
   ...serviceIcons,
 ].sort();
@@ -334,10 +334,10 @@ for (const f of siteNamed) {
   check(`brand: ${f} exists in public/`, publicFiles.includes(f));
   check(`brand: ${f} is open in join-only`, isOpenInJoinOnly(f));
 }
-for (const id of ["home", "feed", "creator", "unlock"]) check(`brand: app screen ${id} exists`, publicFiles.includes(`/wawu-wmt-screen-${id}.webp`));
-// SLIDER 3 shows a Shop tab on the profile and R-9 says there is no Shop tab: it is not on the site (lead ruling, 2 Nov 2026)
-check("brand: the SLIDER 3 profile screen is not in public/", !publicFiles.includes("/wawu-wmt-screen-profile.webp"));
-check("brand: no source names the SLIDER 3 profile screen", !siteSources.some((f) => /screen-profile|["'`]profile["'`]\s*\|/.test(readFileSync(f, "utf8")) || /slider[ _-]?3/i.test(readFileSync(f, "utf8"))));
+for (const id of ["today", "wallet", "dollar", "explore", "me", "creator", "unlock"]) check(`brand: app screen ${id} exists`, publicFiles.includes(`/wawu-wmt-screen-${id}.webp`));
+// Owner, 3 Nov 2026 ("the rest on the website should be replaced with the ones I share"): his own profile screenshot
+// (wawu-wmt-screen-me.webp, it shows a Shop tab) is on the brand site by his instruction. This replaces the lead ruling of
+// 2 Nov 2026 that kept the SLIDER 3 profile screen off the site; R-9 (no Shop tab) still governs the app itself.
 // the VOICES page says only what the boss's example says: nothing about anonymity, masked voices, emoji or typed replies, or recording live
 {
   const voices = readFileSync(join(root, "src/app/(site)/voices/page.tsx"), "utf8");

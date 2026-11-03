@@ -27,7 +27,7 @@ export function AppTiles() {
             <ArrowIcon className="h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none" />
           </span>
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -right-4 w-[56%] max-w-[300px] rotate-[7deg] transition-transform duration-500 group-hover:rotate-[4deg] motion-reduce:transition-none sm:right-6 sm:w-[44%]">
-            <ScreenTile id="unlock" sizes="(min-width: 768px) 260px, 50vw" className="shadow-site-phone" />
+            <ScreenTile id="unlock" sizes="(min-width: 768px) 260px, 50vw" />
           </div>
         </Link>
       </li>
