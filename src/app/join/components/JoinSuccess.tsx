@@ -37,13 +37,13 @@ export function JoinSuccess({ tierName, price, noPayment, reference }: JoinSucce
         <li className="flex items-start gap-3">
           <span className="grid h-[28px] w-[28px] flex-none place-items-center rounded-full bg-accent text-[14px] font-extrabold text-on-accent">1</span>
           <span className="pt-[3px] text-[15.5px] leading-[1.45] text-text-primary">
-            Open the WAWU app, and later the website, and sign in with the <b>same email or phone number</b> you used here.
+            Sign in to the WAWU app or on wawuafrica.com with the <b>same email or phone you used here</b>.
           </span>
         </li>
         <li className="flex items-start gap-3">
           <span className="grid h-[28px] w-[28px] flex-none place-items-center rounded-full bg-accent text-[14px] font-extrabold text-on-accent">2</span>
           <span className="pt-[3px] text-[15.5px] leading-[1.45] text-text-primary">
-            Your {plan} plan is waiting. There is no code to type.
+            Your {plan} plan is waiting.
           </span>
         </li>
       </ol>

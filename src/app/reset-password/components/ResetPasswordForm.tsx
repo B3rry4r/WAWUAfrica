@@ -60,7 +60,7 @@ export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
       return (
         <StateCard icon="Clock" tone="warning" title="This link has expired">
           <p className="m-0">This link has expired or was already used.</p>
-          <p className="m-0">Go back to the Who Made This? app, tap Forgot password and ask for a new link.</p>
+          <p className="m-0">Open the WAWU app or the sign-in page on this website, tap Forgot password and ask for a new link.</p>
         </StateCard>
       );
     }
@@ -68,7 +68,12 @@ export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
       return (
         <StateCard icon="CircleCheck" tone="success" title="Password changed">
           <p className="m-0">
-            Your password is changed. Go back to the Who Made This? app and sign in with your new password.
+            Your password is changed. You can now sign in with it in the WAWU app or on this website.
+          </p>
+          <p className="m-0">
+            <Link href="/sign-in" className="font-bold text-accent-soft underline">
+              Sign in on this website
+            </Link>
           </p>
         </StateCard>
       );
@@ -80,7 +85,7 @@ export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
             Set a new password
           </h1>
           <p className="m-0 text-[14.5px] leading-[1.55] text-text-secondary">
-            Choose a new password, then go back to the Who Made This? app and sign in with it.
+            Choose a new password, then sign in with it in the WAWU app or on this website.
           </p>
         </div>
         <div className="flex flex-col gap-4">
