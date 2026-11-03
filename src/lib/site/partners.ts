@@ -33,7 +33,6 @@ export const PARTNERS: readonly Partner[] = [
   { slug: "learning-curve", name: "Learning Curve", src: "/wawu-partner-learning-curve.png", width: 155, height: 96 },
   { slug: "soueast", name: "Soueast", src: "/wawu-partner-soueast.png", width: 220, height: 16, wide: true },
   { slug: "canva", name: "Canva", src: "/wawu-partner-canva.png", width: 88, height: 88 },
-  { slug: "flixora", name: "Flixora", src: "/wawu-partner-flixora.png", width: 220, height: 42 },
   { slug: "africa-trade-gateway", name: "Africa Trade Gateway", src: "/wawu-partner-africa-trade-gateway.png", width: 220, height: 87 },
   { slug: "fmyd", name: "Federal Ministry of Youth Development", src: "/wawu-partner-fmyd.png", width: 181, height: 96 },
   { slug: "pencom", name: "PenCom", src: "/wawu-partner-pencom.png", width: 53, height: 96 },

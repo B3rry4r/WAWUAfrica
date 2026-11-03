@@ -3,27 +3,31 @@ import { cn } from "@/lib/cn";
 import { PARTNERS } from "@/lib/site/partners";
 
 /**
- * How tall each logo is drawn: first the phone height, then the height from a
- * tablet up. Square and tall marks are 23 to 32 px, long wordmarks are kept
- * lower so every logo carries about the same visual weight. The width follows
- * from the file's own shape (width and height are also given on the image, so
- * nothing moves when it loads).
+ * How each logo is drawn: its size and its tone. Square and tall marks are set
+ * by height (23 to 32 px on a phone, 30 to 32 from a tablet up). Long wordmarks
+ * are set by width (64 to 68 px on a phone, 96 to 100 px from a tablet up), so
+ * no logo is wider than about 100 px. The other side follows the file's shape
+ * (width and height are also given on the image, so nothing moves when it loads).
+ *
+ * The tone: every file is first turned grey, then inverted, scaled and inverted
+ * back, which leaves the white background exactly white and makes the ink of
+ * every logo the same mid-dark grey (the number is that logo's own scale; Dreamax
+ * is a white mark on a clear background, so it is simply dimmed to the same grey).
  */
-const LOGO_HEIGHT: Record<string, string> = {
-  "isn-hubs": "h-[23px] md:h-[30px]",
-  plli: "h-[23px] md:h-[30px]",
-  "edc-pan-atlantic": "h-[23px] md:h-[30px]",
-  dbn: "h-[25px] md:h-[32px]",
-  "learning-curve": "h-[25px] md:h-[32px]",
-  soueast: "h-[10px] md:h-[12px]",
-  canva: "h-[23px] md:h-[30px]",
-  flixora: "h-[14px] md:h-[18px]",
-  "africa-trade-gateway": "h-[23px] md:h-[30px]",
-  fmyd: "h-[25px] md:h-[32px]",
-  pencom: "h-[25px] md:h-[32px]",
-  nuvion: "h-[14px] md:h-[18px]",
-  dreamax: "h-[14px] md:h-[18px]",
-  alison: "h-[23px] md:h-[30px]",
+const LOGO_LOOK: Record<string, string> = {
+  "isn-hubs": "h-[23px] w-auto md:h-[30px] [filter:grayscale(1)_invert(1)_brightness(0.9)_invert(1)]",
+  plli: "h-[23px] w-auto md:h-[30px] [filter:grayscale(1)_invert(1)_brightness(0.85)_invert(1)]",
+  "edc-pan-atlantic": "h-[23px] w-auto md:h-[30px] [filter:grayscale(1)_invert(1)_brightness(1.0)_invert(1)]",
+  dbn: "h-[25px] w-auto md:h-[32px] [filter:grayscale(1)_invert(1)_brightness(1.55)_invert(1)]",
+  "learning-curve": "h-[25px] w-auto md:h-[32px] [filter:grayscale(1)_invert(1)_brightness(0.95)_invert(1)]",
+  soueast: "h-auto w-[68px] md:w-[100px] [filter:grayscale(1)_invert(1)_brightness(0.75)_invert(1)]",
+  canva: "h-[23px] w-auto md:h-[30px] [filter:grayscale(1)_invert(1)_brightness(1.2)_invert(1)]",
+  "africa-trade-gateway": "h-[23px] w-auto md:h-[30px] [filter:grayscale(1)_invert(1)_brightness(1.75)_invert(1)]",
+  fmyd: "h-[25px] w-auto md:h-[32px] [filter:grayscale(1)_invert(1)_brightness(1.1)_invert(1)]",
+  pencom: "h-[25px] w-auto md:h-[32px] [filter:grayscale(1)_invert(1)_brightness(1.4)_invert(1)]",
+  nuvion: "h-auto w-[64px] md:w-[96px] [filter:grayscale(1)_invert(1)_brightness(0.7)_invert(1)]",
+  dreamax: "h-auto w-[64px] md:w-[96px] [filter:grayscale(1)_brightness(0.38)]",
+  alison: "h-[23px] w-auto md:h-[30px] [filter:grayscale(1)_invert(1)_brightness(1.1)_invert(1)]",
 };
 
 function Logos({ hidden = false }: { hidden?: boolean }) {
@@ -44,10 +48,8 @@ function Logos({ hidden = false }: { hidden?: boolean }) {
             height={partner.height}
             unoptimized
             className={cn(
-              "w-auto max-w-none mix-blend-multiply grayscale contrast-[1.5]",
-              // Dreamax's file is the white mark on a clear background: drawn solid black on the light section
-              partner.tile === "black" && "brightness-0",
-              LOGO_HEIGHT[partner.slug],
+              "max-w-none mix-blend-multiply",
+              LOGO_LOOK[partner.slug],
             )}
           />
         </li>
