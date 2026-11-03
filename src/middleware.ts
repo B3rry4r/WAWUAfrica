@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
+import { currentSiteMode, isOpenInJoinOnly, joinOnlyRewrite } from "@/lib/site-mode";
 
 /**
  * Site mode (see lib/site-mode.ts). In `full` mode this does nothing. In
  * `join-only` mode every path that is not the landing page, the registration
  * link, the privacy document it links to, the password-reset page the reset
- * mail links to (/reset-password, R-123), a file those pages need, or one of
+ * mail links to (/reset-password, R-123), the upload pages (/sign-in, /sign-up,
+ * /forgot-password, /create/new, /create/library; WEB-UPLOAD, R-126), a file those pages need, or one of
  * the two app-link files (/.well-known/assetlinks.json and
  * /.well-known/apple-app-site-association, which must answer 200 for a link to
  * the site to open the app) gets a 307 to /join: pages, the app, sign-in and
@@ -18,7 +19,16 @@ import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
  * a rebuild of the code.
  */
 export function middleware(request: NextRequest) {
-  if (currentSiteMode() === "full" || isOpenInJoinOnly(request.nextUrl.pathname)) return NextResponse.next();
+  if (currentSiteMode() === "full") return NextResponse.next();
+
+  if (isOpenInJoinOnly(request.nextUrl.pathname)) {
+    // The five upload pages (WEB-UPLOAD, R-126) are answered by their trimmed join-only pages; the address stays the same.
+    const target = joinOnlyRewrite(request.nextUrl.pathname);
+    if (!target) return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = target;
+    return NextResponse.rewrite(url);
+  }
 
   return redirectToJoin(request);
 }

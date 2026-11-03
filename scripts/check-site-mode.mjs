@@ -55,7 +55,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const {
-  siteModeFrom, isOpenInJoinOnly, isOpenPageInJoinOnly, pageHref, signUpHref,
+  siteModeFrom, isOpenInJoinOnly, isOpenPageInJoinOnly, pageHref, signUpHref, joinOnlyRewrite,
 } = await import(join(root, "src/lib/site-mode.ts"));
 const { PLATFORM_SERVICES } = await import(join(root, "src/lib/platform-services.ts"));
 const appLinks = await import(join(root, "src/lib/app-links.ts"));
@@ -94,6 +94,8 @@ const mustBeOpen = [
   "/robots.txt",
   // the page the password-reset mail links to (RESET-WEB, R-123): exactly this path, the query is not part of it
   "/reset-password", "/reset-password/",
+  // the join-only upload pages (WEB-UPLOAD, R-126): the way in, and Upload and My uploads
+  "/sign-in", "/sign-in/", "/sign-up", "/sign-up/", "/forgot-password", "/forgot-password/", "/create/new", "/create/new/", "/create/library", "/create/library/",
   "/wawu-logo-white.png", "/wawu-icon-white.svg", "/wawu-hero-desktop-creators.png", "/wawu-hero-mobile-professionals.png",
   "/who-made-this-ink.png", "/og-image.png", "/favicon.ico", "/icon.png", "/apple-icon.png",
   // the admin dashboard (the admin sign-in protects it): /admin and everything under it
@@ -113,12 +115,17 @@ for (const p of mustBeOpen) check(`open: ${p}`, isOpenInJoinOnly(p));
 
 const mustStayClosed = [
   // the app and everything behind it
-  "/home", "/explore", "/learn", "/learn/x", "/sign-in", "/sign-up", "/api/anything", "/api/hub/waitlist/offers/current",
+  "/home", "/explore", "/learn", "/learn/x", "/api/anything", "/api/hub/waitlist/offers/current",
   // the reset page is the one door; the rest of the sign-in side stays shut (RESET-WEB, R-123)
-  "/forgot-password", "/forgot-password/", "/login", "/sign-in/", "/sign-up/", "/auth", "/auth/login", "/auth/sign-in", "/auth/forgot-password", "/auth/reset-password", "/auth/signup",
+  "/login", "/auth", "/auth/login", "/auth/sign-in", "/auth/forgot-password", "/auth/reset-password", "/auth/signup",
   "/reset-password/x", "/reset-password/abc/def", "/reset-passwords", "/reset-password.html", "/reset", "/Reset-Password", "/x/reset-password", "/sign-in/reset-password",
   "/api/reset-password", "/api/auth/reset-password", "/activate", "/verify-email",
   // admin is whole segments only
+  // the upload pages are exactly five: nothing under them, no look-alikes, and the trimmed pages' own addresses are not served
+  "/sign-in/x", "/sign-up/x", "/sign-up/creator", "/forgot-password/x", "/sign-in.html", "/signin", "/signup", "/Sign-In", "/x/sign-in",
+  "/create", "/create/", "/create/content", "/create/new/x", "/create/new/video", "/create/library/x", "/create/new.html", "/Create/New", "/x/create/new",
+  "/upload-site", "/upload-site/", "/upload-site/new", "/upload-site/library", "/upload-site/sign-in", "/upload-site/sign-up", "/upload-site/forgot-password",
+  "/onboarding", "/kyc", "/wallet/open", "/earnings", "/messages", "/settings/profile",
   "/administrator", "/adminx/y", "/x/admin", "/api/hub/admin/notifications/email/campaigns",
   "/payment/return", "/wallet", "/events", "/services", "/services/legal", "/services/pay", "/shop", "/tickets", "/wawu/ada", "/communities",
   // a profile whose handle ends in a file extension is a page, not a file
@@ -164,7 +171,20 @@ for (const p of ["/who-made-this/x", "/about/x", "/sitemap.xml", "/wawu-og-brand
 eq("page: /reset-password is a page", isOpenPageInJoinOnly("/reset-password"), true);
 eq("page: /reset-password/ is a page", isOpenPageInJoinOnly("/reset-password/"), true);
 eq("page: /reset-password/x is not a page", isOpenPageInJoinOnly("/reset-password/x"), false);
-eq("page: /forgot-password is not a page", isOpenPageInJoinOnly("/forgot-password"), false);
+for (const p of ["/sign-in", "/sign-up", "/forgot-password", "/create/new", "/create/library"]) eq(`page: ${p} is a page`, isOpenPageInJoinOnly(p), true);
+
+// The join-only upload pages (WEB-UPLOAD, R-126): five open pages, each answered by its own trimmed page under /upload-site.
+const UPLOAD_REWRITES = {
+  "/sign-in": "/upload-site/sign-in", "/sign-up": "/upload-site/sign-up", "/forgot-password": "/upload-site/forgot-password",
+  "/create/new": "/upload-site/new", "/create/library": "/upload-site/library",
+};
+for (const [from, to] of Object.entries(UPLOAD_REWRITES)) {
+  eq(`rewrite: ${from} is served from ${to}`, joinOnlyRewrite(from), to);
+  eq(`rewrite: ${from}/ (trailing slash) is served from ${to}`, joinOnlyRewrite(`${from}/`), to);
+  check(`rewrite: ${to} has its page file`, readdirSync(join(root, "src/app/upload-site"), { recursive: true }).some((f) => String(f).replace(/\\/g, "/").replace(/\([^/]+\)\//g, "") === `${to.replace("/upload-site/", "")}/page.tsx`));
+}
+for (const p of ["/", "/join", "/reset-password", "/terms", "/create", "/create/content", "/create/new/x", "/upload-site/new", "/home", "/wallet", "/sign-in/x"]) eq(`rewrite: ${p} is not rewritten`, joinOnlyRewrite(p), null);
+eq("rewrite: exactly five pages are rewritten", Object.keys(UPLOAD_REWRITES).length, 5);
 
 // Every file in public/ is either on this list or closed. A new file cannot
 // become reachable without someone editing this list.
@@ -227,8 +247,8 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/forgot-password", "/sign-in", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
-const KEPT_LINKS = ["/reset-password", "/reset-password?token=abc&email=ada%40example.test", "#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
+const CLOSED_LINKS = ["/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
+const KEPT_LINKS = ["/sign-in", "/sign-up", "/forgot-password", "/create/new", "/create/library", "/reset-password", "/reset-password?token=abc&email=ada%40example.test", "#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
   eq(`full: sign-up ${h} is unchanged`, signUpHref("full", h), h);

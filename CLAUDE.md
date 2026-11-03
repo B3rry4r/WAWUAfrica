@@ -159,6 +159,9 @@ keeps its current behaviour until it follows after launch.
   all; an unverified creator or professional cannot either. "Going" is still an
   interest signal and still never money, which is a separate thing from a ticket.
 
+## Join-only upload pages (WEB-UPLOAD, owner 3 Nov 2026, R-126)
+While the stores review the app, people who joined at /join sign in on the website and upload; pieces are collected and show publicly only after the creator opens a wallet in the app (the Hub holds them). In join-only mode (`src/lib/site-mode.ts`) exactly five more pages are open: `/sign-in`, `/sign-up`, `/forgot-password`, `/create/new` (Upload) and `/create/library` (My uploads). Each is answered by its own trimmed page under `src/app/upload-site/` (middleware rewrite, shell links only to open pages). Every content and upload write there sends `X-Wawu-Client: site` (`src/lib/api/site-upload.ts`); places come from the Hub (`creator/state`), prices from `GET /prices`. Full mode is unchanged.
+
 ## Navigation
 Bottom bar, 5 slots, the SAME for everyone:
 `Home · Communities · Explore · Messages · Settings`

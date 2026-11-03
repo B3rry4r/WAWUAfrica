@@ -62,6 +62,16 @@ export function currentSiteMode(): SiteMode {
  * `/robots.txt`. `/about` used to be the signed-in app's About page; that page is
  * now `/settings/about` (closed in join-only like the rest of the app).
  *
+ * The join-only upload pages (WEB-UPLOAD, owner 3 Nov 2026, R-126): while the stores
+ * review the app, people who joined at /join sign in on the website and upload. That
+ * opens exactly five pages: `/sign-in`, `/sign-up` and `/forgot-password` (the way in;
+ * the reset mail's page, `/reset-password`, was already open) and `/create/new` and
+ * `/create/library` (Upload and My uploads). Nothing else of the app opens: wallet,
+ * earnings, kyc, communities, explore, messages, shop, events, profiles and settings
+ * stay closed. In join-only mode these five are answered by their own trimmed pages
+ * (`joinOnlyRewrite`, src/app/upload-site/**), with a header that links only to open
+ * pages. Full mode serves the pages that have always been at these addresses.
+ *
  * `/legal` and `/legal/<slug>` (owner, 26 Oct 2026) are the nine legal documents.
  * The app stores need a public privacy policy address that is not behind a
  * sign-in or a country gate, and `/legal/privacy` is it, so they stay open in
@@ -72,7 +82,22 @@ const OPEN_PAGES = new Set([
   // The brand site (BRAND-SITE, owner 2 Nov 2026): wawuafrica.com becomes the WAWU brand website.
   // Exactly these eight pages (with "/"), each one segment, no sub-paths.
   "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact",
+  // The join-only upload pages (WEB-UPLOAD, owner 3 Nov 2026, R-126): the way in, and Upload and My uploads.
+  "/sign-in", "/sign-up", "/forgot-password", "/create/new", "/create/library",
 ]);
+
+/**
+ * In join-only mode each of the five upload pages is served by its own trimmed page under
+ * `/upload-site/`, which the middleware rewrites to (the address in the browser does not
+ * change). Those pages have a shell that links only to open pages. Full mode never rewrites.
+ */
+const UPLOAD_SITE_REWRITES: Record<string, string> = {
+  "/sign-in": "/upload-site/sign-in",
+  "/sign-up": "/upload-site/sign-up",
+  "/forgot-password": "/upload-site/forgot-password",
+  "/create/new": "/upload-site/new",
+  "/create/library": "/upload-site/library",
+};
 
 /**
  * `/legal/<slug>`: exactly one lower-case segment under /legal. A deeper path,
@@ -126,6 +151,11 @@ const APP_LINK_FILES = new Set(["/.well-known/assetlinks.json", "/.well-known/ap
 /** The same path with trailing slashes taken off (the root stays "/"). */
 function trimmed(pathname: string): string {
   return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+}
+
+/** Where join-only mode serves this path from, or null when the page is served at its own address. */
+export function joinOnlyRewrite(pathname: string): string | null {
+  return UPLOAD_SITE_REWRITES[trimmed(pathname)] ?? null;
 }
 
 /** True when join-only mode serves this PAGE (as opposed to a file). */
