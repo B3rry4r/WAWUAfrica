@@ -59,7 +59,7 @@ export type ReferralVerdict =
   | { kind: "applies"; code: string; priceKobo: number }
   /**
    * `full` and `inactive`: the code is spent or off. `other_tier` (JOIN-TIERS, R-125): the code is real but
-   * belongs to another plan (LOGOART is for Verify only); `message` is the Hub's own plain sentence.
+   * is bound to a different plan (R-125: the Hub binds LOGOART to the verify tier); `message` is the Hub's own plain sentence.
    */
   | { kind: "notApplied"; code: string; reason: "full" | "inactive" | "other_tier"; priceKobo: number; message?: string }
   | { kind: "unknown"; code: string; message: string }

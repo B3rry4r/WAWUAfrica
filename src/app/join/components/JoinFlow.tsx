@@ -815,7 +815,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   let landing: React.ReactNode = null;
   switch (phase.kind) {
     case "loading":
-      landing = <JoinLanding tiers={null} selectedId={null} onSelect={() => {}} referral={{ kind: "none" }} form={<JoinFormSkeleton />} />;
+      landing = <JoinLanding tiers={null} selectedId={null} referral={{ kind: "none" }} form={<JoinFormSkeleton />} />;
       break;
 
     case "unreachable":

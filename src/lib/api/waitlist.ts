@@ -59,7 +59,7 @@ export type WaitlistStart = Omit<
 export interface WaitlistReferralCheck {
   code: string;
   applies: boolean;
-  /** Only when `applies` is false. `other_tier` is a real code that belongs to another plan (LOGOART is for Verify only). */
+  /** Only when `applies` is false. `other_tier` is a real code that is bound to a different plan (R-125: the Hub binds LOGOART to the verify tier; the page shows the Hub's reason). */
   reason?: "full" | "inactive" | "other_tier";
   /** What the person would pay, in whole kobo (the code's price, or the plan's full price). 0 means no payment. */
   priceKobo: number;

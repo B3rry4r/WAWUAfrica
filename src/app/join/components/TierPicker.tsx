@@ -11,7 +11,8 @@ interface TierPickerProps {
   /** The plans, in the app's order; `null` while they load. */
   tiers: readonly WaitlistTier[] | null;
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  /** Absent while the plans load (the skeleton is drawn, nothing to pick). */
+  onSelect?: (id: string) => void;
   /** What the Hub said about the code for the SELECTED plan. */
   verdict: ReferralVerdict;
   disabled?: boolean;
@@ -52,7 +53,7 @@ export function TierPicker({ tiers, selectedId, onSelect, verdict, disabled = fa
             aria-checked={selected}
             disabled={disabled}
             data-tier={tier.id}
-            onClick={() => onSelect(tier.id)}
+            onClick={() => onSelect?.(tier.id)}
             className={`flex w-full flex-col gap-3 rounded-card border p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:opacity-70 dt:p-5 ${
               selected ? "border-accent bg-accent-tint" : "border-hairline bg-card hover:border-strong"
             }`}

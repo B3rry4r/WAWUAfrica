@@ -28,7 +28,8 @@ interface JoinLandingProps {
   tiers: readonly WaitlistTier[] | null;
   /** The plan picked (the Hub's "Best" one to start with). */
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  /** Absent on the loading skeleton, which has no plan to pick. */
+  onSelect?: (id: string) => void;
   /** What the Hub said about the referral code for the picked plan. */
   referral: ReferralVerdict;
   /** The registration form (or its skeleton). It is drawn inside the form section. */
@@ -229,7 +230,7 @@ function Offer({
 }: {
   tiers: readonly WaitlistTier[] | null;
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  onSelect?: (id: string) => void;
   referral: ReferralVerdict;
 }) {
   return (
