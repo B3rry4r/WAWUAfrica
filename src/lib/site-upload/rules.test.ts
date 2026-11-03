@@ -16,12 +16,16 @@ import {
   SITE_CLIENT_HEADER,
   SITE_CLIENT_VALUE,
   SITE_KINDS,
+  KIND_NOUN,
+  PREVIEW_MAX_SIDE,
+  PREVIEW_QUALITY,
   WAITING_WALLET_TEXT,
   accessState,
   cleanPriceList,
   landingAfterSignIn,
   nairaText,
   pieceState,
+  previewSize,
   placesLine,
   refusalSentence,
   sizeText,
@@ -107,4 +111,21 @@ test("sign-in lands on an upload page, never on a closed one", () => {
   assert.equal(landingAfterSignIn("/home"), "/create/library");
   assert.equal(landingAfterSignIn("https://evil.example"), "/create/library");
   assert.equal(landingAfterSignIn("//evil.example"), "/create/library");
+});
+
+test("a picture's preview copy uses the app's numbers: 640 px, JPEG 0.7, never enlarged (R-118)", () => {
+  assert.equal(PREVIEW_MAX_SIDE, 640);
+  assert.equal(PREVIEW_QUALITY, 0.7);
+  assert.deepEqual(previewSize(1600, 1000), { width: 640, height: 400 });
+  assert.deepEqual(previewSize(900, 600), { width: 640, height: 427 });
+  assert.deepEqual(previewSize(1000, 1600), { width: 400, height: 640 });
+  assert.deepEqual(previewSize(640, 640), { width: 640, height: 640 });
+  assert.deepEqual(previewSize(500, 300), { width: 500, height: 300 });
+});
+
+test("kinds read right in a sentence", () => {
+  assert.deepEqual(
+    SITE_KINDS.map((k) => `Choose your ${KIND_NOUN[k]} file`),
+    ["Choose your video file", "Choose your audio file", "Choose your PDF file", "Choose your picture file"],
+  );
 });

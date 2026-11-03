@@ -151,3 +151,8 @@ export function sentenceFor(e: unknown): string {
   if (e instanceof ApiError && e.status === 402) return refusalSentence("tier_required") ?? "That did not go through.";
   return describeError(e).body;
 }
+
+/** Gives back a file uploaded for a draft that was never sent (it counts in the person's storage until a piece uses it or it is released). */
+export async function releaseUpload(key: string): Promise<void> {
+  await apiFetch("/api/hub/uploads/release", { method: "POST", authed: true, headers: siteHeaders(), body: { key } });
+}

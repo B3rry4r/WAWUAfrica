@@ -25,6 +25,14 @@ export const KIND_LABEL: Record<SiteKind, string> = {
   image: "Picture",
 };
 
+/** How a kind is written in a sentence ("Choose your PDF file"). */
+export const KIND_NOUN: Record<SiteKind, string> = {
+  video: "video",
+  audio: "audio",
+  pdf: "PDF",
+  image: "picture",
+};
+
 export const KIND_HINT: Record<SiteKind, string> = {
   video: "MP4, MOV or WebM.",
   audio: "MP3, WAV or M4A.",
@@ -142,3 +150,24 @@ export function landingAfterSignIn(next: string | null): string {
   if (next === "/create/new" || next === "/create/library") return next;
   return "/create/library";
 }
+
+/**
+ * A picture piece's preview is a smaller copy of the creator's own picture, exactly as the app makes it
+ * (mobile src/features/create/model.ts, R-118): the long edge at most 640 px, never enlarged, written as a JPEG at 0.7.
+ * A picture that already fits keeps its size and is only written again as a JPEG.
+ */
+export const PREVIEW_MAX_SIDE = 640;
+export const PREVIEW_QUALITY = 0.7;
+
+/** The size of the preview copy: the long edge brought to `max`, the other side in proportion, never larger than the original. */
+export function previewSize(width: number, height: number, max: number = PREVIEW_MAX_SIDE): { width: number; height: number } {
+  const long = Math.max(width, height);
+  if (!(long > max)) return { width, height };
+  const scale = max / long;
+  return width >= height
+    ? { width: max, height: Math.max(1, Math.round(height * scale)) }
+    : { width: Math.max(1, Math.round(width * scale)), height: max };
+}
+
+/** What a draft keeps while a person moves between steps or comes back later (never the picked File itself). */
+export const DRAFT_KEY = "wawu-site-upload-draft";
