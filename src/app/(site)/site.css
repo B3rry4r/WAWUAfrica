@@ -193,6 +193,10 @@ body:has(.wawu-site) {
   html:has(.wawu-site) {
     scroll-behavior: auto;
   }
+  .site-logo-strip {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
   .site-marquee-track,
   .site-logo-track,
   .site-rise,
