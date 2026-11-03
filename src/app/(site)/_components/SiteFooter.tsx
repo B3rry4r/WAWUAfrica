@@ -57,6 +57,11 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/sign-in" className={linkClass}>
+                  Sign in
+                </Link>
+              </li>
             </ul>
           </nav>
 

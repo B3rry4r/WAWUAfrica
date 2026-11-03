@@ -234,6 +234,9 @@ export function SignInForm({ uploadOnly = false }: { uploadOnly?: boolean } = {}
               Create an account
             </Link>
           </div>
+          <p className="m-0 text-center text-[13px] text-text-muted">
+            Paid on /join? Sign in with the same email or phone you used there.
+          </p>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Button, Icon } from "@/components/ui";
 import { formatNairaFromKobo } from "@/lib/format";
 import type { ReferralVerdict } from "@/lib/join-referral";
@@ -80,7 +81,10 @@ export function JoinLanding({ tiers, selectedId, onSelect, referral, form, scrol
         {/* One explicit column on phones: an implicit one is sized by its widest content (the phone field), which pushed the offer and the form past the page's right edge. */}
         <div className={`${WIDTH} grid grid-cols-1 gap-10 dt:grid-cols-[1fr_minmax(0,520px)] dt:items-start dt:gap-16`}>
           <Offer tiers={tiers} selectedId={selectedId} onSelect={onSelect} referral={referral} />
-          <div className="min-w-0">{form}</div>
+          <div className="min-w-0">
+            {form}
+            <AlreadyRegistered className="mt-5 text-center" />
+          </div>
         </div>
       </section>
       <OneStage />
@@ -91,6 +95,18 @@ export function JoinLanding({ tiers, selectedId, onSelect, referral, form, scrol
       <Footer />
       <StickyBar from={from} watch={FORM_ID} />
     </div>
+  );
+}
+
+/** The way in for people who already paid here: they sign in on this website to upload. */
+function AlreadyRegistered({ className = "" }: { className?: string }) {
+  return (
+    <p className={`m-0 text-[14.5px] text-text-secondary ${className}`}>
+      Already registered?{" "}
+      <Link href="/sign-in" className="font-semibold text-accent underline underline-offset-2 hover:text-text-primary">
+        Sign in to upload your work.
+      </Link>
+    </p>
   );
 }
 
@@ -120,6 +136,7 @@ function Hero({ from }: { from: string | null }) {
             Pre-registration open
           </Button>
         </div>
+        <AlreadyRegistered className="mb-0 mt-1" />
 
         <div className="grid items-center gap-10 pb-12 pt-6 dt:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] dt:gap-12 dt:pb-24 dt:pt-14">
           <div className="flex flex-col items-start gap-5">

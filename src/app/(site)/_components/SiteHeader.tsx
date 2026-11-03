@@ -92,6 +92,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/sign-in"
+            className="hidden min-h-[44px] items-center rounded-full px-3 text-[15px] font-semibold text-white/90 hover:bg-white/8 hover:text-white min-[360px]:inline-flex"
+          >
+            Sign in
+          </Link>
           <ButtonLink href={REGISTER_HREF} variant="white" className="hidden min-h-[44px] px-5 text-[15px] sm:inline-flex">
             Register
           </ButtonLink>
@@ -116,7 +122,7 @@ export function SiteHeader() {
           className="fixed inset-x-0 bottom-0 top-[68px] z-40 overflow-y-auto bg-site-deep px-5 pb-10 pt-4 sm:px-8 lg:hidden"
         >
           <nav aria-label="Mobile" className="mx-auto flex max-w-[1200px] flex-col">
-            {[{ label: "Home", href: "/" }, ...HEADER_NAV].map((item) => (
+            {[{ label: "Sign in", href: "/sign-in" }, { label: "Home", href: "/" }, ...HEADER_NAV].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
