@@ -335,9 +335,9 @@ for (const f of siteNamed) {
   check(`brand: ${f} is open in join-only`, isOpenInJoinOnly(f));
 }
 for (const id of ["today", "wallet", "dollar", "explore", "me", "creator", "unlock"]) check(`brand: app screen ${id} exists`, publicFiles.includes(`/wawu-wmt-screen-${id}.webp`));
-// SLIDER 3 shows a Shop tab on the profile and R-9 says there is no Shop tab: it is not on the site (lead ruling, 2 Nov 2026)
-check("brand: the SLIDER 3 profile screen is not in public/", !publicFiles.includes("/wawu-wmt-screen-profile.webp"));
-check("brand: no source names the SLIDER 3 profile screen", !siteSources.some((f) => /screen-profile|["'`]profile["'`]\s*\|/.test(readFileSync(f, "utf8")) || /slider[ _-]?3/i.test(readFileSync(f, "utf8"))));
+// Owner, 3 Nov 2026 ("the rest on the website should be replaced with the ones I share"): his own profile screenshot
+// (wawu-wmt-screen-me.webp, it shows a Shop tab) is on the brand site by his instruction. This replaces the lead ruling of
+// 2 Nov 2026 that kept the SLIDER 3 profile screen off the site; R-9 (no Shop tab) still governs the app itself.
 // the VOICES page says only what the boss's example says: nothing about anonymity, masked voices, emoji or typed replies, or recording live
 {
   const voices = readFileSync(join(root, "src/app/(site)/voices/page.tsx"), "utf8");
