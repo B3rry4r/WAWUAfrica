@@ -1,7 +1,7 @@
 /**
  * Everything /join says that is not a plan (owner's redesign, 12 Oct 2026; the plans
  * are JOIN-TIERS, R-125, 2 and 3 Nov 2026). The words are the owner's example page, with
- * the changes the owner ruled: no date anywhere ("this October"), the conference cities
+ * the changes the owner ruled: no date or month anywhere, the conference cities
  * are exactly Lagos, Abuja, Port Harcourt and Enugu plus Online, and "creative hubs"
  * with no number.
  *
@@ -52,7 +52,7 @@ export const TYPED_NAMES = ["AMAKA", "TUNDE", "ZAINAB", "CHIDI", "FATIMA", "EMEK
 
 export const STEPS: ReadonlyArray<{ title: string; text: string }> = [
   { title: "Pre-register", text: "Two minutes. Your name, WhatsApp, craft and city." },
-  { title: "This October", text: "The app goes live. Sign in with the same email or phone number. Your plan is waiting." },
+  { title: "The app opens", text: "The WAWU app arrives on the App Store and Google Play. Sign in with the same email or phone number. Your plan is waiting." },
   { title: "Make it", text: "Build your profile, upload your work, use the Creative Studio and get paid." },
   { title: "Take the stage", text: "Show up in your city. Put your name on it, in front of everyone." },
 ];

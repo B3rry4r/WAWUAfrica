@@ -122,7 +122,7 @@ function Hero({ from }: { from: string | null }) {
 
         <div className="grid items-center gap-10 pb-12 pt-6 dt:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] dt:gap-12 dt:pb-24 dt:pt-14">
           <div className="flex flex-col items-start gap-5">
-            <p className={LABEL}>The conference · The platform · Launching this October</p>
+            <p className={LABEL}>The conference · The platform · Coming to the App Store and Google Play</p>
             <h1
               aria-label="Put your Name on it."
               className="m-0 text-[clamp(3.4rem,17vw,6.6rem)] font-black uppercase leading-[0.88] tracking-[-0.045em] text-text-primary"
@@ -325,7 +325,7 @@ function Questions({ selected, noPayment }: { selected: WaitlistTier | null; noP
   const items: Array<{ q: ReactNode; a: ReactNode }> = [
     {
       q: "Is the app live yet?",
-      a: "Not yet. WHO MADE THIS? goes live this October. Pre-register now and we will message you on WhatsApp the moment it opens.",
+      a: "Not yet. The WAWU app is coming to the App Store and Google Play. Pre-register now and we will message you on WhatsApp the moment it opens.",
     },
     {
       q: selected ? `What do I get with ${selected.name}?` : "What do I get?",
