@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
-import { SlashedPrice } from "./SlashedPrice";
-import { WAS_PRICE } from "./join-content";
 
 /**
  * The phone's pinned "Reserve" bar. It slides up once the person has scrolled
@@ -11,7 +9,7 @@ import { WAS_PRICE } from "./join-content";
  * so it never sits on top of the thing it points at. Phones only: the desktop
  * layout has the form beside the offer.
  */
-export function StickyBar({ price, watch }: { price: string | null; watch: string }) {
+export function StickyBar({ from, watch }: { from: string | null; watch: string }) {
   const [on, setOn] = useState(false);
 
   useEffect(() => {
@@ -42,17 +40,11 @@ export function StickyBar({ price, watch }: { price: string | null; watch: strin
       }`}
     >
       <div className="flex flex-col text-[14px] font-bold leading-tight text-text-primary">
-        {price ? (
-          <span>
-            Pre-register for <SlashedPrice price={price} />
-          </span>
-        ) : (
-          <span>Pre-register</span>
-        )}
-        <small className="text-[12px] font-medium text-text-secondary">Slashed from {WAS_PRICE}</small>
+        <span>Choose your plan</span>
+        {from ? <small className="text-[12px] font-medium text-text-secondary">From {from} a year</small> : null}
       </div>
       <Button href={`#${watch}`} size="md" className="flex-none">
-        Reserve
+        Choose
       </Button>
     </div>
   );

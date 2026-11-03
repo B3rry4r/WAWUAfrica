@@ -2,6 +2,7 @@ import { apiFetch, ApiError, isNetworkError } from "@/lib/api/client";
 import { formatNairaFromKobo } from "@/lib/format";
 import type { FlutterwaveChargeConfig } from "@/lib/flutterwave";
 import type { components, operations } from "@/types/api.generated";
+import type { WaitlistTier, WaitlistTiers } from "@/lib/join-tiers";
 
 /**
  * The event registration link's four public routes (backend JOIN-01, R-48).
@@ -29,6 +30,8 @@ type RegistrationBody = components["schemas"]["CreateWaitlistRegistrationDto"] &
   updatesOptIn?: boolean;
   /** REF-01: an optional referral code. Left out, the registration is exactly what it was before codes. */
   referralCode?: string;
+  /** JOIN-TIERS (R-125): the plan being bought (`verify`, `plus`, `founding`). Left out, the registration is the old offer's Verify. */
+  tier?: string;
 };
 
 export type WaitlistOffer = operations["WaitlistPublicController_currentOffer"]["responses"][200]["content"]["application/json"];
@@ -47,17 +50,24 @@ export type WaitlistStart = Omit<
 > & {
   flutterwaveConfig?: operations["WaitlistPublicController_register"]["responses"][200]["content"]["application/json"]["flutterwaveConfig"];
   completed?: { status: "paid"; firstName: string; accessCode: string };
-  referral?: { code: string; applied: boolean; reason?: "full" | "inactive" };
+  referral?: { code: string; applied: boolean; reason?: "full" | "inactive" | "other_tier" };
+  /** JOIN-TIERS: the plan this registration pays for, when one was named. */
+  tier?: string;
 };
 
 /** GET /waitlist/referral-codes/:code: does it apply, and what would the person pay. */
 export interface WaitlistReferralCheck {
   code: string;
   applies: boolean;
-  /** Only when `applies` is false. */
-  reason?: "full" | "inactive";
-  /** What the person would pay, in whole kobo (the code's price, or the standard price). 0 means no payment. */
+  /** Only when `applies` is false. `other_tier` is a real code that belongs to another plan (LOGOART is for Verify only). */
+  reason?: "full" | "inactive" | "other_tier";
+  /** What the person would pay, in whole kobo (the code's price, or the plan's full price). 0 means no payment. */
   priceKobo: number;
+  /** Asked with a plan: the plan the price is for, and the plan the code belongs to. */
+  tier?: string;
+  forTier?: string;
+  /** With `other_tier`: the Hub's plain sentence, shown as it is. */
+  message?: string;
 }
 
 /**
@@ -65,8 +75,17 @@ export interface WaitlistReferralCheck {
  * the count or the community. An unknown code is a 404 `referral_unknown`
  * (see `refusalOf`).
  */
-export function checkReferralCode(code: string): Promise<WaitlistReferralCheck> {
-  return apiFetch<WaitlistReferralCheck>(`/api/hub/waitlist/referral-codes/${encodeURIComponent(code)}`);
+export function checkReferralCode(code: string, tier?: string): Promise<WaitlistReferralCheck> {
+  const query = tier ? `?tier=${encodeURIComponent(tier)}` : "";
+  return apiFetch<WaitlistReferralCheck>(`/api/hub/waitlist/referral-codes/${encodeURIComponent(code)}${query}`);
+}
+
+/**
+ * GET /waitlist/tiers (JOIN-TIERS, R-125): the three plans the app sells, at the app's live prices, with
+ * what each gives. Public. The page draws every figure and benefit from this answer and writes none itself.
+ */
+export function getTiers(): Promise<WaitlistTiers> {
+  return apiFetch<WaitlistTiers>("/api/hub/waitlist/tiers");
 }
 
 /** GET /waitlist/offers/current: the offer open now, or a 404 `no_open_offer`. */
@@ -85,7 +104,7 @@ export function getCurrentOffer(): Promise<WaitlistOffer> {
  */
 export async function startRegistration(
   offer: WaitlistOffer,
-  input: Pick<RegistrationBody, "fullName" | "phone" | "email" | "craft" | "city" | "updatesOptIn" | "referralCode">,
+  input: Pick<RegistrationBody, "fullName" | "phone" | "email" | "craft" | "city" | "updatesOptIn" | "referralCode" | "tier">,
 ): Promise<{
   reference: string;
   amountKobo: number;
@@ -94,7 +113,7 @@ export async function startRegistration(
   /** Present when the registration is complete at once (a referral code at price 0): no window, show the access code. */
   completed: { firstName: string } | null;
   /** What became of the code, when one was sent. */
-  referral: { code: string; applied: boolean; reason?: "full" | "inactive" } | null;
+  referral: { code: string; applied: boolean; reason?: "full" | "inactive" | "other_tier" } | null;
 }> {
   const body: RegistrationBody = { offerId: offer.id, ...input, consent: true };
   const started = await apiFetch<WaitlistStart>("/api/hub/waitlist/registrations", { method: "POST", body });
@@ -159,6 +178,8 @@ export function offerPrice(offer: WaitlistOffer): string {
   return formatNairaFromKobo(offer.priceKobo);
 }
 
+export type { WaitlistTier, WaitlistTiers };
+
 /** The words for a code the server does not have: the same the server sends, kept for when it sends none. */
 export const REFERRAL_UNKNOWN_WORDS =
   "We do not recognise that referral code. Check it, or leave it empty to pay the standard price.";
@@ -196,7 +217,8 @@ type WaitlistCode =
   | "email_invalid"
   | "name_invalid"
   | "consent_required"
-  | "referral_unknown";
+  | "referral_unknown"
+  | "tier_invalid";
 
 export type Refusal =
   | {
@@ -213,6 +235,8 @@ export type Refusal =
   | { kind: "field"; field: RefusedField; message: string }
   /** REF-01: a referral code the server does not have. Nothing was charged; the page says so under the code field. */
   | { kind: "referral_unknown"; message: string }
+  /** JOIN-TIERS: the plan asked for is not one the Hub sells (it changed while the page was open). Nothing was charged. */
+  | { kind: "tier_invalid"; message: string }
   | { kind: "rate_limited" | "payments_unavailable" | "invalid" | "unreachable" | "unknown"; message: string };
 
 const WAITLIST_CODES: readonly WaitlistCode[] = [
@@ -230,6 +254,7 @@ const WAITLIST_CODES: readonly WaitlistCode[] = [
   "email_invalid",
   "consent_required",
   "referral_unknown",
+  "tier_invalid",
 ];
 
 function isWaitlistCode(code: string): code is WaitlistCode {
@@ -273,6 +298,8 @@ export function refusalOf(e: unknown): Refusal {
           return field("consent");
         case "referral_unknown":
           return { kind: "referral_unknown", message: e.serverMessage ?? REFERRAL_UNKNOWN_WORDS };
+        case "tier_invalid":
+          return { kind: "tier_invalid", message: "That plan is not available right now. You have not been charged. Please choose a plan again." };
         default: {
           const unmapped: never = code;
           void unmapped;

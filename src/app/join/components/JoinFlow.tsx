@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Skeleton } from "@/components/ui";
+import { Button } from "@/components/ui";
 import {
   FlutterwaveCancelledError,
   FlutterwaveNotConfirmedError,
@@ -10,12 +10,14 @@ import {
   openFlutterwaveCheckout,
 } from "@/lib/flutterwave";
 import { formatNairaFromKobo } from "@/lib/format";
-import { isReference, isTransactionId, joinAbandoned, joinResume, shortReference } from "@/lib/join-session";
+import { isReference, isTransactionId, joinAbandoned, joinResume, joinTier, shortReference } from "@/lib/join-session";
+import { startingTier } from "@/lib/join-tiers";
+import type { WaitlistTier } from "@/lib/join-tiers";
 import {
   checkReferralCode,
   getCurrentOffer,
   getRegistrationStatus,
-  offerPrice,
+  getTiers,
   refusalOf,
   REFERRAL_UNKNOWN_WORDS,
   startRegistration,
@@ -38,20 +40,22 @@ import { JoinForm, JoinFormSkeleton } from "./JoinForm";
 import type { FormNotice } from "./JoinForm";
 import { JoinLanding } from "./JoinLanding";
 import { JoinShell } from "./JoinShell";
-import { LaunchAccessCode } from "./LaunchAccessCode";
+import { JoinSuccess } from "./JoinSuccess";
 import { StateCard } from "./StateCard";
 
 /**
  * /join and /join/paid: one flow, one state machine.
  *
  * ── THE STATES ─────────────────────────────────────────────────────────────
- *   loading      reading the open offer (the whole page, with a skeleton of the form)
- *   form         the whole page and the form: the fields and the pay button (owner's
- *                redesign, 12 Oct 2026; the fee is the API's, beside the owner's "was" price)
+ *   loading      reading the open offer and the three plans (the whole page, with a skeleton of the form)
+ *   form         the whole page and the form: the three plans, the fields and the pay button (owner's
+ *                redesign, 12 Oct 2026; JOIN-TIERS, R-125: the plan is picked, and its price is the app's, from
+ *                GET /waitlist/tiers; a struck-through price shows only when a referral code applies)
  *   paying       the Flutterwave window is open
  *   verifying    asking the server where a payment stands
  *   checking     not settled yet ("Checking your payment"); asks again by itself
- *   registered   paid, with the launch access code (the short reference), how to keep it, and a share link
+ *   registered   paid: the plan, "sign in with the same email or phone" (no code to type), a share link, and the
+ *                short reference small, for support only
  *   already      that phone or email had already paid before this one started
  *   extra        registered, and THIS payment was a second one (kept to be refunded)
  *   support      the server refused the payment in a way only a person can settle
@@ -247,6 +251,12 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   // form's heading and skeleton, or "Checking your payment" on the return page.
   const [phase, setPhase] = useState<Phase>(mode === "return" ? { kind: "verifying" } : { kind: "loading" });
   const [offer, setOffer] = useState<WaitlistOffer | null>(null);
+  /** The three plans, in the app's order, at the app's live prices (GET /waitlist/tiers). */
+  const [tiers, setTiers] = useState<WaitlistTier[] | null>(null);
+  /** The plan picked: the Hub's "Best" one to start with. */
+  const [tierId, setTierId] = useState<string | null>(null);
+  /** The plan this visit paid for, by name, for the success screen. */
+  const [paidTier, setPaidTier] = useState<string | null>(null);
   const [fields, setFields] = useState<JoinFields>(EMPTY_FIELDS);
   const [touched, setTouched] = useState<Partial<Record<keyof JoinErrors, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -293,9 +303,14 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     setPhase({ kind: "loading" });
     for (let tries = 0; ; tries++) {
       try {
-        const current = await getCurrentOffer();
+        const [current, plans] = await Promise.all([getCurrentOffer(), getTiers()]);
         if (token !== loadToken.current) return;
+        // No plan to sell is the same as no page to show: the person is told to try again, nothing is charged.
+        if (plans.tiers.length === 0) throw new Error("no_tiers");
         setOffer(current);
+        setTiers(plans.tiers);
+        // Keep the plan already picked when it is still sold (a reload of the prices), else start on the Hub's best.
+        setTierId((picked) => (picked && plans.tiers.some((t) => t.id === picked) ? picked : (startingTier(plans)?.id ?? null)));
         setPhase({ kind: "form" });
         return;
       } catch (e) {
@@ -454,21 +469,23 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   const code = fields.referralCode;
   const onForm = phase.kind === "form";
   useEffect(() => {
-    if (!onForm) return;
+    if (!onForm || !tierId) return;
     if (!looksLikeReferral(code)) {
       setReferral({ kind: "none" });
       return;
     }
-    setReferral((r) => (r.kind !== "none" && "code" in r && r.code === code ? r : { kind: "checking", code }));
+    // Asked again for every plan (JOIN-TIERS): a code can belong to one plan only, so the answer for one plan
+    // says nothing about another, and the price shown never waits on an old answer.
+    setReferral({ kind: "checking", code });
     let live = true;
     const timer = setTimeout(async () => {
       try {
-        const r = await checkReferralCode(code);
+        const r = await checkReferralCode(code, tierId);
         if (!live) return;
         setReferral(
           r.applies
             ? { kind: "applies", code: r.code, priceKobo: r.priceKobo }
-            : { kind: "notApplied", code: r.code, reason: r.reason ?? "full", priceKobo: r.priceKobo },
+            : { kind: "notApplied", code: r.code, reason: r.reason ?? "full", priceKobo: r.priceKobo, message: r.message },
         );
       } catch (e) {
         if (!live) return;
@@ -484,7 +501,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       live = false;
       clearTimeout(timer);
     };
-  }, [code, onForm]);
+  }, [code, onForm, tierId]);
 
   // ── "Checking your payment" asks by itself ───────────────────────────────
 
@@ -622,11 +639,12 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     if (payLock.current) return;
     setSubmitted(true);
     // A code the server has already said it does not know is fixed (or emptied) before anything starts.
-    if (Object.keys(allErrors).length > 0 || !offer || referral.kind === "unknown") {
+    const tier = tiers?.find((t) => t.id === tierId) ?? null;
+    if (Object.keys(allErrors).length > 0 || !offer || !tier || referral.kind === "unknown") {
       setAttempt((n) => n + 1);
       return;
     }
-    const expectedKobo = payKoboFor(offer.priceKobo, referral);
+    const expectedKobo = payKoboFor(tier.priceKobo, referral);
 
     payLock.current = true;
     setSubmitting(true);
@@ -641,9 +659,12 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         craft: fields.craft,
         city: fields.city,
         updatesOptIn: fields.updates,
+        tier: tier.id,
         ...(fields.referralCode !== "" ? { referralCode: fields.referralCode } : {}),
       });
       reference = started.reference;
+      joinTier.set(started.reference, tier.name);
+      setPaidTier(tier.name);
 
       // The server now gives every start a new reference. An older server (the
       // deploy window) reused an unpaid registration for the same phone and
@@ -684,7 +705,8 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
               : { kind: "notApplied", code: sent, reason: started.referral.reason ?? "full", priceKobo: started.amountKobo },
           );
         } else {
-          setOffer({ ...offer, priceKobo: started.amountKobo });
+          // No code was sent: the plan's price is now what the server said.
+          setTiers((list) => list && list.map((t) => (t.id === tier.id ? { ...t, priceKobo: started.amountKobo } : t)));
         }
         payLock.current = false;
         setSubmitting(false);
@@ -701,11 +723,11 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         { ...started.checkout, redirectUrl: `${window.location.origin}/join/paid` },
         { email: fields.email.trim().toLowerCase(), name: fields.fullName.trim() },
         {
-          title: "WHO MADE THIS?",
-          description: "Pre-registration",
-          // The Who Made This lockup, from the page's own origin (a file at the root of public/,
-          // which site mode serves). Without it the window would show WAWU's logo.
-          logo: `${window.location.origin}/who-made-this-ink.png`,
+          title: "WAWU",
+          description: `${tier.name} plan`,
+          // The WAWU wordmark in colour, from the page's own origin (a file at the root of public/,
+          // which site mode serves).
+          logo: `${window.location.origin}/wawu-brand-wordmark-colour.png`,
         },
         undefined,
         { scriptTimeoutMs: SCRIPT_TIMEOUT_MS },
@@ -759,6 +781,10 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
         case "no_open_offer":
           setPhase({ kind: "none" });
           return;
+        case "tier_invalid":
+          // The plan is no longer sold: read the plans again and say so. Nothing was started.
+          void showForm({ tone: "warning", text: refusal.message });
+          return;
         case "referral_unknown":
           // Nothing was started. The words go under the code field and focus moves there.
           setReferral({ kind: "unknown", code: fields.referralCode, message: refusal.message });
@@ -789,7 +815,7 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
   let landing: React.ReactNode = null;
   switch (phase.kind) {
     case "loading":
-      landing = <JoinLanding price={null} form={<JoinFormSkeleton />} />;
+      landing = <JoinLanding tiers={null} selectedId={null} onSelect={() => {}} referral={{ kind: "none" }} form={<JoinFormSkeleton />} />;
       break;
 
     case "unreachable":
@@ -852,8 +878,8 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
           }
         >
           <p className="m-0">
-            That phone number or email has already paid for this event, so you have not been charged again. Sign up in
-            the Who Made This app with it and your plan will be waiting.
+            That phone number or email has already paid for this event, so you have not been charged again. Sign in to
+            the WAWU app with it and your plan will be waiting.
           </p>
         </StateCard>
       );
@@ -982,13 +1008,15 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
     }
 
     case "registered": {
+      // The plan is named from this visit, or read back from this tab's storage after a reload or a return from a bank app; the amount only when this visit read it.
+      const planName = paidTier ?? joinTier.get(phase.reference);
       body = (
-        <StateCard icon="Check" tone="success" title="YOUR WHO MADE THIS? LAUNCH ACCESS CODE" wide>
-          {/* The fee is shown only when this visit read it and the server confirmed it was the amount charged. */}
-          <LaunchAccessCode
-            code={shortReference(phase.reference)}
-            price={chargedKobo !== null ? formatNairaFromKobo(chargedKobo) : offer ? offerPrice(offer) : null}
+        <StateCard icon="Check" tone="success" title="You're registered" wide>
+          <JoinSuccess
+            tierName={planName}
+            price={chargedKobo !== null ? formatNairaFromKobo(chargedKobo) : null}
             noPayment={chargedKobo === 0}
+            reference={shortReference(phase.reference)}
           />
         </StateCard>
       );
@@ -1084,33 +1112,43 @@ export function JoinFlow({ mode = "form" }: { mode?: "form" | "return" }) {
       );
       break;
 
-    case "form":
-      landing = offer ? (
-        <JoinLanding
-          price={formatNairaFromKobo(payKoboFor(offer.priceKobo, referral))}
-          noPayment={isNoPayment(offer.priceKobo, referral)}
-          scrollToForm={notice !== null}
-          form={
-            <JoinForm
-              price={formatNairaFromKobo(payKoboFor(offer.priceKobo, referral))}
-              standardPrice={offerPrice(offer)}
-              referral={referral}
-              noPayment={isNoPayment(offer.priceKobo, referral)}
-              onReferralBlur={referralBlurred}
-              fields={fields}
-              errors={visibleErrors}
-              notice={notice}
-              submitting={submitting}
-              attempt={attempt}
-              onChange={change}
-              onBlurField={(name) => setTouched((t) => ({ ...t, [name]: true }))}
-              onSubmit={() => void pay()}
-            />
-          }
-        />
-      ) : null;
+    case "form": {
+      const picked = tiers?.find((t) => t.id === tierId) ?? null;
+      landing =
+        offer && tiers && picked ? (
+          <JoinLanding
+            tiers={tiers}
+            selectedId={picked.id}
+            onSelect={(id) => {
+              setTierId(id);
+              setNotice(null);
+            }}
+            referral={referral}
+            noPayment={isNoPayment(picked.priceKobo, referral)}
+            scrollToForm={notice !== null}
+            form={
+              <JoinForm
+                price={formatNairaFromKobo(payKoboFor(picked.priceKobo, referral))}
+                standardPrice={formatNairaFromKobo(picked.priceKobo)}
+                tierName={picked.name}
+                referral={referral}
+                noPayment={isNoPayment(picked.priceKobo, referral)}
+                onReferralBlur={referralBlurred}
+                fields={fields}
+                errors={visibleErrors}
+                notice={notice}
+                submitting={submitting}
+                attempt={attempt}
+                onChange={change}
+                onBlurField={(name) => setTouched((t) => ({ ...t, [name]: true }))}
+                onSubmit={() => void pay()}
+              />
+            }
+          />
+        ) : null;
       break;
+    }
   }
 
-  return landing ? <>{landing}</> : <JoinShell>{body}</JoinShell>;
+  return landing ? <>{landing}</> : <JoinShell wordmark>{body}</JoinShell>;
 }

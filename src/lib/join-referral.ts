@@ -57,12 +57,16 @@ export type ReferralVerdict =
   | { kind: "checking"; code: string }
   /** The code applies; `priceKobo` is what the person pays (0 is no payment). */
   | { kind: "applies"; code: string; priceKobo: number }
-  | { kind: "notApplied"; code: string; reason: "full" | "inactive"; priceKobo: number }
+  /**
+   * `full` and `inactive`: the code is spent or off. `other_tier` (JOIN-TIERS, R-125): the code is real but
+   * belongs to another plan (LOGOART is for Verify only); `message` is the Hub's own plain sentence.
+   */
+  | { kind: "notApplied"; code: string; reason: "full" | "inactive" | "other_tier"; priceKobo: number; message?: string }
   | { kind: "unknown"; code: string; message: string }
   /** The check could not be made (offline, busy). The server decides when the person registers. */
   | { kind: "unchecked"; code: string };
 
-/** What the person will be charged: the code's price when it applies, otherwise the offer's. */
+/** What the person will be charged: the code's price when it applies, otherwise the chosen plan's price. */
 export function payKoboFor(offerKobo: number, verdict: ReferralVerdict): number {
   return verdict.kind === "applies" ? verdict.priceKobo : offerKobo;
 }
