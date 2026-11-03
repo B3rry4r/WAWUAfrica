@@ -196,7 +196,7 @@ const EXPECTED_OPEN_PUBLIC = [
   "/who-made-this-conference.webp", "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
   // the brand site (BRAND-SITE, owner 2 Nov 2026): logo pack (SVG and PNG), partner logos, app screens, link-preview pictures
   ...["wordmark-colour", "wordmark-purple", "wordmark-white", "icon-colour", "icon-purple", "icon-white"].flatMap((n) => [`/wawu-brand-${n}.svg`, `/wawu-brand-${n}.png`]),
-  ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "flixora", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`),
+  ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`), // Flixora removed (owner, 3 Nov 2026)
   ...["today", "wallet", "dollar", "explore", "me", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
   "/wawu-og-brand.png", "/wawu-og-who-made-this.png", "/wawu-og-voices.png",
   ...serviceIcons,
@@ -304,8 +304,9 @@ for (const app of Object.keys(storeConfig.STORE_LINKS)) {
   for (const url of Object.values(storeConfig.STORE_LINKS[app])) check(`brand: a ${app} store link is null or an https address`, url === null || /^https:\/\//.test(url));
 }
 
-// the partner wall: the owner's fourteen, in the owner's order, each file in public/ and served
-eq("brand: the partners, in the owner's order", PARTNERS.map((p) => p.slug), ["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "flixora", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax", "alison"]);
+// the partner strip: the owner's thirteen, in the owner's order, each file in public/ and served
+// Owner, 3 Nov 2026: "Also remove flixora logo". Thirteen partners, the owner's order otherwise unchanged.
+eq("brand: the partners, in the owner's order", PARTNERS.map((p) => p.slug), ["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax", "alison"]);
 for (const p of PARTNERS) {
   check(`brand: partner logo ${p.src} exists in public/`, publicFiles.includes(p.src));
   check(`brand: partner logo ${p.src} is open in join-only`, isOpenInJoinOnly(p.src));
