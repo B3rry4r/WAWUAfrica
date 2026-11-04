@@ -15,7 +15,7 @@ import { Wrap } from "./_components/Wrap";
 import { pageMetadata } from "./_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "WAWU · Apps that give people a name, a voice and a way to earn",
+  title: "WAWUAfrica · Apps that give people a name, a voice and a way to earn",
   description:
     "WAWU builds apps for everyday people: WHO MADE THIS? to put your name on your work and get paid, and VOICES, where everybody gets a voice.",
   path: "/",
@@ -42,17 +42,26 @@ const BUILD_WITH = [
 const ORGANIZATION = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "WAWU",
+  name: "WAWUAfrica",
   legalName: "WAWU Technology Ltd",
   url: SITE_URL,
   logo: `${SITE_URL}/wawu-brand-wordmark-colour.png`,
   email: "support@wawuafrica.com",
 };
 
+const WEBSITE = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "WAWUAfrica",
+  alternateName: ["WAWU Africa", "WAWU"],
+  url: `${SITE_URL}/`,
+};
+
 export default function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE) }} />
 
       <section className="on-dark relative isolate overflow-hidden bg-site-deep text-white">
         <div aria-hidden="true" className="site-hero-gradient pointer-events-none absolute inset-0 -z-10" />

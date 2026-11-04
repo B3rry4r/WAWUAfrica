@@ -10,7 +10,7 @@ import { Wrap } from "../_components/Wrap";
 import { pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Press and media · WAWU",
+  title: "Press and media · WAWUAfrica",
   description: "Press and media information for WAWU: what WAWU is, the logo files to download, and who to contact.",
   path: "/press",
 });

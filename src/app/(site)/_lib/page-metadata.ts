@@ -31,7 +31,7 @@ export function pageMetadata({
     alternates: { canonical: path },
     openGraph: {
       type: "website",
-      siteName: "WAWU",
+      siteName: "WAWUAfrica",
       locale: "en_NG",
       title,
       description,

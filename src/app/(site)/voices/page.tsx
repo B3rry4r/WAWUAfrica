@@ -12,7 +12,7 @@ import { Wrap } from "../_components/Wrap";
 import { OG_IMAGES, pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "VOICES · Everybody gets a voice · WAWU",
+  title: "VOICES · Everybody gets a voice · WAWUAfrica",
   description: "VOICES is a voice-first app by WAWU where everybody gets a voice. Talk, listen, vote and gist.",
   path: "/voices",
   image: OG_IMAGES.voices,

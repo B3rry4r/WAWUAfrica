@@ -8,7 +8,7 @@ import { Wrap } from "../_components/Wrap";
 import { pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Contact WAWU · Talk to us",
+  title: "Contact WAWUAfrica · Talk to us",
   description: "Talk to WAWU: email support@wawuafrica.com or message us on WhatsApp.",
   path: "/contact",
 });

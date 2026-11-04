@@ -8,8 +8,8 @@ import { Wrap } from "../_components/Wrap";
 import { pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Careers · Join the WAWU team",
-  description: "Join the WAWU team. There are no open roles right now, and here is how to write in.",
+  title: "Careers · Join the WAWUAfrica team",
+  description: "Join the WAWUAfrica team. There are no open roles right now, and here is how to write in.",
   path: "/careers",
 });
 
