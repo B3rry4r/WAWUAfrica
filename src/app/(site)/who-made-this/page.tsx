@@ -13,7 +13,7 @@ import { Wrap } from "../_components/Wrap";
 import { OG_IMAGES, pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "WHO MADE THIS? · Put your name on it · WAWU",
+  title: "WHO MADE THIS? · Put your name on it · WAWUAfrica",
   description: "WHO MADE THIS? is the creators and professionals platform by WAWU. Show your work, get verified and get paid.",
   path: "/who-made-this",
   image: OG_IMAGES.whoMadeThis,

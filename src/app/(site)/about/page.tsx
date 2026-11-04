@@ -9,7 +9,7 @@ import { Wrap } from "../_components/Wrap";
 import { pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "About WAWU · Built in Africa, open to the world",
+  title: "About WAWUAfrica · Built in Africa, open to the world",
   description: "WAWU builds apps that give everyday people a name, a voice and a way to earn. Built in Africa, open to the world.",
   path: "/about",
 });

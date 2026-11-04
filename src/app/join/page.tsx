@@ -15,7 +15,7 @@ import { JoinFlow } from "./components/JoinFlow";
  * `openGraph` replaces the root layout's rather than merging with it. Without
  * the image line a link pasted into WhatsApp would show a title and no picture.
  */
-const TITLE = "WHO MADE THIS? Pre-registration";
+const TITLE = "WHO MADE THIS? Pre-registration · WAWUAfrica";
 const DESCRIPTION =
   "Pre-register once for the PUT YOUR NAME ON IT conference in Lagos, Abuja, Port Harcourt and Enugu, and for WHO MADE THIS?, the creator and professional monetization platform, coming to the App Store and Google Play.";
 /** The Who Made This lockup on the site's dark background, 1200 x 630. Root of public/: production serves only root-level files. */
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/join" },
   openGraph: {
     type: "website",
-    siteName: "WHO MADE THIS?",
+    siteName: "WAWUAfrica",
     title: TITLE,
     description: DESCRIPTION,
     url: "/join",

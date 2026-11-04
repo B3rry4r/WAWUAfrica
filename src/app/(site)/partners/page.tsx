@@ -10,7 +10,7 @@ import { Wrap } from "../_components/Wrap";
 import { pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Partner with WAWU · Hubs, brands, institutions and talent",
+  title: "Partner with WAWUAfrica · Hubs, brands, institutions and talent",
   description: "Hubs, brands, institutions and talent: partner with WAWU. Meet the organisations building with us, including the Dreamax x WAWU partnership.",
   path: "/partners",
 });
