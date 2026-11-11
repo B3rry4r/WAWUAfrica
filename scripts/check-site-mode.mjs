@@ -49,14 +49,16 @@
  * src/lib/app-links.ts as they stand (Node strips their types; all are free of
  * runtime imports).
  */
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const siteModeModule = await import(join(root, "src/lib/site-mode.ts"));
 const {
-  siteModeFrom, isOpenInJoinOnly, isOpenPageInJoinOnly, pageHref, signUpHref, joinOnlyRewrite,
-} = await import(join(root, "src/lib/site-mode.ts"));
+  siteModeFrom, isOpenInJoinOnly, isOpenPageInJoinOnly, pageHref, signUpHref,
+} = siteModeModule;
+const { APP_ORIGIN, appUrl, appPathFor, appRedirectTarget, MOBILE_ROUTES, RENAMES } = await import(join(root, "src/lib/app-redirects.ts"));
 const { PLATFORM_SERVICES } = await import(join(root, "src/lib/platform-services.ts"));
 const appLinks = await import(join(root, "src/lib/app-links.ts"));
 const siteConfig = await import(join(root, "src/lib/site/site-config.ts"));
@@ -94,8 +96,8 @@ const mustBeOpen = [
   "/robots.txt",
   // the page the password-reset mail links to (RESET-WEB, R-123): exactly this path, the query is not part of it
   "/reset-password", "/reset-password/",
-  // the join-only upload pages (WEB-UPLOAD, R-126): the way in, and Upload and My uploads
-  "/sign-in", "/sign-in/", "/sign-up", "/sign-up/", "/forgot-password", "/forgot-password/", "/create/new", "/create/new/", "/create/library", "/create/library/",
+  // the password pages (R-133): ask for the mail, the page the reset mail links to, the page the activation mail links to
+  "/forgot-password", "/forgot-password/", "/activate", "/activate/",
   "/wawu-logo-white.png", "/wawu-icon-white.svg", "/wawu-hero-desktop-creators.png", "/wawu-hero-mobile-professionals.png",
   "/who-made-this-ink.png", "/og-image.png", "/favicon.ico", "/icon.png", "/apple-icon.png",
   // the admin dashboard (the admin sign-in protects it): /admin and everything under it
@@ -119,10 +121,11 @@ const mustStayClosed = [
   // the reset page is the one door; the rest of the sign-in side stays shut (RESET-WEB, R-123)
   "/login", "/auth", "/auth/login", "/auth/sign-in", "/auth/forgot-password", "/auth/reset-password", "/auth/signup",
   "/reset-password/x", "/reset-password/abc/def", "/reset-passwords", "/reset-password.html", "/reset", "/Reset-Password", "/x/reset-password", "/sign-in/reset-password",
-  "/api/reset-password", "/api/auth/reset-password", "/activate", "/verify-email",
+  "/api/reset-password", "/api/auth/reset-password", "/verify-email",
   // admin is whole segments only
-  // the upload pages are exactly five: nothing under them, no look-alikes, and the trimmed pages' own addresses are not served
-  "/sign-in/x", "/sign-up/x", "/sign-up/creator", "/forgot-password/x", "/sign-in.html", "/signin", "/signup", "/Sign-In", "/x/sign-in",
+  // sign in, sign up and R-126's upload pages are closed here (R-133): they are on usewmt.com. The three password pages are exact paths.
+  "/sign-in", "/sign-in/", "/sign-up", "/sign-up/", "/create/new", "/create/new/", "/create/library", "/create/library/",
+  "/sign-in/x", "/sign-up/x", "/sign-up/creator", "/forgot-password/x", "/activate/x", "/activated", "/activate.html", "/Activate", "/x/activate", "/sign-in.html", "/signin", "/signup", "/Sign-In", "/x/sign-in",
   "/create", "/create/", "/create/content", "/create/new/x", "/create/new/video", "/create/library/x", "/create/new.html", "/Create/New", "/x/create/new",
   "/upload-site", "/upload-site/", "/upload-site/new", "/upload-site/library", "/upload-site/sign-in", "/upload-site/sign-up", "/upload-site/forgot-password",
   "/onboarding", "/kyc", "/wallet/open", "/earnings", "/messages", "/settings/profile",
@@ -171,20 +174,29 @@ for (const p of ["/who-made-this/x", "/about/x", "/sitemap.xml", "/wawu-og-brand
 eq("page: /reset-password is a page", isOpenPageInJoinOnly("/reset-password"), true);
 eq("page: /reset-password/ is a page", isOpenPageInJoinOnly("/reset-password/"), true);
 eq("page: /reset-password/x is not a page", isOpenPageInJoinOnly("/reset-password/x"), false);
-for (const p of ["/sign-in", "/sign-up", "/forgot-password", "/create/new", "/create/library"]) eq(`page: ${p} is a page`, isOpenPageInJoinOnly(p), true);
+for (const p of ["/forgot-password", "/forgot-password/", "/activate", "/activate/"]) eq(`page: ${p} is a page`, isOpenPageInJoinOnly(p), true);
+for (const p of ["/sign-in", "/sign-up", "/create/new", "/create/library", "/activate/x", "/forgot-password/x"]) eq(`page: ${p} is not a page`, isOpenPageInJoinOnly(p), false);
 
-// The join-only upload pages (WEB-UPLOAD, R-126): five open pages, each answered by its own trimmed page under /upload-site.
-const UPLOAD_REWRITES = {
-  "/sign-in": "/upload-site/sign-in", "/sign-up": "/upload-site/sign-up", "/forgot-password": "/upload-site/forgot-password",
-  "/create/new": "/upload-site/new", "/create/library": "/upload-site/library",
-};
-for (const [from, to] of Object.entries(UPLOAD_REWRITES)) {
-  eq(`rewrite: ${from} is served from ${to}`, joinOnlyRewrite(from), to);
-  eq(`rewrite: ${from}/ (trailing slash) is served from ${to}`, joinOnlyRewrite(`${from}/`), to);
-  check(`rewrite: ${to} has its page file`, readdirSync(join(root, "src/app/upload-site"), { recursive: true }).some((f) => String(f).replace(/\\/g, "/").replace(/\([^/]+\)\//g, "") === `${to.replace("/upload-site/", "")}/page.tsx`));
+// R-133: R-126's upload pages are gone. Nothing is rewritten, nothing of them is left in the source.
+check("strip: the middleware's rewrite helper is gone", !("joinOnlyRewrite" in siteModeModule));
+for (const gone of ["src/app/upload-site", "src/components/site-upload", "src/lib/site-upload", "src/lib/api/site-upload.ts", "src/app/(auth)/forgot-password"]) {
+  check(`strip: ${gone} is removed`, !existsSync(join(root, gone)));
 }
-for (const p of ["/", "/join", "/reset-password", "/terms", "/create", "/create/content", "/create/new/x", "/upload-site/new", "/home", "/wallet", "/sign-in/x"]) eq(`rewrite: ${p} is not rewritten`, joinOnlyRewrite(p), null);
-eq("rewrite: exactly five pages are rewritten", Object.keys(UPLOAD_REWRITES).length, 5);
+{
+  const leftovers = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      if (e.name === "node_modules" || e.name === ".next" || e.name === ".git") continue;
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.(ts|tsx)$/.test(e.name) && /site-upload|upload-site|uploadOnly|X-Wawu-Client|joinOnlyRewrite/.test(readFileSync(full, "utf8"))) leftovers.push(relative(root, full));
+    }
+  };
+  walk(join(root, "src"));
+  eq("strip: no source file still names the upload pages' pieces", leftovers, []);
+}
+check("strip: the forgot-password page is its own page file (not behind the app's auth frame)", existsSync(join(root, "src/app/forgot-password/page.tsx")));
+for (const f of ["src/app/activate/page.tsx", "src/app/activate/components/ActivateForm.tsx", "src/app/reset-password/page.tsx", "src/app/forgot-password/page.tsx"]) check(`strip: ${f} exists`, existsSync(join(root, f)));
 
 // Every file in public/ is either on this list or closed. A new file cannot
 // become reachable without someone editing this list.
@@ -247,8 +259,8 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
-const KEPT_LINKS = ["/sign-in", "/sign-up", "/forgot-password", "/create/new", "/create/library", "/reset-password", "/reset-password?token=abc&email=ada%40example.test", "#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
+const CLOSED_LINKS = ["/sign-in", "/sign-up", "/create/new", "/create/library", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
+const KEPT_LINKS = ["/forgot-password", "/activate", "/activate?token=abc&email=ada%40example.test", "/reset-password", "/reset-password?token=abc&email=ada%40example.test", "#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
 for (const h of SIGN_UP) {
   eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
   eq(`full: sign-up ${h} is unchanged`, signUpHref("full", h), h);
@@ -266,6 +278,140 @@ for (const rel of ["src/app/(marketing)/components/LandingContent.tsx", "src/app
   const text = readFileSync(join(root, rel), "utf8");
   const raw = [...text.matchAll(/href=(?:"|'|\{\s*["'`])\/[^"'`}]*/g)].map((m) => m[0]);
   eq(`landing: ${rel.split("/").pop()} has no literal path href in JSX`, raw, []);
+}
+
+const ROOT_FILE = /^\/[^/]+\.(?:png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|mp3|mp4|pdf)$/;
+
+// ---------------------------------------------------------------- app addresses go to usewmt.com (WEB-STRIP, R-133)
+eq("redirect: the app lives at usewmt.com", APP_ORIGIN, "https://usewmt.com");
+eq("redirect: appUrl of a path", appUrl("/sign-in"), "https://usewmt.com/sign-in");
+eq("redirect: appUrl of the home", appUrl("/"), "https://usewmt.com/");
+const REDIRECTS = [
+  // closed pages R-126 opened, and the sign-in side
+  ["/sign-in", "", "https://usewmt.com/sign-in"], ["/sign-in/", "", "https://usewmt.com/sign-in"],
+  ["/sign-in", "?next=%2Fcreate%2Fnew", "https://usewmt.com/sign-in?next=%2Fcreate%2Fnew"],
+  ["/sign-up", "?type=creator", "https://usewmt.com/sign-up?type=creator"],
+  ["/create/new", "", "https://usewmt.com/create"], ["/create/library", "", "https://usewmt.com/library"],
+  // the app links the stores were given: same path, same query
+  ["/u/ada", "", "https://usewmt.com/u/ada"], ["/u/ada.png", "", "https://usewmt.com/u/ada.png"],
+  ["/c/lagos-makers", "?ref=1", "https://usewmt.com/c/lagos-makers?ref=1"],
+  ["/content/abc123", "", "https://usewmt.com/content/abc123"], ["/receipt/R-77", "", "https://usewmt.com/receipt/R-77"],
+  ["/r/CODE1", "", "https://usewmt.com/r/CODE1"], ["/selfie", "", "https://usewmt.com/selfie"],
+  // what the web app called its pages
+  ["/wawu/ada", "", "https://usewmt.com/u/ada"], ["/wawu/ada.png", "", "https://usewmt.com/u/ada.png"],
+  ["/profile/W123", "", "https://usewmt.com/profile/W123"], ["/profile", "", "https://usewmt.com/me"],
+  ["/profile/edit", "", "https://usewmt.com/edit-profile"],
+  ["/communities/9", "", "https://usewmt.com/community/9"], ["/communities/new", "", "https://usewmt.com/community/new"], ["/communities", "", "https://usewmt.com/"],
+  ["/events/5", "", "https://usewmt.com/events/5"], ["/events/5/edit", "", "https://usewmt.com/events/edit/5"], ["/events/mine", "", "https://usewmt.com/events/mine"],
+  ["/wallet", "", "https://usewmt.com/wallet"], ["/wallet/open", "", "https://usewmt.com/"], ["/home", "", "https://usewmt.com/"],
+  ["/explore", "", "https://usewmt.com/explore"], ["/messages", "", "https://usewmt.com/inbox"], ["/settings/notifications", "", "https://usewmt.com/settings/notifications"],
+  ["/professionals/7", "", "https://usewmt.com/professionals/7"], ["/shop", "", "https://usewmt.com/shop"], ["/shop/orders/3", "", "https://usewmt.com/"],
+  ["/learn", "", "https://usewmt.com/schools"], ["/kyc", "", "https://usewmt.com/"], ["/onboarding", "", "https://usewmt.com/"],
+  ["/services/legal", "", "https://usewmt.com/"], ["/tickets", "", "https://usewmt.com/events/tickets"],
+  ["/purchases", "?tab=2", "https://usewmt.com/purchases?tab=2"],
+];
+for (const [path, search, want] of REDIRECTS) eq(`redirect: ${path}${search} goes to ${want}`, appRedirectTarget(path, search), want);
+
+// never redirected: well-known files, admin, the build's files, the API, payment returns, the company pages, the legal pages, the password pages, /join, site files
+const NEVER = [
+  "/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/.well-known/x", "/.well-known", "/admin", "/admin/notifications", "/admin/x/y",
+  "/_next/static/chunks/a.js", "/_next/image", "/api/hub/anything", "/api/anything", "/payment/return",
+  "/", "/join", "/join/paid", "/terms", "/privacy/policy", "/legal", "/legal/privacy", "/legal/delete-account",
+  "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact",
+  "/forgot-password", "/reset-password", "/activate", "/robots.txt", "/sitemap.xml", "/favicon.ico", "/wawu-logo-white.png", "/wawu-theme.mp3", "/play/background-audio.mp4", "/icons/services/legal.png",
+  // not an app address: the old closed answer (307 to /join) stays
+  "/login", "/auth/login", "/verify-email", "/some/where/else", "/landing-video.mp4",
+];
+for (const p of NEVER) eq(`redirect: ${p} is never sent to usewmt.com`, appRedirectTarget(p, "?x=1"), null);
+for (const p of mustBeOpen) eq(`redirect: the open path ${p} is not an app path`, appPathFor(p), null);
+
+// every web page the app had either stays (open) or has an answer on usewmt.com
+{
+  const urls = [];
+  const walk = (dir, segs) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) {
+        const group = /^\(.*\)$/.test(e.name);
+        walk(full, group ? segs : [...segs, e.name.replace(/^\[\.\.\.(.+)\]$/, "x1").replace(/^\[(.+)\]$/, "x1")]);
+      } else if (e.name === "page.tsx") urls.push("/" + segs.join("/"));
+    }
+  };
+  walk(join(root, "src/app"), []);
+  const appPages = urls.filter((u) => !isOpenPageInJoinOnly(u) && !/^\/(admin|payment|legal)(\/|$)/.test(u));
+  check("redirect: the web app's pages were found", appPages.length >= 60, `found ${appPages.length}`);
+  for (const u of appPages) check(`redirect: the web page ${u} has an answer on usewmt.com`, appPathFor(u) !== null);
+  check("redirect: the closed /upload-site pages are not in the build", !urls.some((u) => u.startsWith("/upload-site")));
+}
+
+// the map against the Who Made This app itself (needs its repo): npm run check:site-mode -- --mobile-src ../wawu-wmt-mobile/src/app
+const mobileSrc = process.argv.includes("--mobile-src") ? process.argv[process.argv.indexOf("--mobile-src") + 1] : null;
+if (mobileSrc) {
+  const found = new Set();
+  const walk = (dir, segs) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) { walk(full, /^\(.*\)$/.test(e.name) ? segs : [...segs, e.name]); continue; }
+      const m = /^(.+)\.(?:tsx|ts)$/.exec(e.name);
+      if (!m || m[1] === "_layout" || m[1] === "+not-found") continue;
+      const parts = m[1] === "index" ? segs : [...segs, m[1]];
+      if (parts[0] === "dev" || parts[0] === "preview") continue;
+      found.add("/" + parts.join("/"));
+    }
+  };
+  walk(mobileSrc, []);
+  const norm = (r) => r.replace(/\[[^\]]+\]/g, "*").replace(/:[a-z]+/g, "*");
+  const real = new Set([...found].map(norm));
+  check("mobile: the app's routes were read", found.size > 100, `found ${found.size}`);
+  for (const r of MOBILE_ROUTES) check(`mobile: ${r} is a route of usewmt.com`, real.has(norm(r)));
+  for (const [from, to] of RENAMES) check(`mobile: ${from} goes to ${to}, a route of usewmt.com`, to === "/" || real.has(norm(to)));
+  // the other way: every app route that wawuafrica.com keeps for itself is the only one left out
+  const left = [...found].filter((r) => r !== "/" && !MOBILE_ROUTES.some((m) => norm(m) === norm(r))).sort();
+  eq("mobile: the only app routes not mapped are the pages wawuafrica.com keeps", left, ["/about", "/activate", "/forgot-password", "/legal", "/privacy-policy", "/reset-password", "/terms"]);
+} else console.log("check-site-mode: mobile routes NOT checked (give --mobile-src <wawu-wmt-mobile/src/app>)");
+
+// the links on the pages that stay: none leads to a closed page. A literal path in an href, a Link or a push on these pages is open or is an appUrl().
+{
+  const dirs = ["src/app/join", "src/app/(site)", "src/app/legal", "src/components/legal", "src/app/activate", "src/app/forgot-password", "src/app/reset-password", "src/lib/site"];
+  const files = [];
+  const walk = (dir) => {
+    if (!existsSync(dir)) return;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.(tsx|ts)$/.test(e.name)) files.push(full);
+    }
+  };
+  for (const d of dirs) walk(join(root, d));
+  const closedHits = [];
+  for (const f of files) {
+    const text = readFileSync(f, "utf8");
+    for (const m of text.matchAll(/(?:href\s*=\s*\{?\s*|href:\s*|router\.(?:push|replace)\(\s*)["'`](\/[^"'`?#\s]*)/g)) {
+      const path = m[1].replace(/\$\{[^}]*\}/g, "x");
+      if (/^\/(?:wawu-|who-made-this-|play\/|icons\/|og-image)/.test(path) || ROOT_FILE.test(path)) continue;
+      if (!isOpenPageInJoinOnly(path)) closedHits.push(`${relative(root, f)} -> ${path}`);
+    }
+  }
+  // the full-mode branches of the two password forms still link to this site's own sign in; join-only draws the appOnly branches
+  const fullModeOnly = new Set(["src/app/forgot-password/components/ForgotPasswordForm.tsx -> /sign-in", "src/app/reset-password/components/ResetPasswordForm.tsx -> /sign-in"]);
+  eq("links: no page that stays links to a closed page (outside the full-mode branches)", closedHits.filter((h) => !fullModeOnly.has(h)), []);
+  for (const f of ["src/app/forgot-password/components/ForgotPasswordForm.tsx", "src/app/reset-password/components/ResetPasswordForm.tsx", "src/app/activate/components/ActivateForm.tsx", "src/app/join/components/JoinSuccess.tsx", "src/app/join/components/JoinLanding.tsx", "src/app/(site)/_components/SiteHeader.tsx", "src/app/(site)/_components/SiteFooter.tsx"]) {
+    check(`links: ${f} sends sign in to usewmt.com`, readFileSync(join(root, f), "utf8").includes('appUrl("/sign-in")'));
+  }
+  // the owner's rules for the new page and the changed ones: no em-dash in what a person reads, no inline style, no hex
+  for (const f of ["src/app/activate/page.tsx", "src/app/activate/components/ActivateForm.tsx", "src/app/forgot-password/page.tsx", "src/app/forgot-password/components/ForgotPasswordForm.tsx", "src/app/reset-password/components/ResetPasswordForm.tsx"]) {
+    const text = readFileSync(join(root, f), "utf8");
+    const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    check(`links: ${f} has no em-dash outside comments`, !code.includes("—"));
+    check(`links: ${f} has no inline style`, !/style=\{\{/.test(text));
+    check(`links: ${f} has no hex colour`, !/#[0-9a-fA-F]{6}\b/.test(code));
+  }
+  // the activation page talks to WAWU ID through src/lib/api and nothing else
+  const act = readFileSync(join(root, "src/app/activate/components/ActivateForm.tsx"), "utf8");
+  check("activate: the page calls activateAccount and never fetch()", act.includes("activateAccount(") && !/\bfetch\(/.test(act));
+  const authApi = readFileSync(join(root, "src/lib/api/auth.ts"), "utf8");
+  check("activate: activateAccount posts activationToken, email and password to WAWU ID /auth/activate", /"\/auth\/activate"[\s\S]{0,200}baseUrl: WAWU_ID_BASE[\s\S]{0,200}activationToken: payload\.token, email: payload\.email, password: payload\.password/.test(authApi));
+  check("activate: no session is stored from the activation answer", !/activateAccount[\s\S]{0,900}sessionStorage\./.test(authApi.slice(authApi.indexOf("export async function activateAccount"), authApi.indexOf("export async function activateAccount") + 900)));
 }
 
 // ---------------------------------------------------------------- brand site (BRAND-SITE, owner 2 Nov 2026)
@@ -579,11 +725,40 @@ if (base && mode) {
   }
 
   if (mode === "join-only") {
-    for (const p of ["/forgot-password", "/login", "/auth/reset-password", "/auth/login", "/reset-password/x", "/home", "/explore", "/learn", "/sign-in", "/sign-up", "/administrator", "/api/anything", "/wawu/ada.png", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4", "/settings/about", "/about/x", "/who-made-this/x", "/voices/x", "/press/x", "/sitemap.xml/x"]) {
+    // still closed with the old answer: not an app address, so 307 to /join
+    for (const p of ["/login", "/auth/reset-password", "/auth/login", "/reset-password/x", "/administrator", "/api/anything", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4", "/about/x", "/who-made-this/x", "/voices/x", "/press/x", "/sitemap.xml/x", "/activate/x", "/forgot-password/x"]) {
       const r = await get(p);
       check(`live: ${p} is still closed (307 to /join)`, r.status === 307 && /\/join$/.test(r.headers.get("location") ?? ""), `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
-    for (const p of ["/join", "/join/paid", "/terms", "/admin/notifications", ...BRAND_PAGES]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
+    // app addresses: a permanent redirect to the same place on usewmt.com, path and query kept
+    for (const [p, want] of [
+      ["/sign-in", "https://usewmt.com/sign-in"], ["/sign-up?type=creator", "https://usewmt.com/sign-up?type=creator"],
+      ["/create/new", "https://usewmt.com/create"], ["/create/library", "https://usewmt.com/library"],
+      ["/home", "https://usewmt.com/"], ["/explore", "https://usewmt.com/explore"], ["/learn", "https://usewmt.com/schools"],
+      ["/wawu/ada", "https://usewmt.com/u/ada"], ["/wawu/ada.png", "https://usewmt.com/u/ada.png"], ["/u/ada?x=1", "https://usewmt.com/u/ada?x=1"],
+      ["/content/abc", "https://usewmt.com/content/abc"], ["/receipt/R1", "https://usewmt.com/receipt/R1"], ["/profile/W1", "https://usewmt.com/profile/W1"],
+    ]) {
+      const r = await get(p);
+      check(`live: ${p} is sent to ${want} (308)`, r.status === 308 && r.headers.get("location") === want, `status ${r.status} ${r.headers.get("location") ?? ""}`);
+    }
+    // the settings the owner named stay as they are
+    for (const p of ["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/admin", "/join"]) check(`live: ${p} is not redirected`, (await get(p)).status === 200);
+    for (const p of ["/.well-known/other", "/_next/static/missing.js"]) {
+      const r = await get(p);
+      check(`live: ${p} is never sent to usewmt.com`, !(r.headers.get("location") ?? "").includes("usewmt.com"), `status ${r.status} ${r.headers.get("location") ?? ""}`);
+    }
+    for (const p of ["/activate?token=abc&email=ada%40example.test", "/activate", "/forgot-password"]) {
+      const r = await get(p);
+      check(`live: ${p} answers 200 in join-only`, r.status === 200, `status ${r.status} ${r.headers.get("location") ?? ""}`);
+      const page = await r.text();
+      const hrefs = [...page.matchAll(/<a\s[^>]*?href="([^"]*)"/g)].map((m) => m[1]);
+      check(`live: ${p} links to no closed page`, hrefs.every((h) => h.startsWith("#") || /^\/(?:join|terms|privacy\/policy|legal|forgot-password)\b/.test(h) || /^https?:/.test(h)), hrefs.join(" "));
+    }
+    {
+      const page = await (await get("/activate?token=abc&email=ada%40example.test")).text();
+      check("live: the activate page has its title and form", page.includes("Set your password") && page.includes("Save password"));
+    }
+    for (const p of ["/join/paid", "/terms", "/admin/notifications", ...BRAND_PAGES]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
   }
 
   // the password-reset page (RESET-WEB, R-123): open in join-only with its query kept, and the page itself sends nobody into the closed site

@@ -41,6 +41,13 @@ export interface ResetPasswordPayload {
   email: string;
 }
 
+export interface ActivatePayload {
+  password: string;
+  /** From the activation-mail URL (?token=&email=): WAWU ID's `activationToken`. */
+  token: string;
+  email: string;
+}
+
 export interface NewPasswordPayload {
   password: string;
   confirmPassword: string;

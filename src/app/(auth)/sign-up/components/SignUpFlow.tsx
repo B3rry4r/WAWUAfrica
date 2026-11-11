@@ -29,20 +29,13 @@ interface OtpState {
   accountType: AccountType;
 }
 
-/**
- * `uploadOnly` is the join-only site's sign-up (WEB-UPLOAD, R-126). The only reason to sign up on the website
- * now is to upload, so it makes a CREATOR account: the "what brings you to WAWU" step is skipped, and the
- * person goes from the email code to My uploads. Identity, details and the email code are all kept: a proven
- * email is what lets a /join payment made with it be claimed (R-125). Left out, the flow is the one the full
- * site has always had.
- */
-export function SignUpFlow({ uploadOnly = false }: { uploadOnly?: boolean } = {}) {
+export function SignUpFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signInUser, setInterests: persistInterests } = useSession();
 
-  const [step, setStep] = useState<Step>(uploadOnly ? "identity" : "type");
-  const [accountType, setAccountType] = useState<AccountType>(uploadOnly ? "creator" : "user");
+  const [step, setStep] = useState<Step>("type");
+  const [accountType, setAccountType] = useState<AccountType>("user");
   /**
    * Whether a regular account can be opened at all right now.
    *
@@ -305,7 +298,7 @@ export function SignUpFlow({ uploadOnly = false }: { uploadOnly?: boolean } = {}
 
   if (step === "identity") {
     return (
-      <AuthScaffold title="Create your account" stepLabel={stepLabel} {...(uploadOnly ? {} : { onBack: () => setStep("type") })}>
+      <AuthScaffold title="Create your account" stepLabel={stepLabel} onBack={() => setStep("type")}>
         <div className="flex flex-col gap-4">
           {identitySummary ? (
             <div className="flex items-start gap-2.5 rounded-input border border-danger/30 bg-danger-tint px-3.5 py-3">
@@ -317,11 +310,9 @@ export function SignUpFlow({ uploadOnly = false }: { uploadOnly?: boolean } = {}
             <div className="flex items-center gap-2.5 rounded-input border border-decor bg-decor-tint px-3.5 py-[11px]">
               <Icon name="Upload" size={16} color="var(--accent)" strokeWidth={2.2} />
               <span className="flex-1 text-[13.5px] font-semibold">Creator account</span>
-              {uploadOnly ? null : (
-                <button type="button" onClick={() => setStep("type")} className="text-[13px] font-semibold text-accent hover:text-text-primary">
-                  Change
-                </button>
-              )}
+              <button type="button" onClick={() => setStep("type")} className="text-[13px] font-semibold text-accent hover:text-text-primary">
+                Change
+              </button>
             </div>
           ) : null}
           {/*
@@ -669,15 +660,13 @@ export function SignUpFlow({ uploadOnly = false }: { uploadOnly?: boolean } = {}
           </span>
           <h2 className="m-0 text-[28px] font-bold tracking-[-0.03em]">Email verified</h2>
           <p className="m-0 max-w-[300px] text-[15px] leading-normal text-text-secondary">
-            {uploadOnly
-              ? "Your WAWU ID is live. If you paid at wawuafrica.com/join with this email, your upload places are ready."
-              : "Your WAWU ID is live. Pick a plan to unlock uploading and start earning."}
+            Your WAWU ID is live. Pick a plan to unlock uploading and start earning.
           </p>
           <StatusPill kind="success">Creator account created</StatusPill>
         </div>
         <div className="px-5 pb-[26px] pt-4">
-          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push(uploadOnly ? "/create/library" : "/onboarding")}>
-            {uploadOnly ? "Go to my uploads" : "Choose your plan"}
+          <Button full size="lg" iconRight="ArrowRight" onClick={() => router.push("/onboarding")}>
+            Choose your plan
           </Button>
         </div>
       </div>

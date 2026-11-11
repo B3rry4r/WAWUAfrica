@@ -7,6 +7,7 @@ import type {
   SignUpPayload,
   ResetPasswordPayload,
   NewPasswordPayload,
+  ActivatePayload,
   SessionUser,
 } from "@/types/auth";
 import type { AccountType, CreatorTier, KycStatus } from "@/types/account";
@@ -453,6 +454,27 @@ export async function saveNewPassword(payload: NewPasswordPayload): Promise<void
   } catch (e) {
     if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/reset-password (WAWU ID, email-link path)
+    return;
+  }
+}
+
+/**
+ * Sets the first password on an account made by registration or by a paid /join, from the activation mail
+ * (WAWU ID `POST /auth/activate`, body `{ activationToken, email, password }`). WAWU ID answers 401 for a token that
+ * is wrong, expired or already used (it deletes every token on success) and 400 "Account already activated" for an
+ * account that has a password. It also sends a token pair back; nothing here keeps it: the person signs in on
+ * usewmt.com afterwards (R-133), so no session starts on this site.
+ */
+export async function activateAccount(payload: ActivatePayload): Promise<void> {
+  try {
+    await apiFetch<unknown>("/auth/activate", {
+      method: "POST",
+      baseUrl: WAWU_ID_BASE,
+      body: { activationToken: payload.token, email: payload.email, password: payload.password },
+    });
+  } catch (e) {
+    if (!isIntentionalMockMode(e)) throw e;
+    // SEAM: replace with POST /auth/activate (WAWU ID)
     return;
   }
 }
