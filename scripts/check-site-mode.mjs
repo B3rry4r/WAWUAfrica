@@ -538,7 +538,7 @@ const APP_FINGERPRINTS = [
 ];
 // the Android intent filters' paths: pathPrefix "/r/", path "/selfie", and so on
 const APP_PATHS = [
-  { kind: "prefix", path: "/r/" }, { kind: "exact", path: "/selfie" }, { kind: "exact", path: "/activate" }, { kind: "exact", path: "/reset-password" },
+  { kind: "prefix", path: "/r/" }, { kind: "exact", path: "/selfie" },
   { kind: "prefix", path: "/receipt/" }, { kind: "prefix", path: "/u/" }, { kind: "prefix", path: "/c/" }, { kind: "prefix", path: "/content/" },
 ];
 eq("applinks: the assetlinks path", appLinks.ASSET_LINKS_PATH, "/.well-known/assetlinks.json");
@@ -546,7 +546,10 @@ eq("applinks: the apple-app-site-association path", appLinks.APPLE_APP_SITE_ASSO
 check("applinks: both paths are open in join-only", isOpenInJoinOnly(appLinks.ASSET_LINKS_PATH) && isOpenInJoinOnly(appLinks.APPLE_APP_SITE_ASSOCIATION_PATH));
 eq("applinks: the package", appLinks.ANDROID_PACKAGE, APP_PACKAGE);
 eq("applinks: the iOS app id", appLinks.IOS_APP_ID, APP_IOS_ID);
-eq("applinks: the paths are the app's own", appLinks.APP_LINK_PATHS, APP_PATHS);
+eq("applinks: the paths are the app's own, without the password pages (R-133)", appLinks.APP_LINK_PATHS, APP_PATHS);
+// R-133 point 4: the mails for the password pages open the web pages that stay on wawuafrica.com, never the phone app
+const PASSWORD_PAGES = ["/activate", "/reset-password", "/forgot-password"];
+eq("applinks: the unclaimed list names the three password pages", [...appLinks.UNCLAIMED_PASSWORD_PATHS].sort(), [...PASSWORD_PAGES].sort());
 
 const links = appLinks.assetLinks();
 eq("assetlinks: one statement", links.length, 1);
@@ -558,7 +561,12 @@ check("assetlinks: the two fingerprints differ", new Set(APP_FINGERPRINTS).size 
 const aasa = appLinks.appleAppSiteAssociation();
 eq("aasa: one applinks entry for the app", aasa.applinks.details.map((d) => d.appIDs), [[APP_IOS_ID]]);
 const iosPatterns = aasa.applinks.details[0].components.map((c) => c["/"]);
-eq("aasa: the paths, in the app's order", iosPatterns, ["/r/*", "/selfie", "/activate", "/reset-password", "/receipt/*", "/u/*", "/c/*", "/content/*"]);
+eq("aasa: the paths, in the app's order, without the password pages", iosPatterns, ["/r/*", "/selfie", "/receipt/*", "/u/*", "/c/*", "/content/*"]);
+for (const p of PASSWORD_PAGES) {
+  check(`aasa: ${p} is not claimed`, !iosPatterns.some((pat) => pat === p || pat === `${p}*` || (pat.endsWith("*") && p.startsWith(pat.slice(0, -1)))));
+  check(`assetlinks: ${p} is not a path the site lists (the file names no paths, so no path is claimed for it)`, !JSON.stringify(links).includes(p));
+  check(`applinks: ${p} is not in APP_LINK_PATHS`, !appLinks.APP_LINK_PATHS.some((e) => e.path === p || (e.kind === "prefix" && p.startsWith(e.path))));
+}
 eq("aasa: nothing but a path in each component", aasa.applinks.details[0].components.map((c) => Object.keys(c)), iosPatterns.map(() => ["/"]));
 
 // Android and iOS claim the same set: ask both matchers about the same paths. Android: path is an exact match,
@@ -566,7 +574,7 @@ eq("aasa: nothing but a path in each component", aasa.applinks.details[0].compon
 const androidClaims = (p) => APP_PATHS.some((e) => (e.kind === "exact" ? p === e.path : p.startsWith(e.path)));
 const iosClaims = (p) => iosPatterns.some((pat) => new RegExp("^" + pat.split("*").map((x) => x.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$").test(p));
 for (const p of [
-  "/r/", "/r/abc", "/r/abc/def", "/r", "/rx", "/R/abc", "/selfie", "/selfie/", "/selfie/x", "/selfies", "/activate", "/activate/x", "/activated",
+  "/r/", "/r/abc", "/r/abc/def", "/r", "/rx", "/R/abc", "/selfie", "/selfie/", "/selfie/x", "/selfies", "/activate", "/activate/x", "/activated", "/forgot-password",
   "/receipt/1", "/receipt/", "/receipt", "/receipts/1", "/u/ada", "/u/", "/u", "/users/ada", "/c/1", "/c/", "/c", "/cx/1", "/content/xyz", "/content/", "/content",
   "/contents/x", "/reset-password", "/reset-password/", "/reset-password/x", "/reset-passwords", "/reset", "/", "/home", "/join", "/wawu/ada", "/.well-known/assetlinks.json",
 ]) eq(`applinks: Android and iOS agree on ${p}`, iosClaims(p), androidClaims(p));
@@ -596,7 +604,10 @@ if (appJsonPath) {
   const fromApp = data.map((d) => (d.pathPrefix !== undefined ? { kind: "prefix", path: d.pathPrefix } : { kind: "exact", path: d.path }));
   check("app.json: every verified entry names a path or a path prefix", data.every((d) => (d.pathPrefix !== undefined) !== (d.path !== undefined)));
   const key = (e) => `${e.kind} ${e.path}`;
-  eq("app.json: the Android paths are exactly src/lib/app-links.ts (and so the iOS file)", fromApp.map(key).sort(), appLinks.APP_LINK_PATHS.map(key).sort());
+  // the app's own filters may still list the password pages; the site does not claim them (R-133)
+  const appOnly = fromApp.map(key).filter((k) => !appLinks.APP_LINK_PATHS.map(key).includes(k)).sort();
+  check("app.json: every path the site claims is one the app declares", appLinks.APP_LINK_PATHS.every((e) => fromApp.map(key).includes(key(e))));
+  check("app.json: the app declares no path the site leaves out except the password pages", appOnly.every((k) => appLinks.UNCLAIMED_PASSWORD_PATHS.map((p) => `exact ${p}`).includes(k)), appOnly.join());
 }
 
 // ---------------------------------------------------------------- a running build (optional)
