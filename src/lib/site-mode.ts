@@ -45,13 +45,11 @@ export function currentSiteMode(): SiteMode {
  * Platform Policy document, so `/terms` (which holds the privacy provisions)
  * has to stay open or that link would end on /join.
  *
- * `/reset-password` (RESET-WEB, R-123, 31 Oct 2026) is the page the password-reset
- * mail links to: WAWU ID mails `https://wawuafrica.com/reset-password?token=...&email=...`,
- * and a link that ends on /join means nobody can reset a password. Exactly that
- * path (the query is not part of the pathname); /forgot-password, /sign-in, /login
- * and /auth/* stay closed. It is the one page of the closed site that does work:
- * it sets the new password with the token from the link and tells the person to
- * sign in again in the app (see src/app/reset-password/page.tsx).
+ * The password pages (R-123, R-133): `/forgot-password` asks for the reset mail, `/reset-password` is the page that
+ * mail links to (`/reset-password?token=...&email=...`), and `/activate` is the page WAWU ID's activation mail links
+ * to (`/activate?token=...&email=...`, it sets a first password). Exactly those paths (the query is not part of the
+ * pathname). A link that ended on /join would mean nobody could set or reset a password. None of them has a way into
+ * the closed site: they end by pointing at sign in on https://usewmt.com (src/lib/app-redirects.ts).
  *
  * The brand site (BRAND-SITE, owner 2 Nov 2026): `/`, `/who-made-this`, `/voices`,
  * `/about`, `/partners`, `/press`, `/careers` and `/contact` are the public pages
@@ -62,15 +60,9 @@ export function currentSiteMode(): SiteMode {
  * `/robots.txt`. `/about` used to be the signed-in app's About page; that page is
  * now `/settings/about` (closed in join-only like the rest of the app).
  *
- * The join-only upload pages (WEB-UPLOAD, owner 3 Nov 2026, R-126): while the stores
- * review the app, people who joined at /join sign in on the website and upload. That
- * opens exactly five pages: `/sign-in`, `/sign-up` and `/forgot-password` (the way in;
- * the reset mail's page, `/reset-password`, was already open) and `/create/new` and
- * `/create/library` (Upload and My uploads). Nothing else of the app opens: wallet,
- * earnings, kyc, communities, explore, messages, shop, events, profiles and settings
- * stay closed. In join-only mode these five are answered by their own trimmed pages
- * (`joinOnlyRewrite`, src/app/upload-site/**), with a header that links only to open
- * pages. Full mode serves the pages that have always been at these addresses.
+ * R-133 (owner, 11 Nov 2026) closed what R-126 had opened: `/sign-in`, `/sign-up`, `/create/new` and
+ * `/create/library` are not served here any more. An app address that is not open goes to the same place on
+ * https://usewmt.com (`appRedirectTarget`, src/lib/app-redirects.ts); any other closed path goes to /join.
  *
  * `/legal` and `/legal/<slug>` (owner, 26 Oct 2026) are the nine legal documents.
  * The app stores need a public privacy policy address that is not behind a
@@ -78,26 +70,11 @@ export function currentSiteMode(): SiteMode {
  * join-only mode too (see `LEGAL_DOCUMENT`).
  */
 const OPEN_PAGES = new Set([
-  "/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal", "/reset-password",
+  "/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal", "/reset-password", "/forgot-password", "/activate",
   // The brand site (BRAND-SITE, owner 2 Nov 2026): wawuafrica.com becomes the WAWU brand website.
   // Exactly these eight pages (with "/"), each one segment, no sub-paths.
   "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact",
-  // The join-only upload pages (WEB-UPLOAD, owner 3 Nov 2026, R-126): the way in, and Upload and My uploads.
-  "/sign-in", "/sign-up", "/forgot-password", "/create/new", "/create/library",
 ]);
-
-/**
- * In join-only mode each of the five upload pages is served by its own trimmed page under
- * `/upload-site/`, which the middleware rewrites to (the address in the browser does not
- * change). Those pages have a shell that links only to open pages. Full mode never rewrites.
- */
-const UPLOAD_SITE_REWRITES: Record<string, string> = {
-  "/sign-in": "/upload-site/sign-in",
-  "/sign-up": "/upload-site/sign-up",
-  "/forgot-password": "/upload-site/forgot-password",
-  "/create/new": "/upload-site/new",
-  "/create/library": "/upload-site/library",
-};
 
 /**
  * `/legal/<slug>`: exactly one lower-case segment under /legal. A deeper path,
@@ -151,11 +128,6 @@ const APP_LINK_FILES = new Set(["/.well-known/assetlinks.json", "/.well-known/ap
 /** The same path with trailing slashes taken off (the root stays "/"). */
 function trimmed(pathname: string): string {
   return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
-}
-
-/** Where join-only mode serves this path from, or null when the page is served at its own address. */
-export function joinOnlyRewrite(pathname: string): string | null {
-  return UPLOAD_SITE_REWRITES[trimmed(pathname)] ?? null;
 }
 
 /** True when join-only mode serves this PAGE (as opposed to a file). */

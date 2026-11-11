@@ -9,6 +9,7 @@ import {
   WHATSAPP_DISPLAY,
   WHATSAPP_URL,
 } from "@/lib/site/site-config";
+import { appUrl } from "@/lib/app-redirects";
 import { ButtonLink } from "./ButtonLink";
 import { SiteLogo } from "./SiteLogo";
 import { Wrap } from "./Wrap";
@@ -58,7 +59,7 @@ export function SiteFooter() {
                 </li>
               ))}
               <li>
-                <Link href="/sign-in" className={linkClass}>
+                <Link href={appUrl("/sign-in")} className={linkClass}>
                   Sign in
                 </Link>
               </li>

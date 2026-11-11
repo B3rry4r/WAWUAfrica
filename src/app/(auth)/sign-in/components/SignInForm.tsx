@@ -9,15 +9,9 @@ import { Input } from "@/components/ui/Input";
 import { useSession } from "@/lib/auth/session-provider";
 import { signIn, resendEmailVerificationCode, verifyOtp } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
-import { landingAfterSignIn } from "@/lib/site-upload/rules";
 import { OtpInput } from "../../components/OtpInput";
 
-/**
- * `uploadOnly` is the join-only site's sign-in (WEB-UPLOAD, R-126): people who joined at /join sign in here to
- * upload. It lands on My uploads (or on Upload when that is where they were headed), never on the closed feed.
- * Left out, the form is the one the full site has always had.
- */
-export function SignInForm({ uploadOnly = false }: { uploadOnly?: boolean } = {}) {
+export function SignInForm() {
   const router = useRouter();
   const { signInUser } = useSession();
   const [email, setEmail] = useState("");
@@ -50,7 +44,7 @@ export function SignInForm({ uploadOnly = false }: { uploadOnly?: boolean } = {}
       // Return them to whatever they were trying to reach, falling back to the
       // feed. Only same-origin paths are honoured, so `next` cannot be used to
       // bounce someone to another site after they sign in.
-      router.push(uploadOnly ? landingAfterSignIn(safeNext()) : (safeNext() ?? "/home"));
+      router.push(safeNext() ?? "/home");
     } catch (e) {
       if (e instanceof ApiError && e.code === "EMAIL_NOT_VERIFIED") {
         setNeedsVerification(true);
@@ -81,7 +75,7 @@ export function SignInForm({ uploadOnly = false }: { uploadOnly?: boolean } = {}
       await verifyOtp({ email, code: otp });
       const res = await signIn({ email, password });
       signInUser(res.user, res.token);
-      router.push(uploadOnly ? landingAfterSignIn(null) : "/home");
+      router.push("/home");
     } catch (e) {
       setOtpError(e instanceof Error ? e.message : "That code did not work.");
     } finally {

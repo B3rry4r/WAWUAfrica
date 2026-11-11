@@ -1,6 +1,5 @@
 import { apiFetch, isMockModeError } from "./client";
 import { describeError } from "./errors";
-import { SITE_CLIENT_HEADER, SITE_CLIENT_VALUE, refusalSentence } from "@/lib/site-upload/rules";
 
 /**
  * File uploads.
@@ -112,21 +111,11 @@ function mockObjectUrl(file: File, folder: UploadFolder): string {
  *
  * `onProgress` reports real bytes-sent from the XHR, not a simulated timer.
  */
-export interface UploadOptions {
-  /**
-   * `site`: the join-only upload flow (R-126). The presign then carries
-   * `X-Wawu-Client: site`, so the Hub holds the upload to the app's rules.
-   * Left out, nothing changes: the full site sends no marker.
-   */
-  client?: "site";
-}
-
 export async function uploadFile(
   file: File,
   folder: UploadFolder,
   onProgress?: (percent: number) => void,
   signal?: AbortSignal,
-  options: UploadOptions = {},
 ): Promise<UploadedFile> {
   if (file.size > MAX_UPLOAD_BYTES) {
     throw new UploadError("That file is too large. The limit is 512MB.");
@@ -137,7 +126,6 @@ export async function uploadFile(
     presign = await apiFetch<PresignResponse>("/api/hub/uploads/presign", {
       method: "POST",
       authed: true,
-      ...(options.client === "site" ? { headers: { [SITE_CLIENT_HEADER]: SITE_CLIENT_VALUE } } : {}),
       body: {
         folder,
         contentType: file.type || "application/octet-stream",
@@ -165,9 +153,7 @@ export async function uploadFile(
     // says exactly how much room is left — but FilePicker only renders
     // UploadError messages, so without this the one useful thing the server
     // said would be replaced by "that upload did not go through".
-    // A tier or places refusal is said in the join-only flow's own words.
-    const code = (e as { code?: string }).code;
-    throw new UploadError((options.client === "site" ? refusalSentence(code) : null) ?? describeError(e).body);
+    throw new UploadError(describeError(e).body);
   }
 
   await new Promise<void>((resolve, reject) => {

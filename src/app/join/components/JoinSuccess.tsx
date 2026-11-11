@@ -1,4 +1,5 @@
 import { Button, Icon } from "@/components/ui";
+import { appUrl } from "@/lib/app-redirects";
 import { ShareLink } from "./ShareLink";
 
 interface JoinSuccessProps {
@@ -38,7 +39,7 @@ export function JoinSuccess({ tierName, price, noPayment, reference }: JoinSucce
         <li className="flex items-start gap-3">
           <span className="grid h-[28px] w-[28px] flex-none place-items-center rounded-full bg-accent text-[14px] font-extrabold text-on-accent">1</span>
           <span className="pt-[3px] text-[15.5px] leading-[1.45] text-text-primary">
-            Sign in to the WAWU app or on wawuafrica.com with the <b>same email or phone you used here</b>.
+            Sign in to Who Made This at usewmt.com with the <b>same email or phone you used here</b>.
           </span>
         </li>
         <li className="flex items-start gap-3">
@@ -54,8 +55,8 @@ export function JoinSuccess({ tierName, price, noPayment, reference }: JoinSucce
         If the app asks you to confirm that email or phone number, do that first.
       </p>
 
-      <Button href="/sign-in" full>
-        Sign in on this website
+      <Button href={appUrl("/sign-in")} full>
+        Sign in on Who Made This
       </Button>
 
       <ShareLink />

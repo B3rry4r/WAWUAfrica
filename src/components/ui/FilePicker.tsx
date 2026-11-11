@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
-import { isCancelled, uploadFile, UploadError, type UploadFolder, type UploadedFile, type UploadOptions } from "@/lib/api/uploads";
+import { isCancelled, uploadFile, UploadError, type UploadFolder, type UploadedFile } from "@/lib/api/uploads";
 
 function humanSize(bytes: number): string {
   if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
@@ -39,13 +39,6 @@ export interface FilePickerProps {
   /** Offers a camera capture on mobile (used by KYC ID capture). */
   capture?: boolean;
   disabled?: boolean;
-  /** `site` marks the upload as the join-only flow's (R-126). Left out, the picker behaves as it always has. */
-  client?: UploadOptions["client"];
-  /** A file over this many bytes is refused with `tooLargeMessage` before anything is sent. */
-  maxBytes?: number;
-  tooLargeMessage?: string;
-  /** Called with the file itself when one is chosen, before its upload starts (a picture piece makes its smaller copy from it). */
-  onPicked?: (file: File) => void;
 }
 
 /**
@@ -67,10 +60,6 @@ export function FilePicker({
   onCleared,
   capture = false,
   disabled = false,
-  client,
-  maxBytes,
-  tooLargeMessage,
-  onPicked,
 }: FilePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null);
@@ -101,16 +90,9 @@ export function FilePicker({
     const controller = new AbortController();
     abortRef.current = controller;
     setError(null);
-    if (maxBytes !== undefined && file.size > maxBytes) {
-      setError(tooLargeMessage ?? "That file is too large.");
-      // Nothing was sent, so there is nothing to retry: the person picks a smaller file.
-      setLastFile(null);
-      abortRef.current = null;
-      return;
-    }
     setProgress(0);
     try {
-      const result = await uploadFile(file, folder, setProgress, controller.signal, client ? { client } : {});
+      const result = await uploadFile(file, folder, setProgress, controller.signal);
       setUploaded(result);
       setUploadCount((n) => n + 1);
       onUploaded(result);
@@ -130,7 +112,6 @@ export function FilePicker({
     e.target.value = "";
     if (!file) return;
     setLastFile(file);
-    onPicked?.(file);
     await send(file);
   };
 

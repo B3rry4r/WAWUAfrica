@@ -159,8 +159,8 @@ keeps its current behaviour until it follows after launch.
   all; an unverified creator or professional cannot either. "Going" is still an
   interest signal and still never money, which is a separate thing from a ticket.
 
-## Join-only upload pages (WEB-UPLOAD, owner 3 Nov 2026, R-126)
-While the stores review the app, people who joined at /join sign in on the website and upload; pieces are collected and show publicly only after the creator opens a wallet in the app (the Hub holds them). In join-only mode (`src/lib/site-mode.ts`) exactly five more pages are open: `/sign-in`, `/sign-up`, `/forgot-password`, `/create/new` (Upload) and `/create/library` (My uploads). Each is answered by its own trimmed page under `src/app/upload-site/` (middleware rewrite, shell links only to open pages). Every content and upload write there sends `X-Wawu-Client: site` (`src/lib/api/site-upload.ts`); places come from the Hub (`creator/state`), prices from `GET /prices`. Full mode is unchanged.
+## What wawuafrica.com serves now (WEB-STRIP, owner 11 Nov 2026, R-133)
+In join-only mode (production, `src/lib/site-mode.ts`) the site keeps the company pages, `/join` and `/join/paid`, the legal pages, the password pages `/forgot-password`, `/reset-password` and `/activate`, `/admin` and the site's files. Sign in, sign up and R-126's upload pages (`/create/new`, `/create/library`) are closed. An old app address (a profile, a piece, a receipt and the rest) gets a 308 to the same place on https://usewmt.com (`src/lib/app-redirects.ts`, built from the mobile repo's `src/app/` routes); any link on a page that stays that used to go to a closed page goes to usewmt.com (`appUrl()`). Any other closed path still goes to `/join`. Full mode (`SITE_MODE=full`) is unchanged.
 
 ## Navigation
 Bottom bar, 5 slots, the SAME for everyone:

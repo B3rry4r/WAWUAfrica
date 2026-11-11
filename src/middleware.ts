@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { currentSiteMode, isOpenInJoinOnly, joinOnlyRewrite } from "@/lib/site-mode";
+import { appRedirectTarget } from "@/lib/app-redirects";
+import { currentSiteMode, isOpenInJoinOnly } from "@/lib/site-mode";
 
 /**
  * Site mode (see lib/site-mode.ts). In `full` mode this does nothing. In
- * `join-only` mode every path that is not the landing page, the registration
- * link, the privacy document it links to, the password-reset page the reset
- * mail links to (/reset-password, R-123), the upload pages (/sign-in, /sign-up,
- * /forgot-password, /create/new, /create/library; WEB-UPLOAD, R-126), a file those pages need, or one of
- * the two app-link files (/.well-known/assetlinks.json and
- * /.well-known/apple-app-site-association, which must answer 200 for a link to
- * the site to open the app) gets a 307 to /join: pages, the app, sign-in and
- * sign-up, admin, /payment/return and any /api path alike. 307 keeps the
- * method, so a stray POST is not silently turned into a GET.
+ * `join-only` mode a path that is open (the landing page, the company pages,
+ * /join, the legal pages, the password pages /forgot-password, /reset-password
+ * and /activate, a file those pages need, the two app-link files under
+ * /.well-known, and /admin) goes through. An old app address (a profile, a
+ * piece, a receipt, sign in and the rest) gets a 308 to the same place on
+ * https://usewmt.com (WEB-STRIP, R-133; src/lib/app-redirects.ts). Every other
+ * path gets a 307 to /join, /api paths and /payment/return among them. 307
+ * keeps the method, so a stray POST is not silently turned into a GET.
  *
  * The mode is read from the environment on every request (currentSiteMode), so
  * changing SITE_MODE (or the deployment's VERCEL_ENV) changes behaviour without
@@ -21,13 +21,14 @@ import { currentSiteMode, isOpenInJoinOnly, joinOnlyRewrite } from "@/lib/site-m
 export function middleware(request: NextRequest) {
   if (currentSiteMode() === "full") return NextResponse.next();
 
-  if (isOpenInJoinOnly(request.nextUrl.pathname)) {
-    // The five upload pages (WEB-UPLOAD, R-126) are answered by their trimmed join-only pages; the address stays the same.
-    const target = joinOnlyRewrite(request.nextUrl.pathname);
-    if (!target) return NextResponse.next();
-    const url = request.nextUrl.clone();
-    url.pathname = target;
-    return NextResponse.rewrite(url);
+  if (isOpenInJoinOnly(request.nextUrl.pathname)) return NextResponse.next();
+
+  const app = appRedirectTarget(request.nextUrl.pathname, request.nextUrl.search);
+  if (app) {
+    const response = NextResponse.redirect(app, 308);
+    // A permanent answer, but not one a browser keeps for ever: SITE_MODE can still be flipped back.
+    response.headers.set("Cache-Control", "public, max-age=3600");
+    return response;
   }
 
   return redirectToJoin(request);

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { appUrl } from "@/lib/app-redirects";
 import { cn } from "@/lib/cn";
 import { CONTACT_EMAIL, HEADER_NAV, REGISTER_HREF, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/site/site-config";
 import { ButtonLink } from "./ButtonLink";
@@ -93,7 +94,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/sign-in"
+            href={appUrl("/sign-in")}
             className="hidden min-h-[44px] items-center rounded-full px-3 text-[15px] font-semibold text-white/90 hover:bg-white/8 hover:text-white min-[360px]:inline-flex"
           >
             Sign in
@@ -122,7 +123,7 @@ export function SiteHeader() {
           className="fixed inset-x-0 bottom-0 top-[68px] z-40 overflow-y-auto bg-site-deep px-5 pb-10 pt-4 sm:px-8 lg:hidden"
         >
           <nav aria-label="Mobile" className="mx-auto flex max-w-[1200px] flex-col">
-            {[{ label: "Sign in", href: "/sign-in" }, { label: "Home", href: "/" }, ...HEADER_NAV].map((item) => (
+            {[{ label: "Sign in", href: appUrl("/sign-in") }, { label: "Home", href: "/" }, ...HEADER_NAV].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

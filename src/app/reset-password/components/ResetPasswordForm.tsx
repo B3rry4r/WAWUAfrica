@@ -10,12 +10,13 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { StateCard } from "@/app/join/components/StateCard";
 import { saveNewPassword } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
+import { appUrl } from "@/lib/app-redirects";
 
 /**
- * `appOnly` is join-only mode (src/lib/site-mode.ts, R-123): the web has no
- * sign-in then, so this page never links to one. It ends by sending the person
- * back to the Who Made This? app, and a link that has expired or was already
- * used says so and sends them to the app's Forgot password for a new one.
+ * `appOnly` is join-only mode (src/lib/site-mode.ts, R-123, R-133): the website
+ * has no sign in then, so this page links to sign in on usewmt.com instead. It
+ * ends by sending the person there, and a link that has expired or was already
+ * used says so and sends them to /forgot-password for a new one.
  * Without it the form is exactly what it was.
  */
 export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
@@ -58,23 +59,34 @@ export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
     // A link with no token or no address cannot work either: the same screen.
     if (linkDead || !token || !email) {
       return (
-        <StateCard icon="Clock" tone="warning" title="This link has expired">
+        <StateCard
+          icon="Clock"
+          tone="warning"
+          title="This link has expired"
+          actions={
+            <Button full size="lg" href="/forgot-password">
+              Get a new link
+            </Button>
+          }
+        >
           <p className="m-0">This link has expired or was already used.</p>
-          <p className="m-0">Open the WAWU app or the sign-in page on this website, tap Forgot password and ask for a new link.</p>
+          <p className="m-0">Ask for a new link and we will email it to you.</p>
         </StateCard>
       );
     }
     if (done) {
       return (
-        <StateCard icon="CircleCheck" tone="success" title="Password changed">
-          <p className="m-0">
-            Your password is changed. You can now sign in with it in the WAWU app or on this website.
-          </p>
-          <p className="m-0">
-            <Link href="/sign-in" className="font-bold text-accent-soft underline">
-              Sign in on this website
-            </Link>
-          </p>
+        <StateCard
+          icon="CircleCheck"
+          tone="success"
+          title="Password changed"
+          actions={
+            <Button full size="lg" href={appUrl("/sign-in")}>
+              Sign in on Who Made This
+            </Button>
+          }
+        >
+          <p className="m-0">Your password is changed. You can now sign in with it on Who Made This.</p>
         </StateCard>
       );
     }
@@ -85,7 +97,7 @@ export function ResetPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
             Set a new password
           </h1>
           <p className="m-0 text-[14.5px] leading-[1.55] text-text-secondary">
-            Choose a new password, then sign in with it in the WAWU app or on this website.
+            Choose a new password, then sign in with it on Who Made This.
           </p>
         </div>
         <div className="flex flex-col gap-4">

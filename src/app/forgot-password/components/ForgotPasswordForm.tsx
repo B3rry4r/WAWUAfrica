@@ -6,9 +6,15 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { StateCard } from "@/app/join/components/StateCard";
 import { requestPasswordReset } from "@/lib/api/auth";
+import { appUrl } from "@/lib/app-redirects";
 
-export function ForgotPasswordForm() {
+/**
+ * `appOnly` is join-only mode (src/lib/site-mode.ts, R-133): the website has no sign in then, so every way back
+ * goes to sign in on usewmt.com. Without it the form is exactly what it was.
+ */
+export function ForgotPasswordForm({ appOnly = false }: { appOnly?: boolean }) {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -30,6 +36,55 @@ export function ForgotPasswordForm() {
       setSubmitting(false);
     }
   };
+
+  if (appOnly) {
+    if (sent) {
+      return (
+        <StateCard icon="MailCheck" tone="success" title="Check your email">
+          <p className="m-0">
+            We sent a reset link to <span className="font-semibold text-text-primary">{email}</span>. It expires in 30 minutes, follow it to pick a new password.
+          </p>
+          <p className="m-0">
+            <a href={appUrl("/sign-in")} className="font-bold text-accent-soft underline">
+              Back to sign in
+            </a>
+          </p>
+        </StateCard>
+      );
+    }
+    return (
+      <section className="flex flex-col gap-6 rounded-card border border-hairline bg-card px-6 py-8 dt:px-9 dt:py-10">
+        <div className="flex flex-col gap-2.5">
+          <h1 className="m-0 text-[26px] font-bold leading-[1.15] tracking-[-0.02em] text-text-primary">Reset it by email</h1>
+          <p className="m-0 text-[14.5px] leading-[1.55] text-text-secondary">
+            Give us the address on your WAWU ID and we will send a reset link.
+          </p>
+        </div>
+        <Input
+          label="Email"
+          type="email"
+          autoComplete="email"
+          noZoom
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError(null);
+          }}
+          placeholder="you@email.com"
+          icon="Mail"
+          error={error ?? undefined}
+        />
+        <div className="flex flex-col gap-3">
+          <Button full size="lg" onClick={onSubmit} disabled={!canSubmit}>
+            {submitting ? "Sending…" : "Send reset link"}
+          </Button>
+          <Button full variant="ghost" href={appUrl("/sign-in")}>
+            Back to sign in
+          </Button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col xl:min-h-0">

@@ -42,13 +42,18 @@ export const ANDROID_CERT_FINGERPRINTS = [
  * Android intent filters name them: `exact` is `path`, `prefix` is
  * `pathPrefix`.
  */
+/**
+ * Not claimed (WEB-STRIP, R-133 point 4): `/activate`, `/reset-password` and `/forgot-password`. Those mails must open
+ * the web pages on wawuafrica.com that set a password, and the installed phone app ignores the token (the phone apps
+ * are parked, R-134). The app's own intent filters may still list `/activate` and `/reset-password`; this file is the
+ * site's side, and a path the site does not list is not verified for the app. Written down so a later edit does not
+ * add them back: scripts/check-site-mode.mjs asserts none of them is claimed.
+ */
+export const UNCLAIMED_PASSWORD_PATHS: readonly string[] = ["/activate", "/reset-password", "/forgot-password"];
+
 export const APP_LINK_PATHS: readonly { kind: "exact" | "prefix"; path: string }[] = [
   { kind: "prefix", path: "/r/" },
   { kind: "exact", path: "/selfie" },
-  { kind: "exact", path: "/activate" },
-  // RESET-APP (R-123), HELD: the Forgot password email's link opens the app's New password screen. Merge this only when the
-  // build that has that screen is on phones: an iPhone on an older build would open the app on a route it does not have.
-  { kind: "exact", path: "/reset-password" },
   { kind: "prefix", path: "/receipt/" },
   { kind: "prefix", path: "/u/" },
   { kind: "prefix", path: "/c/" },

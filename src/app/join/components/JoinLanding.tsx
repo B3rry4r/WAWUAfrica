@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { Button, Icon } from "@/components/ui";
+import { appUrl } from "@/lib/app-redirects";
 import { formatNairaFromKobo } from "@/lib/format";
 import type { ReferralVerdict } from "@/lib/join-referral";
 import { payKoboFor } from "@/lib/join-referral";
@@ -98,14 +98,14 @@ export function JoinLanding({ tiers, selectedId, onSelect, referral, form, scrol
   );
 }
 
-/** The way in for people who already paid here: they sign in on this website to upload. */
+/** The way in for people who already paid here: they sign in on Who Made This (usewmt.com, R-133). */
 function AlreadyRegistered({ className = "" }: { className?: string }) {
   return (
     <p className={`m-0 text-[14.5px] text-text-secondary ${className}`}>
       Already registered?{" "}
-      <Link href="/sign-in" className="font-semibold text-accent underline underline-offset-2 hover:text-text-primary">
-        Sign in to upload your work.
-      </Link>
+      <a href={appUrl("/sign-in")} className="font-semibold text-accent underline underline-offset-2 hover:text-text-primary">
+        Sign in on Who Made This.
+      </a>
     </p>
   );
 }
