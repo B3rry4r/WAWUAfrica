@@ -644,6 +644,8 @@ if (base && mode) {
     for (const a of anchors) {
       if (a.startsWith("#")) { check(`live: ${page.href} anchor ${a} has a target`, ids.has(a.slice(1))); continue; }
       if (/^(?:mailto:|https:\/\/wa\.me\/)/.test(a)) continue;
+      // the Sign in links go to the app (R-133)
+      if (a === appUrl("/sign-in")) { check(`live: ${page.href} sign in goes to usewmt.com`, true); continue; }
       if (/^[a-z]+:/i.test(a)) { check(`live: ${page.href} link ${a} is one we expect`, false); continue; }
       const path = a.split(/[?#]/)[0];
       if (mode === "join-only") {
@@ -742,7 +744,7 @@ if (base && mode) {
       check(`live: ${p} is sent to ${want} (308)`, r.status === 308 && r.headers.get("location") === want, `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
     // the settings the owner named stay as they are
-    for (const p of ["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/admin", "/join"]) check(`live: ${p} is not redirected`, (await get(p)).status === 200);
+    for (const p of ["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/admin/notifications", "/join"]) check(`live: ${p} is not redirected`, (await get(p)).status === 200);
     for (const p of ["/.well-known/other", "/_next/static/missing.js"]) {
       const r = await get(p);
       check(`live: ${p} is never sent to usewmt.com`, !(r.headers.get("location") ?? "").includes("usewmt.com"), `status ${r.status} ${r.headers.get("location") ?? ""}`);
