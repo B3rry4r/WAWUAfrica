@@ -1,7 +1,7 @@
 /**
  * Where an old app address on wawuafrica.com goes now (WEB-STRIP, R-133).
  *
- * wawuafrica.com keeps the join page, the password pages (forgot, reset, activate), the legal pages, the company
+ * wawuafrica.com keeps the legal pages, the company
  * pages and the site's files. Everything that was the app lives at https://usewmt.com, so a person who opens an old
  * profile, piece, community, ticket or receipt link here is sent to the same place there with a permanent redirect
  * (308, the method and the query are kept).
@@ -12,9 +12,9 @@
  *   1. RENAMES        the few web addresses whose page lives at a different address on usewmt.com.
  *   2. MOBILE_ROUTES  the same address exists on usewmt.com: the path and query are kept as they are.
  *   3. a web app root, or the first segment of a usewmt.com route, with no page of that address: usewmt.com's home.
- *   4. anything else is not an app path (the caller sends it to /join, as before).
+ *   4. anything else is not an app path (the caller sends it to usewmt.com's home, R-141).
  *
- * Never redirected: /.well-known/*, /admin*, /_next/*, /api/* and /payment/*. The open pages (company, legal, join,
+ * Never redirected: /.well-known/*, /admin*, /_next/*, /api/* and /payment/*. The open pages (company, legal,
  * password pages) are decided before this runs, so they never reach it.
  *
  * Pure functions, no imports: the middleware calls them in the Edge runtime, and scripts/check-site-mode.mjs loads
@@ -32,7 +32,7 @@ export function appUrl(path: string): string {
 /**
  * The pages of the Who Made This app (usewmt.com) that have the address they had on the web app, in the app's
  * own spelling: `[name]` is one path segment. Left out on purpose: /about, /legal, /terms, /privacy-policy,
- * /reset-password, /forgot-password and /activate (wawuafrica.com keeps those pages), /dev/* and /preview/*.
+ * /dev/* and /preview/*. (/reset-password, /forgot-password and /activate are in `movedPageTarget`: same path, query kept.)
  */
 export const MOBILE_ROUTES: readonly string[] = [
   "/account-type", "/accounts", "/add-money", "/add-money/status", "/add-money/way", "/add-work", "/bills",
@@ -132,6 +132,30 @@ function matchPattern(pattern: string, path: string, open: "colon" | "bracket"):
     } else if (w !== g) return null;
   }
   return params;
+}
+
+/**
+ * The Who Made This pages wawuafrica.com no longer serves (R-141, owner, 12 Nov 2026): the join page and the Who
+ * Made This brand page go to the app's home, in every site mode.
+ */
+const WMT_CLOSED_PAGES: ReadonlySet<string> = new Set(["/join", "/who-made-this"]);
+
+/**
+ * The password pages moved to the app (R-141, widened by the owner 12 Nov 2026). The mails WAWU ID sends still link
+ * to wawuafrica.com/reset-password, /activate and /forgot-password, so each goes to the SAME path on usewmt.com with
+ * the query string kept exactly as it came (the token and the email are in it).
+ */
+const PASSWORD_PAGES: ReadonlySet<string> = new Set(["/reset-password", "/forgot-password", "/activate"]);
+
+/**
+ * Where a page that moved to usewmt.com goes, or null for any other path. `search` is the query string as the
+ * request carried it, with its leading "?" (or ""), and is appended byte for byte to a password page's address.
+ */
+export function movedPageTarget(pathname: string, search: string): string | null {
+  const path = trimmed(pathname);
+  if (WMT_CLOSED_PAGES.has(path)) return APP_ORIGIN;
+  if (PASSWORD_PAGES.has(path)) return `${APP_ORIGIN}${path}${search === "?" ? "" : search}`;
+  return null;
 }
 
 /** True for the paths this module never redirects: well-known files, admin, the build's files, the API, payment returns. */

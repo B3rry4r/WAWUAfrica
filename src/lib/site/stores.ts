@@ -1,14 +1,14 @@
 /**
  * Where the two apps can be downloaded (BRAND-SITE, owner 2 Nov 2026).
  *
- * Neither app is in the stores yet, so every link is null and each page says
- * which stores the app is headed for, with a Register button. To turn a store
- * on, set its entry to the store address (one line): the page then draws that
+ * VOICES is not in the stores yet, so every link is null and its page says
+ * which stores the app is headed for. (Who Made This is not here: its links open
+ * usewmt.com, R-141.) To turn a store on, set its entry to the store address (one line): the page then draws that
  * store's button in place of that line. Nothing else changes.
  *
  * No imports (scripts/check-site-mode.mjs loads this file).
  */
-export type SiteApp = "who-made-this" | "voices";
+export type SiteApp = "voices";
 
 export interface StoreLinks {
   appStore: string | null;
@@ -16,7 +16,6 @@ export interface StoreLinks {
 }
 
 export const STORE_LINKS: Record<SiteApp, StoreLinks> = {
-  "who-made-this": { appStore: null, googlePlay: null },
   voices: { appStore: null, googlePlay: null },
 };
 

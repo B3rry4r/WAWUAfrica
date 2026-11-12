@@ -37,25 +37,6 @@ export interface SignInPayload {
   password: string;
 }
 
-export interface ResetPasswordPayload {
-  email: string;
-}
-
-export interface ActivatePayload {
-  password: string;
-  /** From the activation-mail URL (?token=&email=): WAWU ID's `activationToken`. */
-  token: string;
-  email: string;
-}
-
-export interface NewPasswordPayload {
-  password: string;
-  confirmPassword: string;
-  /** From the reset-link URL (?token=&email=) — WAWU ID's email-link reset path needs both. */
-  token: string;
-  email: string;
-}
-
 /**
  * Matches the approved design (design/screens/WAWU Auth.dc.html: "Verify
  * your email" / "We sent it to ada@okeke.ng") -- a real, freshly generated

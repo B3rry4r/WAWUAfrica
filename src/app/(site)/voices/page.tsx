@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { REGISTER_HREF } from "@/lib/site/site-config";
+import { WMT_HREF } from "@/lib/site/site-config";
 import { ButtonLink } from "../_components/ButtonLink";
 import { Cards } from "../_components/Cards";
 import { Faq } from "../_components/Faq";
@@ -62,8 +62,8 @@ export default function VoicesPage() {
           </div>
         }
       >
-        <ButtonLink href={REGISTER_HREF} variant="green" arrow>
-          Register
+        <ButtonLink href={WMT_HREF} variant="green" arrow>
+          Open Who Made This
         </ButtonLink>
         <ButtonLink href="#how" variant="outline-light">
           How it works

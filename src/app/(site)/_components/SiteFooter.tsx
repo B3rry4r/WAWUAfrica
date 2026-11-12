@@ -5,7 +5,7 @@ import {
   FOOTER_APPS,
   FOOTER_COMPANY,
   FOOTER_LEGAL,
-  REGISTER_HREF,
+  WMT_HREF,
   WHATSAPP_DISPLAY,
   WHATSAPP_URL,
 } from "@/lib/site/site-config";
@@ -29,8 +29,8 @@ export function SiteFooter() {
             <p className="mb-6 mt-5 max-w-[34ch] text-[16px] leading-relaxed text-white/80">
               Apps that give everyday people a name, a voice and a way to earn. Built in Africa. Open to the world.
             </p>
-            <ButtonLink href={REGISTER_HREF} variant="white" arrow>
-              Register
+            <ButtonLink href={WMT_HREF} variant="white" arrow>
+              Open Who Made This
             </ButtonLink>
           </div>
 
@@ -45,7 +45,7 @@ export function SiteFooter() {
                 </li>
               ))}
             </ul>
-            <p className="mb-0 mt-4 max-w-[22ch] text-[14px] leading-snug text-white/65">Coming soon on the App Store and Google Play.</p>
+            <p className="mb-0 mt-4 max-w-[22ch] text-[14px] leading-snug text-white/65">VOICES is coming soon on the App Store and Google Play.</p>
           </nav>
 
           <nav aria-label="WAWU">

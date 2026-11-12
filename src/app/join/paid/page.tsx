@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { JoinFlow } from "../components/JoinFlow";
+import { PaidReturn } from "./PaidReturn";
 
 /**
  * Where Flutterwave sends the browser back to when a payment left /join (a
  * bank app, a 3-D Secure page). The page that opened the payment window is
  * gone by then, so this one picks the registration up from the reference in
- * the address and finishes the server check. See JoinFlow.
+ * the address and finishes the server check. See PaidReturn. Since R-141 (owner, 12 Nov 2026) the join page is
+ * gone and nothing starts a payment; this page stays only for a payment that was already made.
  */
 export const metadata: Metadata = {
   title: { absolute: "WHO MADE THIS? Pre-registration" },
@@ -13,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function JoinPaidPage() {
-  return <JoinFlow mode="return" />;
+  return <PaidReturn />;
 }

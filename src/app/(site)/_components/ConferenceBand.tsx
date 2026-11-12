@@ -1,8 +1,8 @@
-import { CONFERENCE_CITIES, REGISTER_HREF } from "@/lib/site/site-config";
+import { CONFERENCE_CITIES, WMT_HREF } from "@/lib/site/site-config";
 import { ButtonLink } from "./ButtonLink";
 import { Wrap } from "./Wrap";
 
-/** "Put your name on it": the conference, with the Register button (to /join). */
+/** "Put your name on it": the conference, with the button that opens Who Made This (usewmt.com). */
 export function ConferenceBand() {
   return (
     <section className="on-dark relative isolate overflow-hidden bg-site-purple text-white">
@@ -24,8 +24,8 @@ export function ConferenceBand() {
         <p className="m-0 mb-9 max-w-[46ch] text-[clamp(1.1rem,2.2vw,1.3rem)] leading-snug text-white">
           One question. One stage. One challenge. For creators, founders, artists, innovators, builders and culture makers.
         </p>
-        <ButtonLink href={REGISTER_HREF} variant="white" arrow>
-          Register now
+        <ButtonLink href={WMT_HREF} variant="white" arrow>
+          Open Who Made This
         </ButtonLink>
       </Wrap>
     </section>

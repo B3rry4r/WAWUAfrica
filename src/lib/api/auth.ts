@@ -5,9 +5,6 @@ import type {
   OtpVerifyPayload,
   SignInPayload,
   SignUpPayload,
-  ResetPasswordPayload,
-  NewPasswordPayload,
-  ActivatePayload,
   SessionUser,
 } from "@/types/auth";
 import type { AccountType, CreatorTier, KycStatus } from "@/types/account";
@@ -424,58 +421,6 @@ export async function resendEmailVerificationCode(email: string): Promise<{ mess
     if (!isIntentionalMockMode(e)) throw e;
     // SEAM: replace with POST /auth/email/verify/start (WAWU ID)
     return { message: "Verification code sent", expiresIn: 300 };
-  }
-}
-
-export async function requestPasswordReset(payload: ResetPasswordPayload): Promise<void> {
-  try {
-    await apiFetch<{ message: string }>("/auth/forgot-password", {
-      method: "POST",
-      baseUrl: WAWU_ID_BASE,
-      // Web hub explicitly requests the email-link delivery channel (default is 'sms').
-      body: { identifier: payload.email, method: "email" },
-    });
-  } catch (e) {
-    if (!isIntentionalMockMode(e)) throw e;
-    // SEAM: replace with POST /auth/forgot-password (WAWU ID)
-    return;
-  }
-}
-
-export async function saveNewPassword(payload: NewPasswordPayload): Promise<void> {
-  try {
-    await apiFetch<{ message: string }>("/auth/reset-password", {
-      method: "POST",
-      baseUrl: WAWU_ID_BASE,
-      // Email-link path: { token, email, password }. No tokens come back —
-      // the caller redirects to sign-in after this resolves.
-      body: { token: payload.token, email: payload.email, password: payload.password },
-    });
-  } catch (e) {
-    if (!isIntentionalMockMode(e)) throw e;
-    // SEAM: replace with POST /auth/reset-password (WAWU ID, email-link path)
-    return;
-  }
-}
-
-/**
- * Sets the first password on an account made by registration or by a paid /join, from the activation mail
- * (WAWU ID `POST /auth/activate`, body `{ activationToken, email, password }`). WAWU ID answers 401 for a token that
- * is wrong, expired or already used (it deletes every token on success) and 400 "Account already activated" for an
- * account that has a password. It also sends a token pair back; nothing here keeps it: the person signs in on
- * usewmt.com afterwards (R-133), so no session starts on this site.
- */
-export async function activateAccount(payload: ActivatePayload): Promise<void> {
-  try {
-    await apiFetch<unknown>("/auth/activate", {
-      method: "POST",
-      baseUrl: WAWU_ID_BASE,
-      body: { activationToken: payload.token, email: payload.email, password: payload.password },
-    });
-  } catch (e) {
-    if (!isIntentionalMockMode(e)) throw e;
-    // SEAM: replace with POST /auth/activate (WAWU ID)
-    return;
   }
 }
 

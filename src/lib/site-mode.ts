@@ -5,7 +5,7 @@
  * 10 Oct 2026, R-48) and its landing page (owner, 12 Oct 2026: "the landing
  * page should" show); everything else is unreachable. `SITE_MODE` says which:
  *
- *   join-only   the landing page, /join and what they need, nothing else
+ *   join-only   the brand pages, /join/paid (a payment already made), the legal pages, nothing else
  *   full        the whole site, as before
  *
  * Unset (or anything else), the default is `join-only` when Vercel says this
@@ -45,13 +45,10 @@ export function currentSiteMode(): SiteMode {
  * Platform Policy document, so `/terms` (which holds the privacy provisions)
  * has to stay open or that link would end on /join.
  *
- * The password pages (R-123, R-133): `/forgot-password` asks for the reset mail, `/reset-password` is the page that
- * mail links to (`/reset-password?token=...&email=...`), and `/activate` is the page WAWU ID's activation mail links
- * to (`/activate?token=...&email=...`, it sets a first password). Exactly those paths (the query is not part of the
- * pathname). A link that ended on /join would mean nobody could set or reset a password. None of them has a way into
- * the closed site: they end by pointing at sign in on https://usewmt.com (src/lib/app-redirects.ts).
+ * The password pages (`/forgot-password`, `/reset-password`, `/activate`) are not served here any more (R-141, widened
+ * 12 Nov 2026): each goes to the same path on https://usewmt.com with its query kept (`movedPageTarget`).
  *
- * The brand site (BRAND-SITE, owner 2 Nov 2026): `/`, `/who-made-this`, `/voices`,
+ * The brand site (BRAND-SITE, owner 2 Nov 2026): `/`, `/voices`,
  * `/about`, `/partners`, `/press`, `/careers` and `/contact` are the public pages
  * of wawuafrica.com. They are plain pages with no data and no sign-in, so they
  * are safe to leave open. Their pictures and downloads are root files in public/
@@ -62,7 +59,7 @@ export function currentSiteMode(): SiteMode {
  *
  * R-133 (owner, 11 Nov 2026) closed what R-126 had opened: `/sign-in`, `/sign-up`, `/create/new` and
  * `/create/library` are not served here any more. An app address that is not open goes to the same place on
- * https://usewmt.com (`appRedirectTarget`, src/lib/app-redirects.ts); any other closed path goes to /join.
+ * https://usewmt.com (`appRedirectTarget`, src/lib/app-redirects.ts); any other closed path goes to usewmt.com (R-141).
  *
  * `/legal` and `/legal/<slug>` (owner, 26 Oct 2026) are the nine legal documents.
  * The app stores need a public privacy policy address that is not behind a
@@ -70,10 +67,10 @@ export function currentSiteMode(): SiteMode {
  * join-only mode too (see `LEGAL_DOCUMENT`).
  */
 const OPEN_PAGES = new Set([
-  "/", "/join", "/join/paid", "/privacy/policy", "/terms", "/legal", "/reset-password", "/forgot-password", "/activate",
+  "/", "/join/paid", "/privacy/policy", "/terms", "/legal",
   // The brand site (BRAND-SITE, owner 2 Nov 2026): wawuafrica.com becomes the WAWU brand website.
-  // Exactly these eight pages (with "/"), each one segment, no sub-paths.
-  "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact",
+  // Exactly these six pages (with "/"), each one segment, no sub-paths. /join and /who-made-this are not here: R-141.
+  "/voices", "/about", "/partners", "/press", "/careers", "/contact",
 ]);
 
 /**
@@ -148,7 +145,7 @@ function isAdminPath(path: string): boolean {
   return path === "/admin" || path.startsWith("/admin/");
 }
 
-/** True when join-only mode lets this path through. Every other path is sent to /join. */
+/** True when join-only mode lets this path through. Every other path is sent to https://usewmt.com. */
 export function isOpenInJoinOnly(pathname: string): boolean {
   const path = trimmed(pathname);
   if (OPEN_PAGES.has(path) || LEGAL_DOCUMENT.test(path)) return true;
@@ -165,14 +162,14 @@ export function isOpenInJoinOnly(pathname: string): boolean {
  * changes, link for link. In `join-only` mode (owner, 12 Oct 2026, show only
  * what is built, R-47):
  *
- *   signUpHref  a sign-up or get-started button goes to /join, whatever it
- *               pointed at.
+ *   signUpHref  a sign-up or get-started button opens https://usewmt.com (R-141),
+ *               whatever it pointed at.
  *   pageHref    any other link keeps its address if it lands on an open page or
  *               an in-page anchor, and is `null` (not drawn) if it would lead
  *               into a closed part of the site.
  */
 export function signUpHref(mode: SiteMode, fullHref: string): string {
-  return mode === "full" ? fullHref : "/join";
+  return mode === "full" ? fullHref : "https://usewmt.com";
 }
 
 export function pageHref(mode: SiteMode, fullHref: string): string | null {

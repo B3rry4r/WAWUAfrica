@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { REGISTER_HREF, SITE_URL } from "@/lib/site/site-config";
+import { WMT_HREF, SITE_URL } from "@/lib/site/site-config";
 import { AppTiles } from "./_components/AppTiles";
 import { ButtonLink } from "./_components/ButtonLink";
 import { Cards } from "./_components/Cards";
@@ -77,8 +77,8 @@ export default function HomePage() {
               Apps that give everyday people a name, a voice and a way to earn.
             </p>
             <div className="site-rise site-rise-4 mt-9 flex flex-wrap gap-3">
-              <ButtonLink href={REGISTER_HREF} variant="white" arrow>
-                Register
+              <ButtonLink href={WMT_HREF} variant="white" arrow>
+                Open Who Made This
               </ButtonLink>
               <ButtonLink href="#apps" variant="outline-light">
                 See the apps

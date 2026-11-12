@@ -2,7 +2,7 @@ import { ScreenTile } from "./ScreenTile";
 
 /**
  * Two app screens, tilted, for the home hero. Purely a picture: the screens
- * are described in full on /who-made-this, so these are hidden from screen
+ * are Who Made This (usewmt.com), so these are hidden from screen
  * readers.
  */
 export function HeroScreens() {
