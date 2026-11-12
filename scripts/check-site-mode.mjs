@@ -58,7 +58,7 @@ const siteModeModule = await import(join(root, "src/lib/site-mode.ts"));
 const {
   siteModeFrom, isOpenInJoinOnly, isOpenPageInJoinOnly, pageHref, signUpHref,
 } = siteModeModule;
-const { APP_ORIGIN, appUrl, appPathFor, appRedirectTarget, MOBILE_ROUTES, RENAMES } = await import(join(root, "src/lib/app-redirects.ts"));
+const { APP_ORIGIN, appUrl, appPathFor, appRedirectTarget, movedPageTarget, MOBILE_ROUTES, RENAMES } = await import(join(root, "src/lib/app-redirects.ts"));
 const { PLATFORM_SERVICES } = await import(join(root, "src/lib/platform-services.ts"));
 const appLinks = await import(join(root, "src/lib/app-links.ts"));
 const siteConfig = await import(join(root, "src/lib/site/site-config.ts"));
@@ -89,22 +89,18 @@ eq("mode: a typo elsewhere is full", siteModeFrom({ SITE_MODE: "ful" }), "full")
 // ---------------------------------------------------------------- open paths
 const serviceIcons = PLATFORM_SERVICES.map((s) => s.iconImageSrc);
 const mustBeOpen = [
-  "/", "/join", "/join/", "/join/paid", "/terms", "/privacy/policy",
+  "/", "/join/paid", "/terms", "/privacy/policy",
   // the nine legal documents (owner, 26 Oct 2026): the stores need a public privacy policy address
   "/legal", "/legal/", "/legal/privacy", "/legal/privacy/", "/legal/terms", "/legal/creator-monetization", "/legal/community-guidelines",
   "/_next/static/chunks/app/page-1.js", "/_next/static/css/a.css", "/_next/static/media/f.woff2", "/_next/image",
   "/robots.txt",
-  // the page the password-reset mail links to (RESET-WEB, R-123): exactly this path, the query is not part of it
-  "/reset-password", "/reset-password/",
-  // the password pages (R-133): ask for the mail, the page the reset mail links to, the page the activation mail links to
-  "/forgot-password", "/forgot-password/", "/activate", "/activate/",
   "/wawu-logo-white.png", "/wawu-icon-white.svg", "/wawu-hero-desktop-creators.png", "/wawu-hero-mobile-professionals.png",
   "/who-made-this-ink.png", "/og-image.png", "/favicon.ico", "/icon.png", "/apple-icon.png",
   // the admin dashboard (the admin sign-in protects it): /admin and everything under it
   "/admin", "/admin/", "/admin/notifications", "/admin/notifications/", "/admin/x/y",
   "/wawu-theme.mp3",
-  // the brand site (BRAND-SITE, owner 2 Nov 2026): the eight pages, with and without a trailing slash, and the sitemap
-  "/who-made-this", "/who-made-this/", "/voices", "/voices/", "/about", "/about/", "/partners", "/partners/", "/press", "/press/", "/careers", "/careers/", "/contact", "/contact/",
+  // the brand site (BRAND-SITE, owner 2 Nov 2026): the six pages (R-141 took /who-made-this out), with and without a trailing slash, and the sitemap
+  "/voices", "/voices/", "/about", "/about/", "/partners", "/partners/", "/press", "/press/", "/careers", "/careers/", "/contact", "/contact/",
   "/sitemap.xml",
   "/wawu-brand-wordmark-white.svg", "/wawu-brand-icon-colour.png", "/wawu-partner-canva.png", "/wawu-wmt-screen-today.webp", "/wawu-og-brand.png",
   // Google Play's foreground-service video (owner, 31 Oct 2026): this one file, linked from no page
@@ -151,6 +147,10 @@ const mustStayClosed = [
   "/brand", "/brand/wawu-logo.svg", "/press/logo.png", "/partners/canva.png", "/assets/wawu-og-brand.png", "/wawu-brand-wordmark-white.svg/x", "/wawu-partner-canva.png.map", "/wawu-og-brand.zip",
   // files and paths that were closed before
   "/landing-video.mp4", "/landing-video-mobile.mp4", "/wawu-services.mp4", "/business-playbook-the-naija-way.pdf", "/mock/creators/x.png",
+  // R-141: the join page and the Who Made This page are not served here any more
+  "/join", "/join/", "/who-made-this", "/who-made-this/",
+  // R-141 (widened): the password pages moved to usewmt.com
+  "/reset-password", "/reset-password/", "/forgot-password", "/forgot-password/", "/activate", "/activate/",
   "/join/anything", "/join/paid/x", "/terms/x", "/privacy", "/privacy/policy/x",
   // /legal is one document deep, in lower case, and not a file
   "/legal/privacy/x", "/legalx", "/legal/Privacy", "/legal/privacy.png", "/legal/a_b", "/x/legal", "/x/legal/privacy", "/index.html", "/_next/data/x/home.json", "/_next/static", "/_next",
@@ -169,17 +169,16 @@ eq("page: a file is not a page", isOpenPageInJoinOnly("/wawu-logo-white.png"), f
 eq("page: /legal is a page", isOpenPageInJoinOnly("/legal"), true);
 eq("page: /legal/privacy is a page", isOpenPageInJoinOnly("/legal/privacy"), true);
 eq("page: /legal/privacy/x is not a page", isOpenPageInJoinOnly("/legal/privacy/x"), false);
-for (const p of ["/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact", "/contact/"]) eq(`page: ${p} is a page`, isOpenPageInJoinOnly(p), true);
-for (const p of ["/who-made-this/x", "/about/x", "/sitemap.xml", "/wawu-og-brand.png", "/settings/about"]) eq(`page: ${p} is not a page`, isOpenPageInJoinOnly(p), false);
-eq("page: /reset-password is a page", isOpenPageInJoinOnly("/reset-password"), true);
-eq("page: /reset-password/ is a page", isOpenPageInJoinOnly("/reset-password/"), true);
+for (const p of ["/voices", "/about", "/partners", "/press", "/careers", "/contact", "/contact/"]) eq(`page: ${p} is a page`, isOpenPageInJoinOnly(p), true);
+for (const p of ["/join", "/who-made-this", "/who-made-this/x", "/about/x", "/sitemap.xml", "/wawu-og-brand.png", "/settings/about"]) eq(`page: ${p} is not a page`, isOpenPageInJoinOnly(p), false);
+eq("page: /reset-password is not a page (R-141: it moved to usewmt.com)", isOpenPageInJoinOnly("/reset-password"), false);
 eq("page: /reset-password/x is not a page", isOpenPageInJoinOnly("/reset-password/x"), false);
-for (const p of ["/forgot-password", "/forgot-password/", "/activate", "/activate/"]) eq(`page: ${p} is a page`, isOpenPageInJoinOnly(p), true);
+for (const p of ["/forgot-password", "/forgot-password/", "/activate", "/activate/"]) eq(`page: ${p} is not a page (R-141: it moved to usewmt.com)`, isOpenPageInJoinOnly(p), false);
 for (const p of ["/sign-in", "/sign-up", "/create/new", "/create/library", "/activate/x", "/forgot-password/x"]) eq(`page: ${p} is not a page`, isOpenPageInJoinOnly(p), false);
 
 // R-133: R-126's upload pages are gone. Nothing is rewritten, nothing of them is left in the source.
 check("strip: the middleware's rewrite helper is gone", !("joinOnlyRewrite" in siteModeModule));
-for (const gone of ["src/app/upload-site", "src/components/site-upload", "src/lib/site-upload", "src/lib/api/site-upload.ts", "src/app/(auth)/forgot-password"]) {
+for (const gone of ["src/app/upload-site", "src/components/site-upload", "src/lib/site-upload", "src/lib/api/site-upload.ts", "src/app/(auth)/forgot-password", "src/app/activate", "src/app/forgot-password", "src/app/reset-password"]) {
   check(`strip: ${gone} is removed`, !existsSync(join(root, gone)));
 }
 {
@@ -195,8 +194,16 @@ for (const gone of ["src/app/upload-site", "src/components/site-upload", "src/li
   walk(join(root, "src"));
   eq("strip: no source file still names the upload pages' pieces", leftovers, []);
 }
-check("strip: the forgot-password page is its own page file (not behind the app's auth frame)", existsSync(join(root, "src/app/forgot-password/page.tsx")));
-for (const f of ["src/app/activate/page.tsx", "src/app/activate/components/ActivateForm.tsx", "src/app/reset-password/page.tsx", "src/app/forgot-password/page.tsx"]) check(`strip: ${f} exists`, existsSync(join(root, f)));
+// R-141: the join page, the Who Made This page and everything only they used are gone; /join/paid keeps what a payment already made needs
+for (const gone of ["src/app/join/page.tsx", "src/app/(site)/who-made-this", "src/app/join/components/JoinFlow.tsx", "src/app/join/components/JoinLanding.tsx", "src/app/join/components/JoinForm.tsx", "src/app/join/components/TierPicker.tsx", "src/lib/join-tiers.ts", "src/lib/join-referral.ts"]) check(`wmt-off: ${gone} is removed`, !existsSync(join(root, gone)));
+check("wmt-off: /join/paid keeps its return page", existsSync(join(root, "src/app/join/paid/page.tsx")) && existsSync(join(root, "src/app/join/paid/PaidReturn.tsx")));
+check("wmt-off: /join/paid is open in join-only and no page of the site links to /join or /who-made-this", isOpenPageInJoinOnly("/join/paid"));
+{
+  const stale = [];
+  const walkSrc = (dir) => { for (const e of readdirSync(dir, { withFileTypes: true })) { const full = join(dir, e.name); if (e.isDirectory()) walkSrc(full); else if (/\.(ts|tsx)$/.test(e.name) && !full.includes("api.generated") && /(?:href|redirectUrl|origin\}?)[=:]\s*[{"'`]?[^"'`}]*\/(?:join|who-made-this)(?!\/paid|-)["'`\s}?]/.test(readFileSync(full, "utf8"))) stale.push(relative(root, full)); } };
+  walkSrc(join(root, "src"));
+  eq("wmt-off: no source file links to /join or /who-made-this", stale, []);
+}
 
 // Every file in public/ is either on this list or closed. A new file cannot
 // become reachable without someone editing this list.
@@ -205,12 +212,12 @@ const EXPECTED_OPEN_PUBLIC = [
   "/wawu-hero-desktop-creators.png", "/wawu-hero-desktop-professionals.png", "/wawu-hero-mobile-creators.png", "/wawu-hero-mobile-professionals.png",
   "/wawu-icon-dark.png", "/wawu-icon-white.png", "/wawu-icon-white.svg", "/wawu-logo-dark.png", "/wawu-logo-dark.svg", "/wawu-logo-white.png", "/wawu-logo-white.svg",
   "/play/background-audio.mp4", "/wawu-mascot-gospel.webp", "/wawu-theme.mp3", "/wawubasket-icon.png", "/wawubasket-logo.png", "/wawubeauty-icon.png", "/wawubeauty-logo.png",
-  "/who-made-this-conference.webp", "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
+  "/who-made-this-ink.png", "/who-made-this-og.png", "/who-made-this-white.png",
   // the brand site (BRAND-SITE, owner 2 Nov 2026): logo pack (SVG and PNG), partner logos, app screens, link-preview pictures
   ...["wordmark-colour", "wordmark-purple", "wordmark-white", "icon-colour", "icon-purple", "icon-white"].flatMap((n) => [`/wawu-brand-${n}.svg`, `/wawu-brand-${n}.png`]),
   ...["isn-hubs", "plli", "edc-pan-atlantic", "dbn", "learning-curve", "soueast", "canva", "africa-trade-gateway", "fmyd", "pencom", "nuvion", "dreamax-white", "alison"].map((n) => `/wawu-partner-${n}.png`), // Flixora removed (owner, 3 Nov 2026)
   ...["today", "wallet", "dollar", "explore", "me", "creator", "unlock"].map((n) => `/wawu-wmt-screen-${n}.webp`),
-  "/wawu-og-brand.png", "/wawu-og-who-made-this.png", "/wawu-og-voices.png",
+  "/wawu-og-brand.png", "/wawu-og-voices.png",
   ...serviceIcons,
 ].sort();
 function walk(dir) {
@@ -222,11 +229,8 @@ function walk(dir) {
 const publicFiles = walk(join(root, "public")).map((f) => "/" + relative(join(root, "public"), f).split("\\").join("/"));
 const openPublic = publicFiles.filter((p) => isOpenInJoinOnly(p)).sort();
 eq("public/: the files join-only serves are exactly the expected list", openPublic, EXPECTED_OPEN_PUBLIC);
-// The /join hero picture (HERO_IMAGE in join-content.ts) is a root file in public/ and join-only serves it.
-const heroSrc = /HERO_IMAGE[^=]*=\s*\{[^}]*?src:\s*"(\/[^"]+)"/s.exec(readFileSync(join(root, "src/app/join/components/join-content.ts"), "utf8"))?.[1];
-check("join: the hero picture is named in join-content.ts", typeof heroSrc === "string");
-check("join: the hero picture exists in public/", publicFiles.includes(heroSrc));
-check("join: the hero picture is open in join-only", isOpenInJoinOnly(heroSrc ?? "/none"));
+// R-141: the join page's hero picture and the Who Made This link-preview picture left with their pages.
+check("join: the hero picture is gone from public/", !publicFiles.includes("/who-made-this-conference.webp") && !publicFiles.includes("/wawu-og-who-made-this.png"));
 check("public/: the landing page's icons exist", serviceIcons.every((p) => publicFiles.includes(p)), serviceIcons.filter((p) => !publicFiles.includes(p)).join(", "));
 
 // ---------------------------------------------------------------- landing: files it asks for (ruling 2)
@@ -259,10 +263,10 @@ for (const f of referenced) {
 
 // ---------------------------------------------------------------- landing: links (ruling 3)
 const SIGN_UP = ["/sign-up", "/sign-up?type=creator", "/sign-up?type=creator&x=1"];
-const CLOSED_LINKS = ["/sign-in", "/sign-up", "/create/new", "/create/library", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x"];
-const KEPT_LINKS = ["/forgot-password", "/activate", "/activate?token=abc&email=ada%40example.test", "/reset-password", "/reset-password?token=abc&email=ada%40example.test", "#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join", "/join/paid", "/legal", "/legal/privacy"];
+const CLOSED_LINKS = ["/sign-in", "/sign-up", "/create/new", "/create/library", "/home", "/explore", "/learn", "/services", "/services/legal", "/services/pay", "/events", "/shop", "/wallet", "/wawu/ada.png", "/admin", "/api/x", "/join", "/who-made-this", "/forgot-password", "/activate", "/activate?token=abc&email=ada%40example.test", "/reset-password", "/reset-password?token=abc&email=ada%40example.test"];
+const KEPT_LINKS = ["#pricing", "#comparison", "/terms", "/terms#privacy-and-data-protection", "/privacy/policy", "/join/paid", "/legal", "/legal/privacy"];
 for (const h of SIGN_UP) {
-  eq(`join-only: sign-up ${h} goes to /join`, signUpHref("join-only", h), "/join");
+  eq(`join-only: sign-up ${h} opens usewmt.com`, signUpHref("join-only", h), "https://usewmt.com");
   eq(`full: sign-up ${h} is unchanged`, signUpHref("full", h), h);
 }
 for (const h of CLOSED_LINKS) {
@@ -312,13 +316,34 @@ const REDIRECTS = [
 ];
 for (const [path, search, want] of REDIRECTS) eq(`redirect: ${path}${search} goes to ${want}`, appRedirectTarget(path, search), want);
 
+// R-141: /join and /who-made-this go to the app's home, nothing else does
+for (const p of ["/join", "/join/", "/who-made-this", "/who-made-this/"]) eq(`redirect: ${p} goes to usewmt.com (movedPageTarget)`, movedPageTarget(p, ""), "https://usewmt.com");
+eq("redirect: /join drops its query (the app's home needs none)", movedPageTarget("/join", "?ref=ABC"), "https://usewmt.com");
+for (const p of ["/join/paid", "/join/x", "/who-made-this/x", "/voices", "/", "/Join", "/joined", "/reset-password/x", "/activate/x", "/forgot-password/x", "/reset-passwords", "/Activate"]) eq(`redirect: ${p} is not a moved page`, movedPageTarget(p, "?x=1"), null);
+// R-141 (widened): the three password pages go to the SAME path on usewmt.com, the query kept byte for byte (the mails' token and email)
+for (const page of ["/reset-password", "/forgot-password", "/activate"]) {
+  for (const q of [
+    "", "?", "?token=abc&email=a%40b.com", "?token=tok%2B123&email=ada%2Bx%40example.test", "?email=ada%40example.test&token=0123456789abcdef0123456789abcdef", "?token=a+b&email=a@b.com",
+    "?token=abc&email=a%40b.com&utm_source=mail&x=%E2%9C%93", "?a=1&a=2&b=", "?token=A%2fB%3D%3D&email=%41%42%40c.d", "?t=%25%32%30&u=;v=~._-!*'()",
+  ]) {
+    const got = movedPageTarget(page, q);
+    eq(`redirect: ${page}${q} keeps its query byte for byte`, got, `https://usewmt.com${page}${q === "?" ? "" : q}`);
+    if (q !== "" && q !== "?") check(`redirect: ${page}${q}: the query part of the target is exactly the query that came`, got.slice(got.indexOf("?")) === q);
+  }
+  eq(`redirect: ${page}/ (a trailing slash) goes to ${page} on usewmt.com`, movedPageTarget(`${page}/`, "?token=abc&email=a%40b.com"), `https://usewmt.com${page}?token=abc&email=a%40b.com`);
+}
+{
+  const mw = readFileSync(join(root, "src/middleware.ts"), "utf8");
+  check("redirect: the middleware answers the moved pages before it looks at the mode, and hands the query on", mw.indexOf("movedPageTarget(") > 0 && mw.indexOf("movedPageTarget(") < mw.indexOf('currentSiteMode() === "full"') && mw.includes("request.nextUrl.search"));
+  check("redirect: no closed path is sent to /join any more", !/pathname\s*=\s*"\/join"/.test(mw));
+}
 // never redirected: well-known files, admin, the build's files, the API, payment returns, the company pages, the legal pages, the password pages, /join, site files
 const NEVER = [
   "/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/.well-known/x", "/.well-known", "/admin", "/admin/notifications", "/admin/x/y",
   "/_next/static/chunks/a.js", "/_next/image", "/api/hub/anything", "/api/anything", "/payment/return",
   "/", "/join", "/join/paid", "/terms", "/privacy/policy", "/legal", "/legal/privacy", "/legal/delete-account",
-  "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact",
-  "/forgot-password", "/reset-password", "/activate", "/robots.txt", "/sitemap.xml", "/favicon.ico", "/wawu-logo-white.png", "/wawu-theme.mp3", "/play/background-audio.mp4", "/icons/services/legal.png",
+  "/voices", "/about", "/partners", "/press", "/careers", "/contact",
+  "/robots.txt", "/sitemap.xml", "/favicon.ico", "/wawu-logo-white.png", "/wawu-theme.mp3", "/play/background-audio.mp4", "/icons/services/legal.png",
   // not an app address: the old closed answer (307 to /join) stays
   "/login", "/auth/login", "/verify-email", "/some/where/else", "/landing-video.mp4",
 ];
@@ -367,12 +392,12 @@ if (mobileSrc) {
   for (const [from, to] of RENAMES) check(`mobile: ${from} goes to ${to}, a route of usewmt.com`, to === "/" || real.has(norm(to)));
   // the other way: every app route that wawuafrica.com keeps for itself is the only one left out
   const left = [...found].filter((r) => r !== "/" && !MOBILE_ROUTES.some((m) => norm(m) === norm(r))).sort();
-  eq("mobile: the only app routes not mapped are the pages wawuafrica.com keeps", left, ["/about", "/activate", "/forgot-password", "/legal", "/privacy-policy", "/reset-password", "/terms"]);
+  eq("mobile: the only app routes not mapped are the pages wawuafrica.com keeps or moves to usewmt.com with their query", left, ["/about", "/activate", "/forgot-password", "/legal", "/privacy-policy", "/reset-password", "/terms"]);
 } else console.log("check-site-mode: mobile routes NOT checked (give --mobile-src <wawu-wmt-mobile/src/app>)");
 
 // the links on the pages that stay: none leads to a closed page. A literal path in an href, a Link or a push on these pages is open or is an appUrl().
 {
-  const dirs = ["src/app/join", "src/app/(site)", "src/app/legal", "src/components/legal", "src/app/activate", "src/app/forgot-password", "src/app/reset-password", "src/lib/site"];
+  const dirs = ["src/app/join", "src/app/(site)", "src/app/legal", "src/components/legal", "src/lib/site"];
   const files = [];
   const walk = (dir) => {
     if (!existsSync(dir)) return;
@@ -392,33 +417,29 @@ if (mobileSrc) {
       if (!isOpenPageInJoinOnly(path)) closedHits.push(`${relative(root, f)} -> ${path}`);
     }
   }
-  // the full-mode branches of the two password forms still link to this site's own sign in; join-only draws the appOnly branches
-  const fullModeOnly = new Set(["src/app/forgot-password/components/ForgotPasswordForm.tsx -> /sign-in", "src/app/reset-password/components/ResetPasswordForm.tsx -> /sign-in"]);
-  eq("links: no page that stays links to a closed page (outside the full-mode branches)", closedHits.filter((h) => !fullModeOnly.has(h)), []);
-  for (const f of ["src/app/forgot-password/components/ForgotPasswordForm.tsx", "src/app/reset-password/components/ResetPasswordForm.tsx", "src/app/activate/components/ActivateForm.tsx", "src/app/join/components/JoinSuccess.tsx", "src/app/join/components/JoinLanding.tsx", "src/app/(site)/_components/SiteHeader.tsx", "src/app/(site)/_components/SiteFooter.tsx"]) {
+  eq("links: no page that stays links to a closed page", closedHits, []);
+  for (const f of ["src/app/join/components/JoinSuccess.tsx", "src/app/(site)/_components/SiteHeader.tsx", "src/app/(site)/_components/SiteFooter.tsx"]) {
     check(`links: ${f} sends sign in to usewmt.com`, readFileSync(join(root, f), "utf8").includes('appUrl("/sign-in")'));
   }
-  // the owner's rules for the new page and the changed ones: no em-dash in what a person reads, no inline style, no hex
-  for (const f of ["src/app/activate/page.tsx", "src/app/activate/components/ActivateForm.tsx", "src/app/forgot-password/page.tsx", "src/app/forgot-password/components/ForgotPasswordForm.tsx", "src/app/reset-password/components/ResetPasswordForm.tsx"]) {
+  // the owner's rules for the pages that changed: no em-dash in what a person reads, no inline style, no hex
+  for (const f of ["src/app/join/paid/PaidReturn.tsx", "src/app/join/components/JoinSuccess.tsx"]) {
     const text = readFileSync(join(root, f), "utf8");
     const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
-    check(`links: ${f} has no em-dash outside comments`, !code.includes("—"));
+    check(`links: ${f} has no em-dash outside comments`, !code.includes("\u2014"));
     check(`links: ${f} has no inline style`, !/style=\{\{/.test(text));
     check(`links: ${f} has no hex colour`, !/#[0-9a-fA-F]{6}\b/.test(code));
+    check(`links: ${f} never names the payment provider on the page`, !/>[^<{]*flutterwave/i.test(code.replace(/\{[^}]*\}/g, "")));
   }
-  // the activation page talks to WAWU ID through src/lib/api and nothing else
-  const act = readFileSync(join(root, "src/app/activate/components/ActivateForm.tsx"), "utf8");
-  check("activate: the page calls activateAccount and never fetch()", act.includes("activateAccount(") && !/\bfetch\(/.test(act));
+  // R-141 (widened): nothing of the password pages is left in the source
   const authApi = readFileSync(join(root, "src/lib/api/auth.ts"), "utf8");
-  check("activate: activateAccount posts activationToken, email and password to WAWU ID /auth/activate", /"\/auth\/activate"[\s\S]{0,200}baseUrl: WAWU_ID_BASE[\s\S]{0,200}activationToken: payload\.token, email: payload\.email, password: payload\.password/.test(authApi));
-  check("activate: no session is stored from the activation answer", !/activateAccount[\s\S]{0,900}sessionStorage\./.test(authApi.slice(authApi.indexOf("export async function activateAccount"), authApi.indexOf("export async function activateAccount") + 900)));
+  check("password-off: the API calls for the three pages are gone from src/lib/api/auth.ts", !/requestPasswordReset|saveNewPassword|activateAccount|\/auth\/forgot-password|\/auth\/reset-password|\/auth\/activate/.test(authApi));
 }
 
 // ---------------------------------------------------------------- brand site (BRAND-SITE, owner 2 Nov 2026)
-// wawuafrica.com's public pages: eight pages, plain, open in join-only mode. This proves they are the eight, that nothing a
+// wawuafrica.com's public pages: seven pages (R-141 took /who-made-this out), plain, open in join-only mode. This proves they are the eight, that nothing a
 // visitor can click leads into a closed part of the site, that every picture and download exists and is served, and the
 // owner's copy rules (no em-dash, no placeholder, no dead button, no inline style).
-const BRAND_PAGES = ["/", "/who-made-this", "/voices", "/about", "/partners", "/press", "/careers", "/contact"];
+const BRAND_PAGES = ["/", "/voices", "/about", "/partners", "/press", "/careers", "/contact"];
 const exists = (rel) => { try { statSync(join(root, rel)); return true; } catch { return false; } };
 eq("brand: the pages the site lists (SITE_PAGES)", siteConfig.SITE_PAGES.map((p) => p.href), BRAND_PAGES);
 for (const h of BRAND_PAGES) {
@@ -433,18 +454,19 @@ check("brand: a sitemap lists exactly SITE_PAGES", exists("src/app/sitemap.ts") 
 check("brand: /sitemap.xml and /robots.txt are open in join-only", isOpenInJoinOnly("/sitemap.xml") && isOpenInJoinOnly("/robots.txt"));
 
 // every link the config files hold lands on an open page; Register is the registration link; the legal links are the existing pages
-const configLinks = [...siteConfig.HEADER_NAV, ...siteConfig.FOOTER_APPS, ...siteConfig.FOOTER_COMPANY, ...siteConfig.FOOTER_LEGAL, ...siteConfig.SITE_PAGES, { label: "Register", href: siteConfig.REGISTER_HREF }];
-for (const l of configLinks) check(`brand: link ${l.label} -> ${l.href} lands on an open page`, isOpenPageInJoinOnly(l.href));
-eq("brand: Register is the registration link", siteConfig.REGISTER_HREF, "/join");
+const configLinks = [...siteConfig.HEADER_NAV, ...siteConfig.FOOTER_APPS, ...siteConfig.FOOTER_COMPANY, ...siteConfig.FOOTER_LEGAL, ...siteConfig.SITE_PAGES, { label: "Open Who Made This", href: siteConfig.WMT_HREF }];
+for (const l of configLinks) check(`brand: link ${l.label} -> ${l.href} lands on an open page or on usewmt.com`, isOpenPageInJoinOnly(l.href) || l.href === "https://usewmt.com");
+eq("brand: the Who Made This link opens usewmt.com (R-141)", siteConfig.WMT_HREF, "https://usewmt.com");
+eq("brand: the Who Made This links in the config are all usewmt.com", [...siteConfig.HEADER_NAV, ...siteConfig.FOOTER_APPS].filter((l) => l.label === "WHO MADE THIS?").map((l) => l.href), ["https://usewmt.com", "https://usewmt.com"]);
 eq("brand: the legal links are the existing legal pages", siteConfig.FOOTER_LEGAL.map((l) => l.href), ["/legal/privacy", "/terms", "/legal"]);
-eq("brand: the header's links", siteConfig.HEADER_NAV.map((l) => l.href), ["/who-made-this", "/voices", "/about", "/partners", "/contact"]);
+eq("brand: the header's links", siteConfig.HEADER_NAV.map((l) => l.href), ["https://usewmt.com", "/voices", "/about", "/partners", "/contact"]);
 eq("brand: the support email", siteConfig.CONTACT_EMAIL, "support@wawuafrica.com");
 eq("brand: the WhatsApp link", siteConfig.WHATSAPP_URL, "https://wa.me/2347050722222");
 eq("brand: the company", siteConfig.COMPANY, "WAWU Technology Ltd");
 eq("brand: the conference cities", siteConfig.CONFERENCE_CITIES, ["Lagos", "Abuja", "Port Harcourt"]);
 
-// the store links live in one file; neither app is in a store yet, so nothing links out and every page says "coming soon"
-eq("brand: the two apps the store config knows", Object.keys(storeConfig.STORE_LINKS).sort(), ["voices", "who-made-this"]);
+// the store links live in one file; VOICES is not in a store yet, so nothing links out and its page says "coming soon" (Who Made This has no store entry: its links open usewmt.com, R-141)
+eq("brand: the apps the store config knows", Object.keys(storeConfig.STORE_LINKS).sort(), ["voices"]);
 for (const app of Object.keys(storeConfig.STORE_LINKS)) {
   eq(`brand: ${app} has no store link yet`, storeConfig.liveStores(app), []);
   for (const url of Object.values(storeConfig.STORE_LINKS[app])) check(`brand: a ${app} store link is null or an https address`, url === null || /^https:\/\//.test(url));
@@ -500,7 +522,7 @@ for (const id of ["today", "wallet", "dollar", "explore", "me", "creator", "unlo
 }
 check("brand: the app screen the owner struck out (SLIDER 2: a physical card, To cash) is not used", !siteSources.some((f) => /slider[ _-]?2/i.test(readFileSync(f, "utf8"))));
 const ogFiles = [...readFileSync(join(root, "src/app/(site)/_lib/page-metadata.ts"), "utf8").matchAll(/"(\/wawu-og-[a-z-]+\.png)"/g)].map((m) => m[1]);
-eq("brand: the three link-preview pictures", ogFiles.sort(), ["/wawu-og-brand.png", "/wawu-og-voices.png", "/wawu-og-who-made-this.png"]);
+eq("brand: the two link-preview pictures", ogFiles.sort(), ["/wawu-og-brand.png", "/wawu-og-voices.png"]);
 
 // every literal link in the site's components lands on an open page (or is mailto, wa.me or an anchor on the page)
 const HREF_LITERAL = /href(?:=|:\s*)(?:"|'|\{\s*["'`])([^"'`}]+)/g;
@@ -657,6 +679,8 @@ if (base && mode) {
       if (/^(?:mailto:|https:\/\/wa\.me\/)/.test(a)) continue;
       // the Sign in links go to the app (R-133)
       if (a === appUrl("/sign-in")) { check(`live: ${page.href} sign in goes to usewmt.com`, true); continue; }
+      // every Who Made This link and button opens the app (R-141)
+      if (a === APP_ORIGIN) { check(`live: ${page.href} Who Made This link opens usewmt.com`, true); continue; }
       if (/^[a-z]+:/i.test(a)) { check(`live: ${page.href} link ${a} is one we expect`, false); continue; }
       const path = a.split(/[?#]/)[0];
       if (mode === "join-only") {
@@ -738,10 +762,10 @@ if (base && mode) {
   }
 
   if (mode === "join-only") {
-    // still closed with the old answer: not an app address, so 307 to /join
+    // still closed: not an app address, so 307 to usewmt.com's home (R-141: the site has no join page to send people to)
     for (const p of ["/login", "/auth/reset-password", "/auth/login", "/reset-password/x", "/administrator", "/api/anything", "/payment/return", "/icons/bills/airtime.png", "/landing-video.mp4", "/about/x", "/who-made-this/x", "/voices/x", "/press/x", "/sitemap.xml/x", "/activate/x", "/forgot-password/x"]) {
       const r = await get(p);
-      check(`live: ${p} is still closed (307 to /join)`, r.status === 307 && /\/join$/.test(r.headers.get("location") ?? ""), `status ${r.status} ${r.headers.get("location") ?? ""}`);
+      check(`live: ${p} is still closed (307 to usewmt.com)`, r.status === 307 && r.headers.get("location") === "https://usewmt.com/", `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
     // app addresses: a permanent redirect to the same place on usewmt.com, path and query kept
     for (const [p, want] of [
@@ -754,42 +778,36 @@ if (base && mode) {
       const r = await get(p);
       check(`live: ${p} is sent to ${want} (308)`, r.status === 308 && r.headers.get("location") === want, `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
+    // R-141: the join page and the Who Made This page are a permanent redirect to usewmt.com, with or without a query (a trailing slash first takes Next's own 308 to the slashless path)
+    for (const p of ["/join", "/join?ref=ABC", "/who-made-this"]) {
+      const r = await get(p);
+      check(`live: ${p} is sent to usewmt.com (308)`, r.status === 308 && r.headers.get("location") === "https://usewmt.com/", `status ${r.status} ${r.headers.get("location") ?? ""}`);
+    }
     // the settings the owner named stay as they are
-    for (const p of ["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/admin/notifications", "/join"]) check(`live: ${p} is not redirected`, (await get(p)).status === 200);
-    for (const p of ["/.well-known/other", "/_next/static/missing.js"]) {
-      const r = await get(p);
-      check(`live: ${p} is never sent to usewmt.com`, !(r.headers.get("location") ?? "").includes("usewmt.com"), `status ${r.status} ${r.headers.get("location") ?? ""}`);
-    }
-    for (const p of ["/activate?token=abc&email=ada%40example.test", "/activate", "/forgot-password"]) {
-      const r = await get(p);
-      check(`live: ${p} answers 200 in join-only`, r.status === 200, `status ${r.status} ${r.headers.get("location") ?? ""}`);
-      const page = await r.text();
-      const hrefs = [...page.matchAll(/<a\s[^>]*?href="([^"]*)"/g)].map((m) => m[1]);
-      check(`live: ${p} links to no closed page`, hrefs.every((h) => h.startsWith("#") || /^\/(?:join|terms|privacy\/policy|legal|forgot-password)\b/.test(h) || /^https?:/.test(h)), hrefs.join(" "));
-    }
+    for (const p of ["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association", "/admin/notifications"]) check(`live: ${p} is not redirected`, (await get(p)).status === 200);
     {
-      const page = await (await get("/activate?token=abc&email=ada%40example.test")).text();
-      check("live: the activate page has its title and form", page.includes("Set your password") && page.includes("Save password"));
+      const r = await get("/.well-known/other");
+      check("live: /.well-known/other gets no app redirect (only the closed 307 to usewmt.com's home)", r.status === 307 && r.headers.get("location") === "https://usewmt.com/", `status ${r.status} ${r.headers.get("location") ?? ""}`);
+      const m = await get("/_next/static/missing.js");
+      check("live: /_next/static/missing.js is never sent to usewmt.com", !(m.headers.get("location") ?? "").includes("usewmt.com"), `status ${m.status} ${m.headers.get("location") ?? ""}`);
+    }
+    // R-141 (widened): the password pages go to the same path on usewmt.com, the query kept byte for byte
+    for (const [p, want] of [
+      ["/activate?token=abc&email=ada%40example.test", "https://usewmt.com/activate?token=abc&email=ada%40example.test"], ["/activate", "https://usewmt.com/activate"],
+      ["/forgot-password", "https://usewmt.com/forgot-password"],
+      ["/reset-password?token=tok%2B123&email=ada%2Bx%40example.test&n=a+b", "https://usewmt.com/reset-password?token=tok%2B123&email=ada%2Bx%40example.test&n=a+b"],
+      ["/reset-password", "https://usewmt.com/reset-password"],
+    ]) {
+      const r = await get(p);
+      check(`live: ${p} is sent to ${want} (308)`, r.status === 308 && r.headers.get("location") === want, `status ${r.status} ${r.headers.get("location") ?? ""}`);
     }
     for (const p of ["/join/paid", "/terms", "/admin/notifications", ...BRAND_PAGES]) check(`live: ${p} answers 200`, (await get(p)).status === 200);
   }
 
-  // the password-reset page (RESET-WEB, R-123): open in join-only with its query kept, and the page itself sends nobody into the closed site
-  {
-    const path = "/reset-password?token=abc123&email=ada%40example.test";
-    const r = await get(path);
-    check(`live: ${path} answers 200 in ${mode} (no redirect)`, r.status === 200, `status ${r.status} ${r.headers.get("location") ?? ""}`);
-    const page = await r.text();
-    check(`live: the reset page has its title and form in ${mode}`, page.includes("Set a new password") && page.includes("Save new password"));
-    const hrefs = [...page.matchAll(/<a\s[^>]*?href="([^"]*)"/g)].map((m) => m[1]);
-    if (mode === "join-only") {
-      check("live: the reset page in join-only mode links to no closed page", hrefs.every((h) => h.startsWith("#") || /^\/(?:join|terms|privacy\/policy|legal)\b/.test(h) || /^https?:/.test(h)), hrefs.join(" "));
-      check("live: the reset page in join-only mode says to sign in in the app", page.includes("Who Made This?"));
-    } else {
-      check("live: the reset page in full mode still links back to sign in", hrefs.includes("/sign-in"), hrefs.join(" "));
-    }
-    const bare = await get("/reset-password");
-    check(`live: /reset-password with no query answers 200 in ${mode}`, bare.status === 200, `status ${bare.status}`);
+  // R-141: the password pages are redirected in every mode, not only in join-only
+  for (const [p, want] of [["/reset-password?token=abc123&email=ada%40example.test", "https://usewmt.com/reset-password?token=abc123&email=ada%40example.test"], ["/activate?token=abc&email=a%40b.com", "https://usewmt.com/activate?token=abc&email=a%40b.com"], ["/forgot-password", "https://usewmt.com/forgot-password"]]) {
+    const r = await get(p);
+    check(`live: ${p} is sent to usewmt.com in ${mode} (308)`, r.status === 308 && r.headers.get("location") === want, `status ${r.status} ${r.headers.get("location") ?? ""}`);
   }
 }
 

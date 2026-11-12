@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 /** The link-preview pictures (1200 x 630), at the root of public/ so join-only mode serves them. */
 export const OG_IMAGES = {
   brand: "/wawu-og-brand.png",
-  whoMadeThis: "/wawu-og-who-made-this.png",
   voices: "/wawu-og-voices.png",
 } as const;
 

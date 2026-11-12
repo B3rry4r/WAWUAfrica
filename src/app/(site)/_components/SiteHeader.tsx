@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { appUrl } from "@/lib/app-redirects";
 import { cn } from "@/lib/cn";
-import { CONTACT_EMAIL, HEADER_NAV, REGISTER_HREF, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/site/site-config";
+import { CONTACT_EMAIL, HEADER_NAV, WMT_HREF, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/site/site-config";
 import { ButtonLink } from "./ButtonLink";
 import { CloseIcon, MenuIcon } from "./Icons";
 import { SiteLogo } from "./SiteLogo";
@@ -99,8 +99,8 @@ export function SiteHeader() {
           >
             Sign in
           </Link>
-          <ButtonLink href={REGISTER_HREF} variant="white" className="hidden min-h-[44px] px-5 text-[15px] sm:inline-flex">
-            Register
+          <ButtonLink href={WMT_HREF} variant="white" className="hidden min-h-[44px] px-5 text-[15px] sm:inline-flex">
+            Open Who Made This
           </ButtonLink>
           <button
             ref={button}
@@ -137,8 +137,8 @@ export function SiteHeader() {
               </Link>
             ))}
             <div className="mt-8 flex flex-col gap-3">
-              <ButtonLink href={REGISTER_HREF} variant="white" arrow>
-                Register
+              <ButtonLink href={WMT_HREF} variant="white" arrow>
+                Open Who Made This
               </ButtonLink>
               <div className="mt-4 flex flex-col gap-2 text-[15px] text-white/80">
                 <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-white underline-offset-4 hover:underline">

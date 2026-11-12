@@ -1,5 +1,5 @@
 /**
- * What /join keeps in the browser: a reference, and nothing about the person.
+ * What /join/paid reads from the browser (the join page itself is gone, R-141): a reference, and nothing about the person.
  *
  * A refresh in the middle of registering has to pick up where it was, and the
  * only thing it needs for that is the registration's reference (a random
@@ -14,9 +14,6 @@
  */
 
 const KEY = "wawu.join.registration";
-const ABANDONED_KEY = "wawu.join.abandoned";
-/** How many walked-away-from references are remembered (the newest win). */
-const ABANDONED_KEEP = 8;
 
 export interface JoinResume {
   /** The registration's reference (the tx_ref). */
@@ -85,42 +82,6 @@ export const joinResume = {
   },
 };
 
-/**
- * References the person chose to walk away from with "Start again", after the
- * five minutes of checking found no payment. The server now gives every start
- * a new reference. An older server (the deploy window) reused an unpaid
- * registration for the same offer, phone and email, so a fresh form filled in
- * with the same details could come back with the SAME reference. If a transfer
- * landed late on that reference, a second window on it would charge it twice
- * (and the second charge is invisible to the server). The page therefore never
- * opens a payment window on a reference listed here. Like the resume record it
- * holds references only, in sessionStorage, and a storage failure is not fatal.
- */
-export const joinAbandoned = {
-  list(): string[] {
-    try {
-      const raw = window.sessionStorage.getItem(ABANDONED_KEY);
-      if (!raw) return [];
-      const parsed: unknown = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.filter(isReference).slice(-ABANDONED_KEEP) : [];
-    } catch {
-      return [];
-    }
-  },
-  has(reference: string): boolean {
-    return joinAbandoned.list().includes(reference);
-  },
-  add(reference: string): void {
-    if (!isReference(reference)) return;
-    try {
-      const next = [...joinAbandoned.list().filter((r) => r !== reference), reference].slice(-ABANDONED_KEEP);
-      window.sessionStorage.setItem(ABANDONED_KEY, JSON.stringify(next));
-    } catch {
-      // Non-fatal: the five-minute wait and the confirmation still stand in front of "Start again".
-    }
-  },
-};
-
 const TIER_KEY = "wawu.join.tier";
 
 /**
@@ -140,13 +101,6 @@ export const joinTier = {
       return bag.name.length > 0 && bag.name.length <= 40 ? bag.name : null;
     } catch {
       return null;
-    }
-  },
-  set(reference: string, name: string): void {
-    try {
-      window.sessionStorage.setItem(TIER_KEY, JSON.stringify({ reference, name }));
-    } catch {
-      // Non-fatal: the success screen then says "your plan".
     }
   },
 };
