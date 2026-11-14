@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/app/(site)/_lib/page-metadata";
 import Link from "next/link";
 import { Button, ErrorState, Icon } from "@/components/ui";
 import { listPolicies, POLICY_DOCS, type PolicySummary } from "@/lib/api/policies";
@@ -13,11 +14,11 @@ import { formatLongDate } from "@/lib/format";
  */
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Legal",
-  description: "The privacy policy, terms and other legal documents for WAWU and WHO MADE THIS?",
-  alternates: { canonical: "/legal" },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Legal documents · WAWUAfrica",
+  description: "The privacy policy, terms and other legal documents for WAWU and Who Made This.",
+  path: "/legal",
+});
 
 export default async function LegalIndexPage() {
   let published: PolicySummary[] | null = null;

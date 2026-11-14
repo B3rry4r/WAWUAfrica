@@ -100,7 +100,7 @@ export function SiteHeader() {
             Sign in
           </Link>
           <ButtonLink href={WMT_HREF} variant="white" className="hidden min-h-[44px] px-5 text-[15px] sm:inline-flex">
-            Open Who Made This
+            Join Who Made This
           </ButtonLink>
           <button
             ref={button}
@@ -130,6 +130,7 @@ export function SiteHeader() {
                 aria-current={isCurrent(item.href) ? "page" : undefined}
                 className={cn(
                   "border-b border-white/12 py-4 text-[28px] font-extrabold leading-tight tracking-[-0.03em]",
+                  item.label === "Sign in" && "min-[360px]:hidden",
                   isCurrent(item.href) ? "text-site-lilac" : "text-white",
                 )}
               >
@@ -138,7 +139,7 @@ export function SiteHeader() {
             ))}
             <div className="mt-8 flex flex-col gap-3">
               <ButtonLink href={WMT_HREF} variant="white" arrow>
-                Open Who Made This
+                Join Who Made This
               </ButtonLink>
               <div className="mt-4 flex flex-col gap-2 text-[15px] text-white/80">
                 <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-white underline-offset-4 hover:underline">

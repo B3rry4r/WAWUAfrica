@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/app/(site)/_lib/page-metadata";
 import { Button, Callout, Icon } from "@/components/ui";
 
 /**
@@ -16,15 +17,14 @@ import { Button, Callout, Icon } from "@/components/ui";
  * Static on purpose: it needs nothing from the Hub, so it is there even when
  * the Hub is not.
  */
-export const metadata: Metadata = {
-  title: "Delete your Who Made This? account",
+export const metadata: Metadata = pageMetadata({
+  title: "Delete your Who Made This account · WAWUAfrica",
   description:
-    "How to ask for your Who Made This? account and data to be deleted: in the app, or by email to support@wawuafrica.com.",
-  alternates: { canonical: "/legal/delete-account" },
-};
+    "How to ask for your Who Made This account and data to be deleted: in the app, or by email to support@wawuafrica.com.",
+  path: "/legal/delete-account",
+});
 
 const SUPPORT = "support@wawuafrica.com";
-const PRIVACY = "privacy@wawuafrica.com";
 const MAILTO = `mailto:${SUPPORT}?subject=${encodeURIComponent("Delete my account")}&body=${encodeURIComponent(
   "Username: ",
 )}`;
@@ -129,9 +129,9 @@ export default function DeleteAccountPage() {
           </Button>
         </div>
         <p className={P}>
-          For any other question about your data, write to our Data Protection Officer at{" "}
-          <a href={`mailto:${PRIVACY}`} className={LINK}>
-            {PRIVACY}
+          For any other question about your data, write to{" "}
+          <a href={`mailto:${SUPPORT}`} className={LINK}>
+            {SUPPORT}
           </a>
           . We respond within 30 days.
         </p>

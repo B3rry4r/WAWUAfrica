@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { PRESS_ASSETS } from "@/lib/site/press-assets";
-import { COMPANY, CONTACT_EMAIL, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/site/site-config";
+import { COMPANY, CONTACT_EMAIL, WHATSAPP_DISPLAY, VOICES_HREF, WHATSAPP_URL, WMT_HREF } from "@/lib/site/site-config";
 import { ButtonLink } from "../_components/ButtonLink";
 import { DownloadIcon, MailIcon, ChatIcon } from "../_components/Icons";
 import { PageHero } from "../_components/PageHero";
@@ -25,7 +25,9 @@ export default function PressPage() {
           <div className="min-w-0">
             <h2 className="m-0 mb-5 text-[clamp(1.9rem,4vw,2.8rem)] font-extrabold leading-[1] tracking-[-0.035em] text-site-deep">About WAWU</h2>
             <p className="m-0 max-w-[56ch] text-[clamp(1.1rem,2vw,1.3rem)] leading-relaxed text-site-body">
-              WAWU builds apps that give everyday people a name, a voice and a way to earn. Its apps include WHO MADE THIS?, the creators and professionals platform, and VOICES, where everybody gets a voice. Built in Africa. Open to the world.
+              WAWU builds apps that give everyday people a name, a voice and a way to earn. Its apps are{" "}
+              <a href={WMT_HREF} className="font-bold text-site-purple underline underline-offset-4 hover:text-site-purple-hover">Who Made This</a>, where you put your name on your work and get paid, and{" "}
+              <a href={VOICES_HREF} className="font-bold text-site-purple underline underline-offset-4 hover:text-site-purple-hover">VOICES</a>, one question a day about life in Nigeria. Built in Africa. Open to the world.
             </p>
             <p className="mb-0 mt-5 text-[16px] text-site-mute">Company: {COMPANY}</p>
           </div>

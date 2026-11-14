@@ -14,6 +14,9 @@ export const WHATSAPP_URL = "https://wa.me/2347050722222";
 /** Where every Who Made This link and button on this site goes (R-141, owner, 12 Nov 2026). */
 export const WMT_HREF = "https://usewmt.com";
 
+/** Where every VOICES link and button on this site goes: the live VOICES web app. */
+export const VOICES_HREF = "https://usevoices.com";
+
 export interface SiteLink {
   label: string;
   href: string;
@@ -30,9 +33,8 @@ export const SITE_PAGES: readonly SiteLink[] = [
   { label: "Contact", href: "/contact" },
 ];
 
-/** The header's links. Press and Careers live in the footer. */
+/** The header's links (the Who Made This button beside them is the one link to that app). Press and Careers live in the footer. */
 export const HEADER_NAV: readonly SiteLink[] = [
-  { label: "WHO MADE THIS?", href: WMT_HREF },
   { label: "VOICES", href: "/voices" },
   { label: "About", href: "/about" },
   { label: "Partners", href: "/partners" },
@@ -40,8 +42,9 @@ export const HEADER_NAV: readonly SiteLink[] = [
 ];
 
 export const FOOTER_APPS: readonly SiteLink[] = [
-  { label: "WHO MADE THIS?", href: WMT_HREF },
-  { label: "VOICES", href: "/voices" },
+  { label: "Join Who Made This", href: WMT_HREF },
+  { label: "Join VOICES", href: VOICES_HREF },
+  { label: "About VOICES", href: "/voices" },
 ];
 
 export const FOOTER_COMPANY: readonly SiteLink[] = [

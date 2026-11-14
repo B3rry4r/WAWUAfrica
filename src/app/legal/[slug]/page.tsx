@@ -4,6 +4,7 @@ import { cache } from "react";
 import { Button, EmptyState, ErrorState } from "@/components/ui";
 import { PolicyBody } from "@/components/legal/PolicyBody";
 import { getPolicy, isPolicySlug, policyName, type PolicyDocument, type PolicySlug } from "@/lib/api/policies";
+import { pageMetadata } from "@/app/(site)/_lib/page-metadata";
 import { formatLongDate } from "@/lib/format";
 
 /**
@@ -37,17 +38,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const loaded = await load(slug);
   const path = `/legal/${slug}`;
   if (loaded.state !== "published") {
-    return { title: policyName(slug), alternates: { canonical: path }, robots: { index: false, follow: true } };
+    return { ...pageMetadata({ title: `${policyName(slug)} · WAWUAfrica`, description: `${policyName(slug)} for WAWU and Who Made This.`, path }), robots: { index: false, follow: true } };
   }
   const effective = formatLongDate(loaded.doc.effectiveDate);
-  return {
-    title: loaded.doc.title,
+  return pageMetadata({
+    title: `${loaded.doc.title} · WAWUAfrica`,
     description: effective
-      ? `${loaded.doc.title} for WAWU and WHO MADE THIS?, effective ${effective}.`
-      : `${loaded.doc.title} for WAWU and WHO MADE THIS?`,
-    alternates: { canonical: path },
-    openGraph: { type: "article", title: loaded.doc.title, url: path },
-  };
+      ? `${loaded.doc.title} for WAWU and Who Made This, effective ${effective}.`
+      : `${loaded.doc.title} for WAWU and Who Made This.`,
+    path,
+  });
 }
 
 export default async function LegalDocumentPage({ params }: { params: { slug: string } }) {

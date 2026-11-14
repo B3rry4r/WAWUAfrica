@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { WMT_HREF, SITE_URL } from "@/lib/site/site-config";
+import { SITE_URL, VOICES_HREF, WMT_HREF } from "@/lib/site/site-config";
 import { AppTiles } from "./_components/AppTiles";
 import { ButtonLink } from "./_components/ButtonLink";
 import { Cards } from "./_components/Cards";
@@ -17,13 +17,13 @@ import { pageMetadata } from "./_lib/page-metadata";
 export const metadata: Metadata = pageMetadata({
   title: "WAWUAfrica · Apps that give people a name, a voice and a way to earn",
   description:
-    "WAWU builds apps for everyday people: WHO MADE THIS? to put your name on your work and get paid, and VOICES, where everybody gets a voice.",
+    "WAWU builds apps for everyday people. Who Made This lets you put your name on your work and get paid. VOICES asks one question a day about life in Nigeria: say your answer and vote.",
   path: "/",
 });
 
 const KNOWN_FOR = [
   { title: "Be named.", body: "Your name belongs on your work. WHO MADE THIS? makes sure it stays there.", icon: <TagIcon className="h-6 w-6" /> },
-  { title: "Be heard.", body: "Everybody has something to say. VOICES lets you say it out loud.", icon: <MicIcon className="h-6 w-6" /> },
+  { title: "Be heard.", body: "Everybody has something to say. VOICES asks one question a day about life in Nigeria, and you say your answer.", icon: <MicIcon className="h-6 w-6" /> },
   { title: "Be paid.", body: "Skills and voices should earn. We build the ways people get rewarded for what they do.", icon: <CoinIcon className="h-6 w-6" /> },
 ] as const;
 
@@ -78,10 +78,10 @@ export default function HomePage() {
             </p>
             <div className="site-rise site-rise-4 mt-9 flex flex-wrap gap-3">
               <ButtonLink href={WMT_HREF} variant="white" arrow>
-                Open Who Made This
+                Join Who Made This
               </ButtonLink>
-              <ButtonLink href="#apps" variant="outline-light">
-                See the apps
+              <ButtonLink href={VOICES_HREF} variant="outline-light">
+                Join VOICES
               </ButtonLink>
             </div>
           </div>

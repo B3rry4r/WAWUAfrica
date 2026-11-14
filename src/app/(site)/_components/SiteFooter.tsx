@@ -5,12 +5,10 @@ import {
   FOOTER_APPS,
   FOOTER_COMPANY,
   FOOTER_LEGAL,
-  WMT_HREF,
   WHATSAPP_DISPLAY,
   WHATSAPP_URL,
 } from "@/lib/site/site-config";
 import { appUrl } from "@/lib/app-redirects";
-import { ButtonLink } from "./ButtonLink";
 import { SiteLogo } from "./SiteLogo";
 import { Wrap } from "./Wrap";
 
@@ -26,12 +24,9 @@ export function SiteFooter() {
             <Link href="/" aria-label="WAWU home" className="inline-flex">
               <SiteLogo className="w-[132px]" />
             </Link>
-            <p className="mb-6 mt-5 max-w-[34ch] text-[16px] leading-relaxed text-white/80">
+            <p className="mb-0 mt-5 max-w-[34ch] text-[16px] leading-relaxed text-white/80">
               Apps that give everyday people a name, a voice and a way to earn. Built in Africa. Open to the world.
             </p>
-            <ButtonLink href={WMT_HREF} variant="white" arrow>
-              Open Who Made This
-            </ButtonLink>
           </div>
 
           <nav aria-label="The apps">
@@ -45,7 +40,6 @@ export function SiteFooter() {
                 </li>
               ))}
             </ul>
-            <p className="mb-0 mt-4 max-w-[22ch] text-[14px] leading-snug text-white/65">VOICES is coming soon on the App Store and Google Play.</p>
           </nav>
 
           <nav aria-label="WAWU">
