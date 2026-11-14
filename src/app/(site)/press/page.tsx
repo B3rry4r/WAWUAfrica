@@ -25,7 +25,7 @@ export default function PressPage() {
           <div className="min-w-0">
             <h2 className="m-0 mb-5 text-[clamp(1.9rem,4vw,2.8rem)] font-extrabold leading-[1] tracking-[-0.035em] text-site-deep">About WAWU</h2>
             <p className="m-0 max-w-[56ch] text-[clamp(1.1rem,2vw,1.3rem)] leading-relaxed text-site-body">
-              WAWU builds apps that give everyday people a name, a voice and a way to earn. Its apps include WHO MADE THIS?, the creators and professionals platform, and VOICES, where everybody gets a voice. Built in Africa. Open to the world.
+              WAWU builds apps that give everyday people a name, a voice and a way to earn. Its apps include WHO MADE THIS?, the creators and professionals platform, and VOICES, one question a day about life in Nigeria. Built in Africa. Open to the world.
             </p>
             <p className="mb-0 mt-5 text-[16px] text-site-mute">Company: {COMPANY}</p>
           </div>

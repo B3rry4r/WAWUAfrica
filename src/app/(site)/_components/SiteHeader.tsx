@@ -100,7 +100,7 @@ export function SiteHeader() {
             Sign in
           </Link>
           <ButtonLink href={WMT_HREF} variant="white" className="hidden min-h-[44px] px-5 text-[15px] sm:inline-flex">
-            Open Who Made This
+            Join Who Made This
           </ButtonLink>
           <button
             ref={button}
@@ -138,7 +138,7 @@ export function SiteHeader() {
             ))}
             <div className="mt-8 flex flex-col gap-3">
               <ButtonLink href={WMT_HREF} variant="white" arrow>
-                Open Who Made This
+                Join Who Made This
               </ButtonLink>
               <div className="mt-4 flex flex-col gap-2 text-[15px] text-white/80">
                 <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-white underline-offset-4 hover:underline">

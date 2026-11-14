@@ -454,12 +454,16 @@ check("brand: a sitemap lists exactly SITE_PAGES", exists("src/app/sitemap.ts") 
 check("brand: /sitemap.xml and /robots.txt are open in join-only", isOpenInJoinOnly("/sitemap.xml") && isOpenInJoinOnly("/robots.txt"));
 
 // every link the config files hold lands on an open page; Register is the registration link; the legal links are the existing pages
-const configLinks = [...siteConfig.HEADER_NAV, ...siteConfig.FOOTER_APPS, ...siteConfig.FOOTER_COMPANY, ...siteConfig.FOOTER_LEGAL, ...siteConfig.SITE_PAGES, { label: "Open Who Made This", href: siteConfig.WMT_HREF }];
-for (const l of configLinks) check(`brand: link ${l.label} -> ${l.href} lands on an open page or on usewmt.com`, isOpenPageInJoinOnly(l.href) || l.href === "https://usewmt.com");
+const configLinks = [...siteConfig.HEADER_NAV, ...siteConfig.FOOTER_APPS, ...siteConfig.FOOTER_COMPANY, ...siteConfig.FOOTER_LEGAL, ...siteConfig.SITE_PAGES, { label: "Join Who Made This", href: siteConfig.WMT_HREF }, { label: "Join VOICES", href: siteConfig.VOICES_HREF }];
+for (const l of configLinks) check(`brand: link ${l.label} -> ${l.href} lands on an open page or on usewmt.com`, isOpenPageInJoinOnly(l.href) || l.href === "https://usewmt.com" || l.href === "https://usevoices.com");
 eq("brand: the Who Made This link opens usewmt.com (R-141)", siteConfig.WMT_HREF, "https://usewmt.com");
-eq("brand: the Who Made This links in the config are all usewmt.com", [...siteConfig.HEADER_NAV, ...siteConfig.FOOTER_APPS].filter((l) => l.label === "WHO MADE THIS?").map((l) => l.href), ["https://usewmt.com", "https://usewmt.com"]);
+eq("brand: the Who Made This link in the config is usewmt.com", siteConfig.FOOTER_APPS.filter((l) => /Who Made This/.test(l.label)).map((l) => l.href), ["https://usewmt.com"]);
+eq("brand: the VOICES links in the config are usevoices.com or the story page", siteConfig.FOOTER_APPS.filter((l) => /VOICES/.test(l.label)).map((l) => l.href), ["https://usevoices.com", "/voices"]);
+eq("brand: VOICES_HREF", siteConfig.VOICES_HREF, "https://usevoices.com");
+eq("brand: the VOICES web button", storeConfig.WEB_LINKS.voices, { label: "Join VOICES", href: "https://usevoices.com" });
+check("brand: no privacy@ address anywhere in src (support@wawuafrica.com is the one address)", !walk(join(root, "src")).some((f) => /\.(?:tsx?|css|md)$/.test(f) && readFileSync(f, "utf8").includes("privacy@wawuafrica.com")));
 eq("brand: the legal links are the existing legal pages", siteConfig.FOOTER_LEGAL.map((l) => l.href), ["/legal/privacy", "/terms", "/legal"]);
-eq("brand: the header's links", siteConfig.HEADER_NAV.map((l) => l.href), ["https://usewmt.com", "/voices", "/about", "/partners", "/contact"]);
+eq("brand: the header's links", siteConfig.HEADER_NAV.map((l) => l.href), ["/voices", "/about", "/partners", "/contact"]);
 eq("brand: the support email", siteConfig.CONTACT_EMAIL, "support@wawuafrica.com");
 eq("brand: the WhatsApp link", siteConfig.WHATSAPP_URL, "https://wa.me/2347050722222");
 eq("brand: the company", siteConfig.COMPANY, "WAWU Technology Ltd");

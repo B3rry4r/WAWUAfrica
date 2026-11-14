@@ -25,7 +25,7 @@ export function ConferenceBand() {
           One question. One stage. One challenge. For creators, founders, artists, innovators, builders and culture makers.
         </p>
         <ButtonLink href={WMT_HREF} variant="white" arrow>
-          Open Who Made This
+          Join Who Made This
         </ButtonLink>
       </Wrap>
     </section>

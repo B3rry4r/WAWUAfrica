@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { WMT_HREF } from "@/lib/site/site-config";
 import { ButtonLink } from "../_components/ButtonLink";
 import { Cards } from "../_components/Cards";
 import { Faq } from "../_components/Faq";
@@ -12,8 +11,9 @@ import { Wrap } from "../_components/Wrap";
 import { OG_IMAGES, pageMetadata } from "../_lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "VOICES · Everybody gets a voice · WAWUAfrica",
-  description: "VOICES is a voice-first app by WAWU where everybody gets a voice. Talk, listen, vote and gist.",
+  title: "VOICES · One question a day about life in Nigeria · WAWUAfrica",
+  description:
+    "VOICES is an app by WAWU with one question a day about life in Nigeria. Say your answer in your own voice, hear what others say and vote. Join VOICES at usevoices.com.",
   path: "/voices",
   image: OG_IMAGES.voices,
   imageAlt: "VOICES, an app by WAWU",
@@ -32,9 +32,9 @@ const HOW_IT_WORKS = [
 ] as const;
 
 const FAQ = [
-  { question: "When does it go live?", answer: "VOICES is coming soon on the App Store and Google Play." },
+  { question: "What is VOICES?", answer: "An app with one question a day about life in Nigeria. You say your answer, hear what others say and vote." },
   { question: "Do I have to type?", answer: "No. You speak. Others can reply with reactions and comments." },
-  { question: "Where do I get it?", answer: "On the Google Play Store and the Apple App Store, coming soon." },
+  { question: "Where do I get it?", answer: "Join VOICES at usevoices.com. A store app is not out yet." },
 ] as const;
 
 export default function VoicesPage() {
@@ -47,7 +47,7 @@ export default function VoicesPage() {
         sub={
           <>
             <span className="mb-2 block text-[clamp(1.6rem,3.4vw,2.2rem)] font-extrabold tracking-[-0.02em] text-white">VOICES</span>
-            Everybody gets a voice. Talk, listen, vote and gist.
+            One question a day about life in Nigeria. Say your answer, hear others and vote.
           </>
         }
         aside={
@@ -62,20 +62,17 @@ export default function VoicesPage() {
           </div>
         }
       >
-        <ButtonLink href={WMT_HREF} variant="green" arrow>
-          Open Who Made This
-        </ButtonLink>
+        <StoreStatus app="voices" tone="dark" />
         <ButtonLink href="#how" variant="outline-light">
           How it works
         </ButtonLink>
-        <StoreStatus app="voices" tone="dark" className="w-full sm:w-auto" />
       </PageHero>
 
       <section className="py-20 sm:py-28">
         <Wrap>
           <SectionHead
             title="What it is."
-            lead="A voice-first place where people talk instead of type. Real voices, real opinions, and everyone gets to join in."
+            lead="One question a day about life in Nigeria. Say your answer out loud, hear what others think and vote."
           />
           <Cards items={WHAT_IT_IS} accent="green" className="mt-12" />
         </Wrap>

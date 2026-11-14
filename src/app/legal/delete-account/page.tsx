@@ -24,7 +24,6 @@ export const metadata: Metadata = {
 };
 
 const SUPPORT = "support@wawuafrica.com";
-const PRIVACY = "privacy@wawuafrica.com";
 const MAILTO = `mailto:${SUPPORT}?subject=${encodeURIComponent("Delete my account")}&body=${encodeURIComponent(
   "Username: ",
 )}`;
@@ -129,9 +128,9 @@ export default function DeleteAccountPage() {
           </Button>
         </div>
         <p className={P}>
-          For any other question about your data, write to our Data Protection Officer at{" "}
-          <a href={`mailto:${PRIVACY}`} className={LINK}>
-            {PRIVACY}
+          For any other question about your data, write to{" "}
+          <a href={`mailto:${SUPPORT}`} className={LINK}>
+            {SUPPORT}
           </a>
           . We respond within 30 days.
         </p>
