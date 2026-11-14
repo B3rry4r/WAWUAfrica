@@ -23,7 +23,7 @@ export const metadata: Metadata = pageMetadata({
 
 const KNOWN_FOR = [
   { title: "Be named.", body: "Your name belongs on your work. WHO MADE THIS? makes sure it stays there.", icon: <TagIcon className="h-6 w-6" /> },
-  { title: "Be heard.", body: "Everybody has something to say. VOICES lets you say it out loud.", icon: <MicIcon className="h-6 w-6" /> },
+  { title: "Be heard.", body: "Everybody has something to say. VOICES asks one question a day about life in Nigeria, and you say your answer.", icon: <MicIcon className="h-6 w-6" /> },
   { title: "Be paid.", body: "Skills and voices should earn. We build the ways people get rewarded for what they do.", icon: <CoinIcon className="h-6 w-6" /> },
 ] as const;
 

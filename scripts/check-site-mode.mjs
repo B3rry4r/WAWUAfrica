@@ -461,7 +461,7 @@ eq("brand: the Who Made This link in the config is usewmt.com", siteConfig.FOOTE
 eq("brand: the VOICES links in the config are usevoices.com or the story page", siteConfig.FOOTER_APPS.filter((l) => /VOICES/.test(l.label)).map((l) => l.href), ["https://usevoices.com", "/voices"]);
 eq("brand: VOICES_HREF", siteConfig.VOICES_HREF, "https://usevoices.com");
 eq("brand: the VOICES web button", storeConfig.WEB_LINKS.voices, { label: "Join VOICES", href: "https://usevoices.com" });
-check("brand: no privacy@ address anywhere in src (support@wawuafrica.com is the one address)", !walk(join(root, "src")).some((f) => /\.(?:tsx?|css|md)$/.test(f) && readFileSync(f, "utf8").includes("privacy@wawuafrica.com")));
+check("brand: no privacy@ address anywhere in src, public or docs (support@wawuafrica.com is the one address)", ![...walk(join(root, "src")), ...walk(join(root, "public")), ...(exists("docs") ? walk(join(root, "docs")) : [])].some((f) => /\.(?:tsx?|css|md|html|svg|json|txt|xml)$/.test(f) && readFileSync(f, "utf8").includes("privacy@wawuafrica.com")));
 eq("brand: the legal links are the existing legal pages", siteConfig.FOOTER_LEGAL.map((l) => l.href), ["/legal/privacy", "/terms", "/legal"]);
 eq("brand: the header's links", siteConfig.HEADER_NAV.map((l) => l.href), ["/voices", "/about", "/partners", "/contact"]);
 eq("brand: the support email", siteConfig.CONTACT_EMAIL, "support@wawuafrica.com");

@@ -47,9 +47,7 @@ export default function CareersPage() {
           </div>
           <p className="mb-0 mt-10 text-[17px] text-site-mute">
             Write to{" "}
-            <a href={MAIL} className="font-bold text-site-purple underline underline-offset-4 hover:text-site-purple-hover">
-              {CONTACT_EMAIL}
-            </a>{" "}
+            <span className="font-bold text-site-deep">{CONTACT_EMAIL}</span>{" "}
             with the subject &ldquo;Careers&rdquo;.
           </p>
         </Wrap>

@@ -1,9 +1,12 @@
+import { pageMetadata } from "@/app/(site)/_lib/page-metadata";
 import { LegalDocument } from "@/components/legal/LegalDocument";
 import { ACCEPTANCE, IMPORTANT_NOTICE, MASTER_SECTIONS } from "@/lib/legal/master-agreement";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Master terms, privacy and platform policy · WAWUAfrica",
-};
+  description: "The terms of use, privacy provisions and platform policy for WAWU and Who Made This, in one document.",
+  path: "/terms",
+});
 
 /**
  * The Master Terms, Privacy and Platform Policy: ONE document covering both

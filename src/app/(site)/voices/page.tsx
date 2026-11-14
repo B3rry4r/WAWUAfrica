@@ -56,7 +56,7 @@ export default function VoicesPage() {
               <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white text-site-green">
                 <MicIcon className="h-7 w-7" />
               </span>
-              <span className="text-[17px] font-bold text-white">Everybody gets a voice.</span>
+              <span className="text-[17px] font-bold text-white">One question a day about life in Nigeria.</span>
             </div>
             <WaveBars className="h-[130px]" barClassName="bg-site-mint" />
           </div>

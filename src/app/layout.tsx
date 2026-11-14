@@ -10,18 +10,19 @@ import "./globals.css";
  * no image at all. It reads from the deployment URL so preview builds do not
  * advertise production's address.
  *
- * ── THE DESCRIPTION IS ONE CLAIM, NOT A LIST OF SECTORS ────────────────────
- * A description that names ten sectors in one breath ranks for none of them
- * and reads like a grant application. This says the one thing somebody is
- * searching for: African creators get paid for what they know, and keep most
- * of it.
+ * ── THE DEFAULT SAYS WHAT WAWU IS ─────────────────────────────────────────
+ * A page with no metadata of its own falls back to these words, so they are the
+ * brand site's own (title, description and picture), never an old product line.
+ * There is no default canonical or og:url: each page names its own, so no page
+ * is ever canonicalised to the home page by inheritance.
  */
 const SITE = "https://wawuafrica.com";
 // No em-dash. This string is a browser tab, a Google result and the title
 // on every share card, which is about as user-visible as copy gets.
-const TITLE = "WAWUAfrica: get paid for what you know";
+const TITLE = "WAWUAfrica · Apps that give people a name, a voice and a way to earn";
 const DESCRIPTION =
-  "Publish your work, price it in naira, and keep 85% of what you earn. Courses, videos, audio and PDFs, plus the business services African creators actually need.";
+  "WAWU builds apps for everyday people. Who Made This lets you put your name on your work and get paid. VOICES asks one question a day about life in Nigeria: say your answer and vote.";
+const IMAGE = "/wawu-og-brand.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? SITE),
@@ -32,30 +33,20 @@ export const metadata: Metadata = {
   },
   description: DESCRIPTION,
   applicationName: "WAWUAfrica",
-  keywords: [
-    "WAWUAfrica",
-    "sell courses Nigeria",
-    "creator platform Africa",
-    "get paid in naira",
-    "monetise content Nigeria",
-    "African creators",
-  ],
   authors: [{ name: "WAWUAfrica" }],
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: "WAWUAfrica",
     title: TITLE,
     description: DESCRIPTION,
-    url: "/",
     locale: "en_NG",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "WAWUAfrica" }],
+    images: [{ url: IMAGE, width: 1200, height: 630, alt: "WAWU: apps that give people a name, a voice and a way to earn" }],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/og-image.png"],
+    images: [IMAGE],
   },
   robots: {
     index: true,

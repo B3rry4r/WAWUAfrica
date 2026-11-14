@@ -130,6 +130,7 @@ export function SiteHeader() {
                 aria-current={isCurrent(item.href) ? "page" : undefined}
                 className={cn(
                   "border-b border-white/12 py-4 text-[28px] font-extrabold leading-tight tracking-[-0.03em]",
+                  item.label === "Sign in" && "min-[360px]:hidden",
                   isCurrent(item.href) ? "text-site-lilac" : "text-white",
                 )}
               >
